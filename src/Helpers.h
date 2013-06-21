@@ -22,7 +22,7 @@
 
 extern HINSTANCE g_hInstance;
 extern UINT16 g_uWinVer;
-
+extern BOOL	  b_HL_highlight_selection;
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
@@ -233,5 +233,8 @@ VOID MinimizeWndToTray(HWND hWnd);
 VOID RestoreWndFromTray(HWND hWnd);
 
 
+//============== haccel work 
+VOID	HL_Init();
+VOID	HL_Highlight_turn();
 
 ///   End of Helpers.h   \\\
