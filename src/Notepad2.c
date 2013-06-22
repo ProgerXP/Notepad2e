@@ -413,6 +413,9 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
     }
     // Save Settings is done elsewhere
     Scintilla_ReleaseResources();
+	//
+	HL_Release();
+	//
     UnregisterClass ( wchWndClass, hInstance );
     if ( hModUxTheme ) {
         FreeLibrary ( hModUxTheme );
@@ -3888,7 +3891,7 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     /*******************/
-                    if ( b_HL_highlight_selection ) {
+                    if ( b_HL_highlight_selection &&( scn->updated & SC_UPDATE_SELECTION) ) {
                         HL_Highlight_turn();
                     }
                     break;

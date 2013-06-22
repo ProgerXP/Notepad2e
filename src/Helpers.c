@@ -30,9 +30,15 @@
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
+#include <time.h>
 
+// haccel work
 //
-int	HL_highlight_indicator = 9;
+#define HL_SELECT_INDICATOR 1
+#define HL_SELECT_MAX_SIZE	0xff
+FILE	*HL_log = 0;
+char	HL_select_buffer[HL_SELECT_MAX_SIZE] = {0};
+
 //=============================================================================
 //
 //  Manipulation of (cached) ini file sections
@@ -2163,43 +2169,72 @@ VOID RestoreWndFromTray ( HWND hWnd )
 
 VOID HL_Init()
 {
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_highlight_indicator , INDIC_PLAIN );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_highlight_indicator , RGB ( 255, 255, 0 ) );
+    //
+#ifdef _DEBUG
+    HL_log = fopen ( "hl_log.log", "w" ) ;
+#endif
+    //
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , INDIC_PLAIN );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB ( 255, 255, 0 ) );
 }
+
+VOID HL_Release()
+{
+    if ( HL_log ) {
+        fclose ( HL_log );
+    }
+    HL_log = 0;
+}
+
 VOID HL_Highlight_word ( LPCSTR  word )
 {
     int res  = 0;
+    int cnt = 0;
     struct Sci_TextToFind ttf;
+    struct Sci_TextToFind ttf1;
+    //
+    if ( 0 == strcmp ( HL_select_buffer , word ) ) {
+        return;
+    }
+    strcpy ( HL_select_buffer , word );
+    //
     ttf.chrg.cpMin  = 0;
     ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
     ttf.lpstrText = ( LPSTR ) word;
-    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_highlight_indicator , 0 );
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , ttf.chrg.cpMax );
     while ( 1 ) {
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf );
         if ( -1 != res ) {
-            if ( ttf.chrgText.cpMax > ttf.chrgText.cpMin ) {
+            if ( cnt ) {
+                if ( 1 == cnt ) {
+                    SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
+                }
                 SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
+            } else {
+                ttf1 = ttf;
             }
+            cnt++;
             ttf.chrg.cpMin = ttf.chrgText.cpMax;
         } else {
             break;
         }
     }
+    //
+    HL_Trace ( "search %s (%d)" , word , cnt );
 }
 
 VOID HL_Highlight_turn()
 {
     if ( b_HL_highlight_selection ) {
-        int pos , start , end;
+        int pos , delta;
+        struct Sci_TextRange tr;
         pos = ( int ) SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 );
-        start = SendMessage ( hwndEdit , SCI_WORDSTARTPOSITION , pos , 1 );
-        end = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , pos , 1 );
-        if ( end - start > 1 ) {
-            struct Sci_TextRange tr;
-            tr.chrg.cpMin = start;
-            tr.chrg.cpMax = end;
-            tr.lpstrText = malloc ( end - start + 1 );
+        tr.chrg.cpMin = SendMessage ( hwndEdit , SCI_WORDSTARTPOSITION , pos , 1 );
+        tr.chrg.cpMax = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , pos , 1 );
+        delta =  tr.chrg.cpMax - tr.chrg.cpMin;
+        if ( delta > 1 && delta < HL_SELECT_MAX_SIZE ) {
+            tr.lpstrText = malloc ( delta + 1 );
             SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
             HL_Highlight_word ( tr.lpstrText );
             free ( tr.lpstrText );
@@ -2210,6 +2245,19 @@ VOID HL_Highlight_turn()
     }
 }
 
+VOID HL_Trace ( const char *fmt , ... )
+{
+    if ( HL_log ) {
+        va_list vl;
+        //
+        va_start ( vl , fmt );
+        vfprintf ( HL_log , fmt , vl );
+        va_end ( vl );
+        //
+        fprintf ( HL_log , "\n" );
+        fflush ( HL_log );
+    }
+}
 
 
 ///   End of Helpers.c   \\\
