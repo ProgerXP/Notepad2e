@@ -30,11 +30,11 @@
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
-#include <time.h>
+#include <cassert>
 
 // haccel work
 //
-#define HL_SELECT_INDICATOR 1
+#define HL_SELECT_INDICATOR 27
 #define HL_SELECT_MAX_SIZE	0xff
 FILE	*HL_log = 0;
 char	HL_select_buffer[HL_SELECT_MAX_SIZE] = {0};
@@ -2174,8 +2174,11 @@ VOID HL_Init()
     HL_log = fopen ( "hl_log.log", "w" ) ;
 #endif
     //
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , INDIC_PLAIN );
+	assert(hwndEdit);
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , INDIC_ROUNDBOX );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , 60 );
     SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB ( 255, 255, 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , 0 );
 }
 
 VOID HL_Release()
@@ -2190,22 +2193,31 @@ VOID HL_Highlight_word ( LPCSTR  word )
 {
     int res  = 0;
     int cnt = 0;
+	int lstart , lrange;
+	int old;
     struct Sci_TextToFind ttf;
     struct Sci_TextToFind ttf1;
     //
+#if 0
     if ( 0 == strcmp ( HL_select_buffer , word ) ) {
         return;
     }
     strcpy ( HL_select_buffer , word );
+#endif
     //
-    ttf.chrg.cpMin  = 0;
-    ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
+	lstart = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
+	lrange = min( SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 ) , SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ));
+    ttf.chrg.cpMin  = SendMessage ( hwndEdit , SCI_POSITIONFROMLINE , lstart  , 0 );
+    ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 );
+	HL_Trace ( "search started '%s'  (%d - %d line) (%d - %d pos)" , word , lstart , lrange + lstart , ttf.chrg.cpMin , ttf.chrg.cpMax  );
     ttf.lpstrText = ( LPSTR ) word;
+    old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , ttf.chrg.cpMax );
+    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax );
     while ( 1 ) {
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf );
         if ( -1 != res ) {
+#if 0
             if ( cnt ) {
                 if ( 1 == cnt ) {
                     SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
@@ -2214,14 +2226,18 @@ VOID HL_Highlight_word ( LPCSTR  word )
             } else {
                 ttf1 = ttf;
             }
+#else
+                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
+#endif
             cnt++;
             ttf.chrg.cpMin = ttf.chrgText.cpMax;
         } else {
             break;
         }
     }
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
     //
-    HL_Trace ( "search %s (%d)" , word , cnt );
+    HL_Trace ( "search finished '%s' (%d)" , word , cnt );
 }
 
 VOID HL_Highlight_turn()
@@ -2233,6 +2249,8 @@ VOID HL_Highlight_turn()
         tr.chrg.cpMin = SendMessage ( hwndEdit , SCI_WORDSTARTPOSITION , pos , 1 );
         tr.chrg.cpMax = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , pos , 1 );
         delta =  tr.chrg.cpMax - tr.chrg.cpMin;
+        HL_Trace ( "selected %d - %d" , tr.chrg.cpMin , delta );
+        //
         if ( delta > 1 && delta < HL_SELECT_MAX_SIZE ) {
             tr.lpstrText = malloc ( delta + 1 );
             SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
@@ -2240,8 +2258,12 @@ VOID HL_Highlight_turn()
             free ( tr.lpstrText );
         }
     } else {
+		int old;
+		 old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
+		SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
                       SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
+		SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
     }
 }
 
@@ -2249,6 +2271,10 @@ VOID HL_Trace ( const char *fmt , ... )
 {
     if ( HL_log ) {
         va_list vl;
+        SYSTEMTIME st;
+        //
+        GetLocalTime ( &st );
+        fprintf ( HL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
         va_start ( vl , fmt );
         vfprintf ( HL_log , fmt , vl );

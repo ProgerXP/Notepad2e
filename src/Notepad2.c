@@ -391,14 +391,14 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
     // Load Settings
     LoadSettings();
     //
-    HL_Init();
-    //
     if ( !InitApplication ( hInstance ) ) {
         return FALSE;
     }
     if ( ! ( hwnd = InitInstance ( hInstance, lpCmdLine, nCmdShow ) ) ) {
         return FALSE;
     }
+    //
+    HL_Init();
     hAccMain = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_MAINWND ) );
     hAccFindReplace = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_ACCFINDREPLACE ) );
     while ( GetMessage ( &msg, NULL, 0, 0 ) ) {
@@ -413,9 +413,9 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
     }
     // Save Settings is done elsewhere
     Scintilla_ReleaseResources();
-	//
-	HL_Release();
-	//
+    //
+    HL_Release();
+    //
     UnregisterClass ( wchWndClass, hInstance );
     if ( hModUxTheme ) {
         FreeLibrary ( hModUxTheme );
@@ -3243,7 +3243,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             // haccel cases
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
-			HL_Highlight_turn();
+            HL_Highlight_turn();
             break;
             //
         case CMD_ESCAPE:
@@ -3891,11 +3891,14 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     /*******************/
-                    if ( b_HL_highlight_selection &&( scn->updated & SC_UPDATE_SELECTION) ) {
+                    if ( b_HL_highlight_selection && ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
                         HL_Highlight_turn();
                     }
                     break;
                 case SCN_CHARADDED:
+                    if ( b_HL_highlight_selection ) {
+                        HL_Highlight_turn();
+                    }
                     // Auto indent
                     if ( bAutoIndent && ( scn->ch == '\x0D' || scn->ch == '\x0A' ) ) {
                         // in CRLF mode handle LF only...
