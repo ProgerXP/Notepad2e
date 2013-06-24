@@ -38,6 +38,9 @@ typedef struct _editfindreplace
   BOOL bReplaceClose;
   BOOL bNoFindWrap;
   HWND hwnd;
+#ifdef BOOKMARK_EDITION
+  BOOL bWildcardSearch;
+#endif
   //HANDLE hMRUFind;
   //HANDLE hMRUReplace;
 
@@ -128,6 +131,10 @@ BOOL  EditAlignDlg(HWND,int*);
 BOOL  EditPrint(HWND,LPCWSTR,LPCWSTR);
 void  EditPrintSetup(HWND);
 void  EditPrintInit();
+void  EditMarkAll(HWND,int,BOOL,BOOL);
+void  CompleteWord(HWND, BOOL);
+
+extern int g_DOSEncoding;
 
 #define NCP_DEFAULT            1
 #define NCP_UTF8               2

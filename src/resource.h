@@ -4,6 +4,7 @@
 //
 #define IDR_RT_MANIFEST                 1
 #define ID_SETTINGS_HIGHLIGHTCURRENTWORD 1
+#define ID_FILE_RENAMETO                2
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -400,7 +401,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         2
+#define _APS_NEXT_COMMAND_VALUE         3
 #define _APS_NEXT_CONTROL_VALUE         0
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

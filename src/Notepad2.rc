@@ -69,6 +69,7 @@ BEGIN
         MENUITEM "Re&vert\tF5",                 IDM_FILE_REVERT
         MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE
         MENUITEM "Save &As...\tF6",             IDM_FILE_SAVEAS
+        MENUITEM "Rename To...\tAlt+F6",        ID_FILE_RENAMETO
         MENUITEM "Save &Copy...\tCtrl+F6",      IDM_FILE_SAVECOPY
         MENUITEM "&Read Only",                  IDM_FILE_READONLY
         MENUITEM SEPARATOR
@@ -453,7 +454,7 @@ BEGIN
     VK_F5,          IDM_VIEW_CHANGENOTIFY,  VIRTKEY, ALT, NOINVERT
     VK_F5,          CMD_TIMESTAMPS,         VIRTKEY, SHIFT, NOINVERT
     VK_F5,          IDM_EDIT_INSERT_LONGDATE, VIRTKEY, SHIFT, CONTROL, NOINVERT
-    VK_F6,          IDM_FILE_SAVEAS,        VIRTKEY, NOINVERT
+    VK_F6,          ID_FILE_RENAMETO,       VIRTKEY, ALT, NOINVERT
     VK_F6,          IDM_FILE_SAVECOPY,      VIRTKEY, CONTROL, NOINVERT
     VK_F7,          IDM_VIEW_SAVESETTINGSNOW, VIRTKEY, NOINVERT
     VK_F7,          CMD_OPENINIFILE,        VIRTKEY, CONTROL, NOINVERT

@@ -798,12 +798,12 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
             }
             break;
         case WM_CLOSE:
-            if ( FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+            if ( FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                 DestroyWindow ( hwnd );
             }
             break;
         case WM_QUERYENDSESSION:
-            if ( FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+            if ( FileSave ( FALSE, TRUE, FALSE, FALSE , FALSE ) ) {
                 return TRUE;
             } else {
                 return FALSE;
@@ -1047,7 +1047,7 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
                 }
             } else {
                 if ( MsgBox ( MBYESNO, IDS_FILECHANGENOTIFY2 ) == IDYES ) {
-                    FileSave ( TRUE, FALSE, FALSE, FALSE );
+                    FileSave ( TRUE, FALSE, FALSE, FALSE, FALSE );
                 }
             }
             if ( !bRunningWatch ) {
@@ -1781,13 +1781,16 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
         case IDM_FILE_SAVE:
-            FileSave ( TRUE, FALSE, FALSE, FALSE );
+            FileSave ( TRUE, FALSE, FALSE, FALSE, FALSE );
             break;
         case IDM_FILE_SAVEAS:
-            FileSave ( TRUE, FALSE, TRUE, FALSE );
+            FileSave ( TRUE, FALSE, TRUE, FALSE, FALSE );
+            break;
+        case ID_FILE_RENAMETO:
+            FileSave ( TRUE, FALSE, TRUE, FALSE , TRUE );
             break;
         case IDM_FILE_SAVECOPY:
-            FileSave ( TRUE, FALSE, TRUE, TRUE );
+            FileSave ( TRUE, FALSE, TRUE, TRUE , FALSE );
             break;
         case IDM_FILE_READONLY:
             //bReadOnly = (bReadOnly) ? FALSE : TRUE;
@@ -1873,7 +1876,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 WINDOWPLACEMENT wndpl;
                 int x, y, cx, cy, imax;
                 WCHAR tch[64];
-                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                     break;
                 }
                 GetModuleFileName ( NULL, szModuleName, COUNTOF ( szModuleName ) );
@@ -1932,7 +1935,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 if ( !lstrlen ( szCurFile ) ) {
                     break;
                 }
-                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                     break;
                 }
                 if ( lstrlen ( szCurFile ) ) {
@@ -1953,7 +1956,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case IDM_FILE_RUN: {
                 WCHAR tchCmdLine[MAX_PATH + 4];
-                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+                if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                     break;
                 }
                 lstrcpy ( tchCmdLine, szCurFile );
@@ -1962,7 +1965,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
         case IDM_FILE_OPENWITH:
-            if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+            if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                 break;
             }
             OpenWithDlg ( hwnd, szCurFile );
@@ -2013,7 +2016,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
         case IDM_FILE_OPENFAV:
-            if ( FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+            if ( FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                 WCHAR tchSelItem[MAX_PATH];
                 if ( FavoritesDlg ( hwnd, tchSelItem ) ) {
                     if ( PathIsLnkToDirectory ( tchSelItem, NULL, 0 ) ) {
@@ -2054,7 +2057,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case IDM_FILE_RECENT:
             if ( MRU_Enum ( pFileMRU, 0, NULL, 0 ) > 0 ) {
-                if ( FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+                if ( FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                     WCHAR tchFile[MAX_PATH];
                     if ( FileMRUDlg ( hwnd, tchFile ) ) {
                         FileLoad ( TRUE, FALSE, FALSE, FALSE, tchFile );
@@ -3254,7 +3257,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
         case CMD_SHIFTESC:
-            if ( FileSave ( TRUE, FALSE, FALSE, FALSE ) ) {
+            if ( FileSave ( TRUE, FALSE, FALSE, FALSE , FALSE ) ) {
                 SendMessage ( hwnd, WM_CLOSE, 0, 0 );
             }
             break;
@@ -5293,7 +5296,7 @@ BOOL FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCW
     BOOL bUnicodeErr = FALSE;
     BOOL bFileTooBig = FALSE;
     if ( !bDontSave ) {
-        if ( !FileSave ( FALSE, TRUE, FALSE, FALSE ) ) {
+        if ( !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
             return FALSE;
         }
     }
@@ -5441,7 +5444,7 @@ BOOL FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCW
 //  FileSave()
 //
 //
-BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy )
+BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL bDeleteOld )
 {
     WCHAR tchFile[MAX_PATH];
     BOOL fSuccess = FALSE;
@@ -5507,6 +5510,13 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy )
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
+                //
+                if ( bDeleteOld
+                        && lstrlen ( szCurFile )
+                        && lstrcmp ( szCurFile, tchFile )
+                   ) {
+                    DeleteFile ( szCurFile );
+                }
                 if ( !bSaveCopy ) {
                     lstrcpy ( szCurFile, tchFile );
                     SetDlgItemText ( hwndMain, IDC_FILENAME, szCurFile );
