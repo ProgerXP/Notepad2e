@@ -34,7 +34,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
@@ -103,7 +103,84 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAbaqus.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAda.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAPDL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAsn1.cxx" />
+    <ClCompile Include="scintilla\lexers\LexASY.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAU3.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAVE.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAVS.cxx" />
+    <ClCompile Include="scintilla\lexers\LexBaan.cxx" />
+    <ClCompile Include="scintilla\lexers\LexBash.cxx" />
+    <ClCompile Include="scintilla\lexers\LexBasic.cxx" />
+    <ClCompile Include="scintilla\lexers\LexBullant.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCaml.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCLW.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCmake.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCOBOL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCoffeeScript.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCrontab.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCsound.cxx" />
+    <ClCompile Include="scintilla\lexers\LexD.cxx" />
+    <ClCompile Include="scintilla\lexers\LexECL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexEiffel.cxx" />
+    <ClCompile Include="scintilla\lexers\LexErlang.cxx" />
+    <ClCompile Include="scintilla\lexers\LexEScript.cxx" />
+    <ClCompile Include="scintilla\lexers\LexFlagship.cxx" />
+    <ClCompile Include="scintilla\lexers\LexForth.cxx" />
+    <ClCompile Include="scintilla\lexers\LexFortran.cxx" />
+    <ClCompile Include="scintilla\lexers\LexGAP.cxx" />
+    <ClCompile Include="scintilla\lexers\LexGui4Cli.cxx" />
+    <ClCompile Include="scintilla\lexers\LexHaskell.cxx" />
+    <ClCompile Include="scintilla\lexers\LexInno.cxx" />
+    <ClCompile Include="scintilla\lexers\LexKix.cxx" />
+    <ClCompile Include="scintilla\lexers\LexLaTeX.cxx" />
+    <ClCompile Include="scintilla\lexers\LexLisp.cxx" />
+    <ClCompile Include="scintilla\lexers\LexLout.cxx" />
     <ClCompile Include="scintilla\lexers\LexLua.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMagik.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMarkdown.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMatlab.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMetapost.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMMIXAL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexModula.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMPT.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMSSQL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexMySQL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexNimrod.cxx" />
+    <ClCompile Include="scintilla\lexers\LexNsis.cxx" />
+    <ClCompile Include="scintilla\lexers\LexOpal.cxx" />
+    <ClCompile Include="scintilla\lexers\LexOScript.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPB.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPLM.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPO.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPOV.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPowerPro.cxx" />
+    <ClCompile Include="scintilla\lexers\LexProgress.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPS.cxx" />
+    <ClCompile Include="scintilla\lexers\LexR.cxx" />
+    <ClCompile Include="scintilla\lexers\LexRebol.cxx" />
+    <ClCompile Include="scintilla\lexers\LexRuby.cxx" />
+    <ClCompile Include="scintilla\lexers\LexScriptol.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSmalltalk.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSML.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSorcus.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSpecman.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSpice.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSTTXT.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTACL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTADS3.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTAL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTCL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTCMD.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTeX.cxx" />
+    <ClCompile Include="scintilla\lexers\LexTxt2tags.cxx" />
+    <ClCompile Include="scintilla\lexers\LexVerilog.cxx" />
+    <ClCompile Include="scintilla\lexers\LexVHDL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexVisualProlog.cxx" />
+    <ClCompile Include="scintilla\lexers\LexYAML.cxx" />
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />

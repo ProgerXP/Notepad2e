@@ -235,6 +235,8 @@ VOID RestoreWndFromTray(HWND hWnd);
 
 //============== haccel work 
 VOID	HL_Init();
+VOID	HL_Release();
+VOID	HL_Trace( const char* fmt ,...);
 VOID	HL_Highlight_turn();
 
 ///   End of Helpers.h   \\\
