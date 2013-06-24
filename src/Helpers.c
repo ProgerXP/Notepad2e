@@ -2178,7 +2178,7 @@ VOID HL_Init()
     assert ( hwndEdit );
     SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , INDIC_ROUNDBOX );
     SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , 60 );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB ( 255, 255, 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB ( 0x9b, 0xff, 0x9b ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , 0 );
 #endif
 }
