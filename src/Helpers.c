@@ -2225,7 +2225,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
                 if ( cnt ) {
                     if ( 1 == cnt ) {
                         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
-						SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
+                        SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
                     }
                 } else {
                     ttf1 = ttf;
@@ -2291,6 +2291,28 @@ VOID HL_Trace ( const char *fmt , ... )
         fprintf ( HL_log , "\n" );
         fflush ( HL_log );
     }
+}
+
+BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
+{
+    BOOL ok = 0;
+    int cou = 00;
+    while ( lstrlen ( temp ) ) {
+        if ( isdigit ( temp[0] ) ) {
+            while ( cou < lstrlen ( temp ) ) {
+                if ( !isdigit ( temp[cou] ) ) {
+                    break;
+                }
+                cou++;
+            }
+            temp[cou] = 0;
+            *out = _wtoi ( temp );
+            return 1;
+        } else {
+            temp++;
+        }
+    }
+    return 0;
 }
 
 

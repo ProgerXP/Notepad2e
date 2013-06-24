@@ -238,6 +238,7 @@ VOID	HL_Init();
 VOID	HL_Release();
 VOID	HL_Trace( const char* fmt ,...);
 VOID	HL_Highlight_turn();
+BOOL	HL_Get_goto_number( LPTSTR txt , int* out );
 
 #define HL_APP_NAME L"Notepad2e"
 
