@@ -544,7 +544,7 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
     hwndMain = CreateWindowEx (
                    0,
                    wchWndClass,
-                   L"Notepad2",
+                   HL_APP_NAME ,
                    WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
                    wi.x,
                    wi.y,

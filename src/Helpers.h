@@ -239,4 +239,7 @@ VOID	HL_Release();
 VOID	HL_Trace( const char* fmt ,...);
 VOID	HL_Highlight_turn();
 
+#define HL_APP_NAME L"Notepad2e"
+
+
 ///   End of Helpers.h   \\\
