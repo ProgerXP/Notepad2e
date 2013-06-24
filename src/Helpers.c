@@ -2198,7 +2198,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
     int lstart , lrange;
     int old;
     struct Sci_TextToFind ttf;
-    struct Sci_TextToFind ttf1;
+ //   struct Sci_TextToFind ttf1;
     //
 #if 0
     if ( 0 == strcmp ( HL_select_buffer , word ) ) {
@@ -2211,9 +2211,9 @@ VOID HL_Highlight_word ( LPCSTR  word )
     lrange = min ( SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 ) , SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) );
     ttf.chrg.cpMin  = SendMessage ( hwndEdit , SCI_POSITIONFROMLINE , lstart  , 0 );
     ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 );
+    old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax );
-    old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
+    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
     HL_Trace ( "highlight started '%s'  (%d - %d line) (%d - %d pos)" , word , lstart , lrange + lstart , ttf.chrg.cpMin , ttf.chrg.cpMax );
     if ( word ) {
         ttf.lpstrText = ( LPSTR ) word;
@@ -2265,7 +2265,7 @@ VOID HL_Highlight_turn()
         }
     } else {
         int old;
-        old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
+        old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
                       SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
