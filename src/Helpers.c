@@ -2176,14 +2176,16 @@ VOID HL_Init()
     //
 #if 1
     assert ( hwndEdit );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , INDIC_ROUNDBOX );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , 60 );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB ( 0x9b, 0xff, 0x9b ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , 0 );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , INDIC_ROUNDBOX );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , 60 );
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_type" , 7 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_alpha" , 60 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_line_alpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB (	0x9b , 0xff, 0x9b ) );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_under" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 7 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 60 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , RGB ( 0xff, 0xff, 0xc3 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , 0 );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
 #endif
 }
 

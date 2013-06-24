@@ -160,6 +160,7 @@ BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
 /* haccel */
 BOOL	  b_HL_highlight_selection = TRUE;
+BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 /**/
 
 typedef struct _wi {
@@ -1733,6 +1734,7 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_VIEW_SAVESETTINGSNOW, i );
     //
     CheckCmd ( hmenu, ID_SETTINGS_HIGHLIGHTCURRENTWORD, b_HL_highlight_selection );
+    CheckCmd ( hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll );
 }
 
 
@@ -3247,6 +3249,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
             HL_Highlight_turn();
+            break;
+            //
+        case ID_SETTINGS_CTRL_WHEEL_SCROLL:
+            b_HL_ctrl_wheel_scroll = ( b_HL_ctrl_wheel_scroll ) ? FALSE : TRUE;
             break;
             //
         case CMD_ESCAPE:
