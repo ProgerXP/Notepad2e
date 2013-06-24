@@ -2209,7 +2209,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
     lstart = ( int ) SendMessage ( hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart , 0 );
     lrange = min ( SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 ) , SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) );
     ttf.chrg.cpMin  = SendMessage ( hwndEdit , SCI_POSITIONFROMLINE , lstart  , 0 );
-    ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 );
+    ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 ) + 1  ;
     old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
@@ -2224,6 +2224,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
 #if 1
                 if ( cnt ) {
                     if ( 1 == cnt ) {
+                        SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
                         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
                         SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
                     }
