@@ -71,6 +71,10 @@ extern int iWeakSrcEncoding;
 WCHAR wchANSI[8] = L"";
 WCHAR wchOEM [8] = L"";
 
+// haccel work
+WCHAR	hl_last_html_tag[0xff] = L"<tag>";
+
+
 NP2ENCODING mEncoding[] = {
     { NCP_DEFAULT | NCP_RECODE,                          0, "ansi,ansi,ascii,",                                       61000, L"" },
     { NCP_8BIT | NCP_RECODE,                             0, "oem,oem,",                                               61001, L"" },
@@ -5346,13 +5350,18 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
     static PTAGSDATA pdata;
     switch ( umsg ) {
         case WM_INITDIALOG: {
+                WCHAR end[0xff] = L"</";
+                int i ;
                 pdata = ( PTAGSDATA ) lParam;
                 SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
-                SetDlgItemTextW ( hwnd, 100, L"<tag>" );
+                SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
                 SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
-                SetDlgItemTextW ( hwnd, 101, L"</tag>" );
+                //
+                lstrcpy ( end , hl_last_html_tag + 1 );
+                //
+                SetDlgItemTextW ( hwnd, 101, end );
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );
-                PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, 4 );
+                PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
                 CenterDlgInParent ( hwnd );
             }
             return FALSE;
@@ -5411,6 +5420,12 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                         GetDlgItemTextW ( hwnd, 100, pdata->pwsz1, 256 );
                         GetDlgItemTextW ( hwnd, 101, pdata->pwsz2, 256 );
                         EndDialog ( hwnd, IDOK );
+                        // if all`s ok
+                        if ( lstrlen ( pdata->pwsz1 ) > 1
+                                && L'<' == pdata->pwsz1[0]
+                                && L'>' == pdata->pwsz1[lstrlen ( pdata->pwsz1 ) - 1] ) {
+                            lstrcpy ( hl_last_html_tag , pdata->pwsz1 );
+                        }
                     }
                     break;
                 case IDCANCEL:

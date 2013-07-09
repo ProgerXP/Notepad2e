@@ -35,7 +35,7 @@ BOOL OpenWithDlg(HWND,LPCWSTR);
 BOOL FavoritesDlg(HWND,LPWSTR);
 BOOL AddToFavDlg(HWND,LPCWSTR,LPCWSTR);
 BOOL FileMRUDlg(HWND,LPWSTR);
-BOOL HL_OPENMRU_Last(LPWSTR);
+BOOL HL_OpenMRU_Last(LPWSTR);
 BOOL ChangeNotifyDlg(HWND);
 BOOL ColumnWrapDlg(HWND,UINT,int *);
 BOOL WordWrapSettingsDlg(HWND,UINT,int *);

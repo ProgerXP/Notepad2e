@@ -2071,7 +2071,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             if ( MRU_Enum ( pFileMRU, 0, NULL, 0 ) > 0 ) {
                 if ( FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                     WCHAR tchFile[MAX_PATH];
-                    if ( HL_OPENMRU_Last ( tchFile ) ) {
+                    if ( HL_OpenMRU_Last ( tchFile ) ) {
                         _FileLoad ( TRUE, FALSE, FALSE, FALSE, tchFile, TRUE );
                     }
                 }
@@ -2087,6 +2087,9 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_ENCODING_UTF8SIGN:
         case IDM_ENCODING_SELECT: {
                 int iNewEncoding = iEncoding;
+                int pos , anch;
+                pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
+                anch = SendMessage ( hwndEdit , SCI_GETANCHOR , 0 , 0 );
                 if ( LOWORD ( wParam ) == IDM_ENCODING_SELECT && !SelectEncodingDlg ( hwnd, &iNewEncoding ) ) {
                     break;
                 } else {
@@ -2126,6 +2129,8 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                                      iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                                      IDS_READONLY, bReadOnly, szTitleExcerpt );
                 }
+                SendMessage ( hwndEdit , SCI_SETANCHOR , anch , 0 );
+                SendMessage ( hwndEdit , SCI_SETCURRENTPOS , pos , 0 );
             }
             break;
         case IDM_ENCODING_RECODE: {
@@ -2148,9 +2153,14 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         return ( 0 );
                     }
                     if ( RecodeDlg ( hwnd, &iNewEncoding ) ) {
+                        int pos , anch;
+                        pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
+                        anch = SendMessage ( hwndEdit , SCI_GETANCHOR , 0 , 0 );
                         lstrcpy ( tchCurFile2, szCurFile );
                         iSrcEncoding = iNewEncoding;
                         FileLoad ( TRUE, FALSE, TRUE, FALSE, tchCurFile2 );
+                        SendMessage ( hwndEdit , SCI_SETANCHOR , anch , 0 );
+                        SendMessage ( hwndEdit , SCI_SETCURRENTPOS , pos , 0 );
                     }
                 }
             }
@@ -2180,6 +2190,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
             break;
         case IDM_EDIT_REDO:
+            SendMessage ( hwndEdit, SCI_REDO, 0, 0 );
+            break;
+        case ID_EDIT_UNDO_REDO:
+            SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
             SendMessage ( hwndEdit, SCI_REDO, 0, 0 );
             break;
         case IDM_EDIT_CUT:

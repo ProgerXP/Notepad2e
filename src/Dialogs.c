@@ -818,7 +818,7 @@ DWORD WINAPI FileMRUIconThread ( LPVOID lpParam )
     return ( 0 );
 }
 
-BOOL HL_OPENMRU_Last ( LPWSTR fn )
+BOOL HL_OpenMRU_Last ( LPWSTR fn )
 {
     int i;
     int count;
@@ -929,69 +929,7 @@ INT_PTR CALLBACK FileMRUDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
                         case NM_DBLCLK:
                             SendMessage ( hwnd, WM_COMMAND, MAKELONG ( IDOK, 1 ), 0 );
                             break;
-                        case LVN_GETDISPINFO: {
-                                /*
-                                LV_DISPINFO *lpdi = (LPVOID)lParam;
-
-                                if (lpdi->item.mask & LVIF_IMAGE) {
-
-                                  WCHAR tch[MAX_PATH];
-                                  LV_ITEM lvi;
-                                  SHFILEINFO shfi;
-                                  DWORD dwFlags = SHGFI_SMALLICON | SHGFI_SYSICONINDEX | SHGFI_ATTRIBUTES | SHGFI_ATTR_SPECIFIED;
-                                  DWORD dwAttr  = 0;
-
-                                  ZeroMemory(&lvi,sizeof(LV_ITEM));
-
-                                  lvi.mask = LVIF_TEXT;
-                                  lvi.pszText = tch;
-                                  lvi.cchTextMax = COUNTOF(tch);
-                                  lvi.iItem = lpdi->item.iItem;
-
-                                  ListView_GetItem(GetDlgItem(hwnd,IDC_FILEMRU),&lvi);
-
-                                  if (!PathFileExists(tch)) {
-                                    dwFlags |= SHGFI_USEFILEATTRIBUTES;
-                                    dwAttr = FILE_ATTRIBUTE_NORMAL;
-                                    shfi.dwAttributes = 0;
-                                    SHGetFileInfo(PathFindFileName(tch),dwAttr,&shfi,sizeof(SHFILEINFO),dwFlags);
-                                  }
-
-                                  else {
-                                    shfi.dwAttributes = SFGAO_LINK | SFGAO_SHARE;
-                                    SHGetFileInfo(tch,dwAttr,&shfi,sizeof(SHFILEINFO),dwFlags);
-                                  }
-
-                                  lpdi->item.iImage = shfi.iIcon;
-                                  lpdi->item.mask |= LVIF_DI_SETITEM;
-
-                                  lpdi->item.stateMask = 0;
-                                  lpdi->item.state = 0;
-
-                                  if (shfi.dwAttributes & SFGAO_LINK) {
-                                    lpdi->item.mask |= LVIF_STATE;
-                                    lpdi->item.stateMask |= LVIS_OVERLAYMASK;
-                                    lpdi->item.state |= INDEXTOOVERLAYMASK(2);
-                                  }
-
-                                  if (shfi.dwAttributes & SFGAO_SHARE) {
-                                    lpdi->item.mask |= LVIF_STATE;
-                                    lpdi->item.stateMask |= LVIS_OVERLAYMASK;
-                                    lpdi->item.state |= INDEXTOOVERLAYMASK(1);
-                                  }
-
-                                  dwAttr = GetFileAttributes(tch);
-
-                                  if (!flagNoFadeHidden &&
-                                      dwAttr != INVALID_FILE_ATTRIBUTES &&
-                                      dwAttr & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM)) {
-                                    lpdi->item.mask |= LVIF_STATE;
-                                    lpdi->item.stateMask |= LVIS_CUT;
-                                    lpdi->item.state |= LVIS_CUT;
-                                  }
-                                }
-                                */
-                            }
+                        case LVN_GETDISPINFO:
                             break;
                         case LVN_ITEMCHANGED:
                         case LVN_DELETEITEM:
