@@ -399,7 +399,7 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
         return FALSE;
     }
     //
-    HL_Init();
+    HL_Init(hwnd);
     hAccMain = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_MAINWND ) );
     hAccFindReplace = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_ACCFINDREPLACE ) );
     while ( GetMessage ( &msg, NULL, 0, 0 ) ) {
@@ -3231,6 +3231,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_VIEW_SAVESETTINGS:
             bSaveSettings = ( bSaveSettings ) ? FALSE : TRUE;
             break;
+
         case IDM_VIEW_SAVESETTINGSNOW: {
                 BOOL bCreateFailure = FALSE;
                 if ( lstrlen ( szIniFile ) == 0 ) {
@@ -3265,11 +3266,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 }
             }
             break;
-        case IDM_HELP_ABOUT:
-            ThemedDialogBox ( g_hInstance, MAKEINTRESOURCE ( IDD_ABOUT ),
-                              hwnd, AboutDlgProc );
-            break;
             // haccel cases
+        case ID_SETTINGS_REPLACESETTINGSINALLINSTANCES: {
+                MsgCommand ( hwnd , MAKEWPARAM ( IDM_VIEW_SAVESETTINGSNOW , 0 ) , 0 );
+                HL_Reload_Settings();
+            }
+            break;
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
             HL_Highlight_turn();
@@ -3280,6 +3282,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
             break;
             //
+        case IDM_HELP_ABOUT:
+            ThemedDialogBox ( g_hInstance, MAKEINTRESOURCE ( IDD_ABOUT ),
+                              hwnd, AboutDlgProc );
+            break;
         case CMD_ESCAPE:
             if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );

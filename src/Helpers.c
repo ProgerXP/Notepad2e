@@ -31,6 +31,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include <cassert>
+#include "Notepad2.h"
 
 // haccel work
 //
@@ -39,6 +40,7 @@
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SEARCH_WORD_SIZE (64*1024)
 FILE	*HL_log = 0;
+HWND	g_hwnd = 0;
 
 //=============================================================================
 //
@@ -2168,8 +2170,9 @@ VOID RestoreWndFromTray ( HWND hWnd )
 }
 
 
-VOID HL_Init()
+VOID HL_Init ( HWND hWnd )
 {
+    g_hwnd = hWnd;
     //
 #ifdef _DEBUG
     HL_log = fopen ( "hl_log.log", "w" ) ;
@@ -2198,6 +2201,7 @@ VOID HL_Release()
         fclose ( HL_log );
     }
     HL_log = 0;
+    g_hwnd = 0;
 }
 
 VOID HL_Highlight_word ( LPCSTR  word )
@@ -2336,6 +2340,22 @@ VOID HL_Set_wheel_scroll ( BOOL on )
     } else {
         hl_wheel_action = 0;
     }
+}
+BOOL CALLBACK HL_Enum_proc (
+    _In_  HWND hwnd,
+    _In_  LPARAM lParam
+)
+{
+    WCHAR title[0xff + 1];
+    GetWindowText ( hwnd , title , 0xff );
+    if ( wcsstr ( title , WC_NOTEPAD2 ) && g_hwnd != hwnd ) {
+        HL_Trace ( "window %s (%d)" , title , hwnd );
+    }
+    return TRUE;
+}
+VOID HL_Reload_Settings()
+{
+    EnumWindows ( HL_Enum_proc , (LPARAM)g_hwnd );
 }
 
 

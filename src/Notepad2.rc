@@ -297,6 +297,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Save Settings On E&xit",      IDM_VIEW_SAVESETTINGS
         MENUITEM "Save Settings &Now\tF7",      IDM_VIEW_SAVESETTINGSNOW
+        MENUITEM "Replace settings in all instances", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
     END
     POPUP "&?"
     BEGIN

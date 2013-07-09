@@ -5351,7 +5351,6 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
     switch ( umsg ) {
         case WM_INITDIALOG: {
                 WCHAR end[0xff] = L"</";
-                int i ;
                 pdata = ( PTAGSDATA ) lParam;
                 SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
