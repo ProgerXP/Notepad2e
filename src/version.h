@@ -21,13 +21,13 @@
 
 #define VERSION_FILEVERSION_NUM      4,2,25,0
 #define VERSION_FILEVERSION_SHORT    L"4.2.25"
-#define VERSION_FILEVERSION_LONG     L"Notepad2e 4.2.25"
+#define VERSION_FILEVERSION_LONG     L"Notepad 2e 4.2.25"
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2011"
 #ifdef _M_AMD64
-#define VERSION_FILEDESCRIPTION      L"Notepad2e x64"
+#define VERSION_FILEDESCRIPTION      L"Notepad 2e x64"
 #else
-#define VERSION_FILEDESCRIPTION      L"Notepad2e"
+#define VERSION_FILEDESCRIPTION      L"Notepad 2e"
 #endif
 #define VERSION_INTERNALNAME         L"Notepad2e"
 #define VERSION_ORIGINALFILENAME     L"Notepad2.exe"

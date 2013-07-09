@@ -2186,6 +2186,8 @@ VOID HL_Init()
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , RGB ( 0xff, 0xff, 0xc3 ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
+    //
+    HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
 #endif
 }
 
@@ -2317,6 +2319,39 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
     }
     return 0;
 }
+VOID HL_Wheel_scroll_worker ( int lines )
+{
+#if 0
+    int range;
+    int lstart;
+    int lend;
+    int lmax;
+    range = SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 );
+    lstart = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
+    lstart = ( int ) SendMessage ( hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart , 0 );
+    lend = lines * range / 3 + lstart;
+    lmax = max ( SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) - range , 0 );
+    lend = max ( 0 , min ( lmax , lend ) );
+    //
+    SendMessage ( hwndEdit , SCI_LINESCROLL , old , 0 );
+    HL_Trace ( "Scroll value %d , start %d , end %d", lines , lstart , lend );
+#endif
+    if ( lines > 0 ) {
+        SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
+    } else if(lines < 0) {
+        SendMessage ( hwndEdit , SCI_PAGEUP , 0, 0 );
+    }
+}
+
+VOID HL_Set_wheel_scroll ( BOOL on )
+{
+    if ( on ) {
+        hl_wheel_action = HL_Wheel_scroll_worker;
+    } else {
+        hl_wheel_action = 0;
+    }
+}
+
 
 
 ///   End of Helpers.c   \\\

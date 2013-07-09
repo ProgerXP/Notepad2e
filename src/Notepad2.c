@@ -545,7 +545,7 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
     hwndMain = CreateWindowEx (
                    0,
                    wchWndClass,
-                   HL_APP_NAME ,
+                   WC_NOTEPAD2 ,
                    WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
                    wi.x,
                    wi.y,
@@ -2067,6 +2067,16 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 }
             }
             break;
+        case ID_FILE_OPENPREVIOUS:
+            if ( MRU_Enum ( pFileMRU, 0, NULL, 0 ) > 0 ) {
+                if ( FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
+                    WCHAR tchFile[MAX_PATH];
+                    if ( HL_OPENMRU_Last ( tchFile ) ) {
+                        _FileLoad ( TRUE, FALSE, FALSE, FALSE, tchFile, TRUE );
+                    }
+                }
+            }
+            break;
         case IDM_FILE_EXIT:
             SendMessage ( hwnd, WM_CLOSE, 0, 0 );
             break;
@@ -3253,6 +3263,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             //
         case ID_SETTINGS_CTRL_WHEEL_SCROLL:
             b_HL_ctrl_wheel_scroll = ( b_HL_ctrl_wheel_scroll ) ? FALSE : TRUE;
+            HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
             break;
             //
         case CMD_ESCAPE:
@@ -3905,9 +3916,11 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     }
                     break;
                 case SCN_CHARADDED:
+#if 0
                     if ( b_HL_highlight_selection ) {
                         HL_Highlight_turn();
                     }
+#endif
                     // Auto indent
                     if ( bAutoIndent && ( scn->ch == '\x0D' || scn->ch == '\x0A' ) ) {
                         // in CRLF mode handle LF only...
@@ -4008,6 +4021,9 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     }
                     break;
                 case SCN_MODIFIED:
+                    if ( b_HL_highlight_selection ) {
+                        HL_Highlight_turn();
+                    }
                 case SCN_ZOOM:
                     UpdateLineNumberWidth();
                     break;
@@ -5296,6 +5312,10 @@ BOOL FileIO ( BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
 //
 BOOL FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWSTR lpszFile )
 {
+    return _FileLoad ( bDontSave, bNew, bReload, bNoEncDetect, lpszFile, FALSE );
+}
+BOOL _FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWSTR lpszFile , BOOL no_mru )
+{
     WCHAR tch[MAX_PATH] = L"";
     WCHAR szFileName[MAX_PATH] = L"";
     BOOL fSuccess;
@@ -5406,9 +5426,11 @@ BOOL FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCW
         bModified = FALSE;
         //bReadOnly = FALSE;
         SendMessage ( hwndEdit, SCI_SETEOLMODE, iEOLMode, 0 );
-        MRU_AddFile ( pFileMRU, szFileName, flagRelativeFileMRU, flagPortableMyDocs );
-        if ( flagUseSystemMRU == 2 ) {
-            SHAddToRecentDocs ( SHARD_PATHW, szFileName );
+        if ( !no_mru ) {
+            MRU_AddFile ( pFileMRU, szFileName, flagRelativeFileMRU, flagPortableMyDocs );
+            if ( flagUseSystemMRU == 2 ) {
+                SHAddToRecentDocs ( SHARD_PATHW, szFileName );
+            }
         }
         SetWindowTitle ( hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szFileName,
                          iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
@@ -6048,7 +6070,7 @@ void ShowNotifyIcon ( HWND hwnd, BOOL bAdd )
     nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
     nid.uCallbackMessage = WM_TRAYMESSAGE;
     nid.hIcon = hIcon;
-    lstrcpy ( nid.szTip, L"Notepad2" );
+    lstrcpy ( nid.szTip, L"Notepad 2e" );
     if ( bAdd ) {
         Shell_NotifyIcon ( NIM_ADD, &nid );
     } else {

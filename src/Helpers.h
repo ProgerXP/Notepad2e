@@ -246,8 +246,8 @@ VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_Highlight_turn();
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out );
+VOID	HL_Set_wheel_scroll ( BOOL on );
 
-#define HL_APP_NAME L"Notepad2e"
 #define HL_INI_SECTION L"e-settings"
 
 

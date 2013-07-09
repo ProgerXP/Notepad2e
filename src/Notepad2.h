@@ -21,7 +21,7 @@
 
 
 //==== Main Window ============================================================
-#define WC_NOTEPAD2 L"Notepad2e"
+#define WC_NOTEPAD2 L"Notepad 2e"
 
 
 //==== Data Type for WM_COPYDATA ==============================================
@@ -128,6 +128,7 @@ void UpdateLineNumberWidth();
 
 BOOL FileIO(BOOL,LPCWSTR,BOOL,int*,int*,BOOL*,BOOL*,BOOL*,BOOL);
 BOOL FileLoad(BOOL,BOOL,BOOL,BOOL,LPCWSTR);
+BOOL _FileLoad(BOOL,BOOL,BOOL,BOOL,LPCWSTR,BOOL);
 BOOL FileSave(BOOL,BOOL,BOOL,BOOL,BOOL);
 BOOL OpenFileDlg(HWND,LPWSTR,int,LPCWSTR);
 BOOL SaveFileDlg(HWND,LPWSTR,int,LPCWSTR);
