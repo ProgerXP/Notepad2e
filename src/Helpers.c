@@ -37,6 +37,7 @@
 #define HL_SELECT_INDICATOR 9
 #define HL_SELECT_INDICATOR_SINGLE 10
 #define HL_SELECT_MAX_SIZE	0xff
+#define HL_SEARCH_WORD_SIZE (64*1024)
 FILE	*HL_log = 0;
 
 //=============================================================================
@@ -2176,15 +2177,15 @@ VOID HL_Init()
     //
 #if 1
     assert ( hwndEdit );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_type" , 7 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_alpha" , 60 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_type" , 6 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB (	0x9b , 0xff, 0x9b ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB (	0x00 , 0x00, 0x00 ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_under" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 7 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 60 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 6 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , RGB ( 0xff, 0xff, 0xc3 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , RGB ( 0x90, 0x00, 0x00 ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
@@ -2203,7 +2204,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
 {
     int res  = 0;
     int cnt = 0;
-    int lstart , lrange;
+    int lstart , lrange ;
     int old;
     struct Sci_TextToFind ttf;
     struct Sci_TextToFind ttf1;
@@ -2221,24 +2222,24 @@ VOID HL_Highlight_word ( LPCSTR  word )
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
     HL_Trace ( "highlight started '%s'  (%d - %d line) (%d - %d pos)" , word , lstart , lrange + lstart , ttf.chrg.cpMin , ttf.chrg.cpMax );
     if ( word ) {
+        // 2 first words
+        ttf1.chrg.cpMin = max ( ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE , 0 );
+        ttf1.chrg.cpMax = min ( ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE , SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
+        ttf1.lpstrText = ( LPSTR ) word;
+        res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf1 );
+        if ( -1 != res ) {
+            ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
+            res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf1 );
+            if ( -1 != res ) {
+                SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
+            }
+        }
+        //
         ttf.lpstrText = ( LPSTR ) word;
         while ( 1 ) {
             res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf );
             if ( -1 != res ) {
-#if 1
-                if ( cnt ) {
-                    if ( 1 == cnt ) {
-                        SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
-                        SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
-                        SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf1.chrgText.cpMin , ttf1.chrgText.cpMax - ttf1.chrgText.cpMin );
-                    }
-                } else {
-                    ttf1 = ttf;
-                }
                 SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
-#else
-                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
-#endif
                 cnt++;
                 ttf.chrg.cpMin = ttf.chrgText.cpMax;
             } else {
@@ -2321,24 +2322,9 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
 }
 VOID HL_Wheel_scroll_worker ( int lines )
 {
-#if 0
-    int range;
-    int lstart;
-    int lend;
-    int lmax;
-    range = SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 );
-    lstart = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
-    lstart = ( int ) SendMessage ( hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart , 0 );
-    lend = lines * range / 3 + lstart;
-    lmax = max ( SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) - range , 0 );
-    lend = max ( 0 , min ( lmax , lend ) );
-    //
-    SendMessage ( hwndEdit , SCI_LINESCROLL , old , 0 );
-    HL_Trace ( "Scroll value %d , start %d , end %d", lines , lstart , lend );
-#endif
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
-    } else if(lines < 0) {
+    } else if ( lines < 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEUP , 0, 0 );
     }
 }
