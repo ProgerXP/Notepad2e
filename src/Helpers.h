@@ -250,6 +250,7 @@ VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 
 #define HL_INI_SECTION L"e-settings"
+#define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 
 
 ///   End of Helpers.h   \\\

@@ -2348,8 +2348,17 @@ BOOL CALLBACK HL_Enum_proc (
 {
     WCHAR title[0xff + 1];
     GetWindowText ( hwnd , title , 0xff );
-    if ( wcsstr ( title , WC_NOTEPAD2 ) && g_hwnd != hwnd ) {
-        HL_Trace ( "window %s (%d)" , title , hwnd );
+    if ( wcsstr ( title , WC_NOTEPAD2 )
+#if 0
+		&& g_hwnd != hwnd 
+#endif
+		) {
+#ifdef _DEBUG
+            char title[0xff + 1];
+            GetWindowTextA ( hwnd , title , 0xff );
+            HL_Trace ( "found (%s [%d]) " , title , hwnd );
+#endif
+		PostMessage(hwnd , HWM_RELOAD_SETTINGS , 0 , 0);
     }
     return TRUE;
 }

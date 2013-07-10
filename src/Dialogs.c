@@ -829,7 +829,7 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
     open = FALSE;
     count = MRU_Enum ( pFileMRU, 0, NULL, 0 );
     GetCurrentDirectory ( COUNTOF ( cd ), cd );
-    for ( i = 0; i < count ;  i++ ) {
+    for ( i = 0; i < count && i < 2 ;  i++ ) {
         MRU_Enum ( pFileMRU, i, tch, COUNTOF ( tch ) );
         if ( PathIsRelative ( tch ) ) {
             StrCpyN ( wtch, cd, COUNTOF ( wtch ) );
@@ -854,7 +854,7 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
         }
     }
     HL_Trace ( "found #%d from %d" , i , count );
-    return  i > 0;
+    return  i > 0 && lstrcmp ( fn , szCurFile );
 }
 
 INT_PTR CALLBACK FileMRUDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )

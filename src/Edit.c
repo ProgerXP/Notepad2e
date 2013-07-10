@@ -5356,7 +5356,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
                 SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
                 //
-                lstrcpy ( end , hl_last_html_tag + 1 );
+                lstrcat ( end , hl_last_html_tag + 1 );
                 //
                 SetDlgItemTextW ( hwnd, 101, end );
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );

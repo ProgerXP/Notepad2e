@@ -37,6 +37,7 @@
 #include "resource.h"
 
 
+VOID HL_Msg_create();
 
 /******************************************************************************
 *
@@ -399,7 +400,7 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
         return FALSE;
     }
     //
-    HL_Init(hwnd);
+    HL_Init ( hwnd );
     hAccMain = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_MAINWND ) );
     hAccFindReplace = LoadAccelerators ( hInstance, MAKEINTRESOURCE ( IDR_ACCFINDREPLACE ) );
     while ( GetMessage ( &msg, NULL, 0, 0 ) ) {
@@ -1109,6 +1110,17 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
                     return TRUE;
             }
             break;
+        case HWM_RELOAD_SETTINGS: {
+#ifdef _DEBUG
+                char title[0xff + 1];
+                GetWindowTextA ( hwnd , title , 0xff );
+                HL_Trace ( "i (%s) got reload message" , title );
+#endif
+                LoadSettings();
+                MsgInitMenu ( hwnd, 0, 0 );
+                HL_Msg_create();
+            }
+            break;
         default:
             if ( umsg == msgTaskbarCreated ) {
                 if ( !IsWindowVisible ( hwnd ) ) {
@@ -1122,17 +1134,9 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
     return ( 0 );
 }
 
-
-//=============================================================================
-//
-//  MsgCreate() - Handles WM_CREATE
-//
-//
-LRESULT MsgCreate ( HWND hwnd, WPARAM wParam, LPARAM lParam )
+// haccel create sub routine
+VOID HL_Msg_create()
 {
-    HINSTANCE hInstance = ( ( LPCREATESTRUCT ) lParam )->hInstance;
-    // Setup edit control
-    hwndEdit = EditCreate ( hwnd );
     // Tabs
     SendMessage ( hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0 );
     SendMessage ( hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0 );
@@ -1215,6 +1219,21 @@ LRESULT MsgCreate ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     // Nonprinting characters
     SendMessage ( hwndEdit, SCI_SETVIEWWS, ( bViewWhiteSpace ) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0 );
     SendMessage ( hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0 );
+}
+
+//=============================================================================
+//
+//  MsgCreate() - Handles WM_CREATE
+//
+//
+LRESULT MsgCreate ( HWND hwnd, WPARAM wParam, LPARAM lParam )
+{
+    HINSTANCE hInstance ;
+    hInstance = ( ( LPCREATESTRUCT ) lParam )->hInstance;
+    // Setup edit control
+    hwndEdit = EditCreate ( hwnd );
+    HL_Msg_create();
+    //
     hwndEditFrame = CreateWindowEx (
                         WS_EX_CLIENTEDGE,
                         WC_LISTVIEW,
@@ -3231,7 +3250,6 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_VIEW_SAVESETTINGS:
             bSaveSettings = ( bSaveSettings ) ? FALSE : TRUE;
             break;
-
         case IDM_VIEW_SAVESETTINGSNOW: {
                 BOOL bCreateFailure = FALSE;
                 if ( lstrlen ( szIniFile ) == 0 ) {
