@@ -342,7 +342,7 @@ int WINAPI WinMain ( HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, 
             ( LPWSTR ) &lpMsgBuf,
             0,
             NULL );
-        MessageBox ( NULL, ( LPCWSTR ) lpMsgBuf, L"Notepad2", MB_OK | MB_ICONEXCLAMATION );
+        MessageBox ( NULL, ( LPCWSTR ) lpMsgBuf, WC_NOTEPAD2, MB_OK | MB_ICONEXCLAMATION );
         LocalFree ( lpMsgBuf );
         return ( 0 );
     }

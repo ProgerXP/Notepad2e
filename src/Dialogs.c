@@ -838,10 +838,6 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
             lstrcpy ( wtch , tch );
         }
         //
-        if ( ! PathFileExists ( wtch ) ) {
-            continue;
-        }
-        //
         if ( 0 == i || open ) {
             lstrcpy ( fn , wtch );
             if ( open ) {
@@ -854,6 +850,16 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
         }
     }
     HL_Trace ( "found #%d from %d" , i , count );
+    //
+    if ( ! PathFileExists ( fn ) ) {
+        if ( IDYES == MsgBox ( MBYESNO, IDS_ERR_MRUDLG ) ) {
+            MRU_DeleteFileFromStore ( pFileMRU , fn );
+            MRU_Destroy ( pFileMRU );
+            pFileMRU = MRU_Create ( L"Recent Files", MRU_NOCASE, 32 );
+            MRU_Load ( pFileMRU );
+        }
+        return 0;
+    }
     return  i > 0 && lstrcmp ( fn , szCurFile );
 }
 

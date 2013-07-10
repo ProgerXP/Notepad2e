@@ -2189,7 +2189,7 @@ VOID HL_Init ( HWND hWnd )
     SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 6 ) );
     SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x00 , 0x00, 0x90 ) ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x90 , 0x00, 0x00 ) ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
