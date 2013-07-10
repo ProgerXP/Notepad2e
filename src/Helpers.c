@@ -2172,6 +2172,7 @@ VOID RestoreWndFromTray ( HWND hWnd )
 
 VOID HL_Init ( HWND hWnd )
 {
+	//
     g_hwnd = hWnd;
     //
 #ifdef _DEBUG
@@ -2183,12 +2184,12 @@ VOID HL_Init ( HWND hWnd )
     SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_type" , 6 ) );
     SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , RGB (	0x00 , 0x00, 0x00 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_color" , RGB (	0x00 , 0x00, 0x00 ) ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_under" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 6 ) );
     SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , RGB ( 0x90, 0x00, 0x00 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x00 , 0x00, 0x90 ) ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );

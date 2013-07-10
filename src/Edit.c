@@ -4959,11 +4959,13 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 {
     switch ( umsg ) {
         case WM_INITDIALOG: {
-                int iCurLine = ( int ) SendMessage ( hwndEdit, SCI_LINEFROMPOSITION,
-                                                     SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 ), 0 ) + 1;
+                int iPos = SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 );
+                int iCurLine = ( int ) SendMessage ( hwndEdit, SCI_LINEFROMPOSITION, iPos , 0 ) + 1;
                 SetDlgItemInt ( hwnd, IDC_LINENUM, iCurLine, FALSE );
+                SetDlgItemInt ( hwnd, IDC_POSNUM, iPos, FALSE );
                 SendDlgItemMessage ( hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0 );
                 SendDlgItemMessage ( hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0 );
+                SendDlgItemMessage ( hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0 );
                 CenterDlgInParent ( hwnd );
             }
             return TRUE;
@@ -4980,12 +4982,6 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                         GetDlgItemText ( hwnd , IDC_COLNUM ,  wsCol , 0xff );
                         iMaxLine = SendMessage ( hwndEdit , SCI_GETLINECOUNT, 0, 0 );
                         //////////////////////////////////////////////////////////////////////////
-#if 0
-                        if ( !fTranslated || !fTranslated2 ) {
-                            PostMessage ( hwnd, WM_NEXTDLGCTL, ( WPARAM ) ( GetDlgItem ( hwnd, ( !fTranslated ) ? IDC_LINENUM : IDC_COLNUM ) ), 1 );
-                            return TRUE;
-                        }
-#endif
                         if (
                             HL_Get_goto_number ( wsLine , &iNewLine )
                         ) {
@@ -5006,6 +5002,18 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                     break;
                 case IDCANCEL:
                     EndDialog ( hwnd, IDCANCEL );
+                    break;
+                case IDC_LINENUM:
+                    if ( EN_CHANGE == HIWORD ( wParam ) ) {
+                    }
+                    break;
+                case IDC_COLNUM:
+                    if ( EN_CHANGE == HIWORD ( wParam ) ) {
+                    }
+                    break;
+                case IDC_POSNUM:
+                    if ( EN_CHANGE == HIWORD ( wParam ) ) {
+                    }
                     break;
             }
             return TRUE;

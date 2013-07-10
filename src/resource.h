@@ -54,6 +54,8 @@
 #define IDI_STYLES                      102
 #define IDC_ASCIIASUTF8                 102
 #define IDC_WEBPAGE                     102
+#define IDC_COLNUM2                     102
+#define IDC_POSNUM                      102
 #define IDD_DEFENCODING                 103
 #define IDC_FINDWORD                    103
 #define IDC_RESIZEGRIP3                 103
