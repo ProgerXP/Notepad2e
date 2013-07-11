@@ -2172,7 +2172,7 @@ VOID RestoreWndFromTray ( HWND hWnd )
 
 VOID HL_Init ( HWND hWnd )
 {
-	//
+    //
     g_hwnd = hWnd;
     //
 #ifdef _DEBUG
@@ -2189,7 +2189,8 @@ VOID HL_Init ( HWND hWnd )
     SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 6 ) );
     SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 0 ) );
     SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x90 , 0x00, 0x00 ) ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x90 , 0x00,
+                  0x00 ) ) );
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
@@ -2209,7 +2210,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
 {
     int res  = 0;
     int cnt = 0;
-    int lstart , lrange ;
+    int lstart , lrange , len;
     int old;
     struct Sci_TextToFind ttf;
     struct Sci_TextToFind ttf1;
@@ -2219,12 +2220,17 @@ VOID HL_Highlight_word ( LPCSTR  word )
     lstart = ( int ) SendMessage ( hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart , 0 );
     lrange = min ( SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 ) , SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) );
     ttf.chrg.cpMin  = SendMessage ( hwndEdit , SCI_POSITIONFROMLINE , lstart  , 0 );
+    len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
     ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 ) + 1  ;
     old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
+    //SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
+    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_SINGLE , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
+    //SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , ttf.chrg.cpMin , ttf.chrg.cpMax - ttf.chrg.cpMin );
+    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
+    //SendMessage ( hwndEdit , SCI_COLOURISE , ttf.chrg.cpMin , min(ttf.chrg.cpMax , SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 )));
+    // SendMessage ( hwndEdit , SCI_COLOURISE , ttf.chrg.cpMin , -1 );
     HL_Trace ( "highlight started '%s'  (%d - %d line) (%d - %d pos)" , word , lstart , lrange + lstart , ttf.chrg.cpMin , ttf.chrg.cpMax );
     if ( word ) {
         // 2 first words
@@ -2307,9 +2313,13 @@ VOID HL_Trace ( const char *fmt , ... )
 BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
 {
     BOOL ok = 0;
-    int cou = 00;
+    int cou = 0;
+    BOOL is_hex = 0;
+    WCHAR *ec = 0;
+    //
     while ( lstrlen ( temp ) ) {
         if ( isdigit ( temp[0] ) ) {
+#if 0
             while ( cou < lstrlen ( temp ) ) {
                 if ( !isdigit ( temp[cou] ) ) {
                     break;
@@ -2317,10 +2327,28 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
                 cou++;
             }
             temp[cou] = 0;
-            *out = _wtoi ( temp );
+#endif
+            *out = wcstol ( temp , &ec , 10 );
+            if ( StrChr ( L"abcdefABCDEFxh" , *ec ) ) {
+                *out = wcstol ( temp , &ec , 16 );
+				if( 0 == *out){
+					return 0;
+				}
+            }
+            HL_Trace ( "Result is  %d" , *out );
             return 1;
+        } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
+            is_hex = 1;
+        } else if ( L'$' == temp[0] ) {
+            temp++;
+            is_hex = 1;
         } else {
             temp++;
+        }
+        if ( is_hex ) {
+            *out = wcstol ( temp , &ec , 16 );
+            HL_Trace ( "Result is (hex) %d" , *out );
+            return 1;
         }
     }
     return 0;
@@ -2350,22 +2378,20 @@ BOOL CALLBACK HL_Enum_proc (
     WCHAR title[0xff + 1];
     GetWindowText ( hwnd , title , 0xff );
     if ( wcsstr ( title , WC_NOTEPAD2 )
-#if 0
-		&& g_hwnd != hwnd 
-#endif
-		) {
+            && g_hwnd != hwnd
+       ) {
 #ifdef _DEBUG
-            char title[0xff + 1];
-            GetWindowTextA ( hwnd , title , 0xff );
-            HL_Trace ( "found (%s [%d]) " , title , hwnd );
+        char title[0xff + 1];
+        GetWindowTextA ( hwnd , title , 0xff );
+        HL_Trace ( "found (%s [%d]) " , title , hwnd );
 #endif
-		PostMessage(hwnd , HWM_RELOAD_SETTINGS , 0 , 0);
+        PostMessage ( hwnd , HWM_RELOAD_SETTINGS , 0 , 0 );
     }
     return TRUE;
 }
 VOID HL_Reload_Settings()
 {
-    EnumWindows ( HL_Enum_proc , (LPARAM)g_hwnd );
+    EnumWindows ( HL_Enum_proc , ( LPARAM ) g_hwnd );
 }
 
 

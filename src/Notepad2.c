@@ -2106,9 +2106,11 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_ENCODING_UTF8SIGN:
         case IDM_ENCODING_SELECT: {
                 int iNewEncoding = iEncoding;
-                int pos , anch;
+                int pos , anch , fw;
                 pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
                 anch = SendMessage ( hwndEdit , SCI_GETANCHOR , 0 , 0 );
+                fw = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
+                fw = SendMessage ( hwndEdit , SCI_DOCLINEFROMVISIBLE , fw , 0 );
                 if ( LOWORD ( wParam ) == IDM_ENCODING_SELECT && !SelectEncodingDlg ( hwnd, &iNewEncoding ) ) {
                     break;
                 } else {
@@ -2150,6 +2152,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 }
                 SendMessage ( hwndEdit , SCI_SETANCHOR , anch , 0 );
                 SendMessage ( hwndEdit , SCI_SETCURRENTPOS , pos , 0 );
+                SendMessage ( hwndEdit , SCI_SETFIRSTVISIBLELINE , SendMessage ( hwndEdit , SCI_VISIBLEFROMDOCLINE , fw , 0 ) , 0 );
             }
             break;
         case IDM_ENCODING_RECODE: {
@@ -2172,14 +2175,17 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         return ( 0 );
                     }
                     if ( RecodeDlg ( hwnd, &iNewEncoding ) ) {
-                        int pos , anch;
+                        int pos , anch , fw;
                         pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
                         anch = SendMessage ( hwndEdit , SCI_GETANCHOR , 0 , 0 );
+                        fw = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
+                        fw = SendMessage ( hwndEdit , SCI_DOCLINEFROMVISIBLE , fw , 0 );
                         lstrcpy ( tchCurFile2, szCurFile );
                         iSrcEncoding = iNewEncoding;
                         FileLoad ( TRUE, FALSE, TRUE, FALSE, tchCurFile2 );
                         SendMessage ( hwndEdit , SCI_SETANCHOR , anch , 0 );
                         SendMessage ( hwndEdit , SCI_SETCURRENTPOS , pos , 0 );
+                        SendMessage ( hwndEdit , SCI_SETFIRSTVISIBLELINE , SendMessage ( hwndEdit , SCI_VISIBLEFROMDOCLINE , fw , 0 ) , 0 );
                     }
                 }
             }

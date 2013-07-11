@@ -110,6 +110,9 @@ void  EditWrapToColumn(HWND,int);
 void  EditJoinLinesEx(HWND);
 void  EditSortLines(HWND,int);
 
+void  HL_Jump_offset(HWND,int);
+void  HL_Get_offset(HWND,int*);
+
 void  EditJumpTo(HWND,int,int);
 void  EditSelectEx(HWND,int,int);
 void  EditFixPositions(HWND);
