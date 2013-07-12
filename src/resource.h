@@ -78,6 +78,7 @@
 #define IDC_FINDTRANSFORMBS             106
 #define IDC_PREVIEW                     106
 #define IDC_EMAIL2                      106
+#define IDC_TIME                        106
 #define IDD_FAVORITES                   107
 #define IDC_NOWRAP                      107
 #define IDC_STYLEDEFAULT                107

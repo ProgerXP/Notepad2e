@@ -74,6 +74,7 @@ WCHAR wchOEM [8] = L"";
 
 // haccel work
 WCHAR	hl_last_html_tag[0xff] = L"<tag>";
+WCHAR	hl_last_html_end_tag[0xff] = L"</tag>";
 
 
 NP2ENCODING mEncoding[] = {
@@ -5401,10 +5402,8 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
                 SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
-                //
-                lstrcat ( end , hl_last_html_tag + 1 );
-                //
-                SetDlgItemTextW ( hwnd, 101, end );
+                SetDlgItemTextW ( hwnd, 101, hl_last_html_end_tag );
+				//
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );
                 PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
                 CenterDlgInParent ( hwnd );
@@ -5426,11 +5425,11 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                                         *pwCur &&
                                         *pwCur != L'<' &&
                                         *pwCur != L'>' &&
-                                        //   *pwCur != L' ' &&
+                                        *pwCur != L' ' &&
                                         *pwCur != L'\t' &&
-                                        ( StrChr ( L":_-. ", *pwCur ) || IsCharAlphaNumericW ( *pwCur ) ) ) {
+                                        ( StrChr ( L":_-.", *pwCur ) || IsCharAlphaNumericW ( *pwCur ) ) ) {
                                         wchIns[cchIns++] = *pwCur++;
-#if 1
+#if 0
                                         HL_Trace ( "%s strchr(%d) IsCharAlphaNumericW(%d)", pwCur , StrChr ( L":_-.", *pwCur ) , IsCharAlphaNumericW ( *pwCur ) );
 #endif
                                     }
@@ -5473,6 +5472,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                                 && L'<' == pdata->pwsz1[0]
                                 && L'>' == pdata->pwsz1[lstrlen ( pdata->pwsz1 ) - 1] ) {
                             lstrcpy ( hl_last_html_tag , pdata->pwsz1 );
+                            lstrcpy ( hl_last_html_end_tag , pdata->pwsz2 );
                         }
                     }
                     break;

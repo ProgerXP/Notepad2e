@@ -33,6 +33,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "version.h"
+#include "_version.h"
 
 
 extern HWND  hwndMain;
@@ -206,6 +207,9 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 WCHAR wch[256];
                 LOGFONT lf;
                 SetDlgItemText ( hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG );
+                lstrcpy ( wch , L"Build time: " );
+                lstrcat ( wch , H_TIMESTAMP );
+                SetDlgItemText ( hwnd, IDC_TIME, wch );
                 SetDlgItemText ( hwnd, IDC_COPYRIGHT, VERSION_LEGALCOPYRIGHT_SHORT );
                 SetDlgItemText ( hwnd, IDC_AUTHORNAME, VERSION_AUTHORNAME );
                 if ( hFontTitle ) {
@@ -218,20 +222,6 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 lf.lfWeight = FW_BOLD;
                 hFontTitle = CreateFontIndirect ( &lf );
                 SendDlgItemMessage ( hwnd, IDC_VERSION, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
-                if ( GetDlgItem ( hwnd, IDC_WEBPAGE ) == NULL ) {
-                    SetDlgItemText ( hwnd, IDC_WEBPAGE2, VERSION_WEBPAGEDISPLAY );
-                    ShowWindow ( GetDlgItem ( hwnd, IDC_WEBPAGE2 ), SW_SHOWNORMAL );
-                } else {
-                    wsprintf ( wch, L"<A>%s</A>", VERSION_WEBPAGEDISPLAY );
-                    SetDlgItemText ( hwnd, IDC_WEBPAGE, wch );
-                }
-                if ( GetDlgItem ( hwnd, IDC_EMAIL ) == NULL ) {
-                    SetDlgItemText ( hwnd, IDC_EMAIL2, VERSION_EMAILDISPLAY );
-                    ShowWindow ( GetDlgItem ( hwnd, IDC_EMAIL2 ), SW_SHOWNORMAL );
-                } else {
-                    wsprintf ( wch, L"<A>%s</A>", VERSION_EMAILDISPLAY );
-                    SetDlgItemText ( hwnd, IDC_EMAIL, wch );
-                }
                 CenterDlgInParent ( hwnd );
             }
             return TRUE;
