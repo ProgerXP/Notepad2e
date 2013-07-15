@@ -2176,6 +2176,7 @@ VOID HL_Init ( HWND hWnd )
     g_hwnd = hWnd;
     //
 #ifdef _DEBUG
+//#if 1
     HL_log = fopen ( "hl_log.log", "w" ) ;
 #endif
     //
@@ -2304,6 +2305,26 @@ VOID HL_Trace ( const char *fmt , ... )
         va_start ( vl , fmt );
         vfprintf ( HL_log , fmt , vl );
         va_end ( vl );
+        //
+        fprintf ( HL_log , "\n" );
+        fflush ( HL_log );
+    }
+}
+
+VOID HL_WTrace ( const char *fmt , LPCWSTR word )
+{
+    if ( HL_log ) {
+		int size ;
+		char* temp = 0;
+        SYSTEMTIME st;
+        //
+        GetLocalTime ( &st );
+        fprintf ( HL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
+        //
+        temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , NULL , 0 , NULL, NULL ) );
+        WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , temp , size , NULL, NULL );
+        fprintf ( HL_log , fmt , temp , size , NULL , NULL );
+        free ( temp );
         //
         fprintf ( HL_log , "\n" );
         fflush ( HL_log );

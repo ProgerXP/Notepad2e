@@ -823,7 +823,6 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
     int i;
     int count;
     WCHAR tch[MAX_PATH];
-    WCHAR wtch[MAX_PATH];
     WCHAR cd[MAX_PATH];
     BOOL open ;
     open = FALSE;
@@ -831,27 +830,24 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
     GetCurrentDirectory ( COUNTOF ( cd ), cd );
     for ( i = 0; i < count && i < 2 ;  i++ ) {
         MRU_Enum ( pFileMRU, i, tch, COUNTOF ( tch ) );
-        if ( PathIsRelative ( tch ) ) {
-            StrCpyN ( wtch, cd, COUNTOF ( wtch ) );
-            PathAppend ( wtch, tch );
-        } else {
-            lstrcpy ( wtch , tch );
-        }
+        HL_WTrace ( "mru '%s'" , tch );
+        PathAbsoluteFromApp ( tch, NULL, 0, TRUE );
+        HL_WTrace ( "mru full '%s'" , tch );
         //
         if ( 0 == i || open ) {
-            lstrcpy ( fn , wtch );
+            lstrcpy ( fn , tch );
             if ( open ) {
                 break;
             }
         }
         //
-        if ( 0 == lstrcmp ( wtch , szCurFile ) && i < count - 1 ) {
+        if ( 0 == lstrcmp ( tch , szCurFile ) && i < count - 1 ) {
             open = TRUE;
         }
     }
-    HL_Trace ( "found #%d from %d" , i , count );
-    //
+    HL_WTrace ( "check for path '%s'" , fn );
     if ( ! PathFileExists ( fn ) ) {
+        HL_WTrace ( "no path '%s'" , fn );
         if ( IDYES == MsgBox ( MBYESNO, IDS_ERR_MRUDLG ) ) {
             MRU_DeleteFileFromStore ( pFileMRU , fn );
             MRU_Destroy ( pFileMRU );

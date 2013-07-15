@@ -244,6 +244,7 @@ VOID RestoreWndFromTray ( HWND hWnd );
 VOID	HL_Init(HWND hwnd);
 VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
+VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
 VOID	HL_Highlight_turn();
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
