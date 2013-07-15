@@ -207,7 +207,7 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 WCHAR wch[256];
                 LOGFONT lf;
                 SetDlgItemText ( hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG );
-                lstrcpy ( wch , L"Build on " );
+                lstrcpy ( wch , L"Built on " );
                 lstrcat ( wch , H_TIMESTAMP );
                 SetDlgItemText ( hwnd, IDC_TIME, wch );
                 SetDlgItemText ( hwnd, IDC_COPYRIGHT, VERSION_LEGALCOPYRIGHT_SHORT );
@@ -230,6 +230,8 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 lf.lfWeight = FW_BOLD;
                 hFontTitle = CreateFontIndirect ( &lf );
                 SendDlgItemMessage ( hwnd, IDC_VERSION, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
+                SendDlgItemMessage ( hwnd, IDC_EXT, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
+                SendDlgItemMessage ( hwnd, IDC_TIME, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
                 CenterDlgInParent ( hwnd );
             }
             return TRUE;
