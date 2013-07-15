@@ -2310,7 +2310,7 @@ VOID HL_Trace ( const char *fmt , ... )
     }
 }
 
-BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
+BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
 {
     BOOL ok = 0;
     int cou = 0;
@@ -2318,37 +2318,37 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out )
     WCHAR *ec = 0;
     //
     while ( lstrlen ( temp ) ) {
-        if ( isdigit ( temp[0] ) ) {
-#if 0
-            while ( cou < lstrlen ( temp ) ) {
-                if ( !isdigit ( temp[cou] ) ) {
-                    break;
+        if ( hex ) {
+            if ( isdigit ( temp[0] ) ) {
+                *out = wcstol ( temp , &ec , 10 );
+                if ( StrChr ( L"abcdefABCDEFxh" , *ec ) ) {
+                    *out = wcstol ( temp , &ec , 16 );
+                    if ( 0 == *out ) {
+                        return 0;
+                    }
                 }
-                cou++;
+                HL_Trace ( "Result is  %d" , *out );
+                return 1;
+            } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
+                is_hex = 1;
+            } else if ( L'$' == temp[0] ) {
+                temp++;
+                is_hex = 1;
+            } else {
+                temp++;
             }
-            temp[cou] = 0;
-#endif
-            *out = wcstol ( temp , &ec , 10 );
-            if ( StrChr ( L"abcdefABCDEFxh" , *ec ) ) {
+            if ( is_hex ) {
                 *out = wcstol ( temp , &ec , 16 );
-				if( 0 == *out){
-					return 0;
-				}
+                HL_Trace ( "Result is (hex) %d" , *out );
+                return 1;
             }
-            HL_Trace ( "Result is  %d" , *out );
-            return 1;
-        } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
-            is_hex = 1;
-        } else if ( L'$' == temp[0] ) {
-            temp++;
-            is_hex = 1;
         } else {
-            temp++;
-        }
-        if ( is_hex ) {
-            *out = wcstol ( temp , &ec , 16 );
-            HL_Trace ( "Result is (hex) %d" , *out );
-            return 1;
+            if ( isdigit ( temp[0] ) ) {
+                *out = wcstol ( temp , &ec , 10 );
+                return 1;
+            } else {
+                temp++;
+            }
         }
     }
     return 0;
@@ -2361,7 +2361,6 @@ VOID HL_Wheel_scroll_worker ( int lines )
         SendMessage ( hwndEdit , SCI_PAGEUP , 0, 0 );
     }
 }
-
 VOID HL_Set_wheel_scroll ( BOOL on )
 {
     if ( on ) {
@@ -2393,7 +2392,4 @@ VOID HL_Reload_Settings()
 {
     EnumWindows ( HL_Enum_proc , ( LPARAM ) g_hwnd );
 }
-
-
-
 ///   End of Helpers.c   \\\

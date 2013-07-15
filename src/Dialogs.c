@@ -207,11 +207,19 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 WCHAR wch[256];
                 LOGFONT lf;
                 SetDlgItemText ( hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG );
-                lstrcpy ( wch , L"Build time: " );
+                lstrcpy ( wch , L"Build on " );
                 lstrcat ( wch , H_TIMESTAMP );
                 SetDlgItemText ( hwnd, IDC_TIME, wch );
                 SetDlgItemText ( hwnd, IDC_COPYRIGHT, VERSION_LEGALCOPYRIGHT_SHORT );
                 SetDlgItemText ( hwnd, IDC_AUTHORNAME, VERSION_AUTHORNAME );
+                wsprintf ( wch, L"<A>%s</A>", VERSION_WEBPAGEDISPLAY );
+                SetDlgItemText ( hwnd, IDC_WEBPAGE, wch );
+                wsprintf ( wch, L"<A>%s</A>", VERSION_EMAILDISPLAY );
+                SetDlgItemText ( hwnd, IDC_MAIL, wch );
+                SetDlgItemText ( hwnd, IDC_EXT, VERSION_EXT_VERSION );
+                SetDlgItemText ( hwnd, IDC_BY, VERSION_EXT_BY );
+                wsprintf ( wch, L"<A>%s</A>", VERSION_EXT_PAGE );
+                SetDlgItemText ( hwnd, IDC_WEB, wch );
                 if ( hFontTitle ) {
                     DeleteObject ( hFontTitle );
                 }
@@ -232,8 +240,10 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                     case NM_RETURN: {
                             if ( pnmhdr->idFrom == IDC_WEBPAGE ) {
                                 ShellExecute ( hwnd, L"open", L"http://www.flos-freeware.ch", NULL, NULL, SW_SHOWNORMAL );
-                            } else if ( pnmhdr->idFrom == IDC_EMAIL ) {
+                            } else if ( pnmhdr->idFrom == IDC_MAIL ) {
                                 ShellExecute ( hwnd, L"open", L"mailto:florian.balmer@gmail.com", NULL, NULL, SW_SHOWNORMAL );
+                            } else if ( pnmhdr->idFrom == IDC_WEB ) {
+                                ShellExecute ( hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e", NULL, NULL, SW_SHOWNORMAL );
                             }
                         }
                         break;

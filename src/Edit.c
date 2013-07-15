@@ -4019,13 +4019,12 @@ void EditJumpTo ( HWND hwnd, int iNewLine, int iNewCol )
 
 VOID	HL_Adjust_offset ( int *pos , BOOL in )
 {
-    if ( mEncoding[iEncoding].uFlags & NCP_UTF8 ) {
-        if ( in ) {
-            *pos /= 2;
-        } else {
-            *pos *= 2;
-        }
-    }
+#ifdef _DEBUG
+    HL_Trace ( "UTF8 %d" , mEncoding[iEncoding].uFlags & NCP_UTF8 );
+    HL_Trace ( "8Bit %d" , mEncoding[iEncoding].uFlags & NCP_8BIT );
+    HL_Trace ( "UNicode %d" , mEncoding[iEncoding].uFlags & NCP_UNICODE );
+    HL_Trace ( "offset is %d" , *pos );
+#endif
 }
 
 void HL_Jump_offset ( HWND hwnd, int iNewPos )
@@ -4986,8 +4985,8 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                 //int iPos;
                 int iCurLine = ( int ) SendMessage ( hwndEdit, SCI_LINEFROMPOSITION, SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 ) , 0 ) + 1;
                 SetDlgItemInt ( hwnd, IDC_LINENUM, iCurLine, FALSE );
-			//	HL_Get_offset ( hwndEdit, &iPos );
-           //     SetDlgItemInt ( hwnd, IDC_POSNUM, iPos, FALSE );
+                //	HL_Get_offset ( hwndEdit, &iPos );
+                //     SetDlgItemInt ( hwnd, IDC_POSNUM, iPos, FALSE );
                 SendDlgItemMessage ( hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0 );
                 SendDlgItemMessage ( hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0 );
                 SendDlgItemMessage ( hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0 );
@@ -5012,7 +5011,7 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                         iMaxLine = SendMessage ( hwndEdit , SCI_GETLINECOUNT, 0, 0 );
                         iMaxPos = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH, 0, 0 );
                         //////////////////////////////////////////////////////////////////////////
-                        if ( HL_Get_goto_number ( wsPos , &iNewPos ) ) {
+                        if ( HL_Get_goto_number ( wsPos , &iNewPos , TRUE ) ) {
                             if ( iNewPos >= 0 && iNewPos < iMaxPos ) {
                                 HL_Jump_offset ( hwndEdit, iNewPos );
                                 EndDialog ( hwnd, IDOK );
@@ -5021,21 +5020,23 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                                               ( WPARAM ) ( GetDlgItem ( hwnd, IDC_POSNUM ) ), 1 );
                             }
                         } else if (
-                            HL_Get_goto_number ( wsLine , &iNewLine )
+                            HL_Get_goto_number ( wsLine , &iNewLine , FALSE )
                         ) {
-                            if ( !HL_Get_goto_number ( wsCol ,  &iNewCol ) ) {
-                                iNewCol = 1;
-                            }
                             /////
-                            if ( iNewLine > 0 && iNewLine <= iMaxLine && iNewCol > 0 ) {
+                            if ( HL_Get_goto_number ( wsCol ,  &iNewCol , FALSE )
+                                    && iNewLine > 0
+                                    && iNewLine <= iMaxLine
+                                    && iNewCol > 0 ) {
                                 EditJumpTo ( hwndEdit, iNewLine, iNewCol );
                                 EndDialog ( hwnd, IDOK );
                             } else {
                                 PostMessage ( hwnd, WM_NEXTDLGCTL,
-                                              ( WPARAM ) ( GetDlgItem ( hwnd, ( ! ( iNewLine > 0 && iNewLine <= iMaxLine ) ) ? IDC_LINENUM : IDC_COLNUM ) ), 1 );
+                                              ( WPARAM ) ( GetDlgItem ( hwnd, ( ! ( iNewLine > 0 && iNewLine <= iMaxLine ) ) ? IDC_LINENUM : IDC_COLNUM ) )
+                                              , 1 );
                             }
                         } else {
-                            HL_Trace ( "can`t extract GOTO number" );
+                            PostMessage ( hwnd, WM_NEXTDLGCTL,
+                                          ( WPARAM ) ( GetDlgItem ( hwnd, IDC_LINENUM ) ), 1 );
                         }
                     }
                     break;
@@ -5403,7 +5404,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
                 SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
                 SetDlgItemTextW ( hwnd, 101, hl_last_html_end_tag );
-				//
+                //
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );
                 PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
                 CenterDlgInParent ( hwnd );

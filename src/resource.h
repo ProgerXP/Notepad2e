@@ -82,16 +82,21 @@
 #define IDD_FAVORITES                   107
 #define IDC_NOWRAP                      107
 #define IDC_STYLEDEFAULT                107
+#define IDC_EXT                         107
 #define IDD_ADDTOFAV                    108
 #define IDC_PREVSTYLE                   108
 #define IDC_FINDCLOSE                   108
+#define IDC_BY                          108
 #define IDD_FILEMRU                     109
 #define IDC_FINDPREV                    109
 #define IDC_NEXTSTYLE                   109
+#define IDC_WEB                         109
 #define IDD_CHANGENOTIFY                110
 #define IDC_IMPORT                      110
+#define IDC_MAIL                        110
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
+#define IDC_MAIL2                       111
 #define IDC_REPLACE                     112
 #define IDC_TITLE                       112
 #define IDD_ALIGN                       112
@@ -410,7 +415,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
 #define _APS_NEXT_COMMAND_VALUE         8
-#define _APS_NEXT_CONTROL_VALUE         0
+#define _APS_NEXT_CONTROL_VALUE         1
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
 #endif

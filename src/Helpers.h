@@ -245,7 +245,7 @@ VOID	HL_Init(HWND hwnd);
 VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_Highlight_turn();
-BOOL	HL_Get_goto_number ( LPTSTR txt , int *out );
+BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 
