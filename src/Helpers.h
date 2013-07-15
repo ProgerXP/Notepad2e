@@ -250,6 +250,7 @@ BOOL	HL_Is_Empty(LPCWSTR txt );
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
+BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
 
 #define HL_INI_SECTION L"e-settings"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)

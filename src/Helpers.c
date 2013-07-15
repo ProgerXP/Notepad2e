@@ -2440,4 +2440,5 @@ BOOL HL_Is_Empty ( LPCWSTR txt )
     return res;
 }
 
+
 ///   End of Helpers.c   \\\

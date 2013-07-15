@@ -10,6 +10,8 @@
 #define ID_EDIT_UNDO                    5
 #define ID_EDIT_UNDO_REDO               6
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 7
+#define ID_FILE_INVOKESHELLMENU         8
+#define ID_ACCELERATOR9                 9
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -96,7 +98,6 @@
 #define IDC_MAIL                        110
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
-#define IDC_MAIL2                       111
 #define IDC_REPLACE                     112
 #define IDC_TITLE                       112
 #define IDD_ALIGN                       112
@@ -414,7 +415,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         8
+#define _APS_NEXT_COMMAND_VALUE         10
 #define _APS_NEXT_CONTROL_VALUE         1
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

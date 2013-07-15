@@ -1985,6 +1985,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 RunDlg ( hwnd, tchCmdLine );
             }
             break;
+        case ID_FILE_INVOKESHELLMENU: {
+                HL_Explorer_cxt_menu ( szCurFile , hwnd );
+            }
+            break;
         case IDM_FILE_OPENWITH:
             if ( bSaveBeforeRunningTools && !FileSave ( FALSE, TRUE, FALSE, FALSE, FALSE ) ) {
                 break;
@@ -3881,8 +3885,6 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     }
     return ( 0 );
 }
-
-
 //=============================================================================
 //
 //  MsgNotify() - Handles WM_NOTIFY
@@ -4178,8 +4180,6 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     }
     return ( 0 );
 }
-
-
 //=============================================================================
 //
 //  LoadSettings()
@@ -4478,8 +4478,6 @@ void LoadSettings()
     // Scintilla Styles
     Style_Load();
 }
-
-
 //=============================================================================
 //
 //  SaveSettings()
@@ -4606,8 +4604,6 @@ void SaveSettings ( BOOL bSaveSettingsNow )
     // Scintilla Styles
     Style_Save();
 }
-
-
 //=============================================================================
 //
 //  ParseCommandLine()
@@ -4949,8 +4945,6 @@ void ParseCommandLine()
     LocalFree ( lp2 );
     LocalFree ( lp3 );
 }
-
-
 //=============================================================================
 //
 //  LoadFlags()
@@ -5008,8 +5002,6 @@ void LoadFlags()
     }
     LocalFree ( pIniSection );
 }
-
-
 //=============================================================================
 //
 //  FindIniFile()
@@ -5047,7 +5039,6 @@ int CheckIniFile ( LPWSTR lpszFile, LPCWSTR lpszModule )
     }
     return ( 0 );
 }
-
 int CheckIniFileRedirect ( LPWSTR lpszFile, LPCWSTR lpszModule )
 {
     WCHAR tch[MAX_PATH];
@@ -5070,7 +5061,6 @@ int CheckIniFileRedirect ( LPWSTR lpszFile, LPCWSTR lpszModule )
     }
     return ( 0 );
 }
-
 int FindIniFile()
 {
     int bFound = 0;
@@ -5112,8 +5102,6 @@ int FindIniFile()
     }
     return ( 1 );
 }
-
-
 int TestIniFile()
 {
     if ( lstrcmpi ( szIniFile, L"*?" ) == 0 ) {
@@ -5142,14 +5130,10 @@ int TestIniFile()
         return ( 1 );
     }
 }
-
-
 int CreateIniFile()
 {
     return ( CreateIniFileEx ( szIniFile ) );
 }
-
-
 int CreateIniFileEx ( LPCWSTR lpszIniFile )
 {
     if ( *lpszIniFile ) {
@@ -5178,8 +5162,6 @@ int CreateIniFileEx ( LPCWSTR lpszIniFile )
         return ( 0 );
     }
 }
-
-
 //=============================================================================
 //
 //  UpdateToolbar()
@@ -5187,10 +5169,8 @@ int CreateIniFileEx ( LPCWSTR lpszIniFile )
 //
 #define EnableTool(id,b) SendMessage(hwndToolbar,TB_ENABLEBUTTON,id, \
                                      MAKELONG(((b) ? 1 : 0), 0))
-
 #define CheckTool(id,b)  SendMessage(hwndToolbar,TB_CHECKBUTTON,id, \
                                      MAKELONG(b,0))
-
 void UpdateToolbar()
 {
     int i;
@@ -5212,8 +5192,6 @@ void UpdateToolbar()
     EnableTool ( IDT_EDIT_CLEAR, i /*&& !bReadOnly*/ );
     CheckTool ( IDT_VIEW_WORDWRAP, fWordWrap );
 }
-
-
 //=============================================================================
 //
 //  UpdateStatusbar()
@@ -5292,8 +5270,6 @@ void UpdateStatusbar()
     StatusSetText ( hwndStatus, STATUS_LEXER, tchLexerName );
     //InvalidateRect(hwndStatus,NULL,TRUE);
 }
-
-
 //=============================================================================
 //
 //  UpdateLineNumberWidth()
@@ -5316,8 +5292,6 @@ void UpdateLineNumberWidth()
         SendMessage ( hwndEdit, SCI_SETMARGINWIDTHN, 0, 0 );
     }
 }
-
-
 //=============================================================================
 //
 //  FileIO()
@@ -5347,8 +5321,6 @@ BOOL FileIO ( BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
     EndWaitCursor();
     return ( fSuccess );
 }
-
-
 //=============================================================================
 //
 //  FileLoad()
@@ -5509,8 +5481,6 @@ BOOL _FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPC
     }
     return ( fSuccess );
 }
-
-
 //=============================================================================
 //
 //  FileSave()
@@ -5638,8 +5608,6 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
     }
     return ( fSuccess );
 }
-
-
 //=============================================================================
 //
 //  OpenFileDlg()
@@ -5688,8 +5656,6 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
         return FALSE;
     }
 }
-
-
 //=============================================================================
 //
 //  SaveFileDlg()
@@ -5738,8 +5704,6 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
         return FALSE;
     }
 }
-
-
 /******************************************************************************
 *
 * ActivatePrevInst()
@@ -5764,7 +5728,6 @@ BOOL CALLBACK EnumWndProc ( HWND hwnd, LPARAM lParam )
         }
     return ( bContinue );
 }
-
 BOOL CALLBACK EnumWndProc2 ( HWND hwnd, LPARAM lParam )
 {
     BOOL bContinue = TRUE;
@@ -5787,7 +5750,6 @@ BOOL CALLBACK EnumWndProc2 ( HWND hwnd, LPARAM lParam )
         }
     return ( bContinue );
 }
-
 BOOL ActivatePrevInst()
 {
     HWND hwnd = NULL;
@@ -5963,8 +5925,6 @@ BOOL ActivatePrevInst()
         return ( FALSE );
     }
 }
-
-
 //=============================================================================
 //
 //  RelaunchMultiInst()
@@ -6012,8 +5972,6 @@ BOOL RelaunchMultiInst()
         return FALSE;
     }
 }
-
-
 //=============================================================================
 //
 //  RelaunchElevated()
@@ -6051,8 +6009,6 @@ BOOL RelaunchElevated()
         return ( TRUE );
     }
 }
-
-
 //=============================================================================
 //
 //  SnapToDefaultPos()
@@ -6093,8 +6049,6 @@ void SnapToDefaultPos ( HWND hwnd )
     }
     SetWindowPlacement ( hwnd, &wndpl );
 }
-
-
 //=============================================================================
 //
 //  ShowNotifyIcon()
@@ -6121,8 +6075,6 @@ void ShowNotifyIcon ( HWND hwnd, BOOL bAdd )
         Shell_NotifyIcon ( NIM_DELETE, &nid );
     }
 }
-
-
 //=============================================================================
 //
 //  SetNotifyIconTitle()
@@ -6156,8 +6108,6 @@ void SetNotifyIconTitle ( HWND hwnd )
     lstrcat ( nid.szTip, tchTitle );
     Shell_NotifyIcon ( NIM_MODIFY, &nid );
 }
-
-
 //=============================================================================
 //
 //  InstallFileWatching()
@@ -6213,8 +6163,6 @@ void InstallFileWatching ( LPCWSTR lpszFile )
         dwChangeNotifyTime = 0;
     }
 }
-
-
 //=============================================================================
 //
 //  WatchTimerProc()
@@ -6269,8 +6217,6 @@ void CALLBACK WatchTimerProc ( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwT
         }
     }
 }
-
-
 //=============================================================================
 //
 //  PasteBoardTimer()
@@ -6296,7 +6242,4 @@ void CALLBACK PasteBoardTimer ( HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dw
         dwLastCopyTime = 0;
     }
 }
-
-
-
 ///  End of Notepad2.c  \\\

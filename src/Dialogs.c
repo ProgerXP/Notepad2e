@@ -231,7 +231,6 @@ INT_PTR CALLBACK AboutDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 hFontTitle = CreateFontIndirect ( &lf );
                 SendDlgItemMessage ( hwnd, IDC_VERSION, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
                 SendDlgItemMessage ( hwnd, IDC_EXT, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
-                SendDlgItemMessage ( hwnd, IDC_TIME, WM_SETFONT, ( WPARAM ) hFontTitle, TRUE );
                 CenterDlgInParent ( hwnd );
             }
             return TRUE;
