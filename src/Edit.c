@@ -5011,8 +5011,10 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                         iMaxLine = SendMessage ( hwndEdit , SCI_GETLINECOUNT, 0, 0 );
                         iMaxPos = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH, 0, 0 );
                         //////////////////////////////////////////////////////////////////////////
-                        if ( HL_Get_goto_number ( wsPos , &iNewPos , TRUE ) ) {
-                            if ( iNewPos >= 0 && iNewPos < iMaxPos ) {
+                        if ( !HL_Is_Empty ( wsPos ) ) {
+                            if ( HL_Get_goto_number ( wsPos , &iNewPos , TRUE ) &&
+                                    iNewPos >= 0 &&
+                                    iNewPos < iMaxPos ) {
                                 HL_Jump_offset ( hwndEdit, iNewPos );
                                 EndDialog ( hwnd, IDOK );
                             } else {
@@ -5022,16 +5024,24 @@ INT_PTR CALLBACK EditLinenumDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                         } else if (
                             HL_Get_goto_number ( wsLine , &iNewLine , FALSE )
                         ) {
+                            if ( !HL_Is_Empty ( wsCol ) ) {
+                                if ( ! HL_Get_goto_number ( wsCol ,  &iNewCol , FALSE ) || iNewCol <= 0 ) {
+                                    PostMessage ( hwnd, WM_NEXTDLGCTL,
+                                                  ( WPARAM ) ( GetDlgItem ( hwnd, IDC_COLNUM ) ), 1 );
+                                    break;
+                                }
+                            } else {
+                                iNewCol = 1;
+                            }
                             /////
-                            if ( HL_Get_goto_number ( wsCol ,  &iNewCol , FALSE )
-                                    && iNewLine > 0
+                            if ( iNewLine > 0
                                     && iNewLine <= iMaxLine
-                                    && iNewCol > 0 ) {
+                               ) {
                                 EditJumpTo ( hwndEdit, iNewLine, iNewCol );
                                 EndDialog ( hwnd, IDOK );
                             } else {
                                 PostMessage ( hwnd, WM_NEXTDLGCTL,
-                                              ( WPARAM ) ( GetDlgItem ( hwnd, ( ! ( iNewLine > 0 && iNewLine <= iMaxLine ) ) ? IDC_LINENUM : IDC_COLNUM ) )
+                                              ( WPARAM ) ( GetDlgItem ( hwnd, IDC_LINENUM ) )
                                               , 1 );
                             }
                         } else {

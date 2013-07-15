@@ -2176,7 +2176,7 @@ VOID HL_Init ( HWND hWnd )
     g_hwnd = hWnd;
     //
 #ifdef _DEBUG
-//#if 1
+    //#if 1
     HL_log = fopen ( "hl_log.log", "w" ) ;
 #endif
     //
@@ -2317,8 +2317,8 @@ VOID HL_Trace ( const char *fmt , ... )
 VOID HL_WTrace ( const char *fmt , LPCWSTR word )
 {
     if ( HL_log ) {
-		int size ;
-		char* temp = 0;
+        int size ;
+        char *temp = 0;
         SYSTEMTIME st;
         //
         GetLocalTime ( &st );
@@ -2351,20 +2351,27 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                         return 0;
                     }
                 }
-                HL_Trace ( "Result is  %d" , *out );
-                return 1;
+				ok = !isalnum ( *ec ) || 'h' == *ec;
+                HL_Trace ( "Result is  %d" , *out , ok );
+                return ok;
             } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
                 is_hex = 1;
             } else if ( L'$' == temp[0] ) {
                 temp++;
                 is_hex = 1;
+            } else if ( isalnum ( temp[0] ) ) {
+                return 0;
             } else {
                 temp++;
             }
             if ( is_hex ) {
+				if(!isalnum ( temp[0] )){
+					return 0;
+				}
                 *out = wcstol ( temp , &ec , 16 );
-                HL_Trace ( "Result is (hex) %d" , *out );
-                return 1;
+				ok = !isalnum ( *ec ) || 'h' == *ec;
+                HL_Trace ( "Result is (hex) %d (ok %d)" , *out , ok );
+                return ok;
             }
         } else {
             if ( isdigit ( temp[0] ) ) {
@@ -2416,4 +2423,21 @@ VOID HL_Reload_Settings()
 {
     EnumWindows ( HL_Enum_proc , ( LPARAM ) g_hwnd );
 }
+
+BOOL HL_Is_Empty ( LPCWSTR txt )
+{
+    BOOL res = TRUE;
+    LPWSTR t = malloc ( ( lstrlen ( txt ) + 1 ) * sizeof ( WCHAR ) );;
+    lstrcpy ( t, txt );
+    while ( lstrlen ( t ) ) {
+        if ( isspace ( t[0] ) ) {
+            t++;
+        } else {
+            res = FALSE;
+            break;
+        }
+    }
+    return res;
+}
+
 ///   End of Helpers.c   \\\
