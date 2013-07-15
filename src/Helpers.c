@@ -2289,6 +2289,9 @@ VOID HL_Highlight_turn()
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
                       SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
+        SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_SINGLE , 0 );
+        SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
+                      SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
     }
 }
