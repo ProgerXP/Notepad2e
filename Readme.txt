@@ -1,14 +1,17 @@
-
 =======================================================================
 =                                                                     =
 =                                                                     =
-=   Notepad2 - light-weight Scintilla-based text editor for Windows   =
+=  Notepad 2e - light-weight Scintilla-based text editor for Windows  =
 =                                                                     =
 =                                                                     =
-=                                                   Notepad2 4.2.25   =
-=                                      (c) Florian Balmer 2004-2011   =
-=                                       http://www.flos-freeware.ch   =
+=                                                    Notepad2 4.2.25  =
+=                                       (c) Florian Balmer 2004-2011  =
+=                                        http://www.flos-freeware.ch  =
 =                                                                     =
+=  Extended edition (c) 2013                                          =
+=                                                                     =
+=                                            by Proger_XP and haccel  =
+=                              https://github.com/ProgerXP/Notepad2e  =
 =                                                                     =
 =======================================================================
 
@@ -71,5 +74,52 @@ Copyright
 
   (c) Florian Balmer 2004-2011
   http://www.flos-freeware.ch
+  
+  (c) Proger_XP and co.
+  http://proger.me
+  
+  
+Changes of the Extended edition
+
+  Current Word Highlighting - with customizable formatting (rectangle,
+  border, etc.) and colors.
+
+  Go to Last Change (Ctrl+Shift+Z) - moves caret to the position of last
+  Undo action.
+
+  Retain caret position and selection when file is re-coded (File >
+  Encoding items).
+
+  Case-insensitive Find for Cyrillic characters - previously search was
+  always case-sensitive regardless of Match case flag.
+
+  Trimming Go to - now in Line and Column first number substring is
+  extracted and used to navigate. For example, "abc567.89" will navigate
+  to 567.
+
+  Go to Absolute Offset - extension of Goto (Ctrl+G) dialog.
+
+  Replace Settings in All Instances - very useful if you have dozens of
+  Notepad2 windows open and need to change settings in one of them;
+  select this to make all others reload them from disk (not from this
+  instance).
+
+  Open Previous (Alt+G) - lets you toggle between two most recent
+  History
+  files with one keystroke.
+
+  Remember Insert Tag - now Opening and Closing tags are retained until
+  Notepad is closed.
+
+  File Shell Menu (Alt+R) - invokes Explorer's context menu for
+  currently opened file.
+
+  Rename To (Alt+F6) - acts as Save As but deletes original file on
+  success.
+
+  Ctrl+Wheel Scroll - very handy to navigate long scripts. Roll the
+  wheel while holding Ctrl down to scroll through entire pages (similar
+  to Page Up/Down).
+
 
 ###
