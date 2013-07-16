@@ -41,6 +41,9 @@
 #define HL_SEARCH_WORD_SIZE (64*1024)
 #define HL_WHEEL_TIMER_ID	0xfefe
 UINT	_hl_wheel_timer_to = 100;
+/*CSS*/
+UINT	_hl_css_property = css_prop_less;
+//
 FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
 BOOL	_hl_wheel_timer = FALSE;
@@ -2204,6 +2207,8 @@ VOID HL_Init ( HWND hWnd )
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
 	//
 	_hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
+	//
+	_hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
 	//
 #endif
 }

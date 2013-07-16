@@ -27,6 +27,11 @@ extern BOOL	  b_HL_ctrl_wheel_scroll;
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
+typedef enum CSS_PROP{
+	css_prop_sassy = 1 << 0,
+	css_prop_less = 1 << 1,
+	css_prop_hss = 1 << 2,
+};
 
 
 extern WCHAR szIniFile[MAX_PATH];

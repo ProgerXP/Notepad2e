@@ -1671,7 +1671,9 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_VIEW_SHOWEXCERPT, i );
     i = ( int ) SendMessage ( hwndEdit, SCI_GETLEXER, 0, 0 );
     EnableCmd ( hmenu, IDM_EDIT_LINECOMMENT,
-                ! ( i == SCLEX_NULL || i == SCLEX_CSS || i == SCLEX_DIFF ) );
+                ! ( i == SCLEX_NULL 
+				//|| i == SCLEX_CSS
+				|| i == SCLEX_DIFF ) );
     EnableCmd ( hmenu, IDM_EDIT_STREAMCOMMENT,
                 ! ( i == SCLEX_NULL || i == SCLEX_VBSCRIPT || i == SCLEX_MAKEFILE || i == SCLEX_VB || i == SCLEX_ASM ||
                     i == SCLEX_SQL || i == SCLEX_PERL || i == SCLEX_PYTHON || i == SCLEX_PROPERTIES || i == SCLEX_CONF ||
@@ -2661,12 +2663,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_EDIT_LINECOMMENT:
             switch ( SendMessage ( hwndEdit, SCI_GETLEXER, 0, 0 ) ) {
                 case SCLEX_NULL:
-                case SCLEX_CSS:
                 case SCLEX_DIFF:
                     break;
                 case SCLEX_HTML:
                 case SCLEX_XML:
                 case SCLEX_CPP:
+                case SCLEX_CSS:
                 case SCLEX_PASCAL:
                     BeginWaitCursor();
                     EditToggleLineComments ( hwndEdit, L"//", FALSE );

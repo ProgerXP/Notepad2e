@@ -35,6 +35,7 @@
 #include "SciCall.h"
 
 HANDLE g_hScintilla;
+extern UINT	_hl_css_property;
 
 #define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
 
@@ -1347,9 +1348,7 @@ void Style_SetLexer ( HWND hwnd, PEDITLEXER pLexNew )
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.sql.backticks.identifier", ( LPARAM ) "1" );
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.sql.numbersign.comment", ( LPARAM ) "1" );
     } else if ( pLexNew->iLexer == SCLEX_CSS ) {
-        SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.less.language", ( LPARAM ) "1" );
     }
-
     // Add KeyWord Lists
     for ( i = 0; i < 9; i++ ) {
         SendMessage ( hwnd, SCI_SETKEYWORDS, i, ( LPARAM ) pLexNew->pKeyWords->pszKeyWords[i] );
@@ -1675,7 +1674,15 @@ void Style_SetLexer ( HWND hwnd, PEDITLEXER pLexNew )
     } else if ( pLexNew->iLexer == SCLEX_NSIS ) {
         SciCall_SetProperty ( "nsis.ignorecase", "1" );
     } else if ( pLexNew->iLexer == SCLEX_CSS ) {
-        SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.less.language", ( LPARAM ) "1" );
+        if ( _hl_css_property & css_prop_sassy ) {
+            SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.scss.language", ( LPARAM ) "1" );
+        }
+        if ( _hl_css_property & css_prop_less ) {
+            SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.less.language", ( LPARAM ) "1" );
+        }
+        if ( _hl_css_property & css_prop_hss ) {
+            SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.hss.language", ( LPARAM ) "1" );
+        }
     }
     // Code folding
     SciCall_SetProperty ( "fold", "1" );
