@@ -2395,6 +2395,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
 }
 VOID HL_Wheel_scroll_worker ( int lines )
 {
+	int anch , sel = 0;
     //
     if ( _hl_wheel_timer ) {
         HL_Trace ( "wheel timer blocked" );
@@ -2402,12 +2403,28 @@ VOID HL_Wheel_scroll_worker ( int lines )
     }
     _hl_wheel_timer = TRUE;
     SetTimer ( NULL , HL_WHEEL_TIMER_ID , _hl_wheel_timer_to , HL_wheel_timer_proc );
+#if 0
+	//
+	anch = SendMessage( hwndEdit , SCI_GETSELECTIONSTART , 0 , 0 );
+	sel = SendMessage( hwndEdit , SCI_GETSELECTIONEND , 0 , 0 );
     //
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
     } else if ( lines < 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEUP , 0, 0 );
     }
+	//
+	SendMessage( hwndEdit , SCI_SETSELECTIONSTART , anch , 0);
+	SendMessage( hwndEdit , SCI_SETSELECTIONEND , sel , 0);
+#else
+	anch = SendMessage(hwndEdit , SCI_LINESONSCREEN , 0 , 0 );
+    if ( lines > 0 ) {
+        SendMessage ( hwndEdit , SCI_LINESCROLL , 0, anch );
+    } else if ( lines < 0 ) {
+        SendMessage ( hwndEdit , SCI_LINESCROLL , 0, -anch );
+    }
+
+#endif
 }
 VOID HL_Set_wheel_scroll ( BOOL on )
 {
