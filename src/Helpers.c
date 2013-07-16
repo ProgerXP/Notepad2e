@@ -40,7 +40,7 @@
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SEARCH_WORD_SIZE (64*1024)
 #define HL_WHEEL_TIMER_ID	0xfefe
-#define HL_WHEEL_TIMER_TO	200
+UINT	_hl_wheel_timer_to = 100;
 FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
 BOOL	_hl_wheel_timer = FALSE;
@@ -2202,6 +2202,8 @@ VOID HL_Init ( HWND hWnd )
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
+	//
+	_hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
 #endif
 }
 
@@ -2399,7 +2401,7 @@ VOID HL_Wheel_scroll_worker ( int lines )
         return;
     }
     _hl_wheel_timer = TRUE;
-    SetTimer ( NULL , HL_WHEEL_TIMER_ID , HL_WHEEL_TIMER_TO , HL_wheel_timer_proc );
+    SetTimer ( NULL , HL_WHEEL_TIMER_ID , _hl_wheel_timer_to , HL_wheel_timer_proc );
     //
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
