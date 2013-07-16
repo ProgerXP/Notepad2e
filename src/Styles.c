@@ -241,92 +241,39 @@ EDITLEXER lexXML = { SCLEX_XML, 63002, L"XML Document", L"xml; xsl; rss; svg; xu
 
 #if 1
 KEYWORDLIST KeyWords_CSS = {
-	"^-moz- ^-ms- ^-o- ^-webkit-"
-	" animation animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-play-state"
-	" background background-attachment background-color background-image background-position background-repeat background-clip background-origin background-size"
-	" border border-bottom border-bottom-color border-bottom-style border-bottom-width border-color border-left border-left-color border-left-style border-left-width"
-	" border-right border-right-color border-right-style border-right-width border-style border-top border-top-color border-top-style border-top-width border-width"
-	" outline outline-color outline-style outline-width border-bottom-left-radius border-bottom-right-radius"
-	" border-image border-image-outset border-image-repeat border-image-slice border-image-source border-image-width"
-	" border-radius border-top-left-radius border-top-right-radius box-decoration-break box-shadow"
-	" overflow-x overflow-y overflow-style rotation rotation-point overflow-x overflow-y overflow-style"
-	" rotation rotation-point bookmark-label bookmark-level bookmark-target float-offset hyphenate-after hyphenate-before hyphenate-character hyphenate-lines hyphenate-resource"
-	" hyphens image-resolution marks string-set height max-height max-width min-height min-width width"
-	" box-align box-direction box-flex box-flex-group box-lines box-ordinal-group box-orient box-pack font font-family font-size font-style"
-	" font-variant font-weight font-size-adjust font-stretch content counter-increment counter-reset quotes crop move-to page-policy grid-columns grid-rows"
-	" target target-name target-new target-position alignment-adjust alignment-baseline baseline-shift dominant-baseline drop-initial-after-adjust"
-	" drop-initial-after-align drop-initial-before-adjust drop-initial-before-align drop-initial-size drop-initial-value inline-box-align line-stacking line-stacking-ruby"
-	" line-stacking-shift line-stacking-strategy text-height list-style list-style-image list-style-position list-style-type"
-	" margin margin-bottom margin-left margin-right margin-top marquee-direction marquee-play-count marquee-speed marquee-style"
-	" column-count column-fill column-gap column-rule column-rule-color column-rule-style column-rule-width column-span column-width"
-	" columns padding padding-bottom padding-left padding-right padding-top fit fit-position image-orientation"
-	" page size bottom clear clip cursor display float left overflow position right top visibility"
-	" z-index orphans page-break-after page-break-before page-break-inside widows ruby-align ruby-overhang ruby-position ruby-span mark mark-after mark-before"
-	" phonemes rest rest-after rest-before voice-balance voice-duration voice-pitch voice-pitch-range voice-rate voice-stress voice-volume border-collapse border-spacing caption-side"
-	" empty-cells table-layout color direction letter-spacing line-height text-align text-decoration text-indent text-transform unicode-bidi vertical-align white-space"
-	" word-spacing hanging-punctuation punctuation-trim text-align-last text-justify text-outline text-overflow text-shadow text-wrap"
-	" word-break word-wrap transform transform-origin transform-style perspective perspective-origin backface-visibility"
-	" transition transition-property transition-duration transition-timing-function transition-delay appearance box-sizing icon"
-	" nav-down nav-index nav-left nav-right nav-up outline-offset resize",
-    "active after before checked default disabled empty enabled first first-child first-letter "
-    "first-line first-of-type focus hover indeterminate invalid lang last-child last-of-type left "
-    "link not nth-child nth-last-child nth-last-of-type nth-of-type only-child only-of-type optional "
-    "required right root target valid visited",
-    "", "", "", "", "", "", ""
-};
-#else
-
-KEYWORDLIST KeyWords_CSS = {
-    "^-moz- ^-ms- ^-o- ^-webkit- alignment-adjust alignment-baseline animation animation-delay "
-    "animation-direction animation-duration animation-iteration-count animation-name "
-    "animation-play-state animation-timing-function appearance ascent azimuth backface-visibility "
-    "background background-attachment background-break background-clip background-color "
-    "background-image background-origin background-position background-repeat background-size "
-    "baseline baseline-shift bbox binding bleed bookmark-label bookmark-level bookmark-state "
-    "bookmark-target border border-bottom border-bottom-color border-bottom-left-radius "
-    "border-bottom-right-radius border-bottom-style border-bottom-width border-collapse border-color "
-    "border-image border-image-outset border-image-repeat border-image-slice border-image-source "
-    "border-image-width border-left border-left-color border-left-style border-left-width "
-    "border-length border-radius border-right border-right-color border-right-style "
-    "border-right-width border-spacing border-style border-top border-top-color "
-    "border-top-left-radius border-top-right-radius border-top-style border-top-width border-width "
-    "bottom box-align box-decoration-break box-direction box-flex box-flex-group box-lines "
-    "box-ordinal-group box-orient box-pack box-shadow box-sizing break-after break-before "
-    "break-inside cap-height caption-side centerline change-bar change-bar-class change-bar-offset "
-    "change-bar-side clear clip color color-profile column-count column-fill column-gap column-rule "
-    "column-rule-color column-rule-style column-rule-width columns column-span column-width content "
-    "counter-increment counter-reset crop cue cue-after cue-before cursor definition-src descent "
-    "direction display dominant-baseline drop-initial-after-adjust drop-initial-after-align "
-    "drop-initial-before-adjust drop-initial-before-align drop-initial-size drop-initial-value "
-    "elevation empty-cells fit fit-position float float-offset font font-family font-size "
-    "font-size-adjust font-stretch font-style font-variant font-weight grid-columns grid-rows "
-    "hanging-punctuation height hyphenate-after hyphenate-before hyphenate-character hyphenate-lines "
-    "hyphenate-resource hyphens icon image-orientation image-resolution inline-box-align "
-    "insert-position left letter-spacing line-height line-stacking line-stacking-ruby "
-    "line-stacking-shift line-stacking-strategy list-style list-style-image list-style-position "
-    "list-style-type make-element margin margin-bottom margin-left margin-right margin-top mark "
-    "mark-after mark-before marker-offset marks marquee-direction marquee-play-count marquee-speed "
-    "marquee-style mathline max-height max-width min-height min-width move-to nav-down nav-index "
-    "nav-left nav-right nav-up opacity orphans outline outline-color outline-offset outline-style "
-    "outline-width overflow overflow-style overflow-x overflow-y padding padding-bottom padding-left "
-    "padding-right padding-top page page-break-after page-break-before page-break-inside page-policy "
-    "panose-1 pause pause-after pause-before perspective perspective-origin phonemes pitch "
-    "pitch-range play-during position presentation-level prototype prototype-insert-policy "
-    "prototype-insert-position punctuation-trim quotes rendering-intent resize rest rest-after "
-    "rest-before richness right rotation rotation-point ruby-align ruby-overhang ruby-position "
-    "ruby-span size slope speak speak-header speak-numeral speak-punctuation speech-rate src stemh "
-    "stemv stress string-set table-layout target target-name target-new target-position text-align "
-    "text-align-last text-decoration text-emphasis text-height text-indent text-justify text-outline "
-    "text-replace text-shadow text-transform text-wrap top topline transform transform-origin "
-    "transform-style transition transition-delay transition-duration transition-property "
-    "transition-timing-function unicode-bidi unicode-range units-per-em vertical-align visibility "
-    "voice-balance voice-duration voice-family voice-pitch voice-pitch-range voice-rate voice-stress "
-    "voice-volume volume white-space white-space-collapse widows width widths word-break word-spacing "
-    "word-wrap x-height z-index",
-    "active after before checked default disabled empty enabled first first-child first-letter "
-    "first-line first-of-type focus hover indeterminate invalid lang last-child last-of-type left "
-    "link not nth-child nth-last-child nth-last-of-type nth-of-type only-child only-of-type optional "
-    "required right root target valid visited",
+    "^-moz- ^-ms- ^-o- ^-webkit-"
+    " animation animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-play-state"
+    " background background-attachment background-color background-image background-position background-repeat background-clip background-origin background-size"
+    " border border-bottom border-bottom-color border-bottom-style border-bottom-width border-color border-left border-left-color border-left-style border-left-width"
+    " border-right border-right-color border-right-style border-right-width border-style border-top border-top-color border-top-style border-top-width border-width"
+    " outline outline-color outline-style outline-width border-bottom-left-radius border-bottom-right-radius"
+    " border-image border-image-outset border-image-repeat border-image-slice border-image-source border-image-width"
+    " border-radius border-top-left-radius border-top-right-radius box-decoration-break box-shadow"
+    " overflow-x overflow-y overflow-style rotation rotation-point overflow-x overflow-y overflow-style"
+    " rotation rotation-point bookmark-label bookmark-level bookmark-target float-offset hyphenate-after hyphenate-before hyphenate-character hyphenate-lines hyphenate-resource"
+    " hyphens image-resolution marks string-set height max-height max-width min-height min-width width"
+    " box-align box-direction box-flex box-flex-group box-lines box-ordinal-group box-orient box-pack font font-family font-size font-style"
+    " font-variant font-weight font-size-adjust font-stretch content counter-increment counter-reset quotes crop move-to page-policy grid-columns grid-rows"
+    " target target-name target-new target-position alignment-adjust alignment-baseline baseline-shift dominant-baseline drop-initial-after-adjust"
+    " drop-initial-after-align drop-initial-before-adjust drop-initial-before-align drop-initial-size drop-initial-value inline-box-align line-stacking line-stacking-ruby"
+    " line-stacking-shift line-stacking-strategy text-height list-style list-style-image list-style-position list-style-type"
+    " margin margin-bottom margin-left margin-right margin-top marquee-direction marquee-play-count marquee-speed marquee-style"
+    " column-count column-fill column-gap column-rule column-rule-color column-rule-style column-rule-width column-span column-width"
+    " columns padding padding-bottom padding-left padding-right padding-top fit fit-position image-orientation"
+    " page size bottom clear clip cursor display float left overflow position right top visibility"
+    " z-index orphans page-break-after page-break-before page-break-inside widows ruby-align ruby-overhang ruby-position ruby-span mark mark-after mark-before"
+    " phonemes rest rest-after rest-before voice-balance voice-duration voice-pitch voice-pitch-range voice-rate voice-stress voice-volume border-collapse border-spacing caption-side"
+    " empty-cells table-layout color direction letter-spacing line-height text-align text-decoration text-indent text-transform unicode-bidi vertical-align white-space"
+    " word-spacing hanging-punctuation punctuation-trim text-align-last text-justify text-outline text-overflow text-shadow text-wrap"
+    " word-break word-wrap transform transform-origin transform-style perspective perspective-origin backface-visibility"
+    " transition transition-property transition-duration transition-timing-function transition-delay appearance box-sizing icon"
+    " nav-down nav-index nav-left nav-right nav-up outline-offset resize color-profile opacity rendering-intent"
+    ,
+    "active after before checked default disabled empty enabled first first-child first-letter"
+    " first-line first-of-type focus hover indeterminate invalid lang last-child last-of-type left"
+    " link not nth-child nth-last-child nth-last-of-type nth-of-type only-child only-of-type optional"
+    " required right root target valid visited"
+    ,
     "", "", "", "", "", "", ""
 };
 #endif
@@ -1399,7 +1346,10 @@ void Style_SetLexer ( HWND hwnd, PEDITLEXER pLexNew )
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "sql.backslash.escapes", ( LPARAM ) "1" );
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.sql.backticks.identifier", ( LPARAM ) "1" );
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.sql.numbersign.comment", ( LPARAM ) "1" );
+    } else if ( pLexNew->iLexer == SCLEX_CSS ) {
+        SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.less.language", ( LPARAM ) "1" );
     }
+
     // Add KeyWord Lists
     for ( i = 0; i < 9; i++ ) {
         SendMessage ( hwnd, SCI_SETKEYWORDS, i, ( LPARAM ) pLexNew->pKeyWords->pszKeyWords[i] );
@@ -1724,6 +1674,8 @@ void Style_SetLexer ( HWND hwnd, PEDITLEXER pLexNew )
         SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.sql.numbersign.comment", ( LPARAM ) "1" );
     } else if ( pLexNew->iLexer == SCLEX_NSIS ) {
         SciCall_SetProperty ( "nsis.ignorecase", "1" );
+    } else if ( pLexNew->iLexer == SCLEX_CSS ) {
+        SendMessage ( hwnd, SCI_SETPROPERTY, ( WPARAM ) "lexer.css.less.language", ( LPARAM ) "1" );
     }
     // Code folding
     SciCall_SetProperty ( "fold", "1" );

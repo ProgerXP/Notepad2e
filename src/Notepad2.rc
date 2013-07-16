@@ -529,16 +529,16 @@ CAPTION "Notepad 2e"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,168,105,50,14
-    ICON            IDR_MAINWND,IDC_STATIC,7,7,21,20
+    ICON            IDR_MAINWND,IDC_STATIC,7,7,20,20
     LTEXT           "",IDC_VERSION,42,7,174,8
-    LTEXT           "",IDC_COPYRIGHT,42,19,174,8
-    LTEXT           "",IDC_AUTHORNAME,42,43,174,8
-    LTEXT           "",IDC_EXT,42,67,174,8
-    LTEXT           "",IDC_BY,42,78,174,8
-    LTEXT           "Static",IDC_TIME,42,107,126,8
-    CONTROL         "<a>SysLink1</a>",IDC_WEB,"SysLink",WS_TABSTOP,42,91,174,8
-    CONTROL         "<a>SysLink1</a>",IDC_MAIL,"SysLink",WS_TABSTOP,42,54,174,8
-    CONTROL         "<a>SysLink1</a>",IDC_WEBPAGE,"SysLink",WS_TABSTOP,42,30,174,8
+    LTEXT           "qqqqqqqqqqqqqqqqqq",IDC_COPYRIGHT,42,19,174,8
+    LTEXT           "qqqqqqqqqqqqqqqqqq",IDC_AUTHORNAME,42,43,174,8
+    LTEXT           "qqqqqqqqqqqqqqqqq",IDC_EXT,42,67,174,8
+    LTEXT           "qqqqqqqqqqqqqqqqqqq",IDC_BY,42,78,174,8
+    LTEXT           "compile time",IDC_TIME,42,107,126,8
+    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_WEB,"SysLink",WS_TABSTOP,42,91,174,8
+    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_MAIL,"SysLink",WS_TABSTOP,42,54,174,8
+    CONTROL         "qqqqqqqqqqqqqqqq",IDC_WEBPAGE,"SysLink",WS_TABSTOP,42,30,174,8
 END
 
 IDD_FIND DIALOGEX 0, 0, 272, 101
