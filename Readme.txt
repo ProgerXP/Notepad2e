@@ -97,7 +97,8 @@ Changes of the Extended edition
   extracted and used to navigate. For example, "abc567.89" will navigate
   to 567.
 
-  Go to Absolute Offset - extension of Goto (Ctrl+G) dialog.
+  Go to Absolute Offset - extension of Goto (Ctrl+G) dialog. Respects
+  different charsets.
 
   Replace Settings in All Instances - very useful if you have dozens of
   Notepad2 windows open and need to change settings in one of them;
@@ -105,8 +106,7 @@ Changes of the Extended edition
   instance).
 
   Open Previous (Alt+G) - lets you toggle between two most recent
-  History
-  files with one keystroke.
+  History files with one keystroke.
 
   Remember Insert Tag - now Opening and Closing tags are retained until
   Notepad is closed.
