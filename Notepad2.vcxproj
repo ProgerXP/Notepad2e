@@ -170,7 +170,6 @@
     <ClCompile Include="scintilla\lexers\LexSorcus.cxx" />
     <ClCompile Include="scintilla\lexers\LexSpecman.cxx" />
     <ClCompile Include="scintilla\lexers\LexSpice.cxx" />
-    <ClCompile Include="scintilla\lexers\LexSTTXT.cxx" />
     <ClCompile Include="scintilla\lexers\LexTACL.cxx" />
     <ClCompile Include="scintilla\lexers\LexTADS3.cxx" />
     <ClCompile Include="scintilla\lexers\LexTAL.cxx" />
