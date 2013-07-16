@@ -1986,7 +1986,13 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
         case ID_FILE_INVOKESHELLMENU: {
-                HL_Explorer_cxt_menu ( szCurFile , hwnd );
+                HL_Trace ( "Modified %d" , bModified );
+                if ( !bModified &&
+                        lstrlen ( szCurFile ) > 0 &&
+                        PathFileExists ( szCurFile )
+                   ) {
+                    HL_Explorer_cxt_menu ( szCurFile , hwnd );
+                }
             }
             break;
         case IDM_FILE_OPENWITH:
