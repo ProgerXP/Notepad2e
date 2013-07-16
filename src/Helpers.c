@@ -39,9 +39,16 @@
 #define HL_SELECT_INDICATOR_SINGLE 10
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SEARCH_WORD_SIZE (64*1024)
-FILE	*HL_log = 0;
+#define HL_WHEEL_TIMER_ID	0xfefe
+#define HL_WHEEL_TIMER_TO	200
+FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
-
+BOOL	_hl_wheel_timer = FALSE;
+VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
+{
+    _hl_wheel_timer = FALSE;
+    KillTimer (NULL , idEvent );
+}
 //=============================================================================
 //
 //  Manipulation of (cached) ini file sections
@@ -2177,7 +2184,7 @@ VOID HL_Init ( HWND hWnd )
     //
 #ifdef _DEBUG
     //#if 1
-    HL_log = fopen ( "hl_log.log", "w" ) ;
+    _hL_log = fopen ( "hl_log.log", "w" ) ;
 #endif
     //
 #if 1
@@ -2200,10 +2207,10 @@ VOID HL_Init ( HWND hWnd )
 
 VOID HL_Release()
 {
-    if ( HL_log ) {
-        fclose ( HL_log );
+    if ( _hL_log ) {
+        fclose ( _hL_log );
     }
-    HL_log = 0;
+    _hL_log = 0;
     g_hwnd = 0;
 }
 
@@ -2298,39 +2305,39 @@ VOID HL_Highlight_turn()
 
 VOID HL_Trace ( const char *fmt , ... )
 {
-    if ( HL_log ) {
+    if ( _hL_log ) {
         va_list vl;
         SYSTEMTIME st;
         //
         GetLocalTime ( &st );
-        fprintf ( HL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
+        fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
         va_start ( vl , fmt );
-        vfprintf ( HL_log , fmt , vl );
+        vfprintf ( _hL_log , fmt , vl );
         va_end ( vl );
         //
-        fprintf ( HL_log , "\n" );
-        fflush ( HL_log );
+        fprintf ( _hL_log , "\n" );
+        fflush ( _hL_log );
     }
 }
 
 VOID HL_WTrace ( const char *fmt , LPCWSTR word )
 {
-    if ( HL_log ) {
+    if ( _hL_log ) {
         int size ;
         char *temp = 0;
         SYSTEMTIME st;
         //
         GetLocalTime ( &st );
-        fprintf ( HL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
+        fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
         temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , NULL , 0 , NULL, NULL ) );
         WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , temp , size , NULL, NULL );
-        fprintf ( HL_log , fmt , temp , size , NULL , NULL );
+        fprintf ( _hL_log , fmt , temp , size , NULL , NULL );
         free ( temp );
         //
-        fprintf ( HL_log , "\n" );
-        fflush ( HL_log );
+        fprintf ( _hL_log , "\n" );
+        fflush ( _hL_log );
     }
 }
 
@@ -2351,7 +2358,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                         return 0;
                     }
                 }
-				ok = !isalnum ( *ec ) || 'h' == *ec;
+                ok = !isalnum ( *ec ) || 'h' == *ec;
                 HL_Trace ( "Result is  %d" , *out , ok );
                 return ok;
             } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
@@ -2365,11 +2372,11 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                 temp++;
             }
             if ( is_hex ) {
-				if(!isalnum ( temp[0] )){
-					return 0;
-				}
+                if ( !isalnum ( temp[0] ) ) {
+                    return 0;
+                }
                 *out = wcstol ( temp , &ec , 16 );
-				ok = !isalnum ( *ec ) || 'h' == *ec;
+                ok = !isalnum ( *ec ) || 'h' == *ec;
                 HL_Trace ( "Result is (hex) %d (ok %d)" , *out , ok );
                 return ok;
             }
@@ -2386,6 +2393,14 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
 }
 VOID HL_Wheel_scroll_worker ( int lines )
 {
+    //
+    if ( _hl_wheel_timer ) {
+        HL_Trace ( "wheel timer blocked" );
+        return;
+    }
+    _hl_wheel_timer = TRUE;
+    SetTimer ( NULL , HL_WHEEL_TIMER_ID , HL_WHEEL_TIMER_TO , HL_wheel_timer_proc );
+    //
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
     } else if ( lines < 0 ) {
