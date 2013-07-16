@@ -120,6 +120,10 @@ Changes of the Extended edition
   Ctrl+Wheel Scroll - very handy to navigate long scripts. Roll the
   wheel while holding Ctrl down to scroll through entire pages (similar
   to Page Up/Down).
+  
+  CSS syntax scheme improvements:
+
+    - Added CSS 3 properties.
 
 
 ###
