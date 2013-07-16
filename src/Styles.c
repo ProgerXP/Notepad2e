@@ -32,7 +32,9 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "SciCall.h"
 
+HANDLE g_hScintilla;
 
 #define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
 
@@ -237,6 +239,42 @@ EDITLEXER lexXML = { SCLEX_XML, 63002, L"XML Document", L"xml; xsl; rss; svg; xu
     }
 };
 
+#if 1
+KEYWORDLIST KeyWords_CSS = {
+	"^-moz- ^-ms- ^-o- ^-webkit-"
+	" animation animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-play-state"
+	" background background-attachment background-color background-image background-position background-repeat background-clip background-origin background-size"
+	" border border-bottom border-bottom-color border-bottom-style border-bottom-width border-color border-left border-left-color border-left-style border-left-width"
+	" border-right border-right-color border-right-style border-right-width border-style border-top border-top-color border-top-style border-top-width border-width"
+	" outline outline-color outline-style outline-width border-bottom-left-radius border-bottom-right-radius"
+	" border-image border-image-outset border-image-repeat border-image-slice border-image-source border-image-width"
+	" border-radius border-top-left-radius border-top-right-radius box-decoration-break box-shadow"
+	" overflow-x overflow-y overflow-style rotation rotation-point overflow-x overflow-y overflow-style"
+	" rotation rotation-point bookmark-label bookmark-level bookmark-target float-offset hyphenate-after hyphenate-before hyphenate-character hyphenate-lines hyphenate-resource"
+	" hyphens image-resolution marks string-set height max-height max-width min-height min-width width"
+	" box-align box-direction box-flex box-flex-group box-lines box-ordinal-group box-orient box-pack font font-family font-size font-style"
+	" font-variant font-weight font-size-adjust font-stretch content counter-increment counter-reset quotes crop move-to page-policy grid-columns grid-rows"
+	" target target-name target-new target-position alignment-adjust alignment-baseline baseline-shift dominant-baseline drop-initial-after-adjust"
+	" drop-initial-after-align drop-initial-before-adjust drop-initial-before-align drop-initial-size drop-initial-value inline-box-align line-stacking line-stacking-ruby"
+	" line-stacking-shift line-stacking-strategy text-height list-style list-style-image list-style-position list-style-type"
+	" margin margin-bottom margin-left margin-right margin-top marquee-direction marquee-play-count marquee-speed marquee-style"
+	" column-count column-fill column-gap column-rule column-rule-color column-rule-style column-rule-width column-span column-width"
+	" columns padding padding-bottom padding-left padding-right padding-top fit fit-position image-orientation"
+	" page size bottom clear clip cursor display float left overflow position right top visibility"
+	" z-index orphans page-break-after page-break-before page-break-inside widows ruby-align ruby-overhang ruby-position ruby-span mark mark-after mark-before"
+	" phonemes rest rest-after rest-before voice-balance voice-duration voice-pitch voice-pitch-range voice-rate voice-stress voice-volume border-collapse border-spacing caption-side"
+	" empty-cells table-layout color direction letter-spacing line-height text-align text-decoration text-indent text-transform unicode-bidi vertical-align white-space"
+	" word-spacing hanging-punctuation punctuation-trim text-align-last text-justify text-outline text-overflow text-shadow text-wrap"
+	" word-break word-wrap transform transform-origin transform-style perspective perspective-origin backface-visibility"
+	" transition transition-property transition-duration transition-timing-function transition-delay appearance box-sizing icon"
+	" nav-down nav-index nav-left nav-right nav-up outline-offset resize",
+    "active after before checked default disabled empty enabled first first-child first-letter "
+    "first-line first-of-type focus hover indeterminate invalid lang last-child last-of-type left "
+    "link not nth-child nth-last-child nth-last-of-type nth-of-type only-child only-of-type optional "
+    "required right root target valid visited",
+    "", "", "", "", "", "", ""
+};
+#else
 
 KEYWORDLIST KeyWords_CSS = {
     "^-moz- ^-ms- ^-o- ^-webkit- alignment-adjust alignment-baseline animation animation-delay "
@@ -291,7 +329,7 @@ KEYWORDLIST KeyWords_CSS = {
     "required right root target valid visited",
     "", "", "", "", "", "", ""
 };
-
+#endif
 
 EDITLEXER lexCSS = { SCLEX_CSS, 63003, L"CSS Style Sheets", L"css", L"", &KeyWords_CSS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -1041,11 +1079,11 @@ KEYWORDLIST KeyWords_RUBY = {
     "", "", "", "", "", "", "", ""
 };
 
-EDITLEXER lexRUBY = { SCLEX_RUBY, 63304, L"Ruby Script", L"rb; ruby; rbw; rake; rjs; Rakefile", L"", &KeyWords_RUBY, {
+EDITLEXER lexRUBY = { SCLEX_RUBY, 63022, L"Ruby Script", L"rb; ruby; rbw; rake; rjs; Rakefile", L"", &KeyWords_RUBY, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE ( SCE_RB_COMMENTLINE, SCE_P_COMMENTBLOCK, 0, 0 ), 63127, L"Comment", L"fore:#008000", L"" },
-        { SCE_RB_WORD, 63128, L"Keyword", L"fore:#00007F", L"" },
+        { SCE_RB_WORD, 63128, L"Keyword", L"bold; fore:#00007F", L"" },
         { SCE_RB_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { SCE_RB_NUMBER, 63130, L"Number", L"fore:#008080", L"" },
         { SCE_RB_OPERATOR, 63132, L"Operator", L"", L"" },
@@ -1332,7 +1370,7 @@ BOOL Style_Export ( HWND hwnd )
 //
 void Style_SetLexer ( HWND hwnd, PEDITLEXER pLexNew )
 {
-#if 1
+#if 0
     int i;
     //WCHAR *p;
     int rgb;

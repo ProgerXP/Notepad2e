@@ -2204,6 +2204,7 @@ VOID HL_Init ( HWND hWnd )
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
 	//
 	_hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
+	//
 #endif
 }
 
@@ -2343,6 +2344,16 @@ VOID HL_WTrace ( const char *fmt , LPCWSTR word )
     }
 }
 
+BOOL HL_Test_offset_tail( WCHAR* wch ){
+	while( *wch ){
+		if(isalnum(*wch) && 'h' != *wch){
+			return FALSE;
+		}
+		wch++;
+	}
+	return TRUE;
+}
+
 BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
 {
     BOOL ok = 0;
@@ -2360,8 +2371,8 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                         return 0;
                     }
                 }
-                ok = !isalnum ( *ec ) || 'h' == *ec;
-                HL_Trace ( "Result is  %d" , *out , ok );
+                ok = HL_Test_offset_tail( ec );
+                HL_Trace ( "Result is  %d (%d)" , *out , ok );
                 return ok;
             } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
                 is_hex = 1;
@@ -2378,7 +2389,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                     return 0;
                 }
                 *out = wcstol ( temp , &ec , 16 );
-                ok = !isalnum ( *ec ) || 'h' == *ec;
+                ok = HL_Test_offset_tail( ec );
                 HL_Trace ( "Result is (hex) %d (ok %d)" , *out , ok );
                 return ok;
             }

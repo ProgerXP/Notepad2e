@@ -35,6 +35,7 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "SciCall.h"
 
 
 VOID HL_Msg_create();
@@ -565,6 +566,7 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
     if ( bTransparentMode ) {
         SetWindowTransparentMode ( hwndMain, TRUE );
     }
+	InitScintillaHandle(hwndEdit);
     // Current file information -- moved in front of ShowWindow()
     FileLoad ( TRUE, TRUE, FALSE, FALSE, L"" );
     if ( !flagStartAsTrayIcon ) {
