@@ -124,6 +124,12 @@ Changes of the Extended edition
   CSS syntax scheme improvements:
 
     - Added CSS 3 properties.
+    
+    - Enabled //-inline comments (Ctrl+Q) that are used in LESS, SASS
+      and other preprocessors.
+      
+    - Fixed brackets of nested rules that were not matching in some 
+      cases (visually and with Ctrl+B).
 
 
 ###
