@@ -11,7 +11,6 @@
 #define ID_EDIT_UNDO_REDO               6
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 7
 #define ID_FILE_INVOKESHELLMENU         8
-#define ID_ACCELERATOR9                 9
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
