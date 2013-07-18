@@ -2185,8 +2185,8 @@ VOID HL_Init ( HWND hWnd )
     //
     g_hwnd = hWnd;
     //
-#ifdef _DEBUG
-    //#if 1
+//#ifdef _DEBUG
+#if 1
     _hL_log = fopen ( "hl_log.log", "w" ) ;
 #endif
     //
