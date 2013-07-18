@@ -50,7 +50,7 @@ BOOL	_hl_wheel_timer = FALSE;
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
 {
     _hl_wheel_timer = FALSE;
-    KillTimer (NULL , idEvent );
+    KillTimer ( NULL , idEvent );
 }
 //=============================================================================
 //
@@ -2185,10 +2185,10 @@ VOID HL_Init ( HWND hWnd )
     //
     g_hwnd = hWnd;
     //
-//#ifdef _DEBUG
-#if 1
-    _hL_log = fopen ( "hl_log.log", "w" ) ;
-#endif
+    //#ifdef _DEBUG
+    if ( IniGetInt ( HL_INI_SECTION , L"debug_log" , 0 ) ) {
+        _hL_log = fopen ( "hl_log.log", "w" ) ;
+    }
     //
 #if 1
     assert ( hwndEdit );
@@ -2205,11 +2205,11 @@ VOID HL_Init ( HWND hWnd )
     SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
-	//
-	_hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
-	//
-	_hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
-	//
+    //
+    _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
+    //
+    _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
+    //
 #endif
 }
 
@@ -2349,14 +2349,15 @@ VOID HL_WTrace ( const char *fmt , LPCWSTR word )
     }
 }
 
-BOOL HL_Test_offset_tail( WCHAR* wch ){
-	while( *wch ){
-		if(isalnum(*wch) && 'h' != *wch){
-			return FALSE;
-		}
-		wch++;
-	}
-	return TRUE;
+BOOL HL_Test_offset_tail ( WCHAR *wch )
+{
+    while ( *wch ) {
+        if ( isalnum ( *wch ) && 'h' != *wch ) {
+            return FALSE;
+        }
+        wch++;
+    }
+    return TRUE;
 }
 
 BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
@@ -2376,7 +2377,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                         return 0;
                     }
                 }
-                ok = HL_Test_offset_tail( ec );
+                ok = HL_Test_offset_tail ( ec );
                 HL_Trace ( "Result is  %d (%d)" , *out , ok );
                 return ok;
             } else if ( StrChr ( L"abcdefABCDEF" , temp[0] ) ) {
@@ -2394,7 +2395,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
                     return 0;
                 }
                 *out = wcstol ( temp , &ec , 16 );
-                ok = HL_Test_offset_tail( ec );
+                ok = HL_Test_offset_tail ( ec );
                 HL_Trace ( "Result is (hex) %d (ok %d)" , *out , ok );
                 return ok;
             }
@@ -2411,7 +2412,7 @@ BOOL HL_Get_goto_number ( LPTSTR temp , int *out , BOOL hex )
 }
 VOID HL_Wheel_scroll_worker ( int lines )
 {
-	int anch , sel = 0;
+    int anch , sel = 0;
     //
     if ( _hl_wheel_timer ) {
         HL_Trace ( "wheel timer blocked" );
@@ -2420,26 +2421,25 @@ VOID HL_Wheel_scroll_worker ( int lines )
     _hl_wheel_timer = TRUE;
     SetTimer ( NULL , HL_WHEEL_TIMER_ID , _hl_wheel_timer_to , HL_wheel_timer_proc );
 #if 0
-	//
-	anch = SendMessage( hwndEdit , SCI_GETSELECTIONSTART , 0 , 0 );
-	sel = SendMessage( hwndEdit , SCI_GETSELECTIONEND , 0 , 0 );
+    //
+    anch = SendMessage ( hwndEdit , SCI_GETSELECTIONSTART , 0 , 0 );
+    sel = SendMessage ( hwndEdit , SCI_GETSELECTIONEND , 0 , 0 );
     //
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEDOWN , 0, 0 );
     } else if ( lines < 0 ) {
         SendMessage ( hwndEdit , SCI_PAGEUP , 0, 0 );
     }
-	//
-	SendMessage( hwndEdit , SCI_SETSELECTIONSTART , anch , 0);
-	SendMessage( hwndEdit , SCI_SETSELECTIONEND , sel , 0);
+    //
+    SendMessage ( hwndEdit , SCI_SETSELECTIONSTART , anch , 0 );
+    SendMessage ( hwndEdit , SCI_SETSELECTIONEND , sel , 0 );
 #else
-	anch = SendMessage(hwndEdit , SCI_LINESONSCREEN , 0 , 0 );
+    anch = SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 );
     if ( lines > 0 ) {
         SendMessage ( hwndEdit , SCI_LINESCROLL , 0, anch );
     } else if ( lines < 0 ) {
         SendMessage ( hwndEdit , SCI_LINESCROLL , 0, -anch );
     }
-
 #endif
 }
 VOID HL_Set_wheel_scroll ( BOOL on )
