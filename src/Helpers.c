@@ -2490,5 +2490,32 @@ BOOL HL_Is_Empty ( LPCWSTR txt )
     return res;
 }
 
+VOID HL_Modify_save_name ( LPWSTR npath , LPCWSTR opath )
+{
+    LPWSTR period = StrChrW ( npath , L'.' );
+    LPWSTR nname = StrChrW ( npath , L'\\' );
+    LPWSTR oext = PathFindExtensionW ( opath );
+    const int last_pos = lstrlen ( nname ) - 1;
+    if ( 0 == nname ) {
+        nname = npath;
+    }
+    HL_WTrace ( "old fname: %s" , opath );
+    HL_WTrace ( "new fname: %s" , npath );
+    HL_WTrace ( "old ext: %s" , oext );
+    if ( period ) {
+        HL_Trace ( "period pos: %d last:%d" , ( int ) ( period - nname ) , last_pos );
+        if ( period - nname ==  last_pos ) {
+            nname[last_pos] = 0;
+        }
+    } else {
+        if ( oext ) {
+            StrCatW ( npath , oext );
+        } else {
+            StrCatW ( npath , L".txt" );
+        }
+    }
+    HL_WTrace ( "modified new fname: %s" , npath );
+}
+
 
 ///   End of Helpers.c   \\\

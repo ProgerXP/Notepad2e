@@ -566,7 +566,7 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
     if ( bTransparentMode ) {
         SetWindowTransparentMode ( hwndMain, TRUE );
     }
-	InitScintillaHandle(hwndEdit);
+    InitScintillaHandle ( hwndEdit );
     // Current file information -- moved in front of ShowWindow()
     FileLoad ( TRUE, TRUE, FALSE, FALSE, L"" );
     if ( !flagStartAsTrayIcon ) {
@@ -1671,9 +1671,9 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_VIEW_SHOWEXCERPT, i );
     i = ( int ) SendMessage ( hwndEdit, SCI_GETLEXER, 0, 0 );
     EnableCmd ( hmenu, IDM_EDIT_LINECOMMENT,
-                ! ( i == SCLEX_NULL 
-				//|| i == SCLEX_CSS
-				|| i == SCLEX_DIFF ) );
+                ! ( i == SCLEX_NULL
+                    //|| i == SCLEX_CSS
+                    || i == SCLEX_DIFF ) );
     EnableCmd ( hmenu, IDM_EDIT_STREAMCOMMENT,
                 ! ( i == SCLEX_NULL || i == SCLEX_VBSCRIPT || i == SCLEX_MAKEFILE || i == SCLEX_VB || i == SCLEX_ASM ||
                     i == SCLEX_SQL || i == SCLEX_PERL || i == SCLEX_PYTHON || i == SCLEX_PROPERTIES || i == SCLEX_CONF ||
@@ -3304,6 +3304,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
             // haccel cases
+        case ID_SETTINGS_RELOADFROMDISK: {
+				PostMessage ( hwnd , HWM_RELOAD_SETTINGS , 0 , 0 );
+            }
+            break;
         case ID_SETTINGS_REPLACESETTINGSINALLINSTANCES: {
                 MsgCommand ( hwnd , MAKEWPARAM ( IDM_VIEW_SAVESETTINGSNOW , 0 ) , 0 );
                 HL_Reload_Settings();
@@ -5560,6 +5564,9 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
             lstrcpy ( tchFile, szCurFile );
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
+			/*haccel work #17*/
+			HL_Modify_save_name( tchFile , szCurFile );
+			//////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //
                 if ( bDeleteOld
