@@ -3304,8 +3304,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
             // haccel cases
+        case ID_EDIT_EDITSELECTION: {
+                HL_Edit_selection();
+            }
+            break;
         case ID_SETTINGS_RELOADFROMDISK: {
-				PostMessage ( hwnd , HWM_RELOAD_SETTINGS , 0 , 0 );
+                PostMessage ( hwnd , HWM_RELOAD_SETTINGS , 0 , 0 );
             }
             break;
         case ID_SETTINGS_REPLACESETTINGSINALLINSTANCES: {
@@ -5564,9 +5568,10 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
             lstrcpy ( tchFile, szCurFile );
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
-			/*haccel work #17*/
-			HL_Modify_save_name( tchFile , szCurFile );
-			//////////
+            /*haccel work #17*/
+            HL_Modify_save_name ( tchFile , szCurFile 
+				, lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/);
+            //////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //
                 if ( bDeleteOld

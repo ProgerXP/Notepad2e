@@ -251,12 +251,13 @@ VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
 VOID	HL_Highlight_turn();
+VOID	HL_Edit_selection();
 BOOL	HL_Is_Empty(LPCWSTR txt );
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
-VOID	HL_Modify_save_name( LPWSTR npath , LPCWSTR opath );
+VOID	HL_Modify_save_name( LPWSTR npath , LPCWSTR opath , BOOL is_new );
 
 #define HL_INI_SECTION L"e-settings"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
