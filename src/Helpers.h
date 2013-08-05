@@ -250,7 +250,11 @@ VOID	HL_Init(HWND hwnd);
 VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
+<<<<<<< HEAD
 VOID	HL_Highlight_turn(BOOL edit);
+=======
+VOID	HL_Highlight_turn();
+>>>>>>> bc7e02e68c8ddaab082ff9f8c7b8d4df770f47c2
 VOID	HL_Edit_selection_start();
 VOID	HL_Edit_selection( );
 VOID	HL_Edit_selection_stop( BOOL complete );

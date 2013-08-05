@@ -3980,6 +3980,14 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     }
                     break;
                 case SCN_CHARADDED:
+<<<<<<< HEAD
+=======
+#if 1
+                    if ( b_HL_highlight_selection ) {
+                        HL_Edit_selection();
+                    }
+#endif
+>>>>>>> bc7e02e68c8ddaab082ff9f8c7b8d4df770f47c2
                     // Auto indent
                     if ( bAutoIndent && ( scn->ch == '\x0D' || scn->ch == '\x0A' ) ) {
                         // in CRLF mode handle LF only...
