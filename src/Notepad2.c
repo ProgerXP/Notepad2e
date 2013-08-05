@@ -3305,7 +3305,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // haccel cases
         case ID_EDIT_EDITSELECTION: {
-                HL_Edit_selection();
+                HL_Edit_selection_start();
             }
             break;
         case ID_SETTINGS_RELOADFROMDISK: {
@@ -3979,9 +3979,9 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     }
                     break;
                 case SCN_CHARADDED:
-#if 0
+#if 1
                     if ( b_HL_highlight_selection ) {
-                        HL_Highlight_turn();
+                        HL_Edit_selection();
                     }
 #endif
                     // Auto indent
@@ -5569,8 +5569,8 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
             /*haccel work #17*/
-            HL_Modify_save_name ( tchFile , szCurFile 
-				, lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/);
+            HL_Modify_save_name ( tchFile , szCurFile
+                                  , lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/ );
             //////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //

@@ -39,20 +39,35 @@
 #define HL_SELECT_INDICATOR_SINGLE 10
 #define HL_SELECT_INDICATOR_EDIT 11
 #define HL_SELECT_MAX_SIZE	0xff
+#define HL_SELECT_MAX_COUNT	0xff
 #define HL_SEARCH_WORD_SIZE (64*1024)
 #define HL_WHEEL_TIMER_ID	0xfefe
+#define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
+UINT_PTR	_hl_sel_edit_timer_id = HL_SEL_EDIT_TIMER_ID;
 UINT	_hl_wheel_timer_to = 100;
+UINT	_hl_sel_edit_timer_to = 2000;
 /*CSS*/
 UINT	_hl_css_property = css_prop_less;
 //
 FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
+//
 BOOL	_hl_edit_selection = FALSE;
-BOOL	_hl_wheel_timer = FALSE; 
+BOOL	_hl_edit_selection_init = FALSE;
+UINT	_hl_sel_edit_pos [HL_SELECT_MAX_COUNT];
+char	_hl_sel_edit_orig[HL_SELECT_MAX_SIZE];
+UINT	_hl_sel_len = 0;
+//
+BOOL	_hl_wheel_timer = FALSE;
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
 {
     _hl_wheel_timer = FALSE;
     KillTimer ( NULL , idEvent );
+}
+VOID CALLBACK HL_sel_edit_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
+{
+    HL_Edit_selection_stop ( TRUE );
+    HL_Highlight_turn();
 }
 //=============================================================================
 //
@@ -2216,9 +2231,9 @@ VOID HL_Init ( HWND hWnd )
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
     //
     _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
-    //
+    _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"selection_timer_timeout" , _hl_sel_edit_timer_to );
     _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
-    //
+    _hl_sel_len = 0;
 #endif
 }
 
@@ -2240,6 +2255,28 @@ VOID HL_Highlight_word ( LPCSTR  word )
     struct Sci_TextToFind ttf;
     struct Sci_TextToFind ttf1;
     //
+    old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
+    if ( _hl_edit_selection && !_hl_edit_selection_init ) {
+        int	word_len =  strlen ( word );
+        int	delta =  word_len - strlen ( _hl_sel_edit_orig );
+        if ( 1 == delta ) {
+            char add[2];
+            *add = word[word_len - 1];
+            add[1] = 0;
+            SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
+            HL_Trace ( "highlight EDIT  '%s' (%d) with original '%s'" , word , _hl_sel_len , _hl_sel_edit_orig );
+            for ( ; cnt < _hl_sel_len; ++cnt ) {
+                //
+                HL_Trace ( "highlight EDIT chunk at '%d' (%s)" ,  _hl_sel_edit_pos[cnt] + word_len - 1 , add );
+                SendMessage ( hwndEdit , SCI_SETCURRENTPOS , _hl_sel_edit_pos[cnt] + word_len - 1 , 0 );
+                SendMessage ( hwndEdit , SCI_INSERTTEXT , -1 , ( LPARAM ) add );
+                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , _hl_sel_edit_pos[cnt] , 1/*word_len*/ );
+            }
+            strcpy ( _hl_sel_edit_orig , word );
+            SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
+        }
+		return;
+    }
     //
     lstart = SendMessage ( hwndEdit , SCI_GETFIRSTVISIBLELINE , 0 , 0 );
     lstart = ( int ) SendMessage ( hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart , 0 );
@@ -2275,12 +2312,20 @@ VOID HL_Highlight_word ( LPCSTR  word )
         while ( 1 ) {
             res =   SendMessage ( hwndEdit , SCI_FINDTEXT , SCFIND_WHOLEWORD , ( LPARAM ) &ttf );
             if ( -1 != res ) {
-                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
+                if ( _hl_edit_selection_init && cnt < HL_SELECT_MAX_COUNT ) {
+                    _hl_sel_edit_pos[cnt] = ttf.chrgText.cpMin;
+                }
                 cnt++;
+                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , ttf.chrgText.cpMin , ttf.chrgText.cpMax - ttf.chrgText.cpMin );
                 ttf.chrg.cpMin = ttf.chrgText.cpMax;
             } else {
                 break;
             }
+        }
+        if ( _hl_edit_selection_init ) {
+            _hl_sel_len = min ( HL_SELECT_MAX_COUNT, cnt );
+            strcpy ( _hl_sel_edit_orig , word );
+            HL_Trace ( "new sel edit word	'%s'" , _hl_sel_edit_orig );
         }
     }
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
@@ -2326,13 +2371,35 @@ VOID HL_Highlight_turn()
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
     }
 }
-VOID HL_Edit_selection()
+VOID HL_Edit_selection_start()
 {
     _hl_edit_selection = TRUE;
+    _hl_edit_selection_init = TRUE;
     //
-    HL_Highlight_turn();
     //
-    _hl_edit_selection = FALSE;
+    HL_Edit_selection();
+    _hl_edit_selection_init = FALSE;
+}
+
+VOID HL_Edit_selection()
+{
+    HL_Edit_selection_stop ( FALSE );
+    if ( _hl_edit_selection ) {
+        HL_Highlight_turn();
+        _hl_sel_edit_timer_id = SetTimer ( NULL , HL_SEL_EDIT_TIMER_ID , _hl_sel_edit_timer_to  , HL_sel_edit_timer_proc );
+    }
+}
+
+VOID HL_Edit_selection_stop ( BOOL complete )
+{
+    if ( complete ) {
+        _hl_edit_selection = FALSE;
+        _hl_sel_len = 0;
+    }
+    if ( _hl_sel_edit_timer_id ) {
+        KillTimer ( NULL , _hl_sel_edit_timer_id );
+        _hl_sel_edit_timer_id = 0;
+    }
 }
 
 VOID HL_Trace ( const char *fmt , ... )
@@ -2514,7 +2581,7 @@ BOOL HL_Is_Empty ( LPCWSTR txt )
     return res;
 }
 
-VOID HL_Modify_save_name ( LPWSTR npath , LPCWSTR opath , BOOL is_new)
+VOID HL_Modify_save_name ( LPWSTR npath , LPCWSTR opath , BOOL is_new )
 {
     LPWSTR period = StrChrW ( npath , L'.' );
     LPWSTR nname = StrChrW ( npath , L'\\' );
