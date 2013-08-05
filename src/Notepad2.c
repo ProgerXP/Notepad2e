@@ -3305,7 +3305,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // haccel cases
         case ID_EDIT_EDITSELECTION: {
-                HL_Edit_selection();
+                HL_Edit_selection_start();
             }
             break;
         case ID_SETTINGS_RELOADFROMDISK: {
@@ -3319,7 +3319,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
-            HL_Highlight_turn();
+            HL_Highlight_turn(FALSE);
             break;
             //
         case ID_SETTINGS_CTRL_WHEEL_SCROLL:
@@ -3974,16 +3974,12 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     /*******************/
-                    if ( b_HL_highlight_selection && ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
-                        HL_Highlight_turn();
+                    if ( b_HL_highlight_selection  ){ //&& ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
+                        //HL_Highlight_turn();
+						HL_Edit_selection();
                     }
                     break;
                 case SCN_CHARADDED:
-#if 0
-                    if ( b_HL_highlight_selection ) {
-                        HL_Highlight_turn();
-                    }
-#endif
                     // Auto indent
                     if ( bAutoIndent && ( scn->ch == '\x0D' || scn->ch == '\x0A' ) ) {
                         // in CRLF mode handle LF only...
@@ -4085,7 +4081,7 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     break;
                 case SCN_MODIFIED:
                     if ( b_HL_highlight_selection ) {
-                        HL_Highlight_turn();
+                        HL_Highlight_turn(FALSE);
                     }
                 case SCN_ZOOM:
                     UpdateLineNumberWidth();
@@ -5569,8 +5565,8 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
             /*haccel work #17*/
-            HL_Modify_save_name ( tchFile , szCurFile 
-				, lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/);
+            HL_Modify_save_name ( tchFile , szCurFile
+                                  , lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/ );
             //////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //
