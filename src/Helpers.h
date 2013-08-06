@@ -250,11 +250,7 @@ VOID	HL_Init(HWND hwnd);
 VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
-<<<<<<< HEAD
 VOID	HL_Highlight_turn(BOOL edit);
-=======
-VOID	HL_Highlight_turn();
->>>>>>> bc7e02e68c8ddaab082ff9f8c7b8d4df770f47c2
 VOID	HL_Edit_selection_start();
 VOID	HL_Edit_selection( );
 VOID	HL_Edit_selection_stop( BOOL complete );
@@ -264,6 +260,12 @@ VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
 VOID	HL_Modify_save_name( LPWSTR npath , LPCWSTR opath , BOOL is_new );
+UINT_PTR CALLBACK HL_OFN__hook_proc(
+	HWND hdlg,
+	UINT uiMsg,
+	WPARAM wParam,
+	LPARAM lParam
+	);
 
 #define HL_INI_SECTION L"e-settings"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
