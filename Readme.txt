@@ -104,6 +104,9 @@ Changes of the Extended edition
   Notepad2 windows open and need to change settings in one of them;
   select this to make all others reload them from disk (not from this
   instance).
+  
+  Reload Settings from Disk (Alt+F7) - replace all settings in current
+  window with fresh version read from Notepad2.ini.
 
   Open Previous (Alt+G) - lets you toggle between two most recent
   History files with one keystroke.
