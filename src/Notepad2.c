@@ -5663,7 +5663,9 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     ofn.lpstrInitialDir = ( lpstrInitialDir ) ? lpstrInitialDir : tchInitialDir;
     ofn.nMaxFile = COUNTOF ( szFile );
 	ofn.lpfnHook = HL_OFN__hook_proc;
-    ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
+    ofn.Flags = 
+		//OFN_FILEMUSTEXIST |
+		 OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
                 OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST | OFN_ENABLEHOOK |	OFN_EXPLORER |
                 OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
     ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;

@@ -2439,13 +2439,37 @@ VOID HL_WTrace ( const char *fmt , LPCWSTR word )
         //
         temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , NULL , 0 , NULL, NULL ) );
         WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , temp , size , NULL, NULL );
-        fprintf ( _hL_log , fmt , temp , size , NULL , NULL );
+        fprintf ( _hL_log , fmt , temp );
         free ( temp );
         //
         fprintf ( _hL_log , "\r\n" );
         fflush ( _hL_log );
     }
 }
+
+VOID HL_WTrace2 ( const char *fmt , LPCWSTR word1 , LPCWSTR word2 )
+{
+    if ( _hL_log ) {
+        int size ;
+        char *temp , *temp2;
+        SYSTEMTIME st;
+        //
+        GetLocalTime ( &st );
+        fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
+        //
+        temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word1 , -1 , NULL , 0 , NULL, NULL ) );
+        WideCharToMultiByte ( CP_UTF8 , 0 , word1 , -1 , temp , size , NULL, NULL );
+        temp2 = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word2 , -1 , NULL , 0 , NULL, NULL ) );
+        WideCharToMultiByte ( CP_UTF8 , 0 , word2 , -1 , temp2 , size , NULL, NULL );
+        fprintf ( _hL_log , fmt , temp , temp2 );
+        free ( temp );
+        free ( temp2 );
+        //
+        fprintf ( _hL_log , "\r\n" );
+        fflush ( _hL_log );
+    }
+}
+
 BOOL HL_Test_offset_tail ( WCHAR *wch )
 {
     while ( *wch ) {
@@ -2611,35 +2635,60 @@ VOID HL_Modify_save_name ( LPWSTR npath , LPCWSTR opath , BOOL is_new )
     HL_WTrace ( "modified new fname: %s" , npath );
 }
 
+BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir )
+{
+    HL_WTrace2 ( "Try open file by pref '%s' in dir '%s'" , pref , dir );
+    return FALSE;
+}
+
 UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam )
 {
     static UINT file_ok = 0;
+    static UINT lbl_ch = 0;
     switch ( uiMsg ) {
-        case WM_INITDIALOG:
-            file_ok = RegisterWindowMessage ( FILEOKSTRING );
-            break;
         case WM_NOTIFY: {
                 OFNOTIFY *ofn = ( OFNOTIFY * ) lParam;
                 NMHDR nm = ofn->hdr;
+                // HL_Trace ( " sub dlg mess %d", nm.code );
                 switch ( nm.code ) {
                     case CDN_FILEOK: {
                             WCHAR buf[MAX_PATH];
-                            int len = CommDlg_OpenSave_GetSpecA ( hdlg , buf , MAX_PATH );
+                            WCHAR dir[MAX_PATH];
+                            int len = GetDlgItemText ( GetParent ( hdlg ), cmb13, buf, MAX_PATH );
+                            SendMessage ( GetParent(hdlg) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
                             //
-                            HL_Trace ( "OFN file (%d)" , len );
+                            if ( len ) {
+                                HL_WTrace ( "OFN file (%s) " , buf );
+                                if ( !HL_OPen_File_by_prefix ( buf , dir ) ) {
+                                    MessageBox ( hdlg , buf , L"Not implemeted" , MB_OK | MB_ICONASTERISK );
+                                }
+                            }
                             //
                             // reject
                             SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
                         }
                         return 1;
+                    case CDN_SELCHANGE: {
+                            HL_Trace ( "OFN change  " );
+                        }
+                        break;
+                    case CDN_INITDONE: {
+                            HL_Trace ( "OFN init  " );
+                            file_ok = RegisterWindowMessage ( FILEOKSTRING );
+                            lbl_ch = RegisterWindowMessage ( LBSELCHSTRING );
+                        }
+                        break;
                 }
             }
             break;
         default:
             if ( file_ok == uiMsg ) {
                 HL_Trace ( "custom OK" );
+                //    return	1;
+            } else if ( lbl_ch = uiMsg ) {
+                //  HL_Trace ( "custom LBL" );
+                //  return	1;
             }
-            return	1;
     }
     return 0;
 }
