@@ -2635,9 +2635,29 @@ VOID HL_Modify_save_name ( LPWSTR npath , LPCWSTR opath , BOOL is_new )
     HL_WTrace ( "modified new fname: %s" , npath );
 }
 
-BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir )
+BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 {
-    HL_WTrace2 ( "Try open file by pref '%s' in dir '%s'" , pref , dir );
+    WIN32_FIND_DATA	wfd;
+    WCHAR	path[MAX_PATH];
+    HANDLE res;
+    lstrcpy ( path, dir );
+    lstrcat ( path, L"\\" );
+    lstrcat ( path, pref );
+    lstrcat ( path, L"*" );
+    res = FindFirstFile ( path, &wfd );
+    HL_WTrace ( "search file by mask '%s'" , path );
+    if ( INVALID_HANDLE_VALUE == res ) {
+        return FALSE;
+    }
+    do {
+        if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
+            HL_WTrace ( "file: '%s'" , wfd.cFileName );
+            lstrcpy ( out , wfd.cFileName );
+            FindClose ( res );
+            return TRUE;
+        }
+    } while ( FindNextFile ( res , &wfd ) != 0 );
+    FindClose ( res );
     return FALSE;
 }
 
@@ -2655,21 +2675,29 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                             WCHAR buf[MAX_PATH];
                             WCHAR dir[MAX_PATH];
                             int len = GetDlgItemText ( GetParent ( hdlg ), cmb13, buf, MAX_PATH );
-                            SendMessage ( GetParent(hdlg) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
+                            SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
                             //
+                            SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
                             if ( len ) {
+                                WCHAR out[MAX_PATH];
                                 HL_WTrace ( "OFN file (%s) " , buf );
-                                if ( !HL_OPen_File_by_prefix ( buf , dir ) ) {
-                                    MessageBox ( hdlg , buf , L"Not implemeted" , MB_OK | MB_ICONASTERISK );
+                                if ( !HL_OPen_File_by_prefix ( buf , dir , out ) ) {
+                                    MessageBox ( hdlg , L"FIle not found!" , WC_NOTEPAD2 , MB_OK | MB_ICONASTERISK );
+                                } else {
+                                    CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) out );
+                                    lstrcpy ( ofn->lpOFN->lpstrFile , out );
+                                    SetWindowLong ( hdlg , DWL_MSGRESULT , 0 );
                                 }
                             }
                             //
-                            // reject
-                            SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
                         }
                         return 1;
                     case CDN_SELCHANGE: {
+                            WCHAR buf[MAX_PATH];
                             HL_Trace ( "OFN change  " );
+                            if ( CommDlg_OpenSave_GetSpec ( GetParent ( hdlg ) , buf, MAX_PATH  ) > 0 ) {
+                                CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) buf );
+                            }
                         }
                         break;
                     case CDN_INITDONE: {
