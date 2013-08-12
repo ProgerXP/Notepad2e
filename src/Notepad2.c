@@ -5564,13 +5564,7 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
             lstrcpy ( tchFile, szCurFile );
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
-            /*haccel work #17*/
-#if 0
-            HL_Modify_save_name ( tchFile , szCurFile
-                                  , lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/ );
-#else
-			HL_WTrace("SAVED PATH '%s'" , tchFile);
-#endif
+            HL_WTrace ( "SAVED PATH '%s'" , tchFile );
             //////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //
@@ -5723,11 +5717,13 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
                 OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST;
     // haccel #17
     oext = PathFindExtensionW ( szCurFile );
-	HL_WTrace("OLD EXT '%s'",oext);
-    if ( NULL == oext ||  lstrlen ( oext ) < 2 ) {
+    HL_WTrace ( "OLD EXT '%s'", oext );
+    if ( 0 == lstrlen ( szCurFile ) ) {
         ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
+    } else  if ( NULL == oext ||  lstrlen ( oext ) < 2 ) {
+        ofn.lpstrDefExt = NULL;
     } else {
-        ofn.lpstrDefExt = (oext + 1);
+        ofn.lpstrDefExt = ( oext + 1 );
     }
     if ( GetSaveFileName ( &ofn ) ) {
         lstrcpyn ( lpstrFile, szNewFile, cchFile );

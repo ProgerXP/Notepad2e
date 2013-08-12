@@ -260,7 +260,6 @@ BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
-VOID	HL_Modify_save_name( LPWSTR npath , LPCWSTR opath , BOOL is_new );
 UINT_PTR CALLBACK HL_OFN__hook_proc(
 	HWND hdlg,
 	UINT uiMsg,
