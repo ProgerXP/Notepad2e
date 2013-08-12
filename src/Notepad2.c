@@ -3319,7 +3319,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
-            HL_Highlight_turn(FALSE);
+            HL_Highlight_turn ( FALSE );
             break;
             //
         case ID_SETTINGS_CTRL_WHEEL_SCROLL:
@@ -3974,9 +3974,9 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     /*******************/
-                    if ( b_HL_highlight_selection  ){ //&& ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
+                    if ( b_HL_highlight_selection ) { //&& ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
                         //HL_Highlight_turn();
-						HL_Edit_selection();
+                        HL_Edit_selection();
                     }
                     break;
                 case SCN_CHARADDED:
@@ -4081,7 +4081,7 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     break;
                 case SCN_MODIFIED:
                     if ( b_HL_highlight_selection ) {
-                        HL_Highlight_turn(FALSE);
+                        HL_Highlight_turn ( FALSE );
                     }
                 case SCN_ZOOM:
                     UpdateLineNumberWidth();
@@ -5565,8 +5565,12 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
         }
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
             /*haccel work #17*/
+#if 0
             HL_Modify_save_name ( tchFile , szCurFile
                                   , lstrlen ( szCurFile ) == 0 /*bIsEmptyNewFile*/ );
+#else
+			HL_WTrace("SAVED PATH '%s'" , tchFile);
+#endif
             //////////
             if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
                 //
@@ -5662,12 +5666,12 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     ofn.lpstrFile = szFile;
     ofn.lpstrInitialDir = ( lpstrInitialDir ) ? lpstrInitialDir : tchInitialDir;
     ofn.nMaxFile = COUNTOF ( szFile );
-	ofn.lpfnHook = HL_OFN__hook_proc;
-    ofn.Flags = 
-		//OFN_FILEMUSTEXIST |
-		 OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
-                OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST | OFN_ENABLEHOOK |	OFN_EXPLORER |
-                OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
+    ofn.lpfnHook = HL_OFN__hook_proc;
+    ofn.Flags =
+        //OFN_FILEMUSTEXIST |
+        OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
+        OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST | OFN_ENABLEHOOK |	OFN_EXPLORER |
+        OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
     ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
     if ( GetOpenFileName ( &ofn ) ) {
         lstrcpyn ( lpstrFile, szFile, cchFile );
@@ -5685,6 +5689,7 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
 {
     OPENFILENAME ofn;
     WCHAR szNewFile[MAX_PATH];
+    LPWSTR oext;
     WCHAR szFilter[NUMLEXERS * 1024];
     WCHAR tchInitialDir[MAX_PATH] = L"";
     lstrcpy ( szNewFile, lpstrFile );
@@ -5716,7 +5721,14 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     ofn.Flags = OFN_HIDEREADONLY /*| OFN_NOCHANGEDIR*/ |
                 /*OFN_NODEREFERENCELINKS |*/ OFN_OVERWRITEPROMPT |
                 OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST;
-    ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
+    // haccel #17
+    oext = PathFindExtensionW ( szCurFile );
+	HL_WTrace("OLD EXT '%s'",oext);
+    if ( NULL == oext ||  lstrlen ( oext ) < 2 ) {
+        ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
+    } else {
+        ofn.lpstrDefExt = (oext + 1);
+    }
     if ( GetSaveFileName ( &ofn ) ) {
         lstrcpyn ( lpstrFile, szNewFile, cchFile );
         return TRUE;
