@@ -119,6 +119,12 @@ Changes of the Extended edition
 
   Rename To (Alt+F6) - acts as Save As but deletes original file on
   success.
+  
+  Better Save To Dialog - new file extension is determined first by
+  DefaultExtension INI setting (as before) but then if current file was
+  previously opened from or saved to disk its old extension is used as
+  default (even if it's empty). If new file name ends on period file is
+  saved without extension.
 
   Ctrl+Wheel Scroll - very handy to navigate long scripts. Roll the
   wheel while holding Ctrl down to scroll through entire pages (similar
