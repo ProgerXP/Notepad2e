@@ -2639,45 +2639,59 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 {
     static UINT file_ok = 0;
     static UINT lbl_ch = 0;
+    static WCHAR folder[MAX_PATH];
     switch ( uiMsg ) {
         case WM_NOTIFY: {
                 OFNOTIFY *ofn = ( OFNOTIFY * ) lParam;
                 NMHDR nm = ofn->hdr;
-                // HL_Trace ( " sub dlg mess %d", nm.code );
+                HL_Trace ( " NOTIFY dlg mess %u from %d(%d)", nm.code , nm.idFrom , nm.hwndFrom );
                 switch ( nm.code ) {
                     case CDN_FILEOK: {
                             WCHAR buf[MAX_PATH];
                             WCHAR dir[MAX_PATH];
+                            //
                             int len = GetDlgItemText ( GetParent ( hdlg ), cmb13, buf, MAX_PATH );
                             SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
-                            //
                             SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
+                            HL_Trace ( "OFN OK  " );
                             if ( len ) {
                                 WCHAR out[MAX_PATH];
-                                HL_WTrace ( "OFN file (%s) " , buf );
+                                HL_WTrace ( "OFN input (%s) " , buf );
                                 if ( !HL_OPen_File_by_prefix ( buf , dir , out ) ) {
-                                    MessageBox ( hdlg , L"FIle not found!" , WC_NOTEPAD2 , MB_OK | MB_ICONASTERISK );
+                                    WCHAR mess[1024];
+									wsprintf ( mess , 
+										L"'%s'\nFile not found.\n" 
+										L"Additionally, no file name starting "
+										L"with this string exists in this folder\n'%s'" 
+										, buf , dir );
+                                    MessageBox ( hdlg , mess , WC_NOTEPAD2 , MB_OK | MB_ICONWARNING );
                                 } else {
                                     CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) out );
                                     lstrcpy ( ofn->lpOFN->lpstrFile , out );
                                     SetWindowLong ( hdlg , DWL_MSGRESULT , 0 );
                                 }
                             }
-                            //
                         }
                         return 1;
                     case CDN_SELCHANGE: {
                             WCHAR buf[MAX_PATH];
                             HL_Trace ( "OFN change  " );
-                            if ( CommDlg_OpenSave_GetSpec ( GetParent ( hdlg ) , buf, MAX_PATH  ) > 0 ) {
+                            if ( CommDlg_OpenSave_GetSpec ( GetParent ( hdlg ) , buf, MAX_PATH ) > 0 ) {
                                 CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) buf );
                             }
                         }
                         break;
                     case CDN_INITDONE: {
                             HL_Trace ( "OFN init  " );
+                            SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) folder );
                             file_ok = RegisterWindowMessage ( FILEOKSTRING );
                             lbl_ch = RegisterWindowMessage ( LBSELCHSTRING );
+                        }
+                        break;
+                    case CDN_FOLDERCHANGE: {
+                            WCHAR dir[MAX_PATH];
+                            HL_Trace ( "OFN folder change  " );
+                            SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
                         }
                         break;
                 }
