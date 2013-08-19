@@ -55,6 +55,7 @@ HWND	g_hwnd = 0;
 BOOL	_hl_edit_selection = FALSE;
 BOOL	_hl_edit_selection_init = FALSE;
 BOOL	_hl_skip_highlight = FALSE;
+BOOL	_hl_use_prefix_in_open_dialog = TRUE;
 char	_hl_sel_edit_orig[HL_SELECT_MAX_SIZE];
 UINT	_hl_sel_edit_pos [HL_SELECT_MAX_COUNT];
 UINT	_hl_sel_len = 0;
@@ -2236,6 +2237,7 @@ VOID HL_Init ( HWND hWnd )
     _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"selection_timer_timeout" , _hl_sel_edit_timer_to );
     _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
     _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"shell_menu_type" , CMF_NORMAL );
+    _hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"use_prefix_in_open_dialog" , _hl_use_prefix_in_open_dialog );
     _hl_sel_len = 0;
 #endif
 }
