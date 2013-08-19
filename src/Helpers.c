@@ -58,6 +58,7 @@ BOOL	_hl_skip_highlight = FALSE;
 char	_hl_sel_edit_orig[HL_SELECT_MAX_SIZE];
 UINT	_hl_sel_edit_pos [HL_SELECT_MAX_COUNT];
 UINT	_hl_sel_len = 0;
+UINT	_hl_ctx_menu_type = 0;
 //
 BOOL	_hl_wheel_timer = FALSE;
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
@@ -2234,6 +2235,7 @@ VOID HL_Init ( HWND hWnd )
     _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
     _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"selection_timer_timeout" , _hl_sel_edit_timer_to );
     _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
+    _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"shell_menu_type" , CMF_NORMAL );
     _hl_sel_len = 0;
 #endif
 }
@@ -2640,6 +2642,8 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
     static UINT file_ok = 0;
     static UINT lbl_ch = 0;
     static WCHAR folder[MAX_PATH];
+	// XP spec
+	static BOOL take_call = FALSE;
     switch ( uiMsg ) {
         case WM_NOTIFY: {
                 OFNOTIFY *ofn = ( OFNOTIFY * ) lParam;
@@ -2665,10 +2669,13 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 										L"with this string exists in this folder\n'%s'" 
 										, buf , dir );
                                     MessageBox ( hdlg , mess , WC_NOTEPAD2 , MB_OK | MB_ICONWARNING );
+									take_call = TRUE;
+									return 0;
                                 } else {
                                     CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) out );
                                     lstrcpy ( ofn->lpOFN->lpstrFile , out );
                                     SetWindowLong ( hdlg , DWL_MSGRESULT , 0 );
+									take_call = FALSE;
                                 }
                             }
                         }
@@ -2683,6 +2690,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                         break;
                     case CDN_INITDONE: {
                             HL_Trace ( "OFN init  " );
+							take_call = FALSE;
                             SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) folder );
                             file_ok = RegisterWindowMessage ( FILEOKSTRING );
                             lbl_ch = RegisterWindowMessage ( LBSELCHSTRING );
@@ -2700,12 +2708,13 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
         default:
             if ( file_ok == uiMsg ) {
                 HL_Trace ( "custom OK" );
+                SetWindowLong ( hdlg , DWL_MSGRESULT , take_call );
                 //    return	1;
             } else if ( lbl_ch = uiMsg ) {
                 //  HL_Trace ( "custom LBL" );
                 //  return	1;
             }
     }
-    return 0;
+    return take_call;
 }
 ///   End of Helpers.c   \\\
