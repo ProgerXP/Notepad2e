@@ -120,6 +120,11 @@ Changes of the Extended edition
   Rename To (Alt+F6) - acts as Save As but deletes original file on
   success.
   
+  Open Dialog allows opening by prefix - so instead of typing the full
+  file name or selecting with your mouse you can only type name's 
+  beginning and hit Enter or click Open to open the first matching file. 
+  This is disabled by default.
+  
   Better Save To Dialog - new file extension is determined first by
   DefaultExtension INI setting (as before) but then if current file was
   previously opened from or saved to disk its old extension is used as
