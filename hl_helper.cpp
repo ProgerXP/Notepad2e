@@ -10,7 +10,7 @@
 extern "C"
 {
     extern UINT		_hl_ctx_menu_type ;
-	extern	VOID	HL_Trace ( const char *fmt , ... );
+    extern	VOID	HL_Trace ( const char *fmt , ... );
 
 #if 0
     BOOL HL_Explorer_cxt_menu ( LPCWSTR path, void *parentWindow )
@@ -76,20 +76,21 @@ extern "C"
 #else
     LPCONTEXTMENU2	g_IContext2 = NULL;
     LPCONTEXTMENU3	g_IContext3 = NULL;
-	//
-	VOID Invoke( int cmd , LPCONTEXTMENU menu , HWND win){
-		if ( cmd > 0 ) {
-                        CMINVOKECOMMANDINFOEX info = { 0 };
-                        info.cbSize = sizeof ( info );
-                        info.fMask = CMIC_MASK_UNICODE;
-                        info.hwnd = win;
-                        info.lpVerb  = MAKEINTRESOURCEA ( cmd - 1 );
-                        info.lpVerbW = MAKEINTRESOURCEW ( cmd - 1 );
-                        info.nShow = SW_SHOWNORMAL;
-                        menu->InvokeCommand ( ( LPCMINVOKECOMMANDINFO ) &info );
-                    }
-	}
-	//
+    //
+    VOID Invoke ( int cmd , LPCONTEXTMENU menu , HWND win )
+    {
+        if ( cmd > 0 ) {
+            CMINVOKECOMMANDINFOEX info = { 0 };
+            info.cbSize = sizeof ( info );
+            info.fMask = CMIC_MASK_UNICODE;
+            info.hwnd = win;
+            info.lpVerb  = MAKEINTRESOURCEA ( cmd - 1 );
+            info.lpVerbW = MAKEINTRESOURCEW ( cmd - 1 );
+            info.nShow = SW_SHOWNORMAL;
+            menu->InvokeCommand ( ( LPCMINVOKECOMMANDINFO ) &info );
+        }
+    }
+    //
     LRESULT CALLBACK HookWndProc ( HWND hWnd, UINT message,
                                    WPARAM wParam, LPARAM lParam )
     {
@@ -119,13 +120,13 @@ extern "C"
                 break;
         }
         // call original WndProc of window to prevent undefined bevhaviour
-        // 
-		/*of window
+        //
+        /*of window
         return ::CallWindowProc ( ( WNDPROC ) GetProp ( hWnd, TEXT ( "OldWndProc" ) ),
                                   hWnd, message, wParam, lParam );
-		*/
-		return DefWindowProc ( hWnd,  message,
-                                    wParam,  lParam);
+        */
+        return DefWindowProc ( hWnd,  message,
+                               wParam,  lParam );
     }
     BOOL GetContextMenu ( LPCWSTR path, void **ppContextMenu, int &iMenuType )
     {
@@ -188,10 +189,18 @@ extern "C"
         pContextMenu->QueryContextMenu ( h_menu ,
                                          0, 1, 0x7FFF, _hl_ctx_menu_type );
         WNDPROC OldWndProc = NULL;
-		HL_Trace("win version %d" , WINVER);
-#if WINVER  == 0x501 
+        //
+        OSVERSIONINFOEX osvi;
+        ZeroMemory ( &osvi, sizeof ( OSVERSIONINFOEX ) );
+        osvi.dwOSVersionInfoSize = sizeof ( OSVERSIONINFOEX );
+        GetVersionEx ( ( OSVERSIONINFO * ) &osvi );
+        BOOL	bIsWindowsXPorLater =
+            ( ( osvi.dwMajorVersion > 5 ) ||
+              ( ( osvi.dwMajorVersion == 5 ) && ( osvi.dwMinorVersion >= 1 ) ) );
+        HL_Trace ( "win version %d (%d - %d) . XP ? : %d" , WINVER , osvi.dwMajorVersion , osvi.dwMinorVersion , !bIsWindowsXPorLater );
+#if 1
         if ( iMenuType > 1 ) { // only version 2 and 3 supports menu messages
-            OldWndProc = ( WNDPROC ) SetWindowLong ((HWND) parentWindow,
+            OldWndProc = ( WNDPROC ) SetWindowLong ( ( HWND ) parentWindow,
                          GWL_WNDPROC, ( DWORD ) HookWndProc );
             if ( iMenuType == 2 ) {
                 g_IContext2 = ( LPCONTEXTMENU2 ) pContextMenu;
@@ -205,9 +214,9 @@ extern "C"
         POINT pt ;
         GetCursorPos ( &pt );
         int iCmd = TrackPopupMenuEx ( h_menu, TPM_RETURNCMD, pt.x, pt.y, ( HWND ) parentWindow, NULL );
-		Invoke(iCmd , pContextMenu,( HWND ) parentWindow);
+        Invoke ( iCmd , pContextMenu, ( HWND ) parentWindow );
         if ( OldWndProc ) {
-            SetWindowLong ((HWND) parentWindow, GWL_WNDPROC, ( DWORD ) OldWndProc );
+            SetWindowLong ( ( HWND ) parentWindow, GWL_WNDPROC, ( DWORD ) OldWndProc );
         }
         pContextMenu->Release();
         return ( TRUE );

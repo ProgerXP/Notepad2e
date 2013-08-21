@@ -14,7 +14,6 @@
 #define ID_SETTINGS_RELOADFROMDISK      10
 #define ID_ACCELERATOR12                12
 #define ID_EDIT_EDITSELECTION           13
-#define ID_ACCELERATOR14                14
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
