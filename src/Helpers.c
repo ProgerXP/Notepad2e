@@ -2236,7 +2236,7 @@ VOID HL_Init ( HWND hWnd )
     _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_timer_timeout" , _hl_wheel_timer_to );
     _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"selection_timer_timeout" , _hl_sel_edit_timer_to );
     _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
-    _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"shell_menu_type" , CMF_NORMAL );
+    _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"shell_menu_type" , CMF_EXPLORE );
     _hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"use_prefix_in_open_dialog" , _hl_use_prefix_in_open_dialog );
     _hl_sel_len = 0;
 #endif
