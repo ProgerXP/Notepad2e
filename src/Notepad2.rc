@@ -89,7 +89,7 @@ BEGIN
             MENUITEM "&ANSI",                       IDM_ENCODING_ANSI
             MENUITEM "&Unicode",                    IDM_ENCODING_UNICODE
             MENUITEM "Unicode &Big Endian",         IDM_ENCODING_UNICODEREV
-            MENUITEM "UTF-&8",                      IDM_ENCODING_UTF8
+            MENUITEM "UTF-&8\tShift+F8",            IDM_ENCODING_UTF8
             MENUITEM "UTF-8 with &Signature",       IDM_ENCODING_UTF8SIGN
             MENUITEM "&More...\tF9",                IDM_ENCODING_SELECT
             MENUITEM SEPARATOR
@@ -471,7 +471,7 @@ BEGIN
     VK_F8,          IDM_ENCODING_RECODE,    VIRTKEY, NOINVERT
     VK_F8,          IDM_EDIT_INSERT_ENCODING, VIRTKEY, CONTROL, NOINVERT
     VK_F8,          CMD_RELOADNOFILEVARS,   VIRTKEY, ALT, NOINVERT
-    VK_F8,          CMD_RELOADASCIIASUTF8,  VIRTKEY, SHIFT, NOINVERT
+    VK_F8,          IDM_ENCODING_UTF8,      VIRTKEY, SHIFT, NOINVERT
     VK_F9,          IDM_ENCODING_SELECT,    VIRTKEY, NOINVERT
     VK_F9,          IDM_EDIT_INSERT_FILENAME, VIRTKEY, CONTROL, NOINVERT
     VK_F9,          IDM_FILE_MANAGEFAV,     VIRTKEY, ALT, NOINVERT
