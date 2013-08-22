@@ -267,7 +267,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(
 	LPARAM lParam
 	);
 
-#define HL_INI_SECTION L"e-settings"
+#define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 
 
