@@ -2204,38 +2204,38 @@ VOID HL_Init ( HWND hWnd )
     g_hwnd = hWnd;
     //
     //#ifdef _DEBUG
-    if ( IniGetInt ( HL_INI_SECTION , L"debug_log" , 0 ) ) {
+    if ( IniGetInt ( HL_INI_SECTION , L"DebugLog" , 0 ) ) {
         _hL_log = fopen ( "hl_log.log", "w" ) ;
     }
     //
 #if 1
     assert ( hwndEdit );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_type" , 6 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_color" , RGB (	0x00 , 0x00, 0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"selection_under" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_type" , 6 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_color" , RGB (	0x90 , 0x00,
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionType" , 6 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionAlpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionLineAlpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionColor" , RGB (	0x00 , 0x00, 0x00 ) ) );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionUnder" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionType" , 6 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionAlpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionLineAlpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionColor" , RGB (	0x90 , 0x00,
                   0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"single_selection_under" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionUnder" , 0 ) );
     //
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"edit_selection_type" , 7 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"edit_selection_alpha" , 100 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"edit_selection_line_alpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"edit_selection_color" , RGB (	0xaa , 0xaa,
+    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionType" , 7 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionAlpha" , 100 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionLineAlpha" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionColor" , RGB (	0xaa , 0xaa,
                   0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"edit_selection_under" , 0 ) );
+    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionUnder" , 0 ) );
     //
     HL_Set_wheel_scroll ( b_HL_ctrl_wheel_scroll );
     //
-    _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"wheel_scroll_interval" , _hl_wheel_timer_to );
-    _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"selection_timer_timeout" , _hl_sel_edit_timer_to );
-    _hl_css_property = IniGetInt ( HL_INI_SECTION , L"css_settings" , _hl_css_property );
-    _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"shell_menu_type" , CMF_EXPLORE );
-    _hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"open_dialog_by_prefix" , _hl_use_prefix_in_open_dialog );
+    _hl_wheel_timer_to = IniGetInt ( HL_INI_SECTION , L"WheelScrollInterval" , _hl_wheel_timer_to );
+    _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"SelectionScrollTimeout" , _hl_sel_edit_timer_to );
+    _hl_css_property = IniGetInt ( HL_INI_SECTION , L"CSSSettings" , _hl_css_property );
+    _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"ShellMenuType" , CMF_EXPLORE );
+    _hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"OpenDialogByPrefix" , _hl_use_prefix_in_open_dialog );
     _hl_sel_len = 0;
 #endif
 }
