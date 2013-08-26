@@ -2570,7 +2570,9 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     do {
         if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
             HL_WTrace ( "file: '%s'" , wfd.cFileName );
-            lstrcpy ( out , wfd.cFileName );
+			lstrcpy ( out, dir );
+			lstrcat ( out, L"\\" );
+            lstrcat ( out , wfd.cFileName );
             FindClose ( res );
             return TRUE;
         }
@@ -2622,6 +2624,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                                 } else {
                                     CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) out );
                                     lstrcpy ( ofn->lpOFN->lpstrFile , out );
+									HL_WTrace ( "OFN final result (%s) " , out );
                                     SetWindowLong ( hdlg , DWL_MSGRESULT , 0 );
                                     take_call = FALSE;
                                 }
