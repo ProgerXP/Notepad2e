@@ -74,11 +74,11 @@ Copyright
 
   (c) Florian Balmer 2004-2011
   http://www.flos-freeware.ch
-  
+
   (c) Proger_XP and co.
   http://proger.me
-  
-  
+
+
 Changes of the Extended edition
 
   Current Word Highlighting - with customizable formatting (rectangle,
@@ -104,7 +104,7 @@ Changes of the Extended edition
   Notepad2 windows open and need to change settings in one of them;
   select this to make all others reload them from disk (not from this
   instance).
-  
+
   Reload Settings from Disk (Alt+F7) - replace all settings in current
   window with fresh version read from Notepad2.ini.
 
@@ -119,12 +119,14 @@ Changes of the Extended edition
 
   Rename To (Alt+F6) - acts as Save As but deletes original file on
   success.
-  
+
+  File > Encoding > UTF-8 now has Shift+F8 hotkey assigned.
+
   Open Dialog allows opening by prefix - so instead of typing the full
-  file name or selecting with your mouse you can only type name's 
-  beginning and hit Enter or click Open to open the first matching file. 
+  file name or selecting with your mouse you can only type name's
+  beginning and hit Enter or click Open to open the first matching file.
   This is disabled by default.
-  
+
   Better Save To Dialog - new file extension is determined first by
   DefaultExtension INI setting (as before) but then if current file was
   previously opened from or saved to disk its old extension is used as
@@ -134,15 +136,17 @@ Changes of the Extended edition
   Ctrl+Wheel Scroll - very handy to navigate long scripts. Roll the
   wheel while holding Ctrl down to scroll through entire pages (similar
   to Page Up/Down).
-  
+
+  Open/Save File dialogs now start with the path of last opened file.
+
   CSS syntax scheme improvements:
 
     - Added CSS 3 properties.
-    
+
     - Enabled //-inline comments (Ctrl+Q) that are used in LESS, SASS
       and other preprocessors.
-      
-    - Fixed brackets of nested rules that were not matching in some 
+
+    - Fixed brackets of nested rules that were not matching in some
       cases (visually and with Ctrl+B).
 
 
