@@ -4209,7 +4209,7 @@ void LoadSettings()
     if ( bSaveSettings ) {
         bSaveSettings = 1;
     }
-	// haccel
+    // haccel
     b_HL_highlight_selection =
         IniSectionGetInt ( pIniSection, L"HightLightSelection", 1 );
     if ( b_HL_highlight_selection ) {
@@ -4220,7 +4220,7 @@ void LoadSettings()
     if ( b_HL_ctrl_wheel_scroll ) {
         b_HL_ctrl_wheel_scroll = 1;
     }
-	//
+    //
     bSaveRecentFiles =
         IniSectionGetInt ( pIniSection, L"SaveRecentFiles", 0 );
     if ( bSaveRecentFiles ) {
@@ -4519,10 +4519,10 @@ void SaveSettings ( BOOL bSaveSettingsNow )
     }
     pIniSection = LocalAlloc ( LPTR, sizeof ( WCHAR ) * 32 * 1024 );
     cchIniSection = ( int ) LocalSize ( pIniSection ) / sizeof ( WCHAR );
-	// haccel
+    // haccel
     IniSectionSetInt ( pIniSection, L"HightLightSelection", b_HL_highlight_selection );
     IniSectionSetInt ( pIniSection, L"WheelScroll", b_HL_ctrl_wheel_scroll );
-	//
+    //
     IniSectionSetInt ( pIniSection, L"SaveSettings", bSaveSettings );
     IniSectionSetInt ( pIniSection, L"SaveRecentFiles", bSaveRecentFiles );
     IniSectionSetInt ( pIniSection, L"SaveFindReplace", bSaveFindReplace );
@@ -5661,7 +5661,8 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
                 PathCanonicalize ( tchInitialDir, tchModule );
             }
         } else {
-            lstrcpy ( tchInitialDir, g_wchWorkingDirectory );
+            // haccel
+            HL_Get_last_dir ( tchInitialDir );
         }
     }
     ZeroMemory ( &ofn, sizeof ( OPENFILENAME ) );
@@ -5674,13 +5675,13 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     ofn.lpfnHook = HL_OFN__hook_proc;
     ofn.Flags =
         OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
-        OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST | 
+        OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST |
         OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
-	if( _hl_use_prefix_in_open_dialog ){
-		ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER);
-	}else{
-		ofn.Flags |= OFN_FILEMUSTEXIST;
-	}
+    if ( _hl_use_prefix_in_open_dialog ) {
+        ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER );
+    } else {
+        ofn.Flags |= OFN_FILEMUSTEXIST;
+    }
     ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
     if ( GetOpenFileName ( &ofn ) ) {
         lstrcpyn ( lpstrFile, szFile, cchFile );
@@ -5718,7 +5719,8 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
             PathCanonicalize ( tchInitialDir, tchModule );
         }
     } else {
-        lstrcpy ( tchInitialDir, g_wchWorkingDirectory );
+        // haccel
+        HL_Get_last_dir ( tchInitialDir );
     }
     ZeroMemory ( &ofn, sizeof ( OPENFILENAME ) );
     ofn.lStructSize = sizeof ( OPENFILENAME );
