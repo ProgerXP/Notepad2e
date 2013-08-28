@@ -4209,11 +4209,18 @@ void LoadSettings()
     if ( bSaveSettings ) {
         bSaveSettings = 1;
     }
-    bSaveSettings =
+	// haccel
+    b_HL_highlight_selection =
         IniSectionGetInt ( pIniSection, L"HightLightSelection", 1 );
-    if ( bSaveSettings ) {
-        bSaveSettings = 1;
+    if ( b_HL_highlight_selection ) {
+        b_HL_highlight_selection = 1;
     }
+    b_HL_ctrl_wheel_scroll =
+        IniSectionGetInt ( pIniSection, L"WheelScroll", 1 );
+    if ( b_HL_ctrl_wheel_scroll ) {
+        b_HL_ctrl_wheel_scroll = 1;
+    }
+	//
     bSaveRecentFiles =
         IniSectionGetInt ( pIniSection, L"SaveRecentFiles", 0 );
     if ( bSaveRecentFiles ) {
@@ -4512,8 +4519,11 @@ void SaveSettings ( BOOL bSaveSettingsNow )
     }
     pIniSection = LocalAlloc ( LPTR, sizeof ( WCHAR ) * 32 * 1024 );
     cchIniSection = ( int ) LocalSize ( pIniSection ) / sizeof ( WCHAR );
-    IniSectionSetInt ( pIniSection, L"SaveSettings", bSaveSettings );
+	// haccel
     IniSectionSetInt ( pIniSection, L"HightLightSelection", b_HL_highlight_selection );
+    IniSectionSetInt ( pIniSection, L"WheelScroll", b_HL_ctrl_wheel_scroll );
+	//
+    IniSectionSetInt ( pIniSection, L"SaveSettings", bSaveSettings );
     IniSectionSetInt ( pIniSection, L"SaveRecentFiles", bSaveRecentFiles );
     IniSectionSetInt ( pIniSection, L"SaveFindReplace", bSaveFindReplace );
     IniSectionSetInt ( pIniSection, L"CloseFind", efrData.bFindClose );
