@@ -5700,6 +5700,7 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     OPENFILENAME ofn;
     WCHAR szNewFile[MAX_PATH];
     LPWSTR oext;
+    LPWSTR oname;
     WCHAR szFilter[NUMLEXERS * 1024];
     WCHAR tchInitialDir[MAX_PATH] = L"";
     lstrcpy ( szNewFile, lpstrFile );
@@ -5734,10 +5735,12 @@ BOOL SaveFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
                 OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST;
     // haccel #17
     oext = PathFindExtensionW ( szCurFile );
+    oname = PathFindFileNameW ( szCurFile );
     HL_WTrace ( "OLD EXT '%s'", oext );
+    HL_WTrace ( "OLD NAME '%s'", oname );
     if ( 0 == lstrlen ( szCurFile ) ) {
         ofn.lpstrDefExt = ( lstrlen ( tchDefaultExtension ) ) ? tchDefaultExtension : NULL;
-    } else  if ( NULL == oext ||  lstrlen ( oext ) < 2 ) {
+    } else  if ( NULL == oext ||  lstrlen ( oext ) < 2 || 0 == lstrcmp ( oext, oname ) ) {
         ofn.lpstrDefExt = NULL;
     } else {
         ofn.lpstrDefExt = ( oext + 1 );
