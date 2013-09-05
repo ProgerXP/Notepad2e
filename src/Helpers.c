@@ -2517,8 +2517,8 @@ VOID HL_Set_wheel_scroll ( BOOL on )
     }
 }
 BOOL CALLBACK HL_Enum_proc (
-    _In_  HWND hwnd,
-    _In_  LPARAM lParam
+      HWND hwnd,
+      LPARAM lParam
 )
 {
     WCHAR title[0xff + 1];
