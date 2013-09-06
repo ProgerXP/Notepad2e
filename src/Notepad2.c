@@ -730,11 +730,13 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
 LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
     static BOOL bShutdownOK;
+	//HL_Trace("MESSAGE %d" , umsg);
     switch ( umsg ) {
             // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
             // Cool idea, don't know if this has any effect... ;-)
-        case WM_MOVE:
         case WM_MOUSEACTIVATE:
+			HL_Edit_selection_stop(TRUE);
+        case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:
         case WM_NCPAINT:
