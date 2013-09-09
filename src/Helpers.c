@@ -2394,21 +2394,58 @@ VOID HL_Edit_process_changes ( )
     int	cpos = 0;
     int	nlen = HL_Get_current_word ( &nword , &cpos );
     int	diflen = wlen - nlen;
+    int	delta = 0;
+    BOOL	replace = FALSE;
+    tr.lpstrText = 0;
     //
     HL_Trace ( "Process SELEDIT changes: count '%d' , old word '%s' , new word '%s'" , _hl_sel_len , _hl_sel_edit_orig , nword );
-    for ( k = 0 ; k < _hl_sel_len; ++k ) {
-        //
-        tr.chrg.cpMin = _hl_sel_edit_pos[k];
-        if ( tr.chrg.cpMin > _hl_sel_edit_word_pos ) {
-            tr.chrg.cpMin -= diflen;
+    if ( nword && strcmp ( _hl_sel_edit_orig , nword ) ) {
+		SendMessage( hwndEdit , SCI_BEGINUNDOACTION , 0,0 );
+        for ( k = 0 ; k < _hl_sel_len; ++k ) {
+            //
+            replace = TRUE;
+            //
+            tr.chrg.cpMin = _hl_sel_edit_pos[k] + delta;
+            if ( tr.chrg.cpMin == _hl_sel_edit_word_pos ) { // at word
+				_hl_sel_edit_word_pos += delta;
+                HL_Trace ( "new Current word pos %d" , _hl_sel_edit_word_pos );
+                replace = FALSE;
+            } else if ( tr.chrg.cpMin > _hl_sel_edit_word_pos ) { // after word
+                tr.chrg.cpMin -= diflen;
+                tr.chrg.cpMax = tr.chrg.cpMin + wlen;
+                tr.lpstrText = malloc ( wlen + 1 );
+            } else {//before word
+                tr.chrg.cpMax = tr.chrg.cpMin + wlen;
+                tr.lpstrText = malloc ( wlen + 1 );
+            }
+			//
+			_hl_sel_edit_pos[k] = tr.chrg.cpMin;
+            //
+            if ( replace ) {
+                srchlen = SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr ) ;
+                if ( tr.chrg.cpMin == _hl_sel_edit_word_pos ) { // at word
+                    replace = ( 0 == strcmp ( tr.lpstrText , nword ) );
+                } else {
+                    replace = ( 0 == strcmp ( tr.lpstrText , _hl_sel_edit_orig ) );
+                }
+                HL_Trace ( "found text at index '%d' pos '%d' : '%s'" , k , tr.chrg.cpMin , tr.lpstrText );
+            }
+            //
+            if ( replace ) {
+                SendMessage ( hwndEdit , SCI_DELETERANGE , tr.chrg.cpMin , tr.chrg.cpMax - tr.chrg.cpMin );
+                SendMessage ( hwndEdit , SCI_INSERTTEXT , tr.chrg.cpMin , ( LPARAM ) nword );
+                delta -= ( diflen );
+                //
+            } else {
+                HL_Trace ( "WARN - SKIP SELEDIT work at %d pos %d " , k , tr.chrg.cpMin );
+            }
+            if ( tr.lpstrText ) {
+                free ( tr.lpstrText );
+                tr.lpstrText = 0;
+            }
         }
-        tr.chrg.cpMax = tr.chrg.cpMin + wlen;
-        tr.lpstrText = malloc ( wlen + 1 );
-        //
-        srchlen = SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr ) ;
-        HL_Trace ( "found text at index '%d' pos '%d' : '%s'" , k , tr.chrg.cpMin , tr.lpstrText );
-        //
-        free ( tr.lpstrText );
+        strcpy ( _hl_sel_edit_orig , nword );
+		SendMessage( hwndEdit , SCI_ENDUNDOACTION , 0,0 );
     }
     if ( nword ) {
         free ( nword );

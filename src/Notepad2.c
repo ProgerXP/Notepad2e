@@ -3335,6 +3335,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                               hwnd, AboutDlgProc );
             break;
         case CMD_ESCAPE:
+			HL_Edit_selection_stop( TRUE );
             if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );
             } else if ( iEscFunction == 2 ) {
@@ -3348,6 +3349,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // Newline with toggled auto indent setting
         case CMD_CTRLENTER:
+			HL_Edit_selection_stop( TRUE );
             bAutoIndent = ( bAutoIndent ) ? 0 : 1;
             SendMessage ( hwndEdit, SCI_NEWLINE, 0, 0 );
             bAutoIndent = ( bAutoIndent ) ? 0 : 1;
