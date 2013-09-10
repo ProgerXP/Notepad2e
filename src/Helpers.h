@@ -254,7 +254,11 @@ VOID	HL_WTrace2 ( const char *fmt , LPCWSTR word1 , LPCWSTR word2 );
 VOID	HL_Highlight_turn(BOOL edit);
 VOID	HL_Edit_selection_start();
 VOID	HL_Edit_selection( );
-VOID	HL_Edit_selection_stop( BOOL complete );
+/*
+1 - accept
+2 - reject (restore)
+*/
+VOID	HL_Edit_selection_stop( int mode );
 BOOL	HL_Is_Empty(LPCWSTR txt );
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );

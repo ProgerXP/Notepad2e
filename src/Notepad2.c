@@ -735,7 +735,7 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
             // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
             // Cool idea, don't know if this has any effect... ;-)
         case WM_MOUSEACTIVATE:
-			HL_Edit_selection_stop(TRUE);
+			HL_Edit_selection_stop(1);
         case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:
@@ -3335,7 +3335,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                               hwnd, AboutDlgProc );
             break;
         case CMD_ESCAPE:
-			HL_Edit_selection_stop( TRUE );
+			HL_Edit_selection_stop( 2 );
             if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );
             } else if ( iEscFunction == 2 ) {
@@ -3349,7 +3349,6 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // Newline with toggled auto indent setting
         case CMD_CTRLENTER:
-			HL_Edit_selection_stop( TRUE );
             bAutoIndent = ( bAutoIndent ) ? 0 : 1;
             SendMessage ( hwndEdit, SCI_NEWLINE, 0, 0 );
             bAutoIndent = ( bAutoIndent ) ? 0 : 1;
