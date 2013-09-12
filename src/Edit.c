@@ -5428,6 +5428,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                             WCHAR wchIns[256] = L"</";
                             int  cchIns = 2;
                             BOOL bClear = TRUE;
+                            BOOL bCopy = FALSE;
                             GetDlgItemTextW ( hwnd, 100, wchBuf, 256 );
                             if ( lstrlen ( wchBuf ) >= 3 ) {
                                 if ( wchBuf[0] == L'<' ) {
@@ -5440,9 +5441,6 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                                         *pwCur != L'\t' &&
                                         ( StrChr ( L":_-.", *pwCur ) || IsCharAlphaNumericW ( *pwCur ) ) ) {
                                         wchIns[cchIns++] = *pwCur++;
-#if 0
-                                        HL_Trace ( "%s strchr(%d) IsCharAlphaNumericW(%d)", pwCur , StrChr ( L":_-.", *pwCur ) , IsCharAlphaNumericW ( *pwCur ) );
-#endif
                                     }
                                     while (
                                         *pwCur &&
@@ -5464,11 +5462,23 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                                                 lstrcmpi ( wchIns, L"</meta>" ) ) {
                                             SetDlgItemTextW ( hwnd, 101, wchIns );
                                             bClear = FALSE;
+                                        } else {
+                                            bCopy = TRUE;
                                         }
+                                    } else {
+                                        bCopy = TRUE;
                                     }
+                                    HL_WTrace ( "wchIns %s", wchIns );
+                                    HL_WTrace ( "pwCur %s", pwCur );
+                                } else {
+                                    bCopy = TRUE;
                                 }
+                            } else {
+                                bCopy = TRUE;
                             }
-                            if ( bClear ) {
+                            if ( bCopy ) {
+                                SetDlgItemTextW ( hwnd, 101, wchBuf );
+                            } else if ( bClear ) {
                                 SetDlgItemTextW ( hwnd, 101, L"" );
                             }
                         }
@@ -5479,9 +5489,12 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                         GetDlgItemTextW ( hwnd, 101, pdata->pwsz2, 256 );
                         EndDialog ( hwnd, IDOK );
                         // if all`s ok
+#if 0
                         if ( lstrlen ( pdata->pwsz1 ) > 1
                                 && L'<' == pdata->pwsz1[0]
-                                && L'>' == pdata->pwsz1[lstrlen ( pdata->pwsz1 ) - 1] ) {
+                                && L'>' == pdata->pwsz1[lstrlen ( pdata->pwsz1 ) - 1] )
+#endif
+                        {
                             lstrcpy ( hl_last_html_tag , pdata->pwsz1 );
                             lstrcpy ( hl_last_html_end_tag , pdata->pwsz2 );
                         }
