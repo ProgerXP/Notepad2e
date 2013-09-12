@@ -5409,6 +5409,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
     switch ( umsg ) {
         case WM_INITDIALOG: {
                 WCHAR end[0xff] = L"</";
+				INT len = lstrlen(hl_last_html_tag);
                 pdata = ( PTAGSDATA ) lParam;
                 SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
@@ -5416,7 +5417,14 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 SetDlgItemTextW ( hwnd, 101, hl_last_html_end_tag );
                 //
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );
-                PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
+                if ( len > 2 &&
+					L'<' == hl_last_html_tag[0] &&
+					L'>' == hl_last_html_tag[len-1] 
+				) {
+                    PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
+                } else {
+                    PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 0, lstrlen ( hl_last_html_tag ) );
+                }
                 CenterDlgInParent ( hwnd );
             }
             return FALSE;
