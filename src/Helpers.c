@@ -35,6 +35,11 @@
 
 // haccel work
 //
+#ifdef _DEBUG
+#define HL_TRACE(FMT,...)	HL_Trace ( "{line: %d} - "#FMT  , __LINE__ , __VA_ARGS__ );
+#else
+#define HL_TRACE(FMT,...)	 (void)( "{line: %d} - "#FMT  , __LINE__ , __VA_ARGS__ );
+#endif
 #define HL_SELECT_INDICATOR 9
 #define HL_SELECT_INDICATOR_SINGLE 10
 #define HL_SELECT_INDICATOR_EDIT 11
@@ -2413,7 +2418,7 @@ VOID HL_Edit_process_changes ( BOOL rollback )
     int	delta = 0;
     BOOL	replace = FALSE;
     BOOL	need_replace ;
-	BOOL	current_pos_passed = 0;
+    BOOL	current_pos_passed = 0;
     int old_ind;
     int len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
     tr.lpstrText = 0;
@@ -2426,46 +2431,50 @@ VOID HL_Edit_process_changes ( BOOL rollback )
         nlen = HL_Get_current_word ( &nword , &cpos );
     }
     diflen = wlen - nlen;
-	//
+    //
 #ifdef _DEBUG
-	for( k = 0 ; k < _hl_sel_len;++k){
-		HL_Trace("pos %d = %d" , k , _hl_sel_edit_pos[k]);
-	}
+    for ( k = 0 ; k < _hl_sel_len; ++k ) {
+        HL_Trace ( "pos %d = %d" , k , _hl_sel_edit_pos[k] );
+    }
 #endif
     //
-    HL_Trace ( "Process SELEDIT changes: count '%d' , old word '%s' , new word '%s' , cur pos %d , doc len %d"
+    HL_TRACE ( "Process SELEDIT changes: count '%d' , old word '%s' , new word '%s' , cur pos %d , doc len %d , rollback? %d"
                , _hl_sel_len
                , ( _hl_sel_edit_prev )
                , nword
                , _hl_sel_edit_word_pos
-               , len );
+               , len
+               , rollback
+             );
     old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
     if ( nword ) {
         need_replace = strcmp ( _hl_sel_edit_prev , nword );
+   //     SendMessage ( hwndEdit , SCI_ADDUNDOACTION , SendMessage ( hwndEdit , SCI_LINEFROMPOSITION , old_ind , 0 ) , UNDO_MAY_COALESCE );
         SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
         for ( k = 0 ; k < _hl_sel_len; ++k ) {
             //
             replace = need_replace;
             //
             tr.chrg.cpMin = _hl_sel_edit_pos[k] + delta;
-            if ( !current_pos_passed 
-				&& tr.chrg.cpMin == _hl_sel_edit_word_pos + delta ) { // at word
+            HL_TRACE ( "MIN %d" , tr.chrg.cpMin );
+            if ( !current_pos_passed
+                    && tr.chrg.cpMin == _hl_sel_edit_word_pos + delta ) { // at word
                 replace = need_replace && rollback;
                 _hl_sel_edit_word_pos += delta;
-				delta -= ( diflen );
-                HL_Trace ( " new Current word pos %d" , _hl_sel_edit_word_pos );
+                HL_TRACE ( " new Current word pos %d" , _hl_sel_edit_word_pos );
                 if ( replace ) {
                     tr.chrg.cpMax = tr.chrg.cpMin + wlen;
                     tr.lpstrText = malloc ( wlen + 1 );
                 } else {
                     tr.chrg.cpMax = tr.chrg.cpMin + nlen;
+                    delta -= ( diflen );
                 }
-				current_pos_passed = 1;
+                current_pos_passed = 1;
             } else {
-                if ( tr.chrg.cpMin > _hl_sel_edit_word_pos + delta && !rollback ) { // after word
-					HL_Trace("correct after curpos - old: %d diff:%d" , tr.chrg.cpMin , diflen);
+                if ( 0 && tr.chrg.cpMin > _hl_sel_edit_word_pos + delta && !rollback ) { // after word
+                    HL_TRACE ( "correct after curpos - old: %d diff:%d" , tr.chrg.cpMin , diflen );
                     tr.chrg.cpMin -= diflen;
                 }
                 tr.chrg.cpMax = tr.chrg.cpMin + wlen;
@@ -2475,12 +2484,12 @@ VOID HL_Edit_process_changes ( BOOL rollback )
             //
             if ( need_replace ) {
                 _hl_sel_edit_pos[k] = tr.chrg.cpMin;
-                HL_Trace ( " delta %d & pos %d & doc %d" , delta , _hl_sel_edit_pos[k] , len );
+                HL_TRACE ( " delta %d & pos %d & doc %d" , delta , _hl_sel_edit_pos[k] , len );
             }
             //
             if ( replace ) {
                 if ( tr.chrg.cpMax > len ) {
-                    HL_Trace ( "WARN ABORT sel edit at range (%d/%d) doc len %d  index %d", tr.chrg.cpMin , tr.chrg.cpMax , len , k );
+                    HL_TRACE ( "WARN ABORT sel edit at range (%d/%d) doc len %d  index %d", tr.chrg.cpMin , tr.chrg.cpMax , len , k );
                     break;
                 }
                 srchlen = SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr ) ;
@@ -2489,7 +2498,7 @@ VOID HL_Edit_process_changes ( BOOL rollback )
                 } else {
                     replace = ( 0 == strcmp ( tr.lpstrText , _hl_sel_edit_prev ) );
                 }
-                HL_Trace ( "found text at index '%d' pos '%d' : '%s'" , k , tr.chrg.cpMin , tr.lpstrText );
+                HL_TRACE ( "found text at index '%d' pos '%d' : '%s' , replace: %d" , k , tr.chrg.cpMin , tr.lpstrText , replace );
             }
             //
             if ( replace ) {
@@ -2497,10 +2506,10 @@ VOID HL_Edit_process_changes ( BOOL rollback )
                 SendMessage ( hwndEdit , SCI_INSERTTEXT , tr.chrg.cpMin , ( LPARAM ) nword );
                 SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , tr.chrg.cpMin , strlen ( nword ) );
                 len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
-            delta -= ( diflen );
+                delta -= ( diflen );
                 //
             } else {
-                HL_Trace ( "WARN - SKIP SELEDIT work at %d pos %d " , k , tr.chrg.cpMin );
+                HL_TRACE ( "WARN - SKIP SELEDIT work at %d pos %d " , k , tr.chrg.cpMin );
                 SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , tr.chrg.cpMin , tr.chrg.cpMax - tr.chrg.cpMin );
             }
             if ( tr.lpstrText ) {
