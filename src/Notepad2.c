@@ -54,6 +54,7 @@ HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
 extern	BOOL	_hl_use_prefix_in_open_dialog;
+extern	BOOL	b_HL_edit_selection;
 
 #define NUMTOOLBITMAPS  23
 #define NUMINITIALTOOLS 24
@@ -730,12 +731,14 @@ HWND InitInstance ( HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow )
 LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
     static BOOL bShutdownOK;
-	//HL_Trace("MESSAGE %d" , umsg);
+    //HL_Trace("MESSAGE %d" , umsg);
     switch ( umsg ) {
             // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
             // Cool idea, don't know if this has any effect... ;-)
+        case WM_KEYDOWN:
+            break;
         case WM_MOUSEACTIVATE:
-			HL_Edit_selection_stop(1);
+            HL_Edit_selection_stop ( 1 );
         case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:
@@ -2228,7 +2231,11 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             SelectDefLineEndingDlg ( hwnd, &iDefaultEOLMode );
             break;
         case IDM_EDIT_UNDO:
-            SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
+            if ( b_HL_edit_selection ) {
+				HL_Edit_selection_stop(2);
+            } else {
+                SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
+            }
             break;
         case IDM_EDIT_REDO:
             SendMessage ( hwndEdit, SCI_REDO, 0, 0 );
@@ -3335,8 +3342,9 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                               hwnd, AboutDlgProc );
             break;
         case CMD_ESCAPE:
-			HL_Edit_selection_stop( 2 );
-            if ( iEscFunction == 1 ) {
+            if ( b_HL_edit_selection ) {
+                HL_Edit_selection_stop ( 2 );
+            } else if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );
             } else if ( iEscFunction == 2 ) {
                 SendMessage ( hwnd, WM_CLOSE, 0, 0 );

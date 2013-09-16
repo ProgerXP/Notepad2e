@@ -60,7 +60,7 @@ HWND	g_hwnd = 0;
 BOOL	_hl_skip_highlight = FALSE;
 BOOL	_hl_use_prefix_in_open_dialog = TRUE;
 //
-BOOL	_hl_edit_selection = FALSE;
+BOOL	b_HL_edit_selection = FALSE;
 BOOL	_hl_edit_selection_init = FALSE;
 char	_hl_sel_edit_prev[HL_SELECT_MAX_SIZE];
 char	_hl_sel_edit_orig[HL_SELECT_MAX_SIZE];
@@ -2208,6 +2208,22 @@ VOID RestoreWndFromTray ( HWND hWnd )
     // properly until DAR finished
 }
 
+int	HL_key_action ( int key , int msg )
+{
+    if ( b_HL_edit_selection ) {
+        HL_TRACE ( "enter key %d on message %d , edit mode %d " , key , msg , b_HL_edit_selection );
+        if ( VK_RETURN == key ) {
+            if ( WM_CHAR == msg ) {
+                HL_Edit_selection_stop ( 1 );
+            }
+            return 0;
+        } else if ( VK_LEFT == key || VK_RIGHT == key ) {
+            HL_Edit_selection_stop ( 1 );
+            return 0;
+        }
+    }
+    return -1;
+}
 
 VOID HL_Init ( HWND hWnd )
 {
@@ -2248,6 +2264,7 @@ VOID HL_Init ( HWND hWnd )
     _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"ShellMenuType" , CMF_EXPLORE );
     _hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"OpenDialogByPrefix" , _hl_use_prefix_in_open_dialog );
     _hl_sel_len = 0;
+    hl_proc_action = HL_key_action;
 #endif
 }
 
@@ -2296,7 +2313,7 @@ VOID HL_Highlight_word ( LPCSTR  word )
         ttf1.chrg.cpMax = min ( ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE , SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
         ttf1.lpstrText = ( LPSTR ) word;
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
-        if ( _hl_edit_selection ) {
+        if ( b_HL_edit_selection ) {
             SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
         } else if ( -1 != res ) {
             ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
@@ -2359,7 +2376,7 @@ VOID HL_Highlight_turn ( BOOL edit_sel )
 {
     if ( b_HL_highlight_selection ) {
         //
-        if ( edit_sel || !_hl_edit_selection ) {
+        if ( edit_sel || !b_HL_edit_selection ) {
             char *buf = 0;
             int delta = HL_Get_current_word ( &buf , &_hl_sel_edit_word_pos );
             if ( delta > 1 && delta < HL_SELECT_MAX_SIZE ) {
@@ -2393,15 +2410,16 @@ VOID HL_Highlight_turn ( BOOL edit_sel )
 VOID HL_Edit_selection_start()
 {
     // if mode already ON - then turn it OFF
-    if ( _hl_edit_selection ) {
+    if ( b_HL_edit_selection ) {
         HL_Edit_selection_stop ( 1 );
         return;
     }
-    _hl_edit_selection = TRUE;
+    b_HL_edit_selection = TRUE;
     _hl_edit_selection_init = TRUE;
     _hl_sel_len = 0;
     HL_Highlight_turn ( TRUE );
     _hl_edit_selection_init = FALSE;
+    SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
 }
 
 
@@ -2451,8 +2469,6 @@ VOID HL_Edit_process_changes ( BOOL rollback )
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
     if ( nword ) {
         need_replace = strcmp ( _hl_sel_edit_prev , nword );
-   //     SendMessage ( hwndEdit , SCI_ADDUNDOACTION , SendMessage ( hwndEdit , SCI_LINEFROMPOSITION , old_ind , 0 ) , UNDO_MAY_COALESCE );
-        SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
         for ( k = 0 ; k < _hl_sel_len; ++k ) {
             //
             replace = need_replace;
@@ -2523,7 +2539,6 @@ VOID HL_Edit_process_changes ( BOOL rollback )
         }
         HL_Trace ( " seledit complete	doc %d" , len );
         strcpy ( _hl_sel_edit_prev , nword );
-        SendMessage ( hwndEdit , SCI_ENDUNDOACTION , 0, 0 );
     }
     if ( nword && !rollback ) {
         free ( nword );
@@ -2531,7 +2546,7 @@ VOID HL_Edit_process_changes ( BOOL rollback )
 }
 VOID HL_Edit_selection()
 {
-    if ( _hl_edit_selection ) {
+    if ( b_HL_edit_selection ) {
         if ( HL_Edit_same_word() ) {
             HL_Edit_process_changes ( FALSE );
         } else {
@@ -2544,13 +2559,18 @@ VOID HL_Edit_selection()
 VOID HL_Edit_selection_stop ( int mode )
 {
     assert ( mode < 3 && mode > 0 );
-    if ( _hl_edit_selection && 2 == mode ) {
-        HL_Edit_process_changes ( TRUE );
+    if ( b_HL_edit_selection ) {
+        if ( 2 == mode ) {
+            HL_Edit_process_changes ( TRUE );
+        }
+        //
+        SendMessage ( hwndEdit , SCI_SETSEL , _hl_sel_edit_word_pos , _hl_sel_edit_word_pos );
+        //
+        HL_Highlight_turn ( FALSE );
+        SendMessage ( hwndEdit , SCI_ENDUNDOACTION , 0, 0 );
     }
-    _hl_edit_selection = FALSE;
+    b_HL_edit_selection = FALSE;
     _hl_edit_selection_init = FALSE;
-    _hl_sel_len = 0;
-    HL_Highlight_turn ( FALSE );
 }
 VOID HL_Trace ( const char *fmt , ... )
 {
@@ -2735,18 +2755,13 @@ VOID HL_Reload_Settings()
 }
 BOOL HL_Is_Empty ( LPCWSTR txt )
 {
-    BOOL res = TRUE;
-    LPWSTR t = malloc ( ( lstrlen ( txt ) + 1 ) * sizeof ( WCHAR ) );;
-    lstrcpy ( t, txt );
-    while ( lstrlen ( t ) ) {
-        if ( isspace ( t[0] ) ) {
-            t++;
-        } else {
-            res = FALSE;
-            break;
+    int t = lstrlen ( txt );
+    while ( --t >= 0 ) {
+        if ( !isspace ( txt[t] ) ) {
+            return FALSE;
         }
     }
-    return res;
+    return TRUE;
 }
 BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 {
@@ -2887,4 +2902,5 @@ VOID HL_Get_last_dir ( LPTSTR out )
         lstrcpy ( out, g_wchWorkingDirectory );
     }
 }
+
 ///   End of Helpers.c   \\\
