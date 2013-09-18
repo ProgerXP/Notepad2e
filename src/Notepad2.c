@@ -738,7 +738,7 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
         case WM_KEYDOWN:
             break;
         case WM_MOUSEACTIVATE:
-            HL_Edit_selection_stop ( 1 );
+            HL_Edit_selection_stop ( HL_SE_APPLY | HL_SE_SKIP_RESTORE_CURRENT_POS );
         case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:
@@ -2232,7 +2232,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case IDM_EDIT_UNDO:
             if ( b_HL_edit_selection ) {
-				HL_Edit_selection_stop(2);
+				HL_Edit_selection_stop( HL_SE_REJECT );
             } else {
                 SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
             }
@@ -3343,7 +3343,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case CMD_ESCAPE:
             if ( b_HL_edit_selection ) {
-                HL_Edit_selection_stop ( 2 );
+                HL_Edit_selection_stop ( HL_SE_REJECT );
             } else if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );
             } else if ( iEscFunction == 2 ) {
