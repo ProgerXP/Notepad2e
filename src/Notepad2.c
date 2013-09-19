@@ -738,7 +738,7 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
         case WM_KEYDOWN:
             break;
         case WM_MOUSEACTIVATE:
-            HL_Edit_selection_stop ( HL_SE_APPLY | HL_SE_SKIP_RESTORE_CURRENT_POS );
+            HL_Edit_selection_stop ( HL_SE_APPLY );
         case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:

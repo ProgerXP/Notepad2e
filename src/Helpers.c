@@ -2396,7 +2396,8 @@ BOOL	HL_Edit_same_word( )
 {
     int pos = ( int ) SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 );
     int ostart = SendMessage ( hwndEdit , SCI_WORDSTARTPOSITION , _hl_sel_edit_word_pos , 1 );
-    int oend = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , _hl_sel_edit_word_pos , 1 );
+    // int oend = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , _hl_sel_edit_word_pos , 1 );
+    int oend = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
     return pos >= ostart && pos <= oend;
 }
 
@@ -2471,15 +2472,22 @@ VOID HL_Edit_process_changes ( BOOL rollback )
     BOOL	need_replace ;
     BOOL	current_pos_passed = 0;
     int old_ind;
+    int pos;
     int len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
     tr.lpstrText = 0;
     //
+    pos = ( int ) SendMessage ( hwndEdit, SCI_GETCURRENTPOS, 0, 0 );
     //
     if ( rollback ) {
         nword = _hl_sel_edit_orig;
         nlen = strlen ( nword );
     } else {
-        nlen = HL_Get_current_word ( &nword , &cpos );
+        tr.chrg.cpMin = _hl_sel_edit_word_pos;
+        tr.chrg.cpMax = pos;
+        nlen =  tr.chrg.cpMax - tr.chrg.cpMin;
+        tr.lpstrText = malloc ( nlen + 1 );
+        nlen = SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr ) ;
+        nword = tr.lpstrText;
     }
     diflen = wlen - nlen;
     //
@@ -2583,7 +2591,7 @@ VOID HL_Edit_selection()
         if ( HL_Edit_same_word() ) {
             HL_Edit_process_changes ( FALSE );
         } else {
-            HL_Edit_selection_stop ( HL_SE_APPLY | HL_SE_SKIP_RESTORE_CURRENT_POS );
+            HL_Edit_selection_stop ( HL_SE_APPLY  );
         }
     } else {
         HL_Highlight_turn ( FALSE );
@@ -2596,8 +2604,9 @@ VOID HL_Edit_selection_stop ( int mode )
             HL_Edit_process_changes ( TRUE );
         }
         //
-        if ( 0 == (mode & HL_SE_SKIP_RESTORE_CURRENT_POS ) ){
-            SendMessage ( hwndEdit , SCI_SETSEL , _hl_sel_edit_word_pos , _hl_sel_edit_word_pos );
+		{
+			int pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
+            SendMessage ( hwndEdit , SCI_SETSEL , pos , pos );
         }
         b_HL_edit_selection = FALSE;
         //

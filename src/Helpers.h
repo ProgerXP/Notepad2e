@@ -35,8 +35,7 @@ typedef enum CSS_PROP{
 
 typedef	enum{
 	HL_SE_APPLY = 1 << 0,
-	HL_SE_REJECT = 1 << 1,
-	HL_SE_SKIP_RESTORE_CURRENT_POS = 1 << 2
+	HL_SE_REJECT = 1 << 1
 }	HL_SELEDIT_STOP_OPT;
 
 extern WCHAR szIniFile[MAX_PATH];
