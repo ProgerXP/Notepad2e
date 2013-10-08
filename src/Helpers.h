@@ -22,8 +22,6 @@
 
 extern HINSTANCE g_hInstance;
 extern UINT16 g_uWinVer;
-extern BOOL	  b_HL_highlight_selection;
-extern BOOL	  b_HL_ctrl_wheel_scroll;
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
@@ -69,6 +67,7 @@ __inline BOOL IniSectionSetInt ( LPWSTR lpCachedIniSection, LPCWSTR lpName, int 
 
 
 extern HWND hwndEdit;
+
 __inline void BeginWaitCursor()
 {
     SendMessage ( hwndEdit, SCI_SETCURSOR, ( WPARAM ) SC_CURSORWAIT, 0 );
@@ -255,14 +254,6 @@ VOID	HL_Release();
 VOID	HL_Trace ( const char *fmt , ... );
 VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
 VOID	HL_WTrace2 ( const char *fmt , LPCWSTR word1 , LPCWSTR word2 );
-VOID	HL_Highlight_turn(BOOL edit);
-VOID	HL_Edit_selection_start();
-VOID	HL_Edit_selection( );
-/*
-1 - accept
-2 - reject (restore)
-*/
-VOID	HL_Edit_selection_stop( int mode );
 BOOL	HL_Is_Empty(LPCWSTR txt );
 BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
@@ -278,6 +269,14 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(
 
 #define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
-
+#ifdef _DEBUG
+#define HL_TRACE(FMT,...)	HL_Trace ( "{%s: %d} - "#FMT , __FILE__ , __LINE__ , __VA_ARGS__ );
+#define HL_TRACE_S(OBJ)		HL_Trace ( "{%s: %d} [%s]=%s " , __FILE__ , __LINE__ , #OBJ , OBJ );
+#define HL_TRACE_I(OBJ)		HL_Trace ( "{%s: %d} [%s]=%d " , __FILE__ , __LINE__ , #OBJ , OBJ );
+#else
+#define HL_TRACE(FMT,...)	 (void)(FMT);
+#define HL_TRACE_S(OBJ)		(void)(OBJ);
+#define HL_TRACE_I(OBJ)		(void)(OBJ);	
+#endif
 
 ///   End of Helpers.h   \\\

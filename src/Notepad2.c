@@ -36,6 +36,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "SciCall.h"
+#include "HLSelection.h"
 
 
 VOID HL_Msg_create();
@@ -53,8 +54,6 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
-extern	BOOL	_hl_use_prefix_in_open_dialog;
-extern	BOOL	b_HL_edit_selection;
 
 #define NUMTOOLBITMAPS  23
 #define NUMINITIALTOOLS 24
@@ -163,8 +162,10 @@ BOOL      bTransparentModeAvailable;
 BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
 /* haccel */
-BOOL	  b_HL_highlight_selection = TRUE;
-BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
+extern	BOOL		b_HL_highlight_selection ;
+extern	BOOL		b_Hl_use_prefix_in_open_dialog;
+extern	BOOL		b_HL_edit_selection;
+extern	BOOL		b_HL_ctrl_wheel_scroll ;
 /**/
 
 typedef struct _wi {
@@ -738,7 +739,7 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
         case WM_KEYDOWN:
             break;
         case WM_MOUSEACTIVATE:
-            HL_Edit_selection_stop ( HL_SE_APPLY );
+            HLS_Edit_selection_stop ( HL_SE_APPLY );
         case WM_MOVE:
         case WM_NCHITTEST:
         case WM_NCCALCSIZE:
@@ -2232,7 +2233,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case IDM_EDIT_UNDO:
             if ( b_HL_edit_selection ) {
-				HL_Edit_selection_stop( HL_SE_REJECT );
+				HLS_Edit_selection_stop( HL_SE_REJECT );
             } else {
                 SendMessage ( hwndEdit, SCI_UNDO, 0, 0 );
             }
@@ -3315,7 +3316,8 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // haccel cases
         case ID_EDIT_EDITSELECTION: {
-                HL_Edit_selection_start();
+                HLS_Edit_selection_start();
+				return 1;
             }
             break;
         case ID_SETTINGS_RELOADFROMDISK: {
@@ -3329,7 +3331,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
             b_HL_highlight_selection = ( b_HL_highlight_selection ) ? FALSE : TRUE;
-            HL_Highlight_turn ( FALSE );
+            HLS_Update_selection ( SH_INIT );
             break;
             //
         case ID_SETTINGS_CTRL_WHEEL_SCROLL:
@@ -3343,7 +3345,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case CMD_ESCAPE:
             if ( b_HL_edit_selection ) {
-                HL_Edit_selection_stop ( HL_SE_REJECT );
+                HLS_Edit_selection_stop ( HL_SE_REJECT );
             } else if ( iEscFunction == 1 ) {
                 SendMessage ( hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0 );
             } else if ( iEscFunction == 2 ) {
@@ -3986,10 +3988,9 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     /*******************/
-                    if ( b_HL_highlight_selection ) { //&& ( scn->updated & SC_UPDATE_SELECTION || scn->updated & SC_UPDATE_V_SCROLL ) ) {
-                        //HL_Highlight_turn();
-                        HL_Edit_selection();
-                    }
+					if( b_HL_highlight_selection ){
+						HLS_Update_selection(SH_UPDATE);
+					}
                     break;
                 case SCN_CHARADDED:
                     // Auto indent
@@ -4093,7 +4094,7 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     break;
                 case SCN_MODIFIED:
                     if ( b_HL_highlight_selection ) {
-                        HL_Highlight_turn ( FALSE );
+                        HLS_Update_selection ( SH_MODIF );
                     }
                 case SCN_ZOOM:
                     UpdateLineNumberWidth();
@@ -5688,7 +5689,7 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
         OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
         OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST |
         OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
-    if ( _hl_use_prefix_in_open_dialog ) {
+    if ( b_Hl_use_prefix_in_open_dialog ) {
         ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER );
     } else {
         ofn.Flags |= OFN_FILEMUSTEXIST;
