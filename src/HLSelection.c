@@ -32,6 +32,7 @@ SE_DATA		_hl_se_array [HL_SELECT_MAX_COUNT];
 UINT		_hl_se_count = 0; // total count   '
 struct	Sci_TextRange	_hl_se_tr;
 UINT		_hl_se_old_len = 0;
+BOOL		_hl_se_mode_whole_word = TRUE;
 
 int	HLS_key_action ( int key , int msg )
 {
@@ -124,7 +125,11 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             _hl_se_count = 0;
             //    strcpy ( _hl_sel_edit_prev , word );
             //    strcpy ( _hl_sel_edit_orig , word );
-            search_opt = SCFIND_MATCHCASE;
+            if ( _hl_se_mode_whole_word ) {
+                search_opt |= SCFIND_MATCHCASE;
+			} else {
+				search_opt = SCFIND_MATCHCASE;
+            }
         }
         // 2 first words
         ttf1.chrg.cpMin = max ( ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE , 0 );
@@ -197,6 +202,7 @@ VOID	HLS_Get_word()
         _hl_se_tr.chrg.cpMin = SendMessage ( hwndEdit , SCI_GETSELECTIONSTART , 0 , 0 );
         _hl_se_tr.chrg.cpMax = SendMessage ( hwndEdit , SCI_GETSELECTIONEND , 0 , 0 );
         sel_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
+        _hl_se_mode_whole_word = FALSE;
         //
         if ( sel_len < 1 ) {
             sel_len = 0;
@@ -206,16 +212,16 @@ VOID	HLS_Get_word()
         _hl_se_tr.chrg.cpMin = SendMessage ( hwndEdit , SCI_WORDSTARTPOSITION , cpos , TRUE );
         _hl_se_tr.chrg.cpMax = SendMessage ( hwndEdit , SCI_WORDENDPOSITION , cpos , TRUE );
         sel_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
+        _hl_se_mode_whole_word = TRUE;
     }
     //
-    if ( sel_len > 1 ) {
+    if ( sel_len > 0 ) {
         _hl_se_tr.lpstrText = malloc ( sel_len + 1 );
         SendMessage ( hwndEdit, SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
     } else {
         _hl_se_tr.chrg.cpMin = 0;
         _hl_se_tr.chrg.cpMax = 0;
     }
-
 }
 
 VOID HLS_Highlight_turn ( )
@@ -251,7 +257,7 @@ VOID HLS_Highlight_turn ( )
 VOID HLS_process_changes ( UINT opt )
 {
     int old_ind;
-	int k;
+    int k = 0;
     //
 #ifdef _DEBUG
     HL_TRACE ( "current TR '%s' (%d - %d)" , _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax	);
@@ -259,15 +265,13 @@ VOID HLS_process_changes ( UINT opt )
         HL_TRACE ( "pos %d = %d (%d)" , k , _hl_se_array[k].pos , _hl_se_array[k].len );
     }
 #endif
-
-	old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
-	SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
-	SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
-	_hl_se_old_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
-	SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , _hl_se_tr.chrg.cpMin, _hl_se_old_len );
-	//
-	SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
-
+    old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
+    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
+    _hl_se_old_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
+    SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , _hl_se_tr.chrg.cpMin, _hl_se_old_len );
+    //
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
     /*
     //
     HL_TRACE ( "Process SELEDIT changes: count '%d' , old word '%s' , new word '%s' , cur pos %d , doc len %d , rollback? %d"
@@ -426,29 +430,28 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
             if ( b_HL_highlight_selection ) {
                 HLS_Update_selection ( SH_MODIF );
                 //
-                if (b_HL_edit_selection)
-                {
-	                if ( scn->modificationType & SC_MOD_INSERTTEXT ) {
-	                    HL_TRACE ( "MODIF INSERT pos:%d len%d lines:%d text:%s" , scn->position , scn->length , scn->linesAdded  , scn->text );
-						_hl_se_tr.chrg.cpMax += scn->length;
-	                } else if ( scn->modificationType & SC_MOD_DELETETEXT ) {
-	                    HL_TRACE ( "MODIF DELETE pos:%d len%d lines:%d text:%s" , scn->position , scn->length  , scn->linesAdded, scn->text );
-						_hl_se_tr.chrg.cpMax -= scn->length;
-	                } else if ( scn->modificationType & SC_PERFORMED_USER ) {
-	                    HL_TRACE ( "MODIF PERFORMED USER" );
-	                } else if ( scn->modificationType & SC_PERFORMED_UNDO ) {
-	                    HL_TRACE ( "MODIF PERFORMED UNDO" );
-	                } else if ( scn->modificationType & SC_PERFORMED_REDO ) {
-	                    HL_TRACE ( "MODIF PERFORMED REDO" );
-	                } else if ( scn->modificationType & SC_MOD_BEFOREINSERT ) {
-	                    HL_TRACE ( "MODIF BEFORE INSERT pos:%d len%d " , scn->position , scn->length );
-	                } else if ( scn->modificationType & SC_MOD_BEFOREDELETE ) {
-	                    HL_TRACE ( "MODIF BEFORE DELETE pos:%d len%d " , scn->position , scn->length );
-	                } else if ( scn->modificationType & SC_MULTILINEUNDOREDO ) {
-	                    HL_TRACE ( "MODIF MULTILINE UNDO" );
-	                } else if ( scn->modificationType & SC_STARTACTION ) {
-	                    HL_TRACE ( "MODIF START ACTION" );
-	                }
+                if ( b_HL_edit_selection ) {
+                    if ( scn->modificationType & SC_MOD_INSERTTEXT ) {
+                        HL_TRACE ( "MODIF INSERT pos:%d len%d lines:%d text:%s" , scn->position , scn->length , scn->linesAdded  , scn->text );
+                        _hl_se_tr.chrg.cpMax += scn->length;
+                    } else if ( scn->modificationType & SC_MOD_DELETETEXT ) {
+                        HL_TRACE ( "MODIF DELETE pos:%d len%d lines:%d text:%s" , scn->position , scn->length  , scn->linesAdded, scn->text );
+                        _hl_se_tr.chrg.cpMax -= scn->length;
+                    } else if ( scn->modificationType & SC_PERFORMED_USER ) {
+                        HL_TRACE ( "MODIF PERFORMED USER" );
+                    } else if ( scn->modificationType & SC_PERFORMED_UNDO ) {
+                        HL_TRACE ( "MODIF PERFORMED UNDO" );
+                    } else if ( scn->modificationType & SC_PERFORMED_REDO ) {
+                        HL_TRACE ( "MODIF PERFORMED REDO" );
+                    } else if ( scn->modificationType & SC_MOD_BEFOREINSERT ) {
+                        HL_TRACE ( "MODIF BEFORE INSERT pos:%d len%d " , scn->position , scn->length );
+                    } else if ( scn->modificationType & SC_MOD_BEFOREDELETE ) {
+                        HL_TRACE ( "MODIF BEFORE DELETE pos:%d len%d " , scn->position , scn->length );
+                    } else if ( scn->modificationType & SC_MULTILINEUNDOREDO ) {
+                        HL_TRACE ( "MODIF MULTILINE UNDO" );
+                    } else if ( scn->modificationType & SC_STARTACTION ) {
+                        HL_TRACE ( "MODIF START ACTION" );
+                    }
                 }
             }
             break;
