@@ -243,7 +243,10 @@ HWND EditCreate ( HWND hwndParent )
     SendMessage ( hwnd, SCI_SETCODEPAGE, iDefaultCodePage, 0 );
     SendMessage ( hwnd, SCI_SETEOLMODE, SC_EOL_CRLF, 0 );
     SendMessage ( hwnd, SCI_SETPASTECONVERTENDINGS, 1, 0 );
-    SendMessage ( hwnd, SCI_SETMODEVENTMASK,/*SC_MODEVENTMASKALL*/SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT, 0 );
+    SendMessage ( hwnd, SCI_SETMODEVENTMASK,/*SC_MODEVENTMASKALL*/
+		SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT
+		| SC_PERFORMED_UNDO | SC_PERFORMED_REDO
+		, 0 );
     SendMessage ( hwnd, SCI_USEPOPUP, FALSE, 0 );
     SendMessage ( hwnd, SCI_SETSCROLLWIDTH, 2048, 0 );
     SendMessage ( hwnd, SCI_SETSCROLLWIDTHTRACKING, TRUE, 0 );

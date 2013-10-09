@@ -3987,10 +3987,6 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                             }
                         }
                     }
-                    /*******************/
-					if( b_HL_highlight_selection ){
-						HLS_Update_selection(SH_UPDATE);
-					}
                     break;
                 case SCN_CHARADDED:
                     // Auto indent
@@ -4092,10 +4088,6 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                         }
                     }
                     break;
-                case SCN_MODIFIED:
-                    if ( b_HL_highlight_selection ) {
-                        HLS_Update_selection ( SH_MODIF );
-                    }
                 case SCN_ZOOM:
                     UpdateLineNumberWidth();
                     break;
@@ -4111,7 +4103,9 @@ LRESULT MsgNotify ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                                      iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                                      IDS_READONLY, bReadOnly, szTitleExcerpt );
                     break;
-            }
+			}
+			//
+			HLS_on_notification( pnmh->code, scn);
             break;
         case IDC_TOOLBAR:
             switch ( pnmh->code ) {

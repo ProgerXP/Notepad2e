@@ -9,6 +9,8 @@ typedef enum SH_PLACE{
 void	HLS_init();
 void	HLS_release();
 
+
+void	HLS_on_notification( int code , struct SCNotification *scn );
 /************************************************************************/
 /* For highlight                                                                     */
 /************************************************************************/
