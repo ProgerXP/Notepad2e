@@ -268,7 +268,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(
 #ifdef _DEBUG
 #define HL_TRACE(FMT,...)	HL_Trace ( "{%s: %d} - "#FMT , __FILE__ , __LINE__ , __VA_ARGS__ );
 #define HL_TRACE_S(OBJ)		HL_Trace ( "{%s: %d} [%s]=%s " , __FILE__ , __LINE__ , #OBJ , OBJ );
-#define HL_TRACE_I(OBJ)		HL_Trace ( "{%s: %d} [%s]=%d " , __FILE__ , __LINE__ , #OBJ , OBJ );
+#define HL_TRACE_I(OBJ)		HL_Trace ( "{%s: %d} [%s]=%d (0x%04xd) " , __FILE__ , __LINE__ , #OBJ , OBJ , OBJ );
 #else
 #define HL_TRACE(FMT,...)	 (void)(FMT);
 #define HL_TRACE_S(OBJ)		(void)(OBJ);

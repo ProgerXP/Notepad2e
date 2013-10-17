@@ -286,7 +286,11 @@ BOOL HLS_process_changes ( UINT opt )
     int		delta_len = 0;
     //return TRUE;
     //
-    assert ( _hl_se_tr.chrg.cpMax >= _hl_se_tr.chrg.cpMin );
+    if ( _hl_se_tr.chrg.cpMax < _hl_se_tr.chrg.cpMin ) {
+        HL_TRACE ( "critical SE exit" );
+        out = FALSE;
+        goto _EXIT;
+    }
     //
     new_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
     old_word = malloc ( _hl_se_old_len + 1 );
@@ -299,30 +303,31 @@ BOOL HLS_process_changes ( UINT opt )
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
     //
     assert ( _hl_se_tr.lpstrText );
+    strcpy ( old_word , _hl_se_tr.lpstrText );
     if ( rollback ) {
         if ( 0 == _hl_se_orig_word ) {
             //
             HL_TRACE ( "NO orginal word ????????????????" );
             goto _EXIT;
         }
-        if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
+        HL_TRACE ( "ROLLBACK to TR '%s' (%d - %d) " , _hl_se_orig_word , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
+        new_len = strlen ( _hl_se_orig_word );
+        if ( _hl_se_tr.lpstrText && new_len != strlen ( _hl_se_tr.lpstrText ) ) {
             _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , strlen ( _hl_se_orig_word ) + 1 );
         }
         strcpy ( _hl_se_tr.lpstrText , _hl_se_orig_word );
     } else {
-        strcpy ( old_word , _hl_se_tr.lpstrText );
         if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
             _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin + 1 );
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
-		//
-		if ( 0 == strcmp ( old_word , _hl_se_tr.lpstrText ) ) {
-			goto _EXIT;
-		}
+        //
+        if ( 0 == strcmp ( old_word , _hl_se_tr.lpstrText ) ) {
+            goto _EXIT;
+        }
     }
-
 #ifdef _DEBUG
-    HL_TRACE ( "current TR '%s' (%d - %d)" , _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax	);
+    HL_TRACE ( "current TR '%s' (%d - %d) " , _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
     for ( k = 0 ; k < _hl_se_count; ++k ) {
         HL_TRACE ( "pos %d = %d (%d)" , k , _hl_se_array[k].pos , _hl_se_array[k].len );
     }
@@ -336,24 +341,21 @@ BOOL HLS_process_changes ( UINT opt )
     tr.lpstrText = malloc ( _hl_se_old_len + 1 );
     for ( k = 0 ; k < _hl_se_count; ++ k ) {
         LPSE_DATA se = &_hl_se_array[k];
-        // check
-        if (
-            ( se->pos < _hl_se_tr.chrg.cpMin && ( se->pos + new_len ) >= _hl_se_tr.chrg.cpMin )
-            ||
-            ( _hl_se_tr.chrg.cpMax > se->pos && se->pos > _hl_se_tr.chrg.cpMin )
-        ) {
-            out = FALSE;
-            goto _EXIT;
-        }
         // shifting
         HL_TRACE ( "start shift: pos:%d cur:%d delta:%d" , se->pos , _hl_se_tr.chrg.cpMin , delta_len );
         se->pos += delta_len;
-        if ( se->pos <= _hl_se_tr.chrg.cpMax ) {
-            _hl_se_tr.chrg.cpMin += delta_len;
-            _hl_se_tr.chrg.cpMax += delta_len;
-        }
-        if ( se->pos > _hl_se_tr.chrg.cpMin ) {
+        if ( !rollback && se->pos > _hl_se_tr.chrg.cpMin ) {
             se->pos += ( new_len - _hl_se_old_len );
+        }
+        // check collisions
+        if (
+            //	( se->pos < _hl_se_tr.chrg.cpMin && ( se->pos + new_len ) >= _hl_se_tr.chrg.cpMin )
+            //	||
+            ( _hl_se_tr.chrg.cpMax > se->pos && se->pos > _hl_se_tr.chrg.cpMin )
+        ) {
+            HL_TRACE ( "critical SE exit" );
+            out = FALSE;
+            goto _EXIT;
         }
         //
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , se->pos , se->len );
@@ -364,18 +366,18 @@ BOOL HLS_process_changes ( UINT opt )
             edited item
             */
             work = FALSE;
-            cur_se = se->pos == _hl_se_tr.chrg.cpMin;
+            cur_se = ( se->pos == _hl_se_tr.chrg.cpMin && !rollback );
             HL_TRACE ( "start check: pos:%d cur:%d delta:%d" , se->pos , _hl_se_tr.chrg.cpMin , delta_len );
-            if ( !cur_se || rollback ) {
+            if ( !cur_se ) {
                 tr.chrg.cpMin = se->pos;
                 tr.chrg.cpMax = se->pos + _hl_se_old_len;
                 doc_len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH, 0, 0 );
                 if ( tr.chrg.cpMax > doc_len ) {
-                    HL_TRACE ( "!!!SE item last pos out of document (cur pos %d len %d) . " , k , se->pos , _hl_se_old_len );
+                    HL_TRACE ( "!!!SE item last pos out of document (cur pos %d len %d doclen %d) . " ,  se->pos , _hl_se_old_len , doc_len );
                     break;
                 }
                 SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
-				work = ( 0 == strcmp ( tr.lpstrText , old_word ) );
+                work = ( 0 == strcmp ( tr.lpstrText , old_word ) );
             } else {
                 work = FALSE;
                 HL_TRACE ( "cur pos!" )
@@ -389,6 +391,10 @@ BOOL HLS_process_changes ( UINT opt )
             SendMessage ( hwndEdit , SCI_SETTARGETEND , se->pos + _hl_se_old_len , 0 );
             SendMessage ( hwndEdit , SCI_REPLACETARGET , -1 , ( LPARAM ) _hl_se_tr.lpstrText );
             delta_len += ( new_len - _hl_se_old_len );
+            if ( se->pos <= _hl_se_tr.chrg.cpMax ) {
+                _hl_se_tr.chrg.cpMin += ( new_len - _hl_se_old_len );
+                _hl_se_tr.chrg.cpMax += ( new_len - _hl_se_old_len );
+            }
         } else if ( !cur_se ) {
             HL_TRACE ( "!!!SE mismatch error at idx %d pos %d expect %s but got %s then skip item" , k , se->pos , old_word , tr.lpstrText );
         }
@@ -400,8 +406,14 @@ BOOL HLS_process_changes ( UINT opt )
 _EXIT:
     _hl_se_old_len = new_len;
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
-    free ( old_word );
-    free ( tr.lpstrText );
+    if ( old_word ) {
+        free ( old_word );
+		old_word = 0;
+    }
+    if ( tr.lpstrText ) {
+        free ( tr.lpstrText );
+		tr.lpstrText =0;
+    }
     HL_TRACE ( "new range is %d - %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
     //   SendMessage ( hwndEdit , SCI_SETCURRENTPOS , cur_pos , 0 );
     SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( TRUE ), 0 );
@@ -480,7 +492,9 @@ BOOL _check_se_mode ( struct SCNotification *scn )
 
 void HLS_on_notification ( int code , struct SCNotification *scn )
 {
+	HL_TRACE_I(code);
     switch ( code ) {
+		
         case SCN_UPDATEUI:
             if ( b_HL_highlight_selection ) {
                 HLS_Update_selection ( SH_UPDATE );
@@ -521,6 +535,9 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
                 HLS_Update_selection ( SH_MODIF );
             }
             break;
+		case SCEN_KILLFOCUS:
+			HLS_Edit_selection_stop( HL_SE_APPLY );
+			break;
     }
 }
 
