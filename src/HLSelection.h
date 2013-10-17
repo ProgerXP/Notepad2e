@@ -4,10 +4,15 @@ typedef enum SH_PLACE{
 	SH_UPDATE ,
 	SH_MODIF 
 };
+typedef	enum{
+	HL_SE_APPLY = 1 << 0,
+	HL_SE_REJECT = 1 << 1
+}	HL_SELEDIT_STOP_OPT;
 
 
 void	HLS_init();
 void	HLS_release();
+UINT	HLS_Sci_event_mask(BOOL range_not);
 
 
 void	HLS_on_notification( int code , struct SCNotification *scn );

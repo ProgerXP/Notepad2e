@@ -2235,16 +2235,26 @@ VOID HL_Trace ( const char *fmt , ... )
 {
     if ( _hL_log ) {
         va_list vl;
-        SYSTEMTIME st;
+		SYSTEMTIME st;
+		char	buff[0xff + 1];
+		char* ch = 0;
         //
         GetLocalTime ( &st );
         fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
         va_start ( vl , fmt );
-        vfprintf ( _hL_log , fmt , vl );
+        vsprintf_s ( buff , 0xff , fmt , vl );
         va_end ( vl );
+		//
+		ch = buff;
+		while(*ch){
+			if('\n' == *ch){
+				*ch = '¶';
+			}
+			++ch;
+		}
         //
-        fprintf ( _hL_log , "\r\n" );
+        fprintf ( _hL_log , "%s\r\n" , buff );
         fflush ( _hL_log );
     }
 }

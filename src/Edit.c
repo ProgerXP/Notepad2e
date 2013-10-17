@@ -33,6 +33,7 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "HLSelection.h"
 
 
 extern HWND  hwndMain;
@@ -243,10 +244,7 @@ HWND EditCreate ( HWND hwndParent )
     SendMessage ( hwnd, SCI_SETCODEPAGE, iDefaultCodePage, 0 );
     SendMessage ( hwnd, SCI_SETEOLMODE, SC_EOL_CRLF, 0 );
     SendMessage ( hwnd, SCI_SETPASTECONVERTENDINGS, 1, 0 );
-    SendMessage ( hwnd, SCI_SETMODEVENTMASK,/*SC_MODEVENTMASKALL*/
-		SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT
-		| SC_PERFORMED_UNDO | SC_PERFORMED_REDO
-		, 0 );
+    SendMessage ( hwnd, SCI_SETMODEVENTMASK, HLS_Sci_event_mask(TRUE), 0 );
     SendMessage ( hwnd, SCI_USEPOPUP, FALSE, 0 );
     SendMessage ( hwnd, SCI_SETSCROLLWIDTH, 2048, 0 );
     SendMessage ( hwnd, SCI_SETSCROLLWIDTHTRACKING, TRUE, 0 );
@@ -5412,7 +5410,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
     switch ( umsg ) {
         case WM_INITDIALOG: {
                 WCHAR end[0xff] = L"</";
-				INT len = lstrlen(hl_last_html_tag);
+                INT len = lstrlen ( hl_last_html_tag );
                 pdata = ( PTAGSDATA ) lParam;
                 SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
                 SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
@@ -5421,9 +5419,9 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 //
                 SetFocus ( GetDlgItem ( hwnd, 100 ) );
                 if ( len > 2 &&
-					L'<' == hl_last_html_tag[0] &&
-					L'>' == hl_last_html_tag[len-1] 
-				) {
+                        L'<' == hl_last_html_tag[0] &&
+                        L'>' == hl_last_html_tag[len - 1]
+                   ) {
                     PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
                 } else {
                     PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 0, lstrlen ( hl_last_html_tag ) );

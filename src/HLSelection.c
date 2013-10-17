@@ -3,6 +3,7 @@
 #include "scintilla.h"
 #include "HLSelection.h"
 #include "Helpers.h"
+#include <cassert>
 
 
 #define HL_SELECT_INDICATOR 9
@@ -17,6 +18,7 @@
 BOOL	b_HL_highlight_selection = TRUE;
 BOOL	b_HL_edit_selection = FALSE;
 BOOL	_hl_se_init = FALSE;
+BOOL	_hl_se_exit = FALSE;
 //
 typedef struct tagHLSEdata {
     UINT pos;
@@ -30,14 +32,18 @@ typedef enum HL_SEOpt {
 //
 SE_DATA		_hl_se_array [HL_SELECT_MAX_COUNT];
 UINT		_hl_se_count = 0; // total count   '
-struct	Sci_TextRange	_hl_se_tr;
+struct		Sci_TextRange	_hl_se_tr;
 UINT		_hl_se_old_len = 0;
 BOOL		_hl_se_mode_whole_word = TRUE;
+BOOL		_hl_se_strict_mode = TRUE;
+char		*_hl_se_orig_word = 0;
+
+
 
 int	HLS_key_action ( int key , int msg )
 {
     if ( b_HL_edit_selection ) {
-        HL_TRACE ( "enter key %d on message %d , edit mode %d " , key , msg , b_HL_edit_selection );
+        //    HL_TRACE ( "enter key %d on message %d , edit mode %d " , key , msg , b_HL_edit_selection );
         if ( VK_RETURN == key ) {
             if ( WM_CHAR == msg ) {
                 HLS_Edit_selection_stop ( HL_SE_APPLY );
@@ -80,6 +86,10 @@ void HLS_release()
     if ( _hl_se_tr.lpstrText ) {
         free ( _hl_se_tr.lpstrText );
         _hl_se_tr.lpstrText = 0;
+    }
+    if ( _hl_se_orig_word ) {
+        free ( _hl_se_orig_word );
+        _hl_se_orig_word = 0;
     }
 }
 
@@ -127,9 +137,16 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             //    strcpy ( _hl_sel_edit_orig , word );
             if ( _hl_se_mode_whole_word ) {
                 search_opt |= SCFIND_MATCHCASE;
-			} else {
-				search_opt = SCFIND_MATCHCASE;
+            } else {
+                search_opt = SCFIND_MATCHCASE;
             }
+            //
+            if ( _hl_se_orig_word ) {
+                _hl_se_orig_word = realloc ( _hl_se_orig_word , wlen + 1 );
+            } else {
+                _hl_se_orig_word = malloc ( wlen + 1 );
+            }
+            strcpy ( _hl_se_orig_word , word );
         }
         // 2 first words
         ttf1.chrg.cpMin = max ( ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE , 0 );
@@ -144,6 +161,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                 if ( _hl_se_init ) {
                     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
                     b_HL_edit_selection = TRUE;
+                    _hl_se_old_len = wlen;
                 } else {
                     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
                 }
@@ -215,7 +233,7 @@ VOID	HLS_Get_word()
         _hl_se_mode_whole_word = TRUE;
     }
     //
-    if ( sel_len > 0 ) {
+    if ( sel_len > ( !_hl_se_init || _hl_se_mode_whole_word ) ? 1 : 0 ) {
         _hl_se_tr.lpstrText = malloc ( sel_len + 1 );
         SendMessage ( hwndEdit, SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
     } else {
@@ -229,10 +247,8 @@ VOID HLS_Highlight_turn ( )
     if ( b_HL_highlight_selection ) {
         //
         HLS_Get_word();
-        HL_TRACE_S ( _hl_se_tr.lpstrText );
-        if ( TRUE ) {
-            HLS_Highlight_word ( _hl_se_tr.lpstrText );
-        }
+        //    HL_TRACE_S ( _hl_se_tr.lpstrText );
+        HLS_Highlight_word ( _hl_se_tr.lpstrText );
     } else {
         int old;
         old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
@@ -254,113 +270,142 @@ VOID HLS_Highlight_turn ( )
 }
 
 
-VOID HLS_process_changes ( UINT opt )
+BOOL HLS_process_changes ( UINT opt )
 {
-    int old_ind;
-    int k = 0;
+    int		old_ind;
+    int		new_len = 0;
+    int		k = 0;
+    int		doc_len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH, 0, 0 );
+    BOOL	out = TRUE;
+    BOOL	work = TRUE;
+    BOOL	cur_se = FALSE;
+    BOOL	rollback = opt & SEO_ROLLBACK ;
+    char 	*old_word = 0;
+    struct	Sci_TextRange	tr;
+    int		cur_pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
+    int		delta_len = 0;
+    //return TRUE;
     //
+    assert ( _hl_se_tr.chrg.cpMax >= _hl_se_tr.chrg.cpMin );
+    //
+    new_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
+    old_word = malloc ( _hl_se_old_len + 1 );
+    tr.lpstrText = malloc ( _hl_se_old_len + 1 );
+    //
+    /*
+    SET EDIT INDOCATOR
+    */
+    old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
+    //
+    assert ( _hl_se_tr.lpstrText );
+    if ( rollback ) {
+        if ( 0 == _hl_se_orig_word ) {
+            //
+            HL_TRACE ( "NO orginal word ????????????????" );
+            goto _EXIT;
+        }
+        if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
+            _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , strlen ( _hl_se_orig_word ) + 1 );
+        }
+        strcpy ( _hl_se_tr.lpstrText , _hl_se_orig_word );
+    } else {
+        strcpy ( old_word , _hl_se_tr.lpstrText );
+        if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
+            _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin + 1 );
+        }
+        SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
+		//
+		if ( 0 == strcmp ( old_word , _hl_se_tr.lpstrText ) ) {
+			goto _EXIT;
+		}
+    }
+
 #ifdef _DEBUG
     HL_TRACE ( "current TR '%s' (%d - %d)" , _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax	);
     for ( k = 0 ; k < _hl_se_count; ++k ) {
         HL_TRACE ( "pos %d = %d (%d)" , k , _hl_se_array[k].pos , _hl_se_array[k].len );
     }
 #endif
-    old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
-    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
-    _hl_se_old_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
-    SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , _hl_se_tr.chrg.cpMin, _hl_se_old_len );
-    //
-    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
     /*
-    //
-    HL_TRACE ( "Process SELEDIT changes: count '%d' , old word '%s' , new word '%s' , cur pos %d , doc len %d , rollback? %d"
-               , _hl_se_count
-               , ( _hl_sel_edit_prev )
-               , nword
-               , _hl_se_index
-               , len
-               , rollback
-             );
-    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
-    if ( nword ) {
-        need_replace = strcmp ( _hl_sel_edit_prev , nword );
-        for ( k = 0 ; k < _hl_se_count; ++k ) {
-            //
-            replace = need_replace;
-            //
-            tr.chrg.cpMin = _hl_se_array[k] + delta;
-            HL_TRACE ( "MIN %d" , tr.chrg.cpMin );
-            if ( !current_pos_passed
-                    && tr.chrg.cpMin == _hl_se_index + delta ) { // at word
-                replace = need_replace && rollback;
-                _hl_se_index += delta;
-                HL_TRACE ( " new Current word pos %d" , _hl_se_index );
-                if ( replace ) {
-                    tr.chrg.cpMax = tr.chrg.cpMin + wlen;
-                    tr.lpstrText = malloc ( wlen + 1 );
-                } else {
-                    tr.chrg.cpMax = tr.chrg.cpMin + nlen;
-                    delta -= ( diflen );
-                }
-                current_pos_passed = 1;
-            } else {
-                if ( 0 && tr.chrg.cpMin > _hl_se_index + delta && !rollback ) { // after word
-                    HL_TRACE ( "correct after curpos - old: %d diff:%d" , tr.chrg.cpMin , diflen );
-                    tr.chrg.cpMin -= diflen;
-                }
-                tr.chrg.cpMax = tr.chrg.cpMin + wlen;
-                tr.lpstrText = malloc ( wlen + 1 );
-            }
-            //
-            //
-            if ( need_replace ) {
-                _hl_se_array[k] = tr.chrg.cpMin;
-                HL_TRACE ( " delta %d & pos %d & doc %d" , delta , _hl_se_array[k] , len );
-            }
-            //
-            if ( replace ) {
-                if ( tr.chrg.cpMax > len ) {
-                    HL_TRACE ( "WARN ABORT sel edit at range (%d/%d) doc len %d  index %d", tr.chrg.cpMin , tr.chrg.cpMax , len , k );
+    clear cur edit
+    */
+    //SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
+    //	_hl_se_notif_block = TRUE;
+    SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( FALSE ), 0 );
+    tr.lpstrText = malloc ( _hl_se_old_len + 1 );
+    for ( k = 0 ; k < _hl_se_count; ++ k ) {
+        LPSE_DATA se = &_hl_se_array[k];
+        // check
+        if (
+            ( se->pos < _hl_se_tr.chrg.cpMin && ( se->pos + new_len ) >= _hl_se_tr.chrg.cpMin )
+            ||
+            ( _hl_se_tr.chrg.cpMax > se->pos && se->pos > _hl_se_tr.chrg.cpMin )
+        ) {
+            out = FALSE;
+            goto _EXIT;
+        }
+        // shifting
+        HL_TRACE ( "start shift: pos:%d cur:%d delta:%d" , se->pos , _hl_se_tr.chrg.cpMin , delta_len );
+        se->pos += delta_len;
+        if ( se->pos <= _hl_se_tr.chrg.cpMax ) {
+            _hl_se_tr.chrg.cpMin += delta_len;
+            _hl_se_tr.chrg.cpMax += delta_len;
+        }
+        if ( se->pos > _hl_se_tr.chrg.cpMin ) {
+            se->pos += ( new_len - _hl_se_old_len );
+        }
+        //
+        SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , se->pos , se->len );
+        se->len = new_len;
+        //
+        if ( _hl_se_strict_mode ) {
+            /*
+            edited item
+            */
+            work = FALSE;
+            cur_se = se->pos == _hl_se_tr.chrg.cpMin;
+            HL_TRACE ( "start check: pos:%d cur:%d delta:%d" , se->pos , _hl_se_tr.chrg.cpMin , delta_len );
+            if ( !cur_se || rollback ) {
+                tr.chrg.cpMin = se->pos;
+                tr.chrg.cpMax = se->pos + _hl_se_old_len;
+                doc_len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH, 0, 0 );
+                if ( tr.chrg.cpMax > doc_len ) {
+                    HL_TRACE ( "!!!SE item last pos out of document (cur pos %d len %d) . " , k , se->pos , _hl_se_old_len );
                     break;
                 }
-                srchlen = SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr ) ;
-                if ( tr.chrg.cpMin == _hl_se_index && !rollback ) { // at word
-                    replace = ( 0 == strcmp ( tr.lpstrText , nword ) );
-                } else {
-                    replace = ( 0 == strcmp ( tr.lpstrText , _hl_sel_edit_prev ) );
-                }
-                HL_TRACE ( "found text at index '%d' pos '%d' : '%s' , replace: %d" , k , tr.chrg.cpMin , tr.lpstrText , replace );
-            }
-            //
-            if ( replace ) {
-                SendMessage ( hwndEdit , SCI_DELETERANGE , tr.chrg.cpMin , tr.chrg.cpMax - tr.chrg.cpMin );
-                SendMessage ( hwndEdit , SCI_INSERTTEXT , tr.chrg.cpMin , ( LPARAM ) nword );
-                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , tr.chrg.cpMin , strlen ( nword ) );
-                len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
-                delta -= ( diflen );
-                //
+                SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
+				work = ( 0 == strcmp ( tr.lpstrText , old_word ) );
             } else {
-                HL_TRACE ( "WARN - SKIP SELEDIT work at %d pos %d " , k , tr.chrg.cpMin );
-                SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , tr.chrg.cpMin , tr.chrg.cpMax - tr.chrg.cpMin );
+                work = FALSE;
+                HL_TRACE ( "cur pos!" )
             }
-            if ( tr.lpstrText ) {
-                free ( tr.lpstrText );
-                tr.lpstrText = 0;
-            }
+        } else {
+            work = TRUE;
         }
-        if ( tr.lpstrText ) {
-            free ( tr.lpstrText );
-            tr.lpstrText = 0;
+        if ( work ) {
+            // SendMessage ( hwndEdit , SCI_DELETERANGE , se->pos , ( LPARAM ) _hl_se_old_len );
+            SendMessage ( hwndEdit , SCI_SETTARGETSTART , se->pos , 0 );
+            SendMessage ( hwndEdit , SCI_SETTARGETEND , se->pos + _hl_se_old_len , 0 );
+            SendMessage ( hwndEdit , SCI_REPLACETARGET , -1 , ( LPARAM ) _hl_se_tr.lpstrText );
+            delta_len += ( new_len - _hl_se_old_len );
+        } else if ( !cur_se ) {
+            HL_TRACE ( "!!!SE mismatch error at idx %d pos %d expect %s but got %s then skip item" , k , se->pos , old_word , tr.lpstrText );
         }
-        HL_Trace ( " seledit complete	doc %d" , len );
-        strcpy ( _hl_sel_edit_prev , nword );
+        //
+        SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , se->pos , new_len );
+        HL_TRACE ( "new se pos %d = %d (%d). delta %d" , k , se->pos , se->len , delta_len );
     }
-    if ( nword && !rollback ) {
-        free ( nword );
-    }
-    */
+    // exit
+_EXIT:
+    _hl_se_old_len = new_len;
+    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
+    free ( old_word );
+    free ( tr.lpstrText );
+    HL_TRACE ( "new range is %d - %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
+    //   SendMessage ( hwndEdit , SCI_SETCURRENTPOS , cur_pos , 0 );
+    SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( TRUE ), 0 );
+    return out;
 }
 
 
@@ -379,6 +424,7 @@ VOID HLS_Edit_selection_start()
     if ( b_HL_edit_selection ) {
         SendMessage ( hwndEdit , SCI_SETSEL , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
         SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
+        _hl_se_exit = FALSE;
     }
 }
 
@@ -405,17 +451,31 @@ VOID HLS_Edit_selection_stop ( UINT mode )
 
 void HLS_Update_selection ( UINT place )
 {
-    HL_TRACE ( "reason (%d) .init SE %d , SE %d , HS %d" , place
-               , _hl_se_init  , b_HL_edit_selection , b_HL_highlight_selection );
     if ( b_HL_edit_selection ) {
         UINT opt = 0;
+        if ( _hl_se_exit ) {
+            HLS_Edit_selection_stop ( HL_SE_APPLY );
+            return;
+        }
         if ( SH_MODIF == place ) {
             opt |= SEO_MODIFIED;
+        } else {
+            if ( !HLS_process_changes ( opt ) ) {
+                HLS_Edit_selection_stop ( HL_SE_APPLY );
+            }
         }
-        HLS_process_changes ( opt );
     } else {
         HLS_Highlight_turn();
     }
+}
+
+BOOL _check_se_mode ( struct SCNotification *scn )
+{
+    if ( scn->position >= _hl_se_tr.chrg.cpMin && scn->position < _hl_se_tr.chrg.cpMin + _hl_se_old_len ) {
+        return TRUE;
+    }
+    _hl_se_exit = TRUE;
+    return FALSE;
 }
 
 void HLS_on_notification ( int code , struct SCNotification *scn )
@@ -428,14 +488,19 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
             break;
         case SCN_MODIFIED:
             if ( b_HL_highlight_selection ) {
-                HLS_Update_selection ( SH_MODIF );
                 //
-                if ( b_HL_edit_selection ) {
+#if 1
+                if ( b_HL_edit_selection )
+#endif
+                {
                     if ( scn->modificationType & SC_MOD_INSERTTEXT ) {
                         HL_TRACE ( "MODIF INSERT pos:%d len%d lines:%d text:%s" , scn->position , scn->length , scn->linesAdded  , scn->text );
+                        //
                         _hl_se_tr.chrg.cpMax += scn->length;
+                        //
                     } else if ( scn->modificationType & SC_MOD_DELETETEXT ) {
                         HL_TRACE ( "MODIF DELETE pos:%d len%d lines:%d text:%s" , scn->position , scn->length  , scn->linesAdded, scn->text );
+                        //
                         _hl_se_tr.chrg.cpMax -= scn->length;
                     } else if ( scn->modificationType & SC_PERFORMED_USER ) {
                         HL_TRACE ( "MODIF PERFORMED USER" );
@@ -453,9 +518,19 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
                         HL_TRACE ( "MODIF START ACTION" );
                     }
                 }
+                HLS_Update_selection ( SH_MODIF );
             }
             break;
     }
+}
+
+UINT HLS_Sci_event_mask ( BOOL range_not )
+{
+    UINT out = SC_PERFORMED_UNDO | SC_PERFORMED_REDO;
+    if ( range_not ) {
+        out |= SC_MOD_INSERTTEXT | SC_MOD_DELETETEXT;
+    }
+    return out;
 }
 
 
