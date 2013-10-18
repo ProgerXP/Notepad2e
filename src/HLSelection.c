@@ -183,6 +183,11 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                 if ( _hl_se_init ) {
                     int line = SendMessage ( hwndEdit , SCI_LINEFROMPOSITION , ttf.chrgText.cpMax  , 0 );
                     //line = SendMessage ( hwndEdit , SCI_VISIBLEFROMDOCLINE , line , 0 );
+                    if ( ttf.chrgText.cpMin < _hl_se_tr.chrg.cpMin && ttf.chrgText.cpMax > _hl_se_tr.chrg.cpMin ) {
+						HL_TRACE ( "SKIP collision SELECTION" );
+						ttf.chrg.cpMin = ttf.chrgText.cpMax;
+                        continue;
+                    }
                     //HL_TRACE ( " line %d ", line );
                     HL_TRACE ( " line__ %d (%d , %d , %d) ", line , lwrap , lstart ,  lrange );
                     if ( line + lwrap <= lrange + lstart ) {
@@ -284,7 +289,15 @@ BOOL HLS_process_changes ( UINT opt )
     struct	Sci_TextRange	tr;
     int		cur_pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
     int		delta_len = 0;
-    //return TRUE;
+    //
+    tr.lpstrText = 0;
+    old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
+    //
+    if ( cur_pos < _hl_se_tr.chrg.cpMin || cur_pos > _hl_se_tr.chrg.cpMax ) {
+        HL_TRACE ( "OUT OF BOUND  SE exit (applied)" );
+        out = FALSE;
+        goto _EXIT;
+    }
     //
     if ( _hl_se_tr.chrg.cpMax < _hl_se_tr.chrg.cpMin ) {
         HL_TRACE ( "critical SE exit" );
@@ -299,7 +312,6 @@ BOOL HLS_process_changes ( UINT opt )
     /*
     SET EDIT INDOCATOR
     */
-    old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
     //
     assert ( _hl_se_tr.lpstrText );
@@ -408,13 +420,13 @@ _EXIT:
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
     if ( old_word ) {
         free ( old_word );
-		old_word = 0;
+        old_word = 0;
     }
     if ( tr.lpstrText ) {
         free ( tr.lpstrText );
-		tr.lpstrText =0;
+        tr.lpstrText = 0;
     }
-    HL_TRACE ( "new range is %d - %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
+    HL_TRACE ( "new range is %d - %d . curpos is %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax , cur_pos );
     //   SendMessage ( hwndEdit , SCI_SETCURRENTPOS , cur_pos , 0 );
     SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( TRUE ), 0 );
     return out;
@@ -492,9 +504,11 @@ BOOL _check_se_mode ( struct SCNotification *scn )
 
 void HLS_on_notification ( int code , struct SCNotification *scn )
 {
-	HL_TRACE_I(code);
+    if ( SCN_PAINTED != code ) {
+        HL_TRACE_I ( code );
+    }
+    //
     switch ( code ) {
-		
         case SCN_UPDATEUI:
             if ( b_HL_highlight_selection ) {
                 HLS_Update_selection ( SH_UPDATE );
@@ -535,9 +549,10 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
                 HLS_Update_selection ( SH_MODIF );
             }
             break;
-		case SCEN_KILLFOCUS:
-			HLS_Edit_selection_stop( HL_SE_APPLY );
-			break;
+        case SCN_SAVEPOINTREACHED:
+        case SCEN_KILLFOCUS:
+            HLS_Edit_selection_stop ( HL_SE_APPLY );
+            break;
     }
 }
 
