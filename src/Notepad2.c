@@ -165,7 +165,8 @@ BOOL      bShowStatusbar;
 extern	BOOL		b_HL_highlight_selection ;
 extern	BOOL		b_Hl_use_prefix_in_open_dialog;
 extern	BOOL		b_HL_edit_selection;
-extern	BOOL		b_HL_ctrl_wheel_scroll ;
+extern	BOOL		b_HL_ctrl_wheel_scroll;
+extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 /**/
 
 typedef struct _wi {
@@ -5398,7 +5399,8 @@ BOOL _FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPC
         if ( bResetFileWatching ) {
             iFileWatchingMode = 0;
         }
-        InstallFileWatching ( NULL );
+		InstallFileWatching(NULL);
+		*_hl_last_run = 0;
         return TRUE;
     }
     if ( !lpszFile || lstrlen ( lpszFile ) == 0 ) {
@@ -5509,6 +5511,11 @@ BOOL _FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPC
     } else if ( !bFileTooBig ) {
         MsgBox ( MBWARN, IDS_ERR_LOADFILE, szFileName );
     }
+
+	if (fSuccess) {
+		*_hl_last_run = 0;
+	}
+
     return ( fSuccess );
 }
 //=============================================================================

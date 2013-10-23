@@ -82,6 +82,7 @@ __inline void EndWaitCursor()
 #define IsVista() (g_uWinVer >= 0x0600)
 #define IsW7()    (g_uWinVer >= 0x0601)
 
+#define	HL_MAX_PATH_N_CMD_LINE	MAX_PATH + 40
 
 BOOL PrivateIsAppThemed();
 HRESULT PrivateSetCurrentProcessExplicitAppUserModelID ( PCWSTR );

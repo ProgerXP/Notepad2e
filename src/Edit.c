@@ -476,7 +476,7 @@ BOOL EditCopyAppend ( HWND hwnd )
     char  *pszText;
     int   cchTextW;
     WCHAR *pszTextW;
-    WCHAR *pszSep = L"\r\n\r\n";
+    WCHAR *pszSep = L"\r\n";
     UINT  uCodePage;
     int iCurPos;
     int iAnchorPos;

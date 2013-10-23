@@ -48,6 +48,8 @@ extern BOOL bFixLineEndings;
 extern BOOL bAutoStripBlanks;
 extern WCHAR szCurFile[MAX_PATH + 40];
 
+//
+extern	WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 //=============================================================================
 //
@@ -278,6 +280,7 @@ INT_PTR CALLBACK RunDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
                 SetDlgItemText ( hwnd, IDC_COMMANDLINE, ( LPCWSTR ) lParam );
                 SHAutoComplete ( GetDlgItem ( hwnd, IDC_COMMANDLINE ), SHACF_FILESYSTEM );
                 CenterDlgInParent ( hwnd );
+				SetDlgItemText(hwnd, IDC_COMMANDLINE, _hl_last_run);
             }
             return TRUE;
         case WM_DESTROY:
@@ -333,6 +336,7 @@ INT_PTR CALLBACK RunDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
                         WCHAR wchDirectory[MAX_PATH] = L"";
                         if ( GetDlgItemText ( hwnd, IDC_COMMANDLINE, arg1, MAX_PATH ) ) {
                             BOOL bQuickExit = FALSE;
+							lstrcpy(_hl_last_run, arg1);
                             ExpandEnvironmentStringsEx ( arg1, COUNTOF ( arg1 ) );
                             ExtractFirstArgument ( arg1, arg1, arg2 );
                             if ( lstrcmpi ( arg1, L"notepad2" ) == 0 ||

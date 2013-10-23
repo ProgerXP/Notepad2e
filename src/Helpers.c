@@ -57,6 +57,9 @@ extern	LPMRULIST pFileMRU;
 extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 //
 BOOL	_hl_wheel_timer = FALSE;
+WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
+
+//
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
 {
     _hl_wheel_timer = FALSE;
@@ -2214,8 +2217,11 @@ VOID HL_Init ( HWND hWnd )
     b_Hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"OpenDialogByPrefix" , b_Hl_use_prefix_in_open_dialog );
  
 	//
+	*_hl_last_run = 0;
+	//
 	HLS_init();
 
+	//
 #endif
 }
 
@@ -2437,6 +2443,12 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     WIN32_FIND_DATA	wfd;
     WCHAR	path[MAX_PATH];
     HANDLE res;
+
+	if (!PathIsRelative(pref)) {
+		lstrcpy(out, pref);
+		return TRUE;
+	}
+
     lstrcpy ( path, dir );
     lstrcat ( path, L"\\" );
     lstrcat ( path, pref );
@@ -2483,19 +2495,19 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                             HL_Trace ( "OFN OK  " );
                             if ( len ) {
                                 WCHAR	out[MAX_PATH];
-                                LPWSTR	final = buf;
+                                LPWSTR	final_str = buf;
                                 if ( wcsstr ( last_selected , buf ) ) {
-                                    final = last_selected;
+                                    final_str = last_selected;
                                     HL_WTrace ( "OFN drop window text %s " , buf );
                                 }
-                                HL_WTrace ( "OFN input (%s) " , final );
-                                if ( !HL_OPen_File_by_prefix ( final , dir , out ) ) {
+                                HL_WTrace ( "OFN input (%s) " , final_str );
+                                if ( !HL_OPen_File_by_prefix ( final_str , dir , out ) ) {
                                     WCHAR mess[1024];
                                     wsprintf ( mess ,
                                                L"%s\nFile not found.\n"
                                                L"Additionally, no file name starting "
                                                L"with this string exists in this folder\n%s"
-                                               , final , dir );
+                                               , final_str , dir );
                                     MessageBox ( hdlg , mess , WC_NOTEPAD2 , MB_OK | MB_ICONWARNING );
                                     take_call = TRUE;
                                     return 0;
