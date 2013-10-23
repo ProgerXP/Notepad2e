@@ -498,9 +498,23 @@ BOOL EditCopyAppend ( HWND hwnd )
             ( int ) SendMessage ( hwnd, SCI_GETSELTEXT, 0, ( LPARAM ) pszText );
         }
     } else {
-        int cchText = ( int ) SendMessage ( hwnd, SCI_GETLENGTH, 0, 0 );
-        pszText = LocalAlloc ( LPTR, cchText + 1 );
-        SendMessage ( hwnd, SCI_GETTEXT, ( int ) LocalSize ( pszText ), ( LPARAM ) pszText );
+	
+		int line ;
+		struct Sci_TextRange tr;
+
+		line = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
+		tr.chrg.cpMin = SendMessage(hwnd, SCI_POSITIONFROMLINE, line, 0);
+		tr.chrg.cpMax = SendMessage(hwnd, SCI_GETLINEENDPOSITION, line, 0);	  
+		if (tr.chrg.cpMax > tr.chrg.cpMin) {
+			tr.lpstrText = LocalAlloc(LPTR, tr.chrg.cpMax - tr.chrg.cpMin + 1);
+			SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+			pszText = tr.lpstrText;
+		}	
+		else {
+			int cchText = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+			pszText = LocalAlloc(LPTR, cchText + 1);
+			SendMessage(hwnd, SCI_GETTEXT, (int)LocalSize(pszText), (LPARAM)pszText);
+		}
     }
     uCodePage = ( SendMessage ( hwnd, SCI_GETCODEPAGE, 0, 0 ) == SC_CP_UTF8 ) ? CP_UTF8 : CP_ACP;
     cchTextW = MultiByteToWideChar ( uCodePage, 0, pszText, -1, NULL, 0 );

@@ -1582,7 +1582,7 @@ void MsgSize ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 //
 void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 {
-    int i, i2;
+    int i, i2 , i3;
     HMENU hmenu = ( HMENU ) wParam;
     i = lstrlen ( szCurFile );
     EnableCmd ( hmenu, IDM_FILE_REVERT, i );
@@ -1628,10 +1628,11 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_EDIT_REDO, SendMessage ( hwndEdit, SCI_CANREDO, 0, 0 ) /*&& !bReadOnly*/ );
     i  = ( int ) SendMessage ( hwndEdit, SCI_GETSELECTIONEND, 0, 0 ) - ( int ) SendMessage ( hwndEdit, SCI_GETSELECTIONSTART, 0, 0 );
     i2 = ( int ) SendMessage ( hwndEdit, SCI_CANPASTE, 0, 0 );
+	i3 = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
     EnableCmd ( hmenu, IDM_EDIT_CUT, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_COPY, i /*&& !bReadOnly*/ );
-    EnableCmd ( hmenu, IDM_EDIT_COPYALL, SendMessage ( hwndEdit, SCI_GETLENGTH, 0, 0 ) /*&& !bReadOnly*/ );
-    EnableCmd ( hmenu, IDM_EDIT_COPYADD, i /*&& !bReadOnly*/ );
+    EnableCmd ( hmenu, IDM_EDIT_COPYALL, i3 /*&& !bReadOnly*/ );
+    EnableCmd ( hmenu, IDM_EDIT_COPYADD, i3 /*i*/ /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_PASTE, i2 /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_SWAP, i || i2 /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_CLEAR, i /*&& !bReadOnly*/ );
