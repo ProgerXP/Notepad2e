@@ -138,6 +138,12 @@ Changes of the Extended edition
   to Page Up/Down).
 
   Open/Save File dialogs now start with the path of last opened file.
+  
+  Edit > Copy Add (Ctrl+E) now uses single line break and when pressed
+  without active selection appends the entire line.
+  
+  File > Launch > Command (Ctrl+R) now retains the path until another
+  file is opened.
 
   CSS syntax scheme improvements:
 
