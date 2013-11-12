@@ -280,7 +280,7 @@ INT_PTR CALLBACK RunDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
                 SetDlgItemText ( hwnd, IDC_COMMANDLINE, ( LPCWSTR ) lParam );
                 SHAutoComplete ( GetDlgItem ( hwnd, IDC_COMMANDLINE ), SHACF_FILESYSTEM );
                 CenterDlgInParent ( hwnd );
-				SetDlgItemText(hwnd, IDC_COMMANDLINE, _hl_last_run);
+			//	SetDlgItemText(hwnd, IDC_COMMANDLINE, _hl_last_run);
             }
             return TRUE;
         case WM_DESTROY:
@@ -387,8 +387,12 @@ INT_PTR CALLBACK RunDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 //
 void RunDlg ( HWND hwnd, LPCWSTR lpstrDefault )
 {
+	LPWSTR def = _hl_last_run;
+	if (lstrlen(def) == 0) {
+		def = (LPWSTR)lpstrDefault;
+	}
     ThemedDialogBoxParam ( g_hInstance, MAKEINTRESOURCE ( IDD_RUN ),
-                           hwnd, RunDlgProc, ( LPARAM ) lpstrDefault );
+                           hwnd, RunDlgProc, ( LPARAM ) def );
 }
 
 

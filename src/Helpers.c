@@ -2584,4 +2584,17 @@ VOID HL_Get_last_dir ( LPTSTR out )
     }
 }
 
+VOID HL_Move_Carret_Silently(BOOL up) {
+	int cpos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+	int coll = SendMessage(hwndEdit, SCI_GETCOLUMN, cpos, 0);
+	int	line = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, cpos, 0);
+	int tline = up ? 0 : SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0) - 1;
+	if (line != tline) {
+		int width = SendMessage(hwndEdit, SCI_LINELENGTH, tline, 0);
+		int tpos = SendMessage(hwndEdit, SCI_FINDCOLUMN, tline, min(coll, width));
+		SendMessage(hwndEdit, SCI_SETCURRENTPOS, tpos, 0);
+		SendMessage(hwndEdit, SCI_SETANCHOR, tpos, 0);
+	}
+}
+
 ///   End of Helpers.c   \\\

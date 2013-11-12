@@ -12,7 +12,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Английский (США) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -488,8 +488,8 @@ BEGIN
     VK_SUBTRACT,    IDM_VIEW_ZOOMOUT,       VIRTKEY, CONTROL, NOINVERT
     VK_SUBTRACT,    CMD_DECLINELIMIT,       VIRTKEY, ALT, NOINVERT
     VK_SUBTRACT,    CMD_DECREASENUM,        VIRTKEY, CONTROL, ALT, NOINVERT
-    VK_TAB,         CMD_CTRLTAB,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_TAB,         ID_EDIT_EDITSELECTION,  VIRTKEY, CONTROL, NOINVERT
+    VK_TAB,         CMD_CTRLTAB,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_UP,          IDM_EDIT_MOVELINEUP,    VIRTKEY, SHIFT, CONTROL, NOINVERT
     "W",            IDM_VIEW_WORDWRAP,      VIRTKEY, CONTROL, NOINVERT
     "W",            IDM_EDIT_TRIMLINES,     VIRTKEY, ALT, NOINVERT
@@ -505,6 +505,8 @@ BEGIN
     "Z",            IDM_EDIT_STRIP1STCHAR,  VIRTKEY, ALT, NOINVERT
     "Z",            IDM_EDIT_REDO,          VIRTKEY, SHIFT, CONTROL, NOINVERT
     "Z",            ID_EDIT_UNDO_REDO,      VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
+    VK_PRIOR,       IDH_MOVE_UP_SILENT,     VIRTKEY, CONTROL, NOINVERT
+    VK_NEXT,        IDH_MOVE_DOWN_SILENT,   VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_ACCFINDREPLACE ACCELERATORS
@@ -1702,12 +1704,12 @@ BEGIN
     63257                   "XML Element Text"
 END
 
-#endif    // English (United States) resources
+#endif    // Английский (США) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// German (Switzerland) resources
+// Немецкий (Швейцария) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DES)
 LANGUAGE LANG_GERMAN, SUBLANG_GERMAN_SWISS
@@ -1736,7 +1738,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // German (Switzerland) resources
+#endif    // Немецкий (Швейцария) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -3317,6 +3317,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             }
             break;
             // haccel cases
+		case IDH_MOVE_UP_SILENT:
+			HL_Move_Carret_Silently(TRUE);
+			break;
+		case IDH_MOVE_DOWN_SILENT:
+			HL_Move_Carret_Silently(FALSE);
+			break;
         case ID_EDIT_EDITSELECTION: {
                 HLS_Edit_selection_start();
 				return 1;
@@ -5514,6 +5520,7 @@ BOOL _FileLoad ( BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPC
     }
 
 	if (fSuccess) {
+		//lstrcpy(_hl_last_run, szCurFile);
 		*_hl_last_run = 0;
 	}
 

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Microsoft Visual C++ generated include file.
-// Used by Notepad2.rc
+// Включаемый файл, созданный в Microsoft Visual C++.
+// Используется Notepad2.rc
 //
 #define IDR_RT_MANIFEST                 1
 #define ID_SETTINGS_HIGHLIGHTCURRENTWORD 1
@@ -14,6 +14,9 @@
 #define ID_SETTINGS_RELOADFROMDISK      10
 #define ID_ACCELERATOR12                12
 #define ID_EDIT_EDITSELECTION           13
+#define IDH_MOVE_UP_SILENT              15
+#define ID_ACCELERATOR16                16
+#define IDH_MOVE_DOWN_SILENT            17
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -417,7 +420,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         15
+#define _APS_NEXT_COMMAND_VALUE         18
 #define _APS_NEXT_CONTROL_VALUE         1
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
