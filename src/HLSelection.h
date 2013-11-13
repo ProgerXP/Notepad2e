@@ -13,6 +13,7 @@ typedef	enum{
 void	HLS_init();
 void	HLS_release();
 UINT	HLS_Sci_event_mask(BOOL range_not);
+int		HLS_get_wraps(int beg, int end);
 
 
 void	HLS_on_notification( int code , struct SCNotification *scn );
