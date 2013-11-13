@@ -563,9 +563,11 @@ BEGIN
     CONTROL         "C&lose after find",IDC_FINDCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,49,65,10
     DEFPUSHBUTTON   "&Find Next",IDOK,215,7,50,14
     PUSHBUTTON      "Find &Previous",IDC_FINDPREV,215,24,50,14
-    PUSHBUTTON      "Close",IDCANCEL,215,41,50,14
+    PUSHBUTTON      "&Grep",ID_GREP,215,41,50,14
     CONTROL         "<a>Goto Replace (Ctrl+H)</a>",IDC_TOGGLEFINDREPLACE,
                     "SysLink",0x0,125,85,74,10
+    PUSHBUTTON      "&Ungrep",ID_UNGREP,215,58,50,14
+    PUSHBUTTON      "Close",IDCANCEL,215,74,50,14
 END
 
 IDD_REPLACE DIALOGEX 0, 0, 272, 130

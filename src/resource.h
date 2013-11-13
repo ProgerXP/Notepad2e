@@ -6,8 +6,11 @@
 #define ID_SETTINGS_HIGHLIGHTCURRENTWORD 1
 #define ID_FILE_RENAMETO                2
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
+#define ID_UNGREP                       3
 #define ID_FILE_OPENPREVIOUS            4
+#define IDCANCEL3                       4
 #define ID_EDIT_UNDO                    5
+#define ID_GREP                         5
 #define ID_EDIT_UNDO_REDO               6
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 7
 #define ID_FILE_INVOKESHELLMENU         8
@@ -421,7 +424,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
 #define _APS_NEXT_COMMAND_VALUE         18
-#define _APS_NEXT_CONTROL_VALUE         1
+#define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
 #endif

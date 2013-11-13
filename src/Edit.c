@@ -4312,7 +4312,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                         BOOL bEnable = ( GetWindowTextLengthW ( GetDlgItem ( hwnd, IDC_FINDTEXT ) ) ||
                                          CB_ERR != SendDlgItemMessage ( hwnd, IDC_FINDTEXT, CB_GETCURSEL, 0, 0 ) );
                         EnableWindow ( GetDlgItem ( hwnd, IDOK ), bEnable );
-                        EnableWindow ( GetDlgItem ( hwnd, IDC_FINDPREV ), bEnable );
+						EnableWindow(GetDlgItem(hwnd, IDC_FINDPREV), bEnable);
+						EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable);
+						EnableWindow(GetDlgItem(hwnd, ID_UNGREP), bEnable);
                         EnableWindow ( GetDlgItem ( hwnd, IDC_REPLACE ), bEnable );
                         EnableWindow ( GetDlgItem ( hwnd, IDC_REPLACEALL ), bEnable );
                         EnableWindow ( GetDlgItem ( hwnd, IDC_REPLACEINSEL ), bEnable );

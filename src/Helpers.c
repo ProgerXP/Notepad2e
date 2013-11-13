@@ -2441,7 +2441,8 @@ BOOL HL_Is_Empty ( LPCWSTR txt )
 BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 {
     WIN32_FIND_DATA	wfd;
-    WCHAR	path[MAX_PATH];
+	WCHAR	path[MAX_PATH];
+	WCHAR	temp[MAX_PATH];
     HANDLE res;
 
 	if (!PathIsRelative(pref)) {
@@ -2458,17 +2459,26 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     if ( INVALID_HANDLE_VALUE == res ) {
         return FALSE;
     }
+	//
+	temp[0] = 0;
+	//
     do {
         if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
             HL_WTrace ( "file: '%s'" , wfd.cFileName );
-            lstrcpy ( out, dir );
-            lstrcat ( out, L"\\" );
-            lstrcat ( out , wfd.cFileName );
-            FindClose ( res );
-            return TRUE;
+			if ( 0==temp[0] || lstrcmp(temp,wfd.cFileName) > 0 ) {
+				lstrcat(temp, wfd.cFileName);
+			}
         }
     } while ( FindNextFile ( res , &wfd ) != 0 );
     FindClose ( res );
+	//
+	if (temp[0]) {
+		lstrcpy(out, dir);
+		lstrcat(out, L"\\");
+		lstrcat(out, temp);
+		return TRUE;
+	}
+	//
     return FALSE;
 }
 UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam )
@@ -2588,7 +2598,10 @@ VOID HL_Move_Carret_Silently(BOOL up) {
 	int cpos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
 	int coll = SendMessage(hwndEdit, SCI_GETCOLUMN, cpos, 0);
 	int	line = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, cpos, 0);
-	int tline = up ? 0 : SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0) - 1;
+	int tline = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
+	if (!up) {
+		tline += max(0, (SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0)) );
+	}
 	if (line != tline) {
 		int width = SendMessage(hwndEdit, SCI_LINELENGTH, tline, 0);
 		int tpos = SendMessage(hwndEdit, SCI_FINDCOLUMN, tline, min(coll, width));
