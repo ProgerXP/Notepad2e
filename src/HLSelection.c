@@ -8,7 +8,8 @@
 
 #define HL_SELECT_INDICATOR 9
 #define HL_SELECT_INDICATOR_SINGLE 10
-#define HL_SELECT_INDICATOR_EDIT 11
+#define HL_SELECT_INDICATOR_PAGE 11   
+#define HL_SELECT_INDICATOR_EDIT 12
 
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SELECT_MAX_COUNT	0xff
@@ -57,24 +58,44 @@ int	HLS_key_action ( int key , int msg )
 
 void	HLS_init()
 {
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionType" , 6 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionAlpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionLineAlpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionColor" , RGB (	0x00 , 0x00, 0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR , IniGetInt ( HL_INI_SECTION , L"SelectionUnder" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionType" , 6 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionAlpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionLineAlpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionColor" , RGB (	0x90 , 0x00,
-                  0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionUnder" , 0 ) );
+	int indi_style = IniGetInt(HL_INI_SECTION, L"SelectionType", 6);
+	if (indi_style >= 0) {
+		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR, indi_style);
+		SendMessage(hwndEdit, SCI_INDICSETALPHA, HL_SELECT_INDICATOR, IniGetInt(HL_INI_SECTION, L"SelectionAlpha", 0));
+		SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, HL_SELECT_INDICATOR, IniGetInt(HL_INI_SECTION, L"SelectionLineAlpha", 0));
+		SendMessage(hwndEdit, SCI_INDICSETFORE, HL_SELECT_INDICATOR, IniGetInt(HL_INI_SECTION, L"SelectionColor", RGB(0x00, 0x00, 0x00)));
+		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR, IniGetInt(HL_INI_SECTION, L"SelectionUnder", 0));
+	}
+	//		
+	indi_style = IniGetInt(HL_INI_SECTION, L"PageSelectionType", 6);
+	if (indi_style >= 0) {
+		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR_PAGE, indi_style);
+		SendMessage(hwndEdit, SCI_INDICSETALPHA, HL_SELECT_INDICATOR_PAGE, IniGetInt(HL_INI_SECTION, L"PageSelectionAlpha", 0));
+		SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, HL_SELECT_INDICATOR_PAGE, IniGetInt(HL_INI_SECTION, L"PageSelectionLineAlpha", 0));
+		SendMessage(hwndEdit, SCI_INDICSETFORE, HL_SELECT_INDICATOR_PAGE, IniGetInt(HL_INI_SECTION, L"PageSelectionColor", RGB(0x00, 0x00,
+			0x90)));
+		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR_PAGE, IniGetInt(HL_INI_SECTION, L"PageSelectionUnder", 0));
+	}
+	//	
+	indi_style = IniGetInt(HL_INI_SECTION, L"SingleSelectionType", 6);
+	if (indi_style >= 0) {
+		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR_SINGLE, indi_style);
+		SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionAlpha" , 0 ) );
+		SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionLineAlpha" , 0 ) );
+		SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_SINGLE , IniGetInt ( HL_INI_SECTION , L"SingleSelectionColor" , RGB (	0x90 , 0x00,
+					  0x00 ) ) );
+		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR_SINGLE, IniGetInt(HL_INI_SECTION, L"SingleSelectionUnder", 0));
+	}
     //
-    SendMessage ( hwndEdit , SCI_INDICSETSTYLE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionType" , 7 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionAlpha" , 100 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETOUTLINEALPHA , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionLineAlpha" , 0 ) );
-    SendMessage ( hwndEdit , SCI_INDICSETFORE , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionColor" , RGB (	0xaa , 0xaa,
-                  0x00 ) ) );
-    SendMessage ( hwndEdit , SCI_INDICSETUNDER , HL_SELECT_INDICATOR_EDIT , IniGetInt ( HL_INI_SECTION , L"EditSelectionUnder" , 0 ) );
+	indi_style = IniGetInt(HL_INI_SECTION, L"EditSelectionType", 6);
+	if (indi_style >= 0) {
+		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR_SINGLE, indi_style);
+		SendMessage(hwndEdit, SCI_INDICSETALPHA, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionAlpha", 100));
+		SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionLineAlpha", 0));
+		SendMessage(hwndEdit, SCI_INDICSETFORE, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionColor", RGB(0xaa, 0xaa,
+			0x00)));
+		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionUnder", 0));
+	}
     //
     hl_proc_action = HLS_key_action;
     _hl_se_tr.lpstrText = 0;
@@ -126,11 +147,14 @@ VOID HLS_Highlight_word ( LPCSTR  word )
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
     SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
-    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_SINGLE , 0 );
-    SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 , len );
+	SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, HL_SELECT_INDICATOR_PAGE, 0);
+	SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
+	SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, HL_SELECT_INDICATOR_SINGLE, 0);
+	SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
     if ( word ) {
         int	search_opt = SCFIND_WHOLEWORD;
         int wlen = strlen ( word );
+		int	curr_indi = HL_SELECT_INDICATOR_SINGLE;
         if ( _hl_se_init ) {
             _hl_se_count = 0;
             //    strcpy ( _hl_sel_edit_prev , word );
@@ -149,24 +173,48 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             strcpy ( _hl_se_orig_word , word );
         }
         // 2 first words
+		/*
         ttf1.chrg.cpMin = max ( ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE , 0 );
         ttf1.chrg.cpMax = min ( ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE
                                 , SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
+								*/
+		ttf1.chrg.cpMin = 0;
+		ttf1.chrg.cpMax = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
         ttf1.lpstrText = ( LPSTR ) word;
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
-        if ( -1 != res ) {
+        while ( 1 ) {
             ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
             res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
             if ( -1 != res ) {
+				ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
                 if ( _hl_se_init ) {
-                    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
+					curr_indi = HL_SELECT_INDICATOR_EDIT;
                     b_HL_edit_selection = TRUE;
                     _hl_se_old_len = wlen;
+					break;
                 } else {
-                    SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
+					if (ttf1.chrgText.cpMin >= ttf.chrg.cpMin &&
+						ttf1.chrgText.cpMin < ttf.chrg.cpMax
+						) {
+							curr_indi = HL_SELECT_INDICATOR_PAGE;
+						break;
+					}
+					else {
+						curr_indi = HL_SELECT_INDICATOR;
+					}
                 }
+				//
+				if (ttf1.chrgText.cpMin >= ttf.chrg.cpMin && HL_SELECT_INDICATOR == curr_indi) {
+					break;
+				}
             }
+			else {
+				break;
+			}
         }
+		//
+		HL_TRACE("INDICATOR OF WORD '%s' is %d", word, curr_indi);
+		SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
         //
         if ( _hl_se_init && !b_HL_edit_selection ) {
             _hl_se_init = FALSE;

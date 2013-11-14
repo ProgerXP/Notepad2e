@@ -266,6 +266,8 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(
 
 VOID	HL_Move_Carret_Silently( BOOL up );
 
+VOID	HL_Grep(VOID* lpf, BOOL grep);
+
 #define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG

@@ -4307,6 +4307,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
             return TRUE;
         case WM_COMMAND:
             switch ( LOWORD ( wParam ) ) {
+
                 case IDC_FINDTEXT:
                 case IDC_REPLACETEXT: {
                         BOOL bEnable = ( GetWindowTextLengthW ( GetDlgItem ( hwnd, IDC_FINDTEXT ) ) ||
@@ -4343,7 +4344,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                 case IDACC_SELTONEXT:
                 case IDACC_SELTOPREV:
                 case IDMSG_SWITCHTOFIND:
-                case IDMSG_SWITCHTOREPLACE:
+				case IDMSG_SWITCHTOREPLACE:
+				case ID_GREP:
+				case ID_UNGREP:
                     lpefr = ( LPEDITFINDREPLACE ) GetWindowLongPtr ( hwnd, DWLP_USER );
                     bIsFindDlg = ( GetDlgItem ( hwnd, IDC_REPLACE ) == NULL );
                     if ( ( bIsFindDlg && LOWORD ( wParam ) == IDMSG_SWITCHTOREPLACE ||
@@ -4410,12 +4413,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                             lstrcpyA ( lpefr->szReplaceUTF8, "" );
                         }
                     }
-                    if ( bIsFindDlg ) {
+					if (LOWORD(wParam) == ID_GREP ||
+						LOWORD(wParam) == ID_UNGREP) {
+						bCloseDlg = TRUE;
+					}
+                    else if ( bIsFindDlg ) {
                         bCloseDlg = lpefr->bFindClose;
                     } else {
-                        if ( LOWORD ( wParam ) == IDOK ) {
+                        if ( LOWORD ( wParam ) == IDOK	
+							) {
                             bCloseDlg = FALSE;
-                        } else {
+                        } 
+						else {
                             bCloseDlg = lpefr->bReplaceClose;
                         }
                     }
@@ -4467,6 +4476,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                             bReplaceInitialized = TRUE;
                             EditReplaceAllInSelection ( lpefr->hwnd, lpefr, TRUE );
                             break;
+						case ID_GREP:
+							HL_Grep(lpefr, TRUE);
+							break;
+						case ID_UNGREP:
+							HL_Grep(lpefr, FALSE);
+							break;
                     }
                     break;
                 case IDCANCEL:

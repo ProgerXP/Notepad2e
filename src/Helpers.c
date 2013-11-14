@@ -33,6 +33,7 @@
 #include <cassert>
 #include "Notepad2.h"
 #include "HLSelection.h"
+#include "Edit.h"
 
 // haccel work
 //
@@ -2602,8 +2603,10 @@ VOID HL_Move_Carret_Silently(BOOL up) {
 	tline = SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, tline, 0);
 	if (!up) {
 		int len = max(0, SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0));
-		tline -= HLS_get_wraps(tline, tline + 1);
+		int wraps =  HLS_get_wraps(tline, tline + len);
 		HL_TRACE_I(len);
+		HL_TRACE_I(wraps);	
+		tline -= wraps;
 		tline += len;
 		HL_TRACE_I(SendMessage(hwndEdit, SCI_GETLINEVISIBLE, tline, 0));
 	}
@@ -2613,6 +2616,69 @@ VOID HL_Move_Carret_Silently(BOOL up) {
 		SendMessage(hwndEdit, SCI_SETCURRENTPOS, tpos, 0);
 		SendMessage(hwndEdit, SCI_SETANCHOR, tpos, 0);
 	}
+}
+
+
+
+VOID	HL_Grep( VOID* _lpf, BOOL grep) {  
+	LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
+	int k = 0;
+	int res = 0;
+	struct Sci_TextToFind ttf;
+	struct Sci_TextRange tr;
+	if (!lstrlenA(lpf->szFind)) {
+		return;
+	}
+	char szFind2[512];
+	lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
+	ZeroMemory(&ttf, sizeof (ttf));
+	if (lpf->bTransformBS) {
+		TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP),
+			(UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
+	}
+	if (lstrlenA(szFind2) == 0) {
+		return ;
+	}
+	ttf.lpstrText = szFind2;
+	SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
+	for ( k = 0; k < SendMessage( lpf->hwnd , SCI_GETLINECOUNT , 0 , 0 ); k++) {
+		//
+		ttf.chrg.cpMin	= SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
+		ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
+#ifdef _DEBUG
+		tr.chrg = ttf.chrg;
+		tr.lpstrText = malloc( tr.chrg.cpMax - tr.chrg.cpMin + 1);
+		SendMessage(lpf->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+#endif
+		if (ttf.chrg.cpMin == ttf.chrg.cpMax) {
+			res = -1;
+		}
+		//
+		if (-1 != res) {
+			res = (int)SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
+		}
+		if ( ( grep && -1 == res	) ||
+			(!grep && -1 != res) ) {
+			//
+#if 1	
+			SendMessage(lpf->hwnd, SCI_HIDELINES, k, k);
+#else
+
+			int next_line = ttf.chrg.cpMax + 2;
+			SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, next_line - ttf.chrg.cpMin);
+			--k;
+#endif
+
+#ifdef _DEBUG
+			HL_TRACE("LINE TO HIDE: %s" , tr.lpstrText);
+#endif
+			//
+		}
+#ifdef _DEBUG
+		free(tr.lpstrText);
+#endif
+	}
+	SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
 ///   End of Helpers.c   \\\
