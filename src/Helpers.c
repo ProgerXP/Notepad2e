@@ -2444,16 +2444,33 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     WIN32_FIND_DATA	wfd;
 	WCHAR	path[MAX_PATH];
 	WCHAR	temp[MAX_PATH];
+	WCHAR	_in[MAX_PATH];
+	WCHAR*	in = _in;
     HANDLE res;
-
-	if (!PathIsRelative(pref)) {
-		lstrcpy(out, pref);
+	int		len;
+	lstrcpy(_in, pref);
+	//
+	while ((len = lstrlen(in) - 1) >= 0 ) {
+		if (L' ' == in[len]) {
+			in[len] = 0;
+		}
+		else if (L' ' == in[0]){
+			++in;
+		}
+		else {
+			break;
+		}
+	}
+	//
+	
+	if (!PathIsRelative(in)) {
+		lstrcpy(out, in);
 		return TRUE;
 	}
 
     lstrcpy ( path, dir );
     lstrcat ( path, L"\\" );
-    lstrcat ( path, pref );
+	lstrcat(path, in);
     lstrcat ( path, L"*" );
     res = FindFirstFile ( path, &wfd );
     HL_WTrace ( "search file by mask '%s'" , path );
@@ -2623,6 +2640,7 @@ VOID HL_Move_Carret_Silently(BOOL up) {
 VOID	HL_Grep( VOID* _lpf, BOOL grep) {  
 	LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
 	int k = 0;
+	int lcount = 0;
 	int res = 0;
 	struct Sci_TextToFind ttf;
 	struct Sci_TextRange tr;
@@ -2641,7 +2659,7 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	}
 	ttf.lpstrText = szFind2;
 	SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
-	for ( k = 0; k < SendMessage( lpf->hwnd , SCI_GETLINECOUNT , 0 , 0 ); k++) {
+	for (k = 0; res = 0,lcount = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0), k < lcount; k++) {
 		//
 		ttf.chrg.cpMin	= SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
 		ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
@@ -2651,22 +2669,26 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 		SendMessage(lpf->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 #endif
 		if (ttf.chrg.cpMin == ttf.chrg.cpMax) {
-			res = -1;
+			res = -2;
 		}
 		//
-		if (-1 != res) {
+		if (res >= 0) {
 			res = (int)SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
 		}
-		if ( ( grep && -1 == res	) ||
-			(!grep && -1 != res) ) {
+#ifdef _DEBUG
+		HL_TRACE("LINE result : %s (%d) [%d - %d]", tr.lpstrText, res , ttf.chrg.cpMin , ttf.chrg.cpMax);
+#endif
+		if ( ( grep &&  res < 0	) || (!grep &&  res >= 0) ) {
 			//
-#if 1	
+#if 0
 			SendMessage(lpf->hwnd, SCI_HIDELINES, k, k);
 #else
 
 			int next_line = ttf.chrg.cpMax + 2;
 			SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, next_line - ttf.chrg.cpMin);
-			--k;
+			if (SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) < lcount) {
+				--k;
+			}
 #endif
 
 #ifdef _DEBUG

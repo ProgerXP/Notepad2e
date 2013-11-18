@@ -553,7 +553,7 @@ BOOL _check_se_mode ( struct SCNotification *scn )
 void HLS_on_notification ( int code , struct SCNotification *scn )
 {
     if ( SCN_PAINTED != code ) {
-        HL_TRACE_I ( code );
+//        HL_TRACE_I ( code );
     }
     //
     switch ( code ) {
