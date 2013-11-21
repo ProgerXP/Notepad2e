@@ -2642,6 +2642,8 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	int k = 0;
 	int lcount = 0;
 	int res = 0;
+	int eol_len = 2;
+
 	struct Sci_TextToFind ttf;
 	struct Sci_TextRange tr;
 	if (!lstrlenA(lpf->szFind)) {
@@ -2656,6 +2658,9 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	}
 	if (lstrlenA(szFind2) == 0) {
 		return ;
+	}
+	if (SC_EOL_CRLF != SendMessage(lpf->hwnd, SCI_GETEOLMODE, 0, 0)) {
+		eol_len = 1;
 	}
 	ttf.lpstrText = szFind2;
 	SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
@@ -2684,8 +2689,10 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 			SendMessage(lpf->hwnd, SCI_HIDELINES, k, k);
 #else
 
-			int next_line = ttf.chrg.cpMax + 2;
-			SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, next_line - ttf.chrg.cpMin);
+			if ( k + 1 != lcount ) {
+				ttf.chrg.cpMax += eol_len;
+			}
+			SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, ttf.chrg.cpMax - ttf.chrg.cpMin);
 			if (SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) < lcount) {
 				--k;
 			}
