@@ -155,6 +155,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
         int	search_opt = SCFIND_WHOLEWORD;
         int wlen = strlen ( word );
 		int	curr_indi = HL_SELECT_INDICATOR_SINGLE;
+		BOOL	is_visible = FALSE;
         if ( _hl_se_init ) {
             _hl_se_count = 0;
             //    strcpy ( _hl_sel_edit_prev , word );
@@ -182,6 +183,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 		ttf1.chrg.cpMax = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
         ttf1.lpstrText = ( LPSTR ) word;
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
+		is_visible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
         while ( 1 ) {
             ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
             res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
@@ -193,18 +195,22 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                     _hl_se_old_len = wlen;
 					break;
                 } else {
-					if (ttf1.chrgText.cpMin >= ttf.chrg.cpMin &&
+					if (
+						ttf1.chrgText.cpMin >= ttf.chrg.cpMin &&
 						ttf1.chrgText.cpMin < ttf.chrg.cpMax
 						) {
+						if (is_visible) {
 							curr_indi = HL_SELECT_INDICATOR_PAGE;
-						break;
+							break;
+						}
+						is_visible = TRUE;
 					}
 					else {
 						curr_indi = HL_SELECT_INDICATOR;
 					}
                 }
 				//
-				if (ttf1.chrgText.cpMin >= ttf.chrg.cpMin && HL_SELECT_INDICATOR == curr_indi) {
+				if (ttf1.chrgText.cpMin >= ttf.chrg.cpMax && HL_SELECT_INDICATOR == curr_indi) {
 					break;
 				}
             }
