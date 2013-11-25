@@ -566,7 +566,7 @@ BEGIN
     PUSHBUTTON      "&Grep",ID_GREP,215,41,50,14
     CONTROL         "<a>Goto Replace (Ctrl+H)</a>",IDC_TOGGLEFINDREPLACE,
                     "SysLink",0x0,125,85,74,10
-    PUSHBUTTON      "&Ungrep",ID_UNGREP,215,58,50,14
+    PUSHBUTTON      "Ung&rep",ID_UNGREP,215,58,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,74,50,14
 END
 
