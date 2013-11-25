@@ -82,7 +82,8 @@ Copyright
 Changes of the Extended edition
 
   Current Word Highlighting - with customizable formatting (rectangle,
-  border, etc.) and colors.
+  border, etc.) and colors. 3 modes: one occurrence in document, two
+  or more but all are visible, multiple with some hidden under scroll.
 
   Go to Last Change (Ctrl+Shift+Z) - moves caret to the position of last
   Undo action.
@@ -144,6 +145,8 @@ Changes of the Extended edition
   
   File > Launch > Command (Ctrl+R) now retains the path until another
   file is opened.
+  
+  Find (Ctrl+F) now has Grep/Ungrep buttons (working on regexp too).
 
   CSS syntax scheme improvements:
 
