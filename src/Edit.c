@@ -2897,9 +2897,31 @@ void EditEncloseSelection ( HWND hwnd, LPCWSTR pwszOpen, LPCWSTR pwszClose )
 {
     char  mszOpen[256 * 3] = "";
     char  mszClose[256 * 3] = "";
+	char  skip[] = "\r\n\t ";
     int   mbcp;
     int iSelStart = ( int ) SendMessage ( hwnd, SCI_GETSELECTIONSTART, 0, 0 );
     int iSelEnd   = ( int ) SendMessage ( hwnd, SCI_GETSELECTIONEND, 0, 0 );
+	//////////////
+	char  ch = 0;
+	while (iSelStart < iSelEnd) {
+		ch = (char)SendMessage(hwnd, SCI_GETCHARAT, iSelStart, 0);
+		if (strchr(skip, ch)) {
+			++iSelStart;
+		}
+		else {
+			break;
+		}
+	}
+	while (iSelStart < iSelEnd) {
+		ch = (char)SendMessage(hwnd, SCI_GETCHARAT, iSelEnd-1, 0);
+		if (strchr(skip, ch)) {
+			--iSelEnd;
+		}
+		else {
+			break;
+		}
+	}
+	//////////////
     if ( SendMessage ( hwnd, SCI_GETCODEPAGE, 0, 0 ) == SC_CP_UTF8 ) {
         mbcp = CP_UTF8;
     } else {
