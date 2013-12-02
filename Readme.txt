@@ -147,6 +147,8 @@ Changes of the Extended edition
   file is opened.
   
   Find (Ctrl+F) now has Grep/Ungrep buttons (working on regexp too).
+  
+  Insert HTML Tag (Alt+X) now skips whitespace within the selection.
 
   CSS syntax scheme improvements:
 
