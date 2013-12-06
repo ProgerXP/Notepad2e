@@ -3318,10 +3318,10 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
             // haccel cases
 		case IDH_MOVE_UP_SILENT:
-			HL_Move_Carret_Silently(TRUE);
+		//	HL_Move_Carret_Silently(TRUE);
 			break;
 		case IDH_MOVE_DOWN_SILENT:
-			HL_Move_Carret_Silently(FALSE);
+		//	HL_Move_Carret_Silently(FALSE);
 			break;
         case ID_EDIT_EDITSELECTION: {
                 HLS_Edit_selection_start();

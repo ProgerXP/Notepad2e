@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
-// Включаемый файл, созданный в Microsoft Visual C++.
-// Используется Notepad2.rc
+// Microsoft Visual C++ generated include file.
+// Used by Notepad2.rc
 //
 #define IDR_RT_MANIFEST                 1
 #define ID_SETTINGS_HIGHLIGHTCURRENTWORD 1
@@ -8,7 +8,6 @@
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
 #define ID_UNGREP                       3
 #define ID_FILE_OPENPREVIOUS            4
-#define IDCANCEL3                       4
 #define ID_EDIT_UNDO                    5
 #define ID_GREP                         5
 #define ID_EDIT_UNDO_REDO               6
