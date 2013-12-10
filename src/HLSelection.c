@@ -21,6 +21,12 @@ BOOL	b_HL_edit_selection = FALSE;
 BOOL	_hl_se_init = FALSE;
 BOOL	_hl_se_exit = FALSE;
 //
+struct hl_sci_style{
+	int bg;
+	int fg;
+};
+struct hl_sci_style	 _hl_sel_style_new;
+//
 typedef struct tagHLSEdata {
     UINT pos;
     UINT len;
@@ -39,7 +45,29 @@ BOOL		_hl_se_mode_whole_word = TRUE;
 BOOL		_hl_se_strict_mode = TRUE;
 char		*_hl_se_orig_word = 0;
 
+char to_lower(char in){
+	if (in <= 'Z' && in >= 'A')
+		return in - ('Z' - 'z');
+	if (in <= 'ß' && in >= 'À')
+		return in - ('ß' - 'ÿ');
+	return in;
+}
 
+BOOL icase_compare(const char* a, const char* b){
+	while (*a && *b) {
+		if (*a != *b) {
+			char lA = to_lower(*a);
+			char lB = to_lower(*b);
+			if (lA != lB){
+				return FALSE;
+			}
+		}
+		a++;
+		b++;
+	}
+	// Either *a or *b is nul
+	return *a == *b;
+}
 
 int	HLS_key_action ( int key , int msg )
 {
@@ -96,6 +124,11 @@ void	HLS_init()
 			0x00)));
 		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionUnder", 0));
 	}
+	/************************************************************************/
+	/* selection style                                                                     */
+	/************************************************************************/
+	_hl_sel_style_new.bg = IniGetInt(HL_INI_SECTION, L"ActiveSelectionBackground", RGB(0xaa, 0x00, 0x00));
+	_hl_sel_style_new.fg = IniGetInt(HL_INI_SECTION, L"ActiveSelectionForeground", RGB(0x00, 0x00, 0xaa));
     //
     hl_proc_action = HLS_key_action;
     _hl_se_tr.lpstrText = 0;
@@ -162,7 +195,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             //    strcpy ( _hl_sel_edit_prev , word );
             //    strcpy ( _hl_sel_edit_orig , word );
             if ( _hl_se_mode_whole_word ) {
-                search_opt |= SCFIND_MATCHCASE;
+                //search_opt |= SCFIND_MATCHCASE;
             } else {
                 search_opt = SCFIND_MATCHCASE;
             }
@@ -296,6 +329,7 @@ VOID	HLS_Get_word()
     if ( sel_len > ( !_hl_se_init || _hl_se_mode_whole_word ) ? 1 : 0 ) {
         _hl_se_tr.lpstrText = malloc ( sel_len + 1 );
         SendMessage ( hwndEdit, SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
+		HL_TRACE_TR(_hl_se_tr);
     } else {
         _hl_se_tr.chrg.cpMin = 0;
         _hl_se_tr.chrg.cpMax = 0;
@@ -330,6 +364,27 @@ VOID HLS_Highlight_turn ( )
 }
 
 
+
+
+VOID	_HLS_sel_style(BOOL in){
+	/************************************************************************/
+	/* back                                                                     */
+	/************************************************************************/
+
+	if (in){
+		//if (_hl_sel_style_old.bg < 0){
+		//	_hl_sel_style_old.bg = SendMessage(hwndEdit, SCI_GETCARETLINEBACK, 0, 0);
+		//}
+		SendMessage(hwndEdit, SCI_SETSELBACK, 1, _hl_sel_style_new.bg);
+		SendMessage(hwndEdit, SCI_SETSELFORE, 1, _hl_sel_style_new.fg);
+	}
+	else {
+		SendMessage(hwndEdit, SCI_SETSELBACK, 0, 0);
+		SendMessage(hwndEdit, SCI_SETSELFORE, 0, 0);
+	}
+}
+
+
 BOOL HLS_process_changes ( UINT opt )
 {
     int		old_ind;
@@ -349,7 +404,7 @@ BOOL HLS_process_changes ( UINT opt )
     old_ind = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     //
     if ( cur_pos < _hl_se_tr.chrg.cpMin || cur_pos > _hl_se_tr.chrg.cpMax ) {
-        HL_TRACE ( "OUT OF BOUND  SE exit (applied)" );
+        HL_TRACE ( "OUT OF BOUND  SE exit (applied) %d %d %d" , cur_pos , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
         out = FALSE;
         goto _EXIT;
     }
@@ -389,7 +444,7 @@ BOOL HLS_process_changes ( UINT opt )
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
-        if ( 0 == strcmp ( old_word , _hl_se_tr.lpstrText ) ) {
+		if (icase_compare(old_word, _hl_se_tr.lpstrText)) {
             goto _EXIT;
         }
     }
@@ -444,7 +499,7 @@ BOOL HLS_process_changes ( UINT opt )
                     break;
                 }
                 SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
-                work = ( 0 == strcmp ( tr.lpstrText , old_word ) );
+				work = icase_compare(tr.lpstrText, old_word);
             } else {
                 work = FALSE;
                 HL_TRACE ( "cur pos!" )
@@ -458,7 +513,7 @@ BOOL HLS_process_changes ( UINT opt )
             SendMessage ( hwndEdit , SCI_SETTARGETEND , se->pos + _hl_se_old_len , 0 );
             SendMessage ( hwndEdit , SCI_REPLACETARGET , -1 , ( LPARAM ) _hl_se_tr.lpstrText );
             delta_len += ( new_len - _hl_se_old_len );
-            if ( se->pos <= _hl_se_tr.chrg.cpMax ) {
+            if ( se->pos </*=*/ _hl_se_tr.chrg.cpMax ) {
                 _hl_se_tr.chrg.cpMin += ( new_len - _hl_se_old_len );
                 _hl_se_tr.chrg.cpMax += ( new_len - _hl_se_old_len );
             }
@@ -481,7 +536,7 @@ _EXIT:
         free ( tr.lpstrText );
         tr.lpstrText = 0;
     }
-    HL_TRACE ( "new range is %d - %d . curpos is %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax , cur_pos );
+    HL_TRACE ( "new range is %d : %d . curpos is %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax , cur_pos );
     //   SendMessage ( hwndEdit , SCI_SETCURRENTPOS , cur_pos , 0 );
     SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( TRUE ), 0 );
     return out;
@@ -501,6 +556,7 @@ VOID HLS_Edit_selection_start()
     HLS_Highlight_turn ( );
     _hl_se_init = FALSE;
     if ( b_HL_edit_selection ) {
+		_HLS_sel_style(TRUE);
         SendMessage ( hwndEdit , SCI_SETSEL , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
         SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
         _hl_se_exit = FALSE;
@@ -522,7 +578,8 @@ VOID HLS_Edit_selection_stop ( UINT mode )
         SendMessage ( hwndEdit , SCI_SETANCHOR , pos , 0 );
         b_HL_edit_selection = FALSE;
         //
-        HLS_Highlight_turn ( );
+		HLS_Highlight_turn();
+		_HLS_sel_style(FALSE);
         SendMessage ( hwndEdit , SCI_ENDUNDOACTION , 0, 0 );
     }
     _hl_se_init = FALSE;
@@ -601,7 +658,7 @@ void HLS_on_notification ( int code , struct SCNotification *scn )
                         HL_TRACE ( "MODIF START ACTION" );
                     }
                 }
-                HLS_Update_selection ( SH_MODIF );
+     //           HLS_Update_selection ( SH_MODIF );
             }
             break;
         case SCN_SAVEPOINTREACHED:

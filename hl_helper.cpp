@@ -12,6 +12,7 @@ extern "C"
     extern UINT		_hl_ctx_menu_type ;
     extern	VOID	HL_Trace ( const char *fmt , ... );
 
+
 #if 0
     BOOL HL_Explorer_cxt_menu ( LPCWSTR path, void *parentWindow )
     {
