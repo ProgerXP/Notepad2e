@@ -117,7 +117,7 @@ void	HLS_init()
     //
 	indi_style = IniGetInt(HL_INI_SECTION, L"EditSelectionType", 6);
 	if (indi_style >= 0) {
-		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR_SINGLE, indi_style);
+		SendMessage(hwndEdit, SCI_INDICSETSTYLE, HL_SELECT_INDICATOR_EDIT, indi_style);
 		SendMessage(hwndEdit, SCI_INDICSETALPHA, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionAlpha", 100));
 		SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionLineAlpha", 0));
 		SendMessage(hwndEdit, SCI_INDICSETFORE, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionColor", RGB(0xaa, 0xaa,
