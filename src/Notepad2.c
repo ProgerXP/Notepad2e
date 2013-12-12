@@ -737,6 +737,14 @@ LRESULT CALLBACK MainWndProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPara
     switch ( umsg ) {
             // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
             // Cool idea, don't know if this has any effect... ;-)
+           
+	case WM_ACTIVATEAPP:
+	{
+						   if (!wParam){
+							   HLS_Edit_selection_stop(HL_SE_APPLY);
+						   }
+	}
+		break;
         case WM_KEYDOWN:
             break;
         case WM_MOUSEACTIVATE:

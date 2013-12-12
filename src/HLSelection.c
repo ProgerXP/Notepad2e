@@ -73,7 +73,7 @@ int	HLS_key_action ( int key , int msg )
 {
     if ( b_HL_edit_selection ) {
         //    HL_TRACE ( "enter key %d on message %d , edit mode %d " , key , msg , b_HL_edit_selection );
-        if ( VK_RETURN == key ) {
+        if ( VK_RETURN == key && GetKeyState(VK_SHIFT) >=0 ) {
             if ( WM_CHAR == msg ) {
                 HLS_Edit_selection_stop ( HL_SE_APPLY );
             }
