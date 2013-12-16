@@ -21,11 +21,6 @@ BOOL	b_HL_edit_selection = FALSE;
 BOOL	_hl_se_init = FALSE;
 BOOL	_hl_se_exit = FALSE;
 //
-struct hl_sci_style{
-	int bg;
-	int fg;
-};
-struct hl_sci_style	 _hl_sel_style_new;
 //
 typedef struct tagHLSEdata {
     UINT pos;
@@ -72,15 +67,15 @@ BOOL icase_compare(const char* a, const char* b){
 int	HLS_key_action ( int key , int msg )
 {
     if ( b_HL_edit_selection ) {
-        //    HL_TRACE ( "enter key %d on message %d , edit mode %d " , key , msg , b_HL_edit_selection );
-        if ( VK_RETURN == key && GetKeyState(VK_SHIFT) >=0 ) {
+
+        if ( VK_RETURN == key && GetKeyState(VK_SHIFT) >= 0 ) {
             if ( WM_CHAR == msg ) {
-                HLS_Edit_selection_stop ( HL_SE_APPLY );
+				HLS_Edit_selection_stop(HL_SE_APPLY);
             }
-            return 0;
+			return 0;
         }
     }
-    return -1;
+	return -1;
 }
 
 
@@ -124,11 +119,6 @@ void	HLS_init()
 			0x00)));
 		SendMessage(hwndEdit, SCI_INDICSETUNDER, HL_SELECT_INDICATOR_EDIT, IniGetInt(HL_INI_SECTION, L"EditSelectionUnder", 0));
 	}
-	/************************************************************************/
-	/* selection style                                                                     */
-	/************************************************************************/
-	_hl_sel_style_new.bg = IniGetInt(HL_INI_SECTION, L"ActiveSelectionBackground", RGB(0xaa, 0x00, 0x00));
-	_hl_sel_style_new.fg = IniGetInt(HL_INI_SECTION, L"ActiveSelectionForeground", RGB(0x00, 0x00, 0xaa));
     //
     hl_proc_action = HLS_key_action;
     _hl_se_tr.lpstrText = 0;
@@ -366,24 +356,6 @@ VOID HLS_Highlight_turn ( )
 
 
 
-VOID	_HLS_sel_style(BOOL in){
-	/************************************************************************/
-	/* back                                                                     */
-	/************************************************************************/
-
-	if (in){
-		//if (_hl_sel_style_old.bg < 0){
-		//	_hl_sel_style_old.bg = SendMessage(hwndEdit, SCI_GETCARETLINEBACK, 0, 0);
-		//}
-		SendMessage(hwndEdit, SCI_SETSELBACK, 1, _hl_sel_style_new.bg);
-		SendMessage(hwndEdit, SCI_SETSELFORE, 1, _hl_sel_style_new.fg);
-	}
-	else {
-		SendMessage(hwndEdit, SCI_SETSELBACK, 0, 0);
-		SendMessage(hwndEdit, SCI_SETSELFORE, 0, 0);
-	}
-}
-
 
 BOOL HLS_process_changes ( UINT opt )
 {
@@ -556,7 +528,6 @@ VOID HLS_Edit_selection_start()
     HLS_Highlight_turn ( );
     _hl_se_init = FALSE;
     if ( b_HL_edit_selection ) {
-		_HLS_sel_style(TRUE);
         SendMessage ( hwndEdit , SCI_SETSEL , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
         SendMessage ( hwndEdit , SCI_BEGINUNDOACTION , 0, 0 );
         _hl_se_exit = FALSE;
@@ -579,7 +550,6 @@ VOID HLS_Edit_selection_stop ( UINT mode )
         b_HL_edit_selection = FALSE;
         //
 		HLS_Highlight_turn();
-		_HLS_sel_style(FALSE);
         SendMessage ( hwndEdit , SCI_ENDUNDOACTION , 0, 0 );
     }
     _hl_se_init = FALSE;
