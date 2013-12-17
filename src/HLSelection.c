@@ -238,11 +238,11 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 							curr_indi = HL_SELECT_INDICATOR_EDIT;
 							b_HL_edit_selection = TRUE;
 							_hl_se_old_len = wlen;
+							break;
 						}
 						else {
 							curr_indi = HL_SELECT_INDICATOR_PAGE;
 						}
-						break;
 					}
 					else{
 						curr_indi = HL_SELECT_INDICATOR;
