@@ -5,10 +5,21 @@
 #include "Helpers.h"
 #include <cassert>
 
-
+/************************************************************************/
+/* when many matches on ALL document  but ONLY ONE on screen                                                                   */
+/************************************************************************/
 #define HL_SELECT_INDICATOR 9
+/************************************************************************/
+/* when one match one document                                                                     */
+/************************************************************************/
 #define HL_SELECT_INDICATOR_SINGLE 10
+/************************************************************************/
+/* when many matches on screen                                                                     */
+/************************************************************************/
 #define HL_SELECT_INDICATOR_PAGE 11   
+/************************************************************************/
+/* SE mode                                                                     */
+/************************************************************************/
 #define HL_SELECT_INDICATOR_EDIT 12
 
 #define HL_SELECT_MAX_SIZE	0xff
@@ -212,10 +223,16 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
             res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
 			if (-1 != res) {
+				/************************************************************************/
+				/* current match is visible                                                                     */
+				/************************************************************************/
 				if (
 					ttf1.chrgText.cpMin >= ttf.chrg.cpMin &&
 					ttf1.chrgText.cpMin < ttf.chrg.cpMax
 					) {
+					/************************************************************************/
+					/* if previous match was visible                                                                     */
+					/************************************************************************/
 					if (is_visible) {
 						if (_hl_se_init) {
 							curr_indi = HL_SELECT_INDICATOR_EDIT;
@@ -226,6 +243,9 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 							curr_indi = HL_SELECT_INDICATOR_PAGE;
 						}
 						break;
+					}
+					else{
+						curr_indi = HL_SELECT_INDICATOR;
 					}
 					is_visible = TRUE;
 				}
