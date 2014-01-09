@@ -6,7 +6,7 @@
 #include <cassert>
 
 /************************************************************************/
-/* when many matches on ALL document  but ONLY ONE on screen                                                                   */
+/* when many matches on ALL document  but NOT ALL OF THEM  on screen                                                                   */
 /************************************************************************/
 #define HL_SELECT_INDICATOR 9
 /************************************************************************/
@@ -246,6 +246,13 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 					}
 					else{
 						curr_indi = HL_SELECT_INDICATOR;
+						
+						/*
+						 previous match was invisible and this is visible
+						 then we must dont check next matches
+						 Anyhow HL_SELECT_INDICATOR must be there ?!?!
+						 **/
+						break;
 					}
 					is_visible = TRUE;
 				}
