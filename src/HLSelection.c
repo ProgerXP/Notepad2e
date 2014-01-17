@@ -201,8 +201,10 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                 search_opt = SCFIND_MATCHCASE;
             }
             //
-            if ( _hl_se_orig_word ) {
-                _hl_se_orig_word = realloc ( _hl_se_orig_word , wlen + 1 );
+            if ( _hl_se_orig_word ){
+				if (strlen(_hl_se_orig_word) != wlen + 1) {
+					_hl_se_orig_word = realloc(_hl_se_orig_word, wlen + 1);
+				}
             } else {
                 _hl_se_orig_word = malloc ( wlen + 1 );
             }
@@ -249,10 +251,13 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 						
 						/*
 						 previous match was invisible and this is visible
-						 then we must dont check next matches
+						 then we must don't check next matches
 						 Anyhow HL_SELECT_INDICATOR must be there ?!?!
 						 **/
-						break;
+						if (!_hl_se_init)
+						{
+							break;
+						}
 					}
 					is_visible = TRUE;
 				}

@@ -271,10 +271,11 @@ VOID	HL_Grep(VOID* lpf, BOOL grep);
 #define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG
-#define HL_TRACE(FMT,...)	HL_Trace ( "[%s: %d] - "#FMT , __FILE__ , __LINE__ , __VA_ARGS__ );
-#define HL_TRACE_S(OBJ)		HL_Trace ( "[%s: %d] [%s]=%s " , __FILE__ , __LINE__ , #OBJ , OBJ );
-#define HL_TRACE_I(OBJ)		HL_Trace ( "[%s: %d] [%s]=%d (0x%04xd) " , __FILE__ , __LINE__ , #OBJ , OBJ , OBJ );
-#define HL_TRACE_TR(OBJ)		HL_Trace ( "[%s: %d] [%s]= TEXTRANGE %d:%d(%s) " , __FILE__ , __LINE__ , #OBJ , OBJ.chrg.cpMin ,OBJ.chrg.cpMax ,OBJ.lpstrText );
+#define __FILE_LOC (1+strrchr(__FILE__,'\\')/*?strrchr(__FILE__,'\\')+1:__FILE__*/)
+#define HL_TRACE(FMT,...)	HL_Trace ( "[%s: %d] - "#FMT , __FILE_LOC , __LINE__ , __VA_ARGS__ );
+#define HL_TRACE_S(OBJ)		HL_Trace ( "[%s: %d] [%s]=%s " , __FILE_LOC , __LINE__ , #OBJ , OBJ );
+#define HL_TRACE_I(OBJ)		HL_Trace ( "[%s: %d] [%s]=%d (0x%04xd) " , __FILE_LOC , __LINE__ , #OBJ , OBJ , OBJ );
+#define HL_TRACE_TR(OBJ)		HL_Trace ( "[%s: %d] [%s]= TEXTRANGE %d:%d(%s) " , __FILE_LOC , __LINE__ , #OBJ , OBJ.chrg.cpMin ,OBJ.chrg.cpMax ,OBJ.lpstrText );
 #else
 #define HL_TRACE(FMT,...)	 (void)(FMT);
 #define HL_TRACE_S(OBJ)		(void)(OBJ);
