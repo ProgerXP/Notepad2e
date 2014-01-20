@@ -59,6 +59,11 @@ char to_lower(char in){
 	return in;
 }
 
+
+BOOL case_compare(const char* a, const char* b){
+	return 0 == strcmp(a, b);
+}
+
 BOOL icase_compare(const char* a, const char* b){
 	while (*a && *b) {
 		if (*a != *b) {
@@ -448,7 +453,7 @@ BOOL HLS_process_changes ( UINT opt )
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
-		if (icase_compare(old_word, _hl_se_tr.lpstrText)) {
+		if (case_compare(old_word, _hl_se_tr.lpstrText)) {
             goto _EXIT;
         }
     }
@@ -503,7 +508,7 @@ BOOL HLS_process_changes ( UINT opt )
                     break;
                 }
                 SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
-				work = icase_compare(tr.lpstrText, old_word);
+				work = case_compare(tr.lpstrText, old_word);
             } else {
                 work = FALSE;
                 HL_TRACE ( "cur pos!" )
