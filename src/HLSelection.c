@@ -304,12 +304,14 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                         continue;
                     }
                     //HL_TRACE ( " line %d ", line );
-                    HL_TRACE ( " line__ %d (%d , %d , %d) ", line , lwrap , lstart ,  lrange );
-                    if ( line + lwrap <= lrange + lstart ) {
+					HL_TRACE("[%d] line__ %d (%d , %d , %d) ", ttf.chrgText.cpMin, line, lwrap, lstart, lrange);
+                    if ( line /* + lwrap */ <= lrange + lstart ) {
                         LPSE_DATA dt = &_hl_se_array[_hl_se_count++];
                         dt->pos = ttf.chrgText.cpMin;
                         dt->len = wlen;
-                    } else {
+					}
+					else {
+						HL_TRACE("out of loop");
                         break;
                     }
                 }
