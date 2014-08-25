@@ -2517,8 +2517,14 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                             WCHAR buf[MAX_PATH];
                             WCHAR dir[MAX_PATH];
                             //
-                            int len = GetDlgItemText ( GetParent ( hdlg ), cmb13, buf, MAX_PATH );
-                            SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH , MAX_PATH, ( LPARAM ) dir );
+							int len = GetDlgItemText(GetParent(hdlg), cmb13, buf, MAX_PATH);
+#if 1
+							if (0 == len){
+								len = GetDlgItemText(GetParent(hdlg), edt1, buf, MAX_PATH);
+								HL_TRACE("OFN OK =  %d  (%S)", len, buf);
+							}
+#endif
+							SendMessage(GetParent(hdlg), CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
                             SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
                             HL_Trace ( "OFN OK  " );
                             if ( len ) {
@@ -2528,7 +2534,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                                     final_str = last_selected;
                                     HL_WTrace ( "OFN drop window text %s " , buf );
                                 }
-                                HL_WTrace ( "OFN input (%s) " , final_str );
+								HL_TRACE("OFN input (%S) ", final_str);
                                 if ( !HL_OPen_File_by_prefix ( final_str , dir , out ) ) {
                                     WCHAR mess[1024];
                                     wsprintf ( mess ,

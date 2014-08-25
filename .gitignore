@@ -1,5 +1,5 @@
 *.obj
-
+*.opensdf
 *.tlog
 *.pdb
 
