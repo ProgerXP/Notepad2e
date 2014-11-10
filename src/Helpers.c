@@ -2651,7 +2651,6 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	int eol_len = 2;
 
 	struct Sci_TextToFind ttf;
-	struct Sci_TextRange tr;
 	if (!lstrlenA(lpf->szFind)) {
 		return;
 	}
@@ -2714,6 +2713,13 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 #endif
 	}
 	SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
+}
+
+void HL_inplace_rev(WCHAR * s) {
+	WCHAR t, *e = s + lstrlen(s);
+	while (--e > s) {
+		t = *s; *s++ = *e; *e = t;
+	}
 }
 
 ///   End of Helpers.c   \\\

@@ -256,6 +256,7 @@ BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
 VOID	HL_Set_wheel_scroll ( BOOL on );
 VOID	HL_Reload_Settings();
 VOID	HL_Get_last_dir( LPTSTR out );
+void	HL_inplace_rev(WCHAR * s);
 BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
 UINT_PTR CALLBACK HL_OFN__hook_proc(
 	HWND hdlg,

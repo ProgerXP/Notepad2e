@@ -5397,31 +5397,67 @@ typedef struct _encloseselectiondata {
 
 INT_PTR CALLBACK EditEncloseSelectionDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
+	const WCHAR* _left_braces = L"<{([";
+	const WCHAR* _right_braces = L">})]";
+	const WCHAR* _special_symbs = L"`~!@#%^*-_+=|\\/:;\"',.?";
     static PENCLOSESELDATA pdata;
-    switch ( umsg ) {
-        case WM_INITDIALOG: {
-                pdata = ( PENCLOSESELDATA ) lParam;
-                SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 255, 0 );
-                SetDlgItemTextW ( hwnd, 100, pdata->pwsz1 );
-                SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
-                SetDlgItemTextW ( hwnd, 101, pdata->pwsz2 );
-                CenterDlgInParent ( hwnd );
-            }
-            return TRUE;
-        case WM_COMMAND:
-            switch ( LOWORD ( wParam ) ) {
-                case IDOK: {
-                        GetDlgItemTextW ( hwnd, 100, pdata->pwsz1, 256 );
-                        GetDlgItemTextW ( hwnd, 101, pdata->pwsz2, 256 );
-                        EndDialog ( hwnd, IDOK );
-                    }
-                    break;
-                case IDCANCEL:
-                    EndDialog ( hwnd, IDCANCEL );
-                    break;
-            }
-            return TRUE;
-    }
+	switch (umsg) {
+	case WM_INITDIALOG: {
+		pdata = (PENCLOSESELDATA)lParam;
+		SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
+		SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
+		SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+		SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
+		CenterDlgInParent(hwnd);
+	}
+		return TRUE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case 100: {
+			if (HIWORD(wParam) == EN_CHANGE) {
+				WCHAR wcIns[256], wcBuf[256];
+				WCHAR* br;
+				BOOL brackets;
+				int bCount;
+				GetDlgItemTextW(hwnd, 100, wcBuf, 255);
+				bCount = 0;
+				brackets = TRUE;
+				while (br = StrChr(_left_braces, *(wcBuf + bCount))){
+					wcIns[bCount++] = _right_braces[br - _left_braces];
+				}
+				wcIns[bCount] = '\0';
+				//
+				if (0 == bCount){
+					br = StrChr(_special_symbs, *(wcBuf ));
+					while (br &&  *br == *(wcBuf + bCount)){
+						wcIns[bCount++] = *br;
+						brackets = FALSE;
+					}
+					wcIns[bCount] = '\0';
+				}
+
+				//
+				if (bCount > 0){
+					if (brackets){
+						HL_inplace_rev(wcIns);
+					}
+					SetDlgItemTextW(hwnd, 101, wcIns);
+				}
+			}
+		}
+			break;
+		case IDOK: {
+			GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
+			GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+			EndDialog(hwnd, IDOK);
+		}
+			break;
+		case IDCANCEL:
+			EndDialog(hwnd, IDCANCEL);
+			break;
+		}
+		return TRUE;
+	}
     return FALSE;
 }
 
