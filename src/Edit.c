@@ -5459,137 +5459,166 @@ typedef struct _tagsdata {
 
 INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
+	//
 	const WCHAR* _left_braces = L"<{([";
 	const WCHAR* _right_braces = L">})]";
-	//
     static PTAGSDATA pdata;
-    switch ( umsg ) {
-        case WM_INITDIALOG: {
-                WCHAR end[0xff] = L"</";
-                INT len = lstrlen ( hl_last_html_tag );
-                pdata = ( PTAGSDATA ) lParam;
-                SendDlgItemMessage ( hwnd, 100, EM_LIMITTEXT, 254, 0 );
-                SetDlgItemTextW ( hwnd, 100, hl_last_html_tag );
-                SendDlgItemMessage ( hwnd, 101, EM_LIMITTEXT, 255, 0 );
-                SetDlgItemTextW ( hwnd, 101, hl_last_html_end_tag );
-                //
-                SetFocus ( GetDlgItem ( hwnd, 100 ) );
-                if ( len > 2 &&
-                        L'<' == hl_last_html_tag[0] &&
-                        L'>' == hl_last_html_tag[len - 1]
-                   ) {
-                    PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 1, lstrlen ( hl_last_html_tag ) - 1 );
-                } else {
-                    PostMessage ( GetDlgItem ( hwnd, 100 ), EM_SETSEL, 0, lstrlen ( hl_last_html_tag ) );
-                }
-                CenterDlgInParent ( hwnd );
-            }
-            return FALSE;
-        case WM_COMMAND:
-            switch ( LOWORD ( wParam ) ) {
-                case 100: {
-                        if ( HIWORD ( wParam ) == EN_CHANGE ) {
-                            WCHAR wchBuf[256];
-                            WCHAR wchIns[256];
-							WCHAR brackets[256];
-                            int  cchIns = 2;
-                            BOOL bClear = TRUE;
-                            BOOL bCopy = FALSE;
-                            GetDlgItemTextW ( hwnd, 100, wchBuf, 256 );
-                            if ( lstrlen ( wchBuf ) >= 3 ) {
-                             //   if ( wchBuf[0] == L'<' ) {
-								if (StrChr(_left_braces, *wchBuf)){
-									int open_tag_len = 0;
-									wchIns[0] = *wchBuf;
-									// detect len of open tag
-									while (StrChr(_left_braces, *(wchBuf + (++open_tag_len)))){
-										wchIns[open_tag_len] = *(wchBuf+open_tag_len);
-									}
-									wchIns[open_tag_len ] = L'/';
-									wchIns[open_tag_len + 1] = L'\0';
-									// get next char
-                                    const WCHAR *pwCur = wchBuf + open_tag_len ;
-									cchIns += open_tag_len - 1;
-									// extract tag
-                                    while (
-                                        *pwCur &&
-										!StrChr( _left_braces, *pwCur) &&
-										!StrChr( _right_braces, *pwCur) &&
-										!StrChr( L" \t" , *pwCur ) &&
-                                        ( StrChr ( L":_-.", *pwCur ) || IsCharAlphaNumericW ( *pwCur ) ) ) {
-                                        wchIns[cchIns++] = *pwCur++;
-                                    }
-									// get end of string
-                                    while (
-                                        *pwCur &&
-                                        !StrChr(_right_braces,*pwCur) ) {
-                                        pwCur++;
-                                    }
-									// if has closing brace & not short version
-                                    if ( StrChr(_right_braces,*pwCur) && * ( pwCur - 1 ) != L'/' ) {
-										//
-										while ( open_tag_len-- ){
-											wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
-										}
-                                        wchIns[cchIns] = L'\0';
-                                        if ( cchIns > 3 
-											&& // tags hasn't to be closed
-                                                lstrcmpi ( wchIns, L"</base>" ) &&
-                                                lstrcmpi ( wchIns, L"</bgsound>" ) &&
-                                                lstrcmpi ( wchIns, L"</br>" ) &&
-                                                lstrcmpi ( wchIns, L"</embed>" ) &&
-                                                lstrcmpi ( wchIns, L"</hr>" ) &&
-                                                lstrcmpi ( wchIns, L"</img>" ) &&
-                                                lstrcmpi ( wchIns, L"</input>" ) &&
-                                                lstrcmpi ( wchIns, L"</link>" ) &&
-                                                lstrcmpi ( wchIns, L"</meta>" ) ) 
-										{
-                                            SetDlgItemTextW ( hwnd, 101, wchIns );
-                                            bClear = FALSE;
-                                        } else {
-                                            bCopy = TRUE;
-                                        }
-                                    } else {
-                                        bCopy = TRUE;
-                                    }
-                                    HL_WTrace ( "wchIns %s", wchIns );
-                                    HL_WTrace ( "pwCur %s", pwCur );
-                                } else {
-                                    bCopy = TRUE;
-                                }
-                            } else {
-                                bCopy = TRUE;
-                            }
-                            if ( bCopy ) {
-                                SetDlgItemTextW ( hwnd, 101, wchBuf );
-                            } else if ( bClear ) {
-                                SetDlgItemTextW ( hwnd, 101, L"" );
-                            }
-                        }
-                    }
-                    break;
-                case IDOK: {
-                        GetDlgItemTextW ( hwnd, 100, pdata->pwsz1, 256 );
-                        GetDlgItemTextW ( hwnd, 101, pdata->pwsz2, 256 );
-                        EndDialog ( hwnd, IDOK );
-                        // if all`s ok
-#if 0
-                        if ( lstrlen ( pdata->pwsz1 ) > 1
-                                && L'<' == pdata->pwsz1[0]
-                                && L'>' == pdata->pwsz1[lstrlen ( pdata->pwsz1 ) - 1] )
+	switch (umsg) {
+	case WM_INITDIALOG: {
+		WCHAR end[0xff] = L"</";
+		INT len = lstrlen(hl_last_html_tag);
+		pdata = (PTAGSDATA)lParam;
+		SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
+		SetDlgItemTextW(hwnd, 100, hl_last_html_tag);
+		SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+		SetDlgItemTextW(hwnd, 101, hl_last_html_end_tag);
+		//
+		SetFocus(GetDlgItem(hwnd, 100));
+		if (len > 2 &&
+			L'<' == hl_last_html_tag[0] &&
+			L'>' == hl_last_html_tag[len - 1]
+			) {
+			PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 1, lstrlen(hl_last_html_tag) - 1);
+		}
+		else {
+			PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 0, lstrlen(hl_last_html_tag));
+		}
+		CenterDlgInParent(hwnd);
+	}
+		return FALSE;
+	case WM_COMMAND:
+		switch (LOWORD(wParam)) {
+		case 100: {
+			if (HIWORD(wParam) == EN_CHANGE) {
+				WCHAR wchBuf[256];
+				WCHAR wchIns[256];
+				int  cchIns = 2;
+				BOOL bClear = TRUE;
+				BOOL bCopy = FALSE;
+				GetDlgItemTextW(hwnd, 100, wchBuf, 256);
+				if (lstrlen(wchBuf) >= 3) {
+					//   if ( wchBuf[0] == L'<' ) {
+					if (StrChr(_left_braces, *wchBuf)){
+						int open_tag_len = 0;
+						wchIns[0] = *wchBuf;
+						// detect len of open tag
+						while (StrChr(_left_braces, *(wchBuf + (++open_tag_len)))){
+							wchIns[open_tag_len] = *(wchBuf + open_tag_len);
+						}
+						wchIns[open_tag_len] = L'/';
+						wchIns[open_tag_len + 1] = L'\0';
+						// get next char
+						const WCHAR *pwCur = wchBuf + open_tag_len;
+						cchIns += open_tag_len - 1;
+						// extract tag
+						while (
+							*pwCur &&
+							!StrChr(_left_braces, *pwCur) &&
+							!StrChr(_right_braces, *pwCur) &&
+							!StrChr(L" \t", *pwCur) &&
+							(StrChr(L":_-.", *pwCur) || IsCharAlphaNumericW(*pwCur))) {
+							wchIns[cchIns++] = *pwCur++;
+						}
+						// get end of string
+						while (
+							*pwCur &&
+							!StrChr(_right_braces, *pwCur)) {
+							pwCur++;
+						}
+						// if has closing brace & not short version
+						if (StrChr(_right_braces, *pwCur) && * (pwCur - 1) != L'/') {
+							//
+							while (open_tag_len--){
+								wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
+							}
+							wchIns[cchIns] = L'\0';
+							if (cchIns > 3
+								&& // tags hasn't to be closed
+								lstrcmpi(wchIns, L"</base>") &&
+								lstrcmpi(wchIns, L"</bgsound>") &&
+								lstrcmpi(wchIns, L"</br>") &&
+								lstrcmpi(wchIns, L"</embed>") &&
+								lstrcmpi(wchIns, L"</hr>") &&
+								lstrcmpi(wchIns, L"</img>") &&
+								lstrcmpi(wchIns, L"</input>") &&
+								lstrcmpi(wchIns, L"</link>") &&
+								lstrcmpi(wchIns, L"</meta>"))
+							{
+								SetDlgItemTextW(hwnd, 101, wchIns);
+								bClear = FALSE;
+							}
+							else {
+								bCopy = TRUE;
+							}
+						}
+						else {
+							bCopy = TRUE;
+						}
+						HL_WTrace("wchIns %s", wchIns);
+						HL_WTrace("pwCur %s", pwCur);
+					}
+					else {
+						bCopy = TRUE;
+					}
+				}
+				else {
+					bCopy = TRUE;
+				}
+				if (bCopy) {
+					SetDlgItemTextW(hwnd, 101, wchBuf);
+				}
+				else if (bClear) {
+					SetDlgItemTextW(hwnd, 101, L"");
+				}
+			}
+		}
+			break;
+		case IDOK: {
+			GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
+			GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+			// may be i need to correct pwsz1 according to pwsz2??
+#if 1
+			{
+				int idx = 0, len = 0;
+				len = lstrlen(pdata->pwsz1);
+				while (len > 0 && StrChr(_right_braces, pdata->pwsz1[len - 1])) {
+					pdata->pwsz1[--len] = L'\0';
+				}
+				//
+				while (1){
+					WCHAR const* br = StrChr(_left_braces, pdata->pwsz1[idx++]);
+					if (!br){
+						break;
+					}
+					for (int k = idx; k >= 0;--k)
+					{
+						pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k ];
+					}
+					pdata->pwsz1[len] = _right_braces[br - _left_braces];
+					HL_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
+				}
+			}
 #endif
-                        {
-                            lstrcpy ( hl_last_html_tag , pdata->pwsz1 );
-                            lstrcpy ( hl_last_html_end_tag , pdata->pwsz2 );
-                        }
-                    }
-                    break;
-                case IDCANCEL:
-                    EndDialog ( hwnd, IDCANCEL );
-                    break;
-            }
-            return TRUE;
-    }
+			// 
+			EndDialog(hwnd, IDOK);
+			// if all`s ok
+#if 0
+			if (lstrlen(pdata->pwsz1) > 1
+				&& L'<' == pdata->pwsz1[0]
+				&& L'>' == pdata->pwsz1[lstrlen(pdata->pwsz1) - 1])
+#endif
+			{
+				lstrcpy(hl_last_html_tag, pdata->pwsz1);
+				lstrcpy(hl_last_html_end_tag, pdata->pwsz2);
+			}
+		}
+			break;
+		case IDCANCEL:
+			EndDialog(hwnd, IDCANCEL);
+			break;
+		}
+		return TRUE;
+	}
     return FALSE;
 }
 
