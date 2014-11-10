@@ -5459,6 +5459,9 @@ typedef struct _tagsdata {
 
 INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
+	const WCHAR* _left_braces = L"<{([";
+	const WCHAR* _right_braces = L">})]";
+	//
     static PTAGSDATA pdata;
     switch ( umsg ) {
         case WM_INITDIALOG: {
@@ -5487,32 +5490,50 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                 case 100: {
                         if ( HIWORD ( wParam ) == EN_CHANGE ) {
                             WCHAR wchBuf[256];
-                            WCHAR wchIns[256] = L"</";
+                            WCHAR wchIns[256];
+							WCHAR brackets[256];
                             int  cchIns = 2;
                             BOOL bClear = TRUE;
                             BOOL bCopy = FALSE;
                             GetDlgItemTextW ( hwnd, 100, wchBuf, 256 );
                             if ( lstrlen ( wchBuf ) >= 3 ) {
-                                if ( wchBuf[0] == L'<' ) {
-                                    const WCHAR *pwCur = &wchBuf[1];
+                             //   if ( wchBuf[0] == L'<' ) {
+								if (StrChr(_left_braces, *wchBuf)){
+									int open_tag_len = 0;
+									wchIns[0] = *wchBuf;
+									// detect len of open tag
+									while (StrChr(_left_braces, *(wchBuf + (++open_tag_len)))){
+										wchIns[open_tag_len] = *(wchBuf+open_tag_len);
+									}
+									wchIns[open_tag_len ] = L'/';
+									wchIns[open_tag_len + 1] = L'\0';
+									// get next char
+                                    const WCHAR *pwCur = wchBuf + open_tag_len ;
+									cchIns += open_tag_len - 1;
+									// extract tag
                                     while (
                                         *pwCur &&
-                                        *pwCur != L'<' &&
-                                        *pwCur != L'>' &&
-                                        *pwCur != L' ' &&
-                                        *pwCur != L'\t' &&
+										!StrChr( _left_braces, *pwCur) &&
+										!StrChr( _right_braces, *pwCur) &&
+										!StrChr( L" \t" , *pwCur ) &&
                                         ( StrChr ( L":_-.", *pwCur ) || IsCharAlphaNumericW ( *pwCur ) ) ) {
                                         wchIns[cchIns++] = *pwCur++;
                                     }
+									// get end of string
                                     while (
                                         *pwCur &&
-                                        *pwCur != L'>' ) {
+                                        !StrChr(_right_braces,*pwCur) ) {
                                         pwCur++;
                                     }
-                                    if ( *pwCur == L'>' && * ( pwCur - 1 ) != L'/' ) {
-                                        wchIns[cchIns++] = L'>';
+									// if has closing brace & not short version
+                                    if ( StrChr(_right_braces,*pwCur) && * ( pwCur - 1 ) != L'/' ) {
+										//
+										while ( open_tag_len-- ){
+											wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
+										}
                                         wchIns[cchIns] = L'\0';
-                                        if ( cchIns > 3 &&
+                                        if ( cchIns > 3 
+											&& // tags hasn't to be closed
                                                 lstrcmpi ( wchIns, L"</base>" ) &&
                                                 lstrcmpi ( wchIns, L"</bgsound>" ) &&
                                                 lstrcmpi ( wchIns, L"</br>" ) &&
@@ -5521,7 +5542,8 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
                                                 lstrcmpi ( wchIns, L"</img>" ) &&
                                                 lstrcmpi ( wchIns, L"</input>" ) &&
                                                 lstrcmpi ( wchIns, L"</link>" ) &&
-                                                lstrcmpi ( wchIns, L"</meta>" ) ) {
+                                                lstrcmpi ( wchIns, L"</meta>" ) ) 
+										{
                                             SetDlgItemTextW ( hwnd, 101, wchIns );
                                             bClear = FALSE;
                                         } else {
