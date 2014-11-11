@@ -26,7 +26,6 @@
 #define ID_FILE_OPEN__NEXT              23
 #define ID_EDIT_FINDNEXTWORD            24
 #define ID_EDIT_FINDPREVIOUSWORD        25
-#define ID_ACCELERATOR27                27
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
