@@ -531,9 +531,6 @@
     <ClInclude Include="scintilla\src\UniConversion.h">
       <Filter>scintilla</Filter>
     </ClInclude>
-    <ClInclude Include="src\version.h">
-      <Filter>scintilla</Filter>
-    </ClInclude>
     <ClInclude Include="scintilla\src\ViewStyle.h">
       <Filter>scintilla</Filter>
     </ClInclude>
@@ -550,6 +547,9 @@
       <Filter>ext</Filter>
     </ClInclude>
     <ClInclude Include="src\Helpers.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\version.h">
       <Filter>ext</Filter>
     </ClInclude>
   </ItemGroup>
