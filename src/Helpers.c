@@ -2650,7 +2650,7 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	int res = 0;
 	int eol_len = 2;
 
-	struct Sci_TextToFind ttf;
+	struct Sci_TextToFind ttf , tr;
 	if (!lstrlenA(lpf->szFind)) {
 		return;
 	}

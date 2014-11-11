@@ -5419,13 +5419,21 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc ( HWND hwnd, UINT umsg, WPARAM wPar
 				WCHAR* br;
 				BOOL brackets;
 				int bCount;
+				//
 				GetDlgItemTextW(hwnd, 100, wcBuf, 255);
+				//
+				*wcIns = L'\0';
 				bCount = 0;
 				brackets = TRUE;
-				while (br = StrChr(_left_braces, *(wcBuf + bCount))){
-					wcIns[bCount++] = _right_braces[br - _left_braces];
+				if (!*wcBuf){
+					bCount = -1;
 				}
-				wcIns[bCount] = '\0';
+				else{
+					while (br = StrChr(_left_braces, *(wcBuf + bCount))){
+						wcIns[bCount++] = _right_braces[br - _left_braces];
+					}
+					wcIns[bCount] = '\0';
+				}
 				//
 				if (0 == bCount){
 					br = StrChr(_special_symbs, *(wcBuf ));
@@ -5437,7 +5445,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc ( HWND hwnd, UINT umsg, WPARAM wPar
 				}
 
 				//
-				if (bCount > 0){
+				if (bCount){
 					if (brackets){
 						HL_inplace_rev(wcIns);
 					}
