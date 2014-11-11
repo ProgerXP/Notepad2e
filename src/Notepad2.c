@@ -2840,9 +2840,15 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                     PostMessage ( hDlgFindReplace, WM_NEXTDLGCTL, ( WPARAM ) ( GetDlgItem ( hDlgFindReplace, IDC_FINDTEXT ) ), 1 );
                 }
             }
-            break;
+			break;
+		case ID_EDIT_FINDNEXTWORD:
+		case ID_EDIT_FINDPREVIOUSWORD:
+		{
+			HL_Find_next_word(hwndEdit, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
+		}
+			break;
         case IDM_EDIT_FINDNEXT:
-        case IDM_EDIT_FINDPREV:
+		case IDM_EDIT_FINDPREV:
         case IDM_EDIT_REPLACENEXT:
         case IDM_EDIT_SELTONEXT:
         case IDM_EDIT_SELTOPREV:

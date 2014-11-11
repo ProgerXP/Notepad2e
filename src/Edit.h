@@ -112,6 +112,7 @@ void  EditSortLines(HWND,int);
 
 void  HL_Jump_offset(HWND,int);
 void  HL_Get_offset(HWND,int*);
+void  HL_Find_next_word(HWND, BOOL);
 
 void  EditJumpTo(HWND,int,int);
 void  EditSelectEx(HWND,int,int);

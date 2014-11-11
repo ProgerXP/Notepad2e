@@ -37,7 +37,6 @@ BOOL AddToFavDlg(HWND,LPCWSTR,LPCWSTR);
 BOOL FileMRUDlg(HWND,LPWSTR);
 //
 BOOL HL_OpenMRU_Last(LPWSTR);
-BOOL HL_Open_Next(HWND,BOOL);
 //
 
 BOOL ChangeNotifyDlg(HWND);

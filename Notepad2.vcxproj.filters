@@ -43,15 +43,6 @@
     <ClCompile Include="scintilla\src\ExternalLexer.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
-    <ClCompile Include="src\Helpers.c">
-      <Filter>scintilla</Filter>
-    </ClCompile>
-    <ClCompile Include="hl_helper.cpp">
-      <Filter>scintilla</Filter>
-    </ClCompile>
-    <ClCompile Include="src\HLSelection.c">
-      <Filter>scintilla</Filter>
-    </ClCompile>
     <ClCompile Include="scintilla\src\Indicator.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
@@ -394,6 +385,15 @@
     <ClCompile Include="src\Edit.c">
       <Filter>ext</Filter>
     </ClCompile>
+    <ClCompile Include="src\Helpers.c">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="hl_helper.cpp">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\HLSelection.c">
+      <Filter>ext</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scintilla\lexlib\Accessor.h">
@@ -439,12 +439,6 @@
       <Filter>scintilla</Filter>
     </ClInclude>
     <ClInclude Include="scintilla\src\FontQuality.h">
-      <Filter>scintilla</Filter>
-    </ClInclude>
-    <ClInclude Include="src\Helpers.h">
-      <Filter>scintilla</Filter>
-    </ClInclude>
-    <ClInclude Include="src\HLSelection.h">
       <Filter>scintilla</Filter>
     </ClInclude>
     <ClInclude Include="scintilla\include\ILexer.h">
@@ -551,6 +545,12 @@
     </ClInclude>
     <ClInclude Include="src\Edit.h">
       <Filter>np2</Filter>
+    </ClInclude>
+    <ClInclude Include="src\HLSelection.h">
+      <Filter>ext</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Helpers.h">
+      <Filter>ext</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

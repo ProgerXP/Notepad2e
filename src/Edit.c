@@ -4700,6 +4700,59 @@ BOOL EditFindPrev ( HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection )
     return TRUE;
 }
 
+void HL_Find_next_word(HWND hwnd, BOOL next) {
+	struct Sci_TextRange	tr;
+	struct Sci_TextToFind	ttf;
+	int cpos , wlen , doclen , res , searchflags;
+	//
+	HL_TRACE(L"look for next(%d) word", next);
+	//
+	ZeroMemory(&ttf, sizeof(ttf));
+	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+	doclen = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+	//
+	tr.chrg.cpMin = SendMessage(hwnd, SCI_WORDSTARTPOSITION, cpos, TRUE);
+	tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
+	wlen = tr.chrg.cpMax - tr.chrg.cpMin;
+	if (wlen > 0){
+		tr.lpstrText = malloc(wlen + 1);
+		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+		//
+		// one allocation !!!
+		ttf.lpstrText = tr.lpstrText; 
+		if (next){
+			ttf.chrg.cpMin = tr.chrg.cpMax;
+			ttf.chrg.cpMax = doclen;
+		}
+		else{
+			ttf.chrg.cpMin = tr.chrg.cpMin;
+			ttf.chrg.cpMax = 0;
+		}
+		//
+		searchflags = SCFIND_WHOLEWORD;
+		res = SendMessage(hwnd, SCI_FINDTEXT, searchflags , (LPARAM)&ttf);
+		if (-1 == res){
+			if (next){
+				ttf.chrg.cpMin = 0;
+				ttf.chrg.cpMax = tr.chrg.cpMin;
+			}
+			else{
+				ttf.chrg.cpMin = doclen;
+				ttf.chrg.cpMax = tr.chrg.cpMax;
+			}
+			res = SendMessage(hwnd, SCI_FINDTEXT, searchflags, (LPARAM)&ttf);
+		}
+		//
+		if (res >= 0){
+			EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
+		}
+		//
+		if (tr.lpstrText){
+			free(tr.lpstrText);
+			tr.lpstrText = 0;
+		}
+	}
+}
 
 //=============================================================================
 //

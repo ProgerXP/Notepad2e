@@ -869,11 +869,6 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
 }
 
 
-BOOL HL_Open_Next(HWND, BOOL) {
-	return 0;
-}
-
-
 
 INT_PTR CALLBACK FileMRUDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
