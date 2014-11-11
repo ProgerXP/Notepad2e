@@ -19,6 +19,11 @@
 #define IDH_MOVE_UP_SILENT              15
 #define ID_ACCELERATOR16                16
 #define IDH_MOVE_DOWN_SILENT            17
+#define ID_FILE_O                       18
+#define ID_FILE_OPENPREIOUS             19
+#define ID_FILE_OPENNEXT                20
+#define ID_FILE_OPEN__PREVIOUS          22
+#define ID_FILE_OPEN__NEXT              23
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -422,7 +427,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         18
+#define _APS_NEXT_COMMAND_VALUE         24
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

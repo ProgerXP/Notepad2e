@@ -868,6 +868,13 @@ BOOL HL_OpenMRU_Last ( LPWSTR fn )
     return  i > 0 && lstrcmp ( fn , szCurFile );
 }
 
+
+BOOL HL_Open_Next(HWND, BOOL) {
+	return 0;
+}
+
+
+
 INT_PTR CALLBACK FileMRUDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam )
 {
     switch ( umsg ) {
@@ -1797,7 +1804,6 @@ INT_PTR InfoBox ( int iType, LPCWSTR lpstrSetting, int uidMessage, ... )
                InfoBoxDlgProc,
                ( LPARAM ) &ib );
 }
-
 
 
 

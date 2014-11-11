@@ -550,7 +550,7 @@
       <Filter>scintilla</Filter>
     </ClInclude>
     <ClInclude Include="src\Edit.h">
-      <Filter>ext</Filter>
+      <Filter>np2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -601,6 +601,9 @@
     <Filter Include="ext">
       <UniqueIdentifier>{b3056980-493d-4489-b87c-257c82fdfb4c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="np2">
+      <UniqueIdentifier>{06a5131c-f5cd-47e1-a373-173c2ddfae73}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="src\_version.h">
@@ -614,7 +617,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Notepad2.rc">
-      <Filter>scintilla</Filter>
+      <Filter>ext</Filter>
     </ResourceCompile>
   </ItemGroup>
 </Project>
