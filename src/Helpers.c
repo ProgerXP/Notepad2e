@@ -2722,4 +2722,13 @@ void HL_inplace_rev(WCHAR * s) {
 	}
 }
 
+void* HL_Alloc(size_t size) {
+	return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1 /*let it be :=)*/));
+}
+
+void HL_Free(void* ptr) {
+	GlobalFree(ptr);
+	ptr = 0;
+}
+
 ///   End of Helpers.c   \\\

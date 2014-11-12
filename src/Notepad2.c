@@ -1792,6 +1792,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
         case IDM_FILE_OPEN:
             FileLoad ( FALSE, FALSE, FALSE, FALSE, L"" );
             break;
+		case ID_FILE_OPEN__NEXT:
+			HL_Open_nextFs_file(hwnd, szCurFile , TRUE);
+			break;
+		case ID_FILE_OPEN__PREVIOUS:
+			HL_Open_nextFs_file(hwnd, szCurFile, FALSE);
+			break;
         case IDM_FILE_REVERT: {
                 if ( lstrlen ( szCurFile ) ) {
                     WCHAR tchCurFile2[MAX_PATH];

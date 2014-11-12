@@ -4715,7 +4715,7 @@ void HL_Find_next_word(HWND hwnd, BOOL next) {
 	tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
 	wlen = tr.chrg.cpMax - tr.chrg.cpMin;
 	if (wlen > 0){
-		tr.lpstrText = malloc(wlen + 1);
+		tr.lpstrText = HL_Alloc(wlen + 1);
 		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 		//
 		// one allocation !!!
@@ -4748,7 +4748,7 @@ void HL_Find_next_word(HWND hwnd, BOOL next) {
 		}
 		//
 		if (tr.lpstrText){
-			free(tr.lpstrText);
+			HL_Free(tr.lpstrText);
 			tr.lpstrText = 0;
 		}
 	}
@@ -6220,6 +6220,10 @@ int FileVars_GetEncoding ( LPFILEVARS lpfv )
     } else {
         return ( -1 );
     }
+}
+
+BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
+	HL_TRACE(L"open fs next %s %d", file, next);
 }
 
 

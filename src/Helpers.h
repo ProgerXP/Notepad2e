@@ -269,6 +269,9 @@ VOID	HL_Move_Carret_Silently( BOOL up );
 
 VOID	HL_Grep(VOID* lpf, BOOL grep);
 
+void*	HL_Alloc(size_t );
+void	HL_Free(void*);
+
 #define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG

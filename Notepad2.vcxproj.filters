@@ -328,9 +328,6 @@
     <ClCompile Include="scintilla\src\LineMarker.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
-    <ClCompile Include="src\Notepad2.c">
-      <Filter>scintilla</Filter>
-    </ClCompile>
     <ClCompile Include="scintilla\src\PerLine.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
@@ -392,6 +389,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="src\HLSelection.c">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Notepad2.c">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>
