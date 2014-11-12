@@ -28,9 +28,6 @@
     <ClCompile Include="scintilla\src\Decoration.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
-    <ClCompile Include="src\Dialogs.c">
-      <Filter>scintilla</Filter>
-    </ClCompile>
     <ClCompile Include="src\Dlapi.c">
       <Filter>scintilla</Filter>
     </ClCompile>
@@ -392,6 +389,9 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="src\Notepad2.c">
+      <Filter>ext</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Dialogs.c">
       <Filter>ext</Filter>
     </ClCompile>
   </ItemGroup>

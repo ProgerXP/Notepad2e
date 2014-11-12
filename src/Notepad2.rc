@@ -1312,6 +1312,8 @@ BEGIN
     IDT_FILE_PRINT          "Print"
     IDT_FILE_OPENFAV        "Favorites"
     IDT_FILE_ADDTOFAV       "Add to Favorites"
+    IDT_FILE_OPEN_NEXT      "Open Next"
+    IDT_FILE_OPEN_PREV      "Open Previous"
 END
 
 STRINGTABLE

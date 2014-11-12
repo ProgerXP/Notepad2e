@@ -6222,8 +6222,59 @@ int FileVars_GetEncoding ( LPFILEVARS lpfv )
     }
 }
 
+
+
 BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
-	HL_TRACE(L"open fs next %s %d", file, next);
+	WCHAR	dirname[MAX_PATH] , found_path[MAX_PATH] , *filename;
+	HANDLE	hFind = INVALID_HANDLE_VALUE;
+	WIN32_FIND_DATA	ffd;
+	INT		cmp_res;
+	//
+	*found_path = L'\0';
+	filename = PathFindFileName(file);
+	StrCpy(dirname, file);
+	if (!PathRemoveFileSpec(dirname)){
+		return FALSE;
+	}
+	StrCat(dirname, L"\\*");
+	//
+	hFind = FindFirstFile(dirname, &ffd);
+	if (INVALID_HANDLE_VALUE == hFind){
+		return FALSE;
+	}
+	//
+	do 
+	{
+		if ( 0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
+			){
+			cmp_res = StrCmp(filename, ffd.cFileName);
+			HL_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);
+			if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0)){
+				continue;
+			}
+			//
+			if (*found_path){
+				cmp_res = StrCmp(found_path, ffd.cFileName);
+			}
+			else{
+				cmp_res = 0;
+			}
+			HL_TRACE(L"%S vs %S = %d", ffd.cFileName, found_path, cmp_res);
+			//
+			if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0)){
+				StrCpy(found_path, ffd.cFileName);
+				HL_TRACE(L"saved %S", found_path);
+			}
+		}
+	} while ( FindNextFile(hFind,&ffd ));
+	//
+	FindClose(hFind);
+	//
+	if (*found_path){
+		_FileLoad(TRUE, FALSE, FALSE, FALSE, found_path, TRUE);
+	}
+	//
+	return TRUE;
 }
 
 
