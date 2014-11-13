@@ -1795,9 +1795,11 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             FileLoad ( FALSE, FALSE, FALSE, FALSE, L"" );
             break;
 		case ID_FILE_OPEN__NEXT:
+		case IDT_FILE_OPEN_NEXT:
 			HL_Open_nextFs_file(hwnd, szCurFile , TRUE);
 			break;
 		case ID_FILE_OPEN__PREVIOUS:
+		case IDT_FILE_OPEN_PREV:
 			HL_Open_nextFs_file(hwnd, szCurFile, FALSE);
 			break;
         case IDM_FILE_REVERT: {
