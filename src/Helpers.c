@@ -2647,15 +2647,33 @@ VOID HL_Move_Carret_Silently(BOOL up) {
 VOID	HL_Grep( VOID* _lpf, BOOL grep) {  
 	LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
 	int k = 0;
-	int lcount = 0;
 	int res = 0;
 	int eol_len = 2;
+	int line_first, line_last;
 
 	struct Sci_TextToFind ttf , tr;
 	if (!lstrlenA(lpf->szFind)) {
 		return;
 	}
 	char szFind2[512];
+	/*
+	 * detect scope
+	 **/
+	{
+		int beg, end;
+		beg = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+		end = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+		line_first = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, beg, 0);
+		line_last = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, end, 0);
+		if (line_last - line_first + 1 < 5){
+			line_first = 0;
+			line_last = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) - 1;
+		}
+		else{
+			HL_TRACE(L"USE SHORT REGION");
+		}
+	}
+	//
 	lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
 	ZeroMemory(&ttf, sizeof (ttf));
 	if (lpf->bTransformBS) {
@@ -2670,8 +2688,9 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	}
 	ttf.lpstrText = szFind2;
 	SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
-	for (k = 0; res = 0,lcount = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0), k < lcount; k++) {
+	for ( k = line_first; k <= line_last; k++) {
 		//
+		res = 0;
 		ttf.chrg.cpMin	= SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
 		ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
 #ifdef _DEBUG
@@ -2687,25 +2706,27 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 			res = (int)SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
 		}
 #ifdef _DEBUG
-		HL_TRACE("LINE result : %s (%d) [%d - %d]", tr.lpstrText, res , ttf.chrg.cpMin , ttf.chrg.cpMax);
+		HL_TRACE(L"LINE result : %s (%d) [%d - %d] LINE:%d", tr.lpstrText, res , ttf.chrg.cpMin , ttf.chrg.cpMax , k);
 #endif
-		if ( ( grep &&  res < 0	) || (!grep &&  res >= 0) ) {
+		if ((grep &&  res < 0) || (!grep &&  res >= 0)) {
 			//
 #if 0
 			SendMessage(lpf->hwnd, SCI_HIDELINES, k, k);
 #else
 
-			if ( k + 1 != lcount ) {
+			if (k + 1 != SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0)) {
 				ttf.chrg.cpMax += eol_len;
 			}
 			SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, ttf.chrg.cpMax - ttf.chrg.cpMin);
-			if (SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) < lcount) {
+			//if (SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) < line_last) 
+			{
 				--k;
+				--line_last;
 			}
 #endif
 
 #ifdef _DEBUG
-			HL_TRACE("LINE TO HIDE: %s" , tr.lpstrText);
+			HL_TRACE(L"LINE TO HIDE: %s" , tr.lpstrText);
 #endif
 			//
 		}
