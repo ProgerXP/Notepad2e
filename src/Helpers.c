@@ -59,6 +59,7 @@ extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 //
 BOOL	_hl_wheel_timer = FALSE;
 WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
+INT		_hl_alloc_count = 0;
 
 //
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
@@ -2275,10 +2276,10 @@ VOID HL_WTrace ( const char *fmt , LPCWSTR word )
         GetLocalTime ( &st );
         fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
-        temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , NULL , 0 , NULL, NULL ) );
+        temp = HL_Alloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , NULL , 0 , NULL, NULL ) );
         WideCharToMultiByte ( CP_UTF8 , 0 , word , -1 , temp , size , NULL, NULL );
         fprintf ( _hL_log , fmt , temp );
-        free ( temp );
+        HL_Free ( temp );
         //
         fprintf ( _hL_log , "\r\n" );
         fflush ( _hL_log );
@@ -2294,13 +2295,13 @@ VOID HL_WTrace2 ( const char *fmt , LPCWSTR word1 , LPCWSTR word2 )
         GetLocalTime ( &st );
         fprintf ( _hL_log , "- [%d:%d:%d] " , st.wMinute , st.wSecond , st.wMilliseconds );
         //
-        temp = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word1 , -1 , NULL , 0 , NULL, NULL ) );
+        temp = HL_Alloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word1 , -1 , NULL , 0 , NULL, NULL ) );
         WideCharToMultiByte ( CP_UTF8 , 0 , word1 , -1 , temp , size , NULL, NULL );
-        temp2 = malloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word2 , -1 , NULL , 0 , NULL, NULL ) );
+        temp2 = HL_Alloc ( size = WideCharToMultiByte ( CP_UTF8 , 0 , word2 , -1 , NULL , 0 , NULL, NULL ) );
         WideCharToMultiByte ( CP_UTF8 , 0 , word2 , -1 , temp2 , size , NULL, NULL );
         fprintf ( _hL_log , fmt , temp , temp2 );
-        free ( temp );
-        free ( temp2 );
+        HL_Free ( temp );
+        HL_Free ( temp2 );
         //
         fprintf ( _hL_log , "\r\n" );
         fflush ( _hL_log );
@@ -2675,7 +2676,7 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 		ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
 #ifdef _DEBUG
 		tr.chrg = ttf.chrg;
-		tr.lpstrText = malloc( tr.chrg.cpMax - tr.chrg.cpMin + 1);
+		tr.lpstrText = HL_Alloc( tr.chrg.cpMax - tr.chrg.cpMin + 1);
 		SendMessage(lpf->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 #endif
 		if (ttf.chrg.cpMin == ttf.chrg.cpMax) {
@@ -2709,7 +2710,7 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 			//
 		}
 #ifdef _DEBUG
-		free(tr.lpstrText);
+		HL_Free(tr.lpstrText);
 #endif
 	}
 	SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
@@ -2723,10 +2724,15 @@ void HL_inplace_rev(WCHAR * s) {
 }
 
 void* HL_Alloc(size_t size) {
+	if (_hl_alloc_count){
+		HL_TRACE(L"WARNING !!! ALLOC mismatch : %d", _hl_alloc_count);
+	}
+	++_hl_alloc_count;
 	return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1 /*let it be :=)*/));
 }
 
 void HL_Free(void* ptr) {
+	--_hl_alloc_count;
 	GlobalFree(ptr);
 	ptr = 0;
 }

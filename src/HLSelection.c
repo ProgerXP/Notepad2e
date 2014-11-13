@@ -144,11 +144,11 @@ void	HLS_init()
 void HLS_release()
 {
     if ( _hl_se_tr.lpstrText ) {
-        free ( _hl_se_tr.lpstrText );
+        HL_Free ( _hl_se_tr.lpstrText );
         _hl_se_tr.lpstrText = 0;
     }
     if ( _hl_se_orig_word ) {
-        free ( _hl_se_orig_word );
+        HL_Free ( _hl_se_orig_word );
         _hl_se_orig_word = 0;
     }
 }
@@ -211,7 +211,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 					_hl_se_orig_word = realloc(_hl_se_orig_word, wlen + 1);
 				}
             } else {
-                _hl_se_orig_word = malloc ( wlen + 1 );
+                _hl_se_orig_word = HL_Alloc ( wlen + 1 );
             }
             strcpy ( _hl_se_orig_word , word );
         }
@@ -332,7 +332,7 @@ VOID	HLS_Get_word()
     int sel_len = 0 , cpos = 0  ;
     //
     if ( _hl_se_tr.lpstrText ) {
-        free ( _hl_se_tr.lpstrText );
+        HL_Free ( _hl_se_tr.lpstrText );
         _hl_se_tr.lpstrText = 0;
     }
     //
@@ -356,7 +356,7 @@ VOID	HLS_Get_word()
     }
     //
     if ( sel_len > ( !_hl_se_init || _hl_se_mode_whole_word ) ? 1 : 0 ) {
-        _hl_se_tr.lpstrText = malloc ( sel_len + 1 );
+        _hl_se_tr.lpstrText = HL_Alloc ( sel_len + 1 );
         SendMessage ( hwndEdit, SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
 		HL_TRACE_TR(_hl_se_tr);
     } else {
@@ -427,8 +427,8 @@ BOOL HLS_process_changes ( UINT opt )
     }
     //
     new_len = _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin;
-    old_word = malloc ( _hl_se_old_len + 1 );
-    tr.lpstrText = malloc ( _hl_se_old_len + 1 );
+    old_word = HL_Alloc ( _hl_se_old_len + 1 );
+    tr.lpstrText = HL_Alloc ( _hl_se_old_len + 1 );
     //
     /*
     SET EDIT INDOCATOR
@@ -471,7 +471,7 @@ BOOL HLS_process_changes ( UINT opt )
     //SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
     //	_hl_se_notif_block = TRUE;
     SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( FALSE ), 0 );
-    tr.lpstrText = malloc ( _hl_se_old_len + 1 );
+    tr.lpstrText = HL_Alloc ( _hl_se_old_len + 1 );
     for ( k = 0 ; k < _hl_se_count; ++ k ) {
         LPSE_DATA se = &_hl_se_array[k];
         // shifting
@@ -540,11 +540,11 @@ _EXIT:
     _hl_se_old_len = new_len;
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old_ind , 0 );
     if ( old_word ) {
-        free ( old_word );
+        HL_Free ( old_word );
         old_word = 0;
     }
     if ( tr.lpstrText ) {
-        free ( tr.lpstrText );
+        HL_Free ( tr.lpstrText );
         tr.lpstrText = 0;
     }
     HL_TRACE ( "new range is %d : %d . curpos is %d" , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax , cur_pos );
