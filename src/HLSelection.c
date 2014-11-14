@@ -24,7 +24,6 @@
 
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SELECT_MAX_COUNT	0xff
-#define HL_SEARCH_WORD_SIZE (64*1024)
 
 
 BOOL	b_HL_highlight_selection = TRUE;
@@ -47,6 +46,7 @@ SE_DATA		_hl_se_array [HL_SELECT_MAX_COUNT];
 UINT		_hl_se_count = 0; // total count   '
 struct		Sci_TextRange	_hl_se_tr;
 UINT		_hl_se_old_len = 0;
+UINT		_hl_max_search_range = 64 * 1024;
 BOOL		_hl_se_mode_whole_word = TRUE;
 BOOL		_hl_se_strict_mode = TRUE;
 char		*_hl_se_orig_word = 0;
@@ -221,8 +221,10 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 		ttf1.chrg.cpMin = 0;
 		ttf1.chrg.cpMax = len;
 #else
-		ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE);
-		ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE);
+		{
+			ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - _hl_max_search_range);
+			ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + _hl_max_search_range);
+		}
 #endif
 		//
 		HL_TRACE(L"HL WORD RANGES %d-%d %d-%d", ttf.chrg.cpMin, ttf.chrg.cpMax, ttf1.chrg.cpMin, ttf1.chrg.cpMax);

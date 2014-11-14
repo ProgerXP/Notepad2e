@@ -60,6 +60,7 @@ extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 BOOL	_hl_wheel_timer = FALSE;
 WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 INT		_hl_alloc_count = 0;
+extern	UINT	_hl_max_search_range;
 
 //
 VOID CALLBACK HL_wheel_timer_proc ( HWND _h , UINT _u , UINT_PTR idEvent, DWORD _t )
@@ -2216,6 +2217,7 @@ VOID HL_Init ( HWND hWnd )
     _hl_sel_edit_timer_to = IniGetInt ( HL_INI_SECTION , L"SelectionScrollTimeout" , _hl_sel_edit_timer_to );
     _hl_css_property = IniGetInt ( HL_INI_SECTION , L"CSSSettings" , _hl_css_property );
     _hl_ctx_menu_type = IniGetInt ( HL_INI_SECTION , L"ShellMenuType" , CMF_EXPLORE );
+	_hl_max_search_range = IniGetInt(HL_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
     b_Hl_use_prefix_in_open_dialog = IniGetInt ( HL_INI_SECTION , L"OpenDialogByPrefix" , b_Hl_use_prefix_in_open_dialog );
  
 	//
