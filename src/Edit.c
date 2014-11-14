@@ -5571,15 +5571,38 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 		SetDlgItemTextW(hwnd, 101, hl_last_html_end_tag);
 		//
 		SetFocus(GetDlgItem(hwnd, 100));
+#if 0
 		if (len > 2 &&
-			L'<' == hl_last_html_tag[0] &&
-			L'>' == hl_last_html_tag[len - 1]
+			StrChr(_left_braces, hl_last_html_tag[0]) &&
+			StrChr(_right_braces, hl_last_html_tag[len-1]) 
 			) {
 			PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 1, lstrlen(hl_last_html_tag) - 1);
 		}
 		else {
 			PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 0, lstrlen(hl_last_html_tag));
 		}
+#else
+		{
+			int k = 0;
+			while (1)
+			{
+				if (len > k * 2 + 1 &&
+					StrChr(_left_braces, hl_last_html_tag[k]) &&
+					StrChr(_right_braces, hl_last_html_tag[len - k - 1])) {
+					++k;
+				}
+				else{
+					break;
+				}
+			}
+			if (k){
+				PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL,  k, len - k );
+			}
+			else {
+				PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 0, len);
+			}
+		}
+#endif
 		CenterDlgInParent(hwnd);
 	}
 		return FALSE;
@@ -5608,6 +5631,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 						const WCHAR *pwCur = wchBuf + open_tag_len;
 						cchIns += open_tag_len - 1;
 						// extract tag
+#if 0
 						while (
 							*pwCur &&
 							!StrChr(_left_braces, *pwCur) &&
@@ -5616,6 +5640,20 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 							(StrChr(L":_-.", *pwCur) || IsCharAlphaNumericW(*pwCur))) {
 							wchIns[cchIns++] = *pwCur++;
 						}
+#else
+						while (
+							*pwCur &&
+							!StrChr(_left_braces, *pwCur) &&
+							!StrChr(_right_braces, *pwCur)){
+							if (
+								!StrChr(L" \t", *pwCur) &&
+								(StrChr(L":_-.", *pwCur) || IsCharAlphaNumericW(*pwCur))
+								) {
+								wchIns[cchIns++] = *pwCur;
+							}
+							*pwCur++;
+						}
+#endif
 						// get end of string
 						while (
 							*pwCur &&
