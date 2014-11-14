@@ -170,7 +170,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 {
     int res  = 0;
     int cnt = 0;
-    int lstart , lwrap , lrange , len;
+    int lstart , lwrap , lrange , len , curr;
     int old;
     struct Sci_TextToFind ttf;
     struct Sci_TextToFind ttf1;
@@ -181,6 +181,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
     lrange = min ( SendMessage ( hwndEdit , SCI_LINESONSCREEN , 0 , 0 ) , SendMessage ( hwndEdit , SCI_GETLINECOUNT , 0 , 0 ) );
     ttf.chrg.cpMin  = SendMessage ( hwndEdit , SCI_POSITIONFROMLINE , lstart  , 0 );
     len = SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 );
+	curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
     ttf.chrg.cpMax  = SendMessage ( hwndEdit , SCI_GETLINEENDPOSITION , lstart + lrange, 0 ) + 1  ;
     old = SendMessage ( hwndEdit , SCI_GETINDICATORCURRENT , 0 , 0 );
     SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR , 0 );
@@ -208,7 +209,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             //
             if ( _hl_se_orig_word ){
 				if (strlen(_hl_se_orig_word) != wlen + 1) {
-					_hl_se_orig_word = realloc(_hl_se_orig_word, wlen + 1);
+					_hl_se_orig_word = HL_Realloc(_hl_se_orig_word, wlen + 1);
 				}
             } else {
                 _hl_se_orig_word = HL_Alloc ( wlen + 1 );
@@ -216,13 +217,15 @@ VOID HLS_Highlight_word ( LPCSTR  word )
             strcpy ( _hl_se_orig_word , word );
         }
         // 2 first words
-		/*
-        ttf1.chrg.cpMin = max ( ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE , 0 );
-        ttf1.chrg.cpMax = min ( ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE
-                                , SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
-								*/
+#if 0
 		ttf1.chrg.cpMin = 0;
-		ttf1.chrg.cpMax = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
+		ttf1.chrg.cpMax = len;
+#else
+		ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - HL_SEARCH_WORD_SIZE);
+		ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + HL_SEARCH_WORD_SIZE);
+#endif
+		//
+		HL_TRACE(L"HL WORD RANGES %d-%d %d-%d", ttf.chrg.cpMin, ttf.chrg.cpMax, ttf1.chrg.cpMin, ttf1.chrg.cpMax);
         ttf1.lpstrText = ( LPSTR ) word;
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
 		is_visible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
@@ -446,12 +449,12 @@ BOOL HLS_process_changes ( UINT opt )
         HL_TRACE ( "ROLLBACK to TR '%s' (%d - %d) " , _hl_se_orig_word , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
         new_len = strlen ( _hl_se_orig_word );
         if ( _hl_se_tr.lpstrText && new_len != strlen ( _hl_se_tr.lpstrText ) ) {
-            _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , strlen ( _hl_se_orig_word ) + 1 );
+            _hl_se_tr.lpstrText = HL_Realloc ( _hl_se_tr.lpstrText , strlen ( _hl_se_orig_word ) + 1 );
         }
         strcpy ( _hl_se_tr.lpstrText , _hl_se_orig_word );
     } else {
         if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
-            _hl_se_tr.lpstrText = realloc ( _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin + 1 );
+            _hl_se_tr.lpstrText = HL_Realloc ( _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin + 1 );
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
@@ -687,3 +690,4 @@ UINT HLS_Sci_event_mask ( BOOL range_not )
 }
 
 
+ 

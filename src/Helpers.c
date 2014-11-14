@@ -2755,7 +2755,11 @@ void* HL_Alloc(size_t size) {
 void HL_Free(void* ptr) {
 	--_hl_alloc_count;
 	GlobalFree(ptr);
-	ptr = 0;
+}
+
+void* HL_Realloc(void* ptr, size_t len) {
+	HL_Free(ptr);
+	return HL_Alloc(len);
 }
 
 ///   End of Helpers.c   \\\
