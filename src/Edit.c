@@ -6376,7 +6376,13 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	FindClose(hFind);
 	//
 	if (*found_path){
-		_FileLoad(TRUE, FALSE, FALSE, FALSE, found_path, TRUE);
+		StrCpy(dirname, file);
+		if (!PathRemoveFileSpec(dirname)){
+			return FALSE;
+		}
+		StrCat(dirname, L"\\");
+		StrCat(dirname, found_path);
+		FileLoad(TRUE, FALSE, FALSE, FALSE, found_path);
 	}
 	//
 	return TRUE;
