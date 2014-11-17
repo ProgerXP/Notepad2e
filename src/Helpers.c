@@ -2667,7 +2667,7 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 		end = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
 		line_first = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, beg, 0);
 		line_last = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, end, 0);
-		if (line_last - line_first + 1 < 5){
+		if (line_last - line_first + 1 <= 2){
 			line_first = 0;
 			line_last = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) - 1;
 		}
