@@ -112,7 +112,7 @@ void  EditSortLines(HWND,int);
 
 void  HL_Jump_offset(HWND,int);
 void  HL_Get_offset(HWND,int*);
-void  HL_Find_next_word(HWND, BOOL);
+void  HL_Find_next_word(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  HL_Open_nextFs_file(HWND,LPCWSTR,BOOL);
 
 void  EditJumpTo(HWND,int,int);

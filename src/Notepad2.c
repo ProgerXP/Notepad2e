@@ -2854,7 +2854,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 		case ID_EDIT_FINDNEXTWORD:
 		case ID_EDIT_FINDPREVIOUSWORD:
 		{
-			HL_Find_next_word(hwndEdit, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
+			HL_Find_next_word(hwndEdit , &efrData, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
 		}
 			break;
         case IDM_EDIT_FINDNEXT:
