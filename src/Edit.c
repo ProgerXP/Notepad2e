@@ -5630,6 +5630,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 						// get next char
 						const WCHAR *pwCur = wchBuf + open_tag_len;
 						cchIns += open_tag_len - 1;
+						
 						// extract tag
 #if 0
 						while (
@@ -5641,17 +5642,19 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 							wchIns[cchIns++] = *pwCur++;
 						}
 #else
+						// trim left
+						while (
+							*pwCur &&
+							!IsCharAlphaNumericW(*pwCur)
+ 							){
+							*pwCur++;
+						}
 						while (
 							*pwCur &&
 							!StrChr(_left_braces, *pwCur) &&
-							!StrChr(_right_braces, *pwCur)){
-							if (
-								!StrChr(L" \t", *pwCur) &&
-								(StrChr(L":_-.", *pwCur) || IsCharAlphaNumericW(*pwCur))
-								) {
-								wchIns[cchIns++] = *pwCur;
-							}
-							*pwCur++;
+							!StrChr(_right_braces, *pwCur) &&
+							IsCharAlphaNumericW(*pwCur)) {
+							wchIns[cchIns++] = *pwCur++;
 						}
 #endif
 						// get end of string
