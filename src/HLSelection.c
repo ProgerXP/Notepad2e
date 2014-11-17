@@ -46,7 +46,7 @@ SE_DATA		_hl_se_array [HL_SELECT_MAX_COUNT];
 UINT		_hl_se_count = 0; // total count   '
 struct		Sci_TextRange	_hl_se_tr;
 UINT		_hl_se_old_len = 0;
-UINT		_hl_max_search_range = 64 * 1024;
+UINT		_hl_max_search_range = 2048 * 1024;
 BOOL		_hl_se_mode_whole_word = TRUE;
 BOOL		_hl_se_strict_mode = TRUE;
 char		*_hl_se_orig_word = 0;
