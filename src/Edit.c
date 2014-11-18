@@ -6382,7 +6382,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 		}
 		StrCat(dirname, L"\\");
 		StrCat(dirname, found_path);
-		FileLoad(TRUE, FALSE, FALSE, FALSE, found_path);
+		FileLoad(TRUE, FALSE, FALSE, FALSE, dirname);
 	}
 	//
 	return TRUE;

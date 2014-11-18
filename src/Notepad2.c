@@ -55,7 +55,7 @@ HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
 
-#define NUMTOOLBITMAPS  23
+#define NUMTOOLBITMAPS  25
 #define NUMINITIALTOOLS 24
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
