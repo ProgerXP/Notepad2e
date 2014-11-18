@@ -1850,6 +1850,12 @@ void EditUnescapeCChars ( HWND hwnd )
     }
 }
 
+/*
+ * HL STRIP HTML TAGS
+ **/
+void HL_Strip_html_tags(HWND hwndEdit) {
+
+}
 
 //=============================================================================
 //
@@ -6388,6 +6394,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	//
 	return TRUE;
 }
+
 
 
 

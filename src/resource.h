@@ -26,6 +26,7 @@
 #define ID_FILE_OPEN__NEXT              23
 #define ID_EDIT_FINDNEXTWORD            24
 #define ID_EDIT_FINDPREVIOUSWORD        25
+#define IDM_EDIT_STRIP_HTML_TAGS        28
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -378,8 +379,8 @@
 #define IDT_FILE_PRINT                  40720
 #define IDT_FILE_OPENFAV                40721
 #define IDT_FILE_ADDTOFAV               40722
-#define IDT_FILE_OPEN_NEXT               40723
-#define IDT_FILE_OPEN_PREV               40724
+#define IDT_FILE_OPEN_NEXT              40723
+#define IDT_FILE_OPEN_PREV              40724
 #define SC_SAVEPOS                      40800
 #define SC_RESETPOS                     40801
 #define IDS_ERR_LOADFILE                50000
@@ -431,7 +432,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         28
+#define _APS_NEXT_COMMAND_VALUE         31
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

@@ -1682,7 +1682,10 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_EDIT_URLENCODE, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_URLDECODE, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_ESCAPECCHARS, i /*&& !bReadOnly*/ );
-    EnableCmd ( hmenu, IDM_EDIT_UNESCAPECCHARS, i /*&& !bReadOnly*/ );
+	EnableCmd(hmenu, IDM_EDIT_UNESCAPECCHARS, i /*&& !bReadOnly*/);
+	// hl
+	EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i /*&& !bReadOnly*/); 
+	//
     EnableCmd ( hmenu, IDM_EDIT_CHAR2HEX, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_HEX2CHAR, i /*&& !bReadOnly*/ );
     //EnableCmd(hmenu,IDM_EDIT_INCREASENUM,i /*&& !bReadOnly*/);
@@ -2782,7 +2785,12 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             BeginWaitCursor();
             EditUnescapeCChars ( hwndEdit );
             EndWaitCursor();
-            break;
+			break;
+		case IDM_EDIT_STRIP_HTML_TAGS:
+			BeginWaitCursor();
+			HL_Strip_html_tags(hwndEdit);
+			EndWaitCursor();
+			break;
         case IDM_EDIT_CHAR2HEX:
             BeginWaitCursor();
             EditChar2Hex ( hwndEdit );
