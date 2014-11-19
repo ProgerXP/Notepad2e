@@ -203,7 +203,7 @@ BEGIN
             MENUITEM "&Filename\tCtrl+F9",          IDM_EDIT_INSERT_FILENAME
             MENUITEM "&Path and Filename\tCtrl+Shift+F9", IDM_EDIT_INSERT_PATHNAME
             MENUITEM SEPARATOR
-            MENUITEM "&&amp; ",                     ID_INSERT_AMP
+            MENUITEM "&&amp;\tCtrl+7",              ID_INSERT_AMP
             MENUITEM "&&lt; ",                      ID_INSERT_LT
             MENUITEM "&&gt; ",                      ID_INSERT_GT
             MENUITEM "&&quot;\tCtrl+""",            ID_INSERT_QUOT
@@ -364,6 +364,7 @@ BEGIN
     "4",            CMD_EMBRACE2,           VIRTKEY, CONTROL, NOINVERT
     "5",            CMD_EMBRACE3,           VIRTKEY, CONTROL, NOINVERT
     "6",            CMD_EMBRACE4,           VIRTKEY, CONTROL, NOINVERT
+    "7",            ID_INSERT_AMP,          VIRTKEY, CONTROL, NOINVERT
     "7",            IDM_VIEW_SHOWWHITESPACE, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "8",            ID_EDIT_FINDNEXTWORD,   VIRTKEY, CONTROL, NOINVERT
     "8",            ID_EDIT_FINDPREVIOUSWORD, VIRTKEY, SHIFT, CONTROL, NOINVERT
