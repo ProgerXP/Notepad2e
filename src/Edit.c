@@ -34,7 +34,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "HLSelection.h"
-
+#include <cassert>
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -4784,7 +4784,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 		tr.chrg.cpMax = next ? min(cpos + _HL_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
 		wlen = tr.chrg.cpMax - tr.chrg.cpMin;
 		if (wlen > 0){
-			UINT counter;
+			int counter;
 			char symb;
 			//
 			tr.lpstrText = HL_Alloc(wlen + 1);
@@ -6456,6 +6456,31 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	}
 	//
 	return TRUE;
+}
+
+void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
+//#define _HL_INSERT_CHS( TXT ) {SendMessage( hwnd , SCI_INSERTTEXT , -1 , (LPARAM)(TXT) );}
+#define _HL_INSERT_CHS( TXT ) {SendMessage( hwnd , SCI_ADDTEXT , strlen(TXT) , (LPARAM)(TXT) );}
+	switch (ch_id){
+	case ID_INSERT_AMP:
+		_HL_INSERT_CHS("&amp;")
+		break;
+	case ID_INSERT_LT:
+		_HL_INSERT_CHS("&lt;")
+		break;
+	case ID_INSERT_GT:
+		_HL_INSERT_CHS("&gt;")
+		break;
+	case ID_INSERT_QUOT:
+		_HL_INSERT_CHS("&quot;")
+		break;
+	case ID_INSERT_APOS:
+		_HL_INSERT_CHS("&apos;")
+		break;
+	default:
+		assert(0);
+		break;
+	}
 }
 
 

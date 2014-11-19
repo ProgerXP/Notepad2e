@@ -32,7 +32,7 @@
 #define ID_INSERT_AMP                   33
 #define ID_INSERT_QUOT                  34
 #define ID_INSERT_APOS                  35
-#define ID_ACCELERATOR38                38
+#define ID_ACCELERATOR40                40
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -438,7 +438,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         40
+#define _APS_NEXT_COMMAND_VALUE         41
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
