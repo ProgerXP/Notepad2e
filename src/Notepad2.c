@@ -1684,7 +1684,7 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
     EnableCmd ( hmenu, IDM_EDIT_ESCAPECCHARS, i /*&& !bReadOnly*/ );
 	EnableCmd(hmenu, IDM_EDIT_UNESCAPECCHARS, i /*&& !bReadOnly*/);
 	// hl
-	EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i /*&& !bReadOnly*/); 
+	//EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i /*&& !bReadOnly*/); 
 	//
     EnableCmd ( hmenu, IDM_EDIT_CHAR2HEX, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_HEX2CHAR, i /*&& !bReadOnly*/ );
