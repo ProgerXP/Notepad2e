@@ -1854,6 +1854,7 @@ void EditUnescapeCChars ( HWND hwnd )
  * HL STRIP HTML TAGS
  **/
 void HL_Strip_html_tags(HWND hwndEdit) {
+	// let's no selection
 
 }
 
@@ -6355,18 +6356,21 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 		return FALSE;
 	}
 	//
+	//#define _HL_COMPARE_FILES( F1 , F2 ) (StrCmp(F1, F2))
+#define _HL_COMPARE_FILES( F1 , F2 ) ( CompareString(LOCALE_SYSTEM_DEFAULT , 0/*SORT_STRINGSORT*/ , F1 , -1 , F2 , -1) - 2)
+	//
 	do 
 	{
 		if ( 0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) 
 			){
-			cmp_res = StrCmp(filename, ffd.cFileName);
+			cmp_res = _HL_COMPARE_FILES(filename, ffd.cFileName);
 			HL_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);
 			if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0)){
 				continue;
 			}
 			//
 			if (*found_path){
-				cmp_res = StrCmp(found_path, ffd.cFileName);
+				cmp_res = _HL_COMPARE_FILES(found_path, ffd.cFileName);
 			}
 			else{
 				cmp_res = 0;
@@ -6387,8 +6391,10 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 		if (!PathRemoveFileSpec(dirname)){
 			return FALSE;
 		}
+		HL_TRACE(L"dir to open %S", dirname);
 		StrCat(dirname, L"\\");
 		StrCat(dirname, found_path);
+		HL_TRACE(L"file to open %S", dirname);
 		FileLoad(TRUE, FALSE, FALSE, FALSE, dirname);
 	}
 	//
