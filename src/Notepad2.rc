@@ -202,6 +202,12 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Filename\tCtrl+F9",          IDM_EDIT_INSERT_FILENAME
             MENUITEM "&Path and Filename\tCtrl+Shift+F9", IDM_EDIT_INSERT_PATHNAME
+            MENUITEM SEPARATOR
+            MENUITEM "&&amp; ",                     ID_INSERT_AMP
+            MENUITEM "&&lt; ",                      ID_INSERT_LT
+            MENUITEM "&&gt; ",                      ID_INSERT_GT
+            MENUITEM "&&quot;\tCtrl+""",            ID_INSERT_QUOT
+            MENUITEM "&&apos; ",                    ID_INSERT_APOS
         END
         POPUP "Spec&ial"
         BEGIN
@@ -485,6 +491,7 @@ BEGIN
     VK_MULTIPLY,    ID_FILE_OPEN__NEXT,     VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_MULTIPLY,    ID_FILE_OPEN__PREVIOUS, VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     VK_OEM_2,       IDM_VIEW_RESETZOOM,     VIRTKEY, CONTROL, NOINVERT
+    VK_OEM_7,       ID_INSERT_QUOT,         VIRTKEY, CONTROL, NOINVERT
     VK_OEM_COMMA,   CMD_JUMP2SELSTART,      VIRTKEY, CONTROL, NOINVERT
     VK_OEM_MINUS,   IDM_VIEW_ZOOMOUT,       VIRTKEY, CONTROL, NOINVERT
     VK_OEM_MINUS,   CMD_DECREASENUM,        VIRTKEY, CONTROL, ALT, NOINVERT
