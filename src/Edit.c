@@ -6356,8 +6356,12 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 		return FALSE;
 	}
 	//
-	//#define _HL_COMPARE_FILES( F1 , F2 ) (StrCmp(F1, F2))
-#define _HL_COMPARE_FILES( F1 , F2 ) ( CompareString(LOCALE_SYSTEM_DEFAULT , 0/*SORT_STRINGSORT*/ , F1 , -1 , F2 , -1) - 2)
+#if 1
+#define _HL_COMPARE_FILES( F1 , F2 ) (StrCmp(F1, F2))
+#else
+#define _HL_COMPARE_FILES( F1 , F2 ) ( CompareString(LOCALE_SYSTEM_DEFAULT , NORM_IGNORECASE , F1 , -1 , F2 , -1) - 2)
+#endif
+	//#define _HL_COMPARE_FILES( F1 , F2 )  HL_Compare_files(F1,F2)
 	//
 	do 
 	{

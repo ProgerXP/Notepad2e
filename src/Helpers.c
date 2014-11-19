@@ -2764,4 +2764,67 @@ void* HL_Realloc(void* ptr, size_t len) {
 	return HL_Alloc(len);
 }
 
+wchar_t ToUpperInvariant(wchar_t input) {
+	wchar_t result;
+
+	LONG lres = LCMapStringW(
+		LOCALE_INVARIANT,
+		LCMAP_UPPERCASE,
+		&input,
+		1,
+		&result,
+		1
+		);
+
+	if (lres == 0)
+	{
+		assert(!"LCMapStringW failed to convert a character to upper case");
+
+		result = input;
+	}
+
+	return result;
+}
+
+int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2) {
+	if (sz1 == sz2)
+	{
+		return 0;
+	}
+
+	if (sz1 == NULL) sz1 = L"";
+	if (sz2 == NULL) sz2 = L"";
+
+	for (;; sz1++, sz2++)
+	{
+		const wchar_t c1 = *sz1;
+		const wchar_t c2 = *sz2;
+
+		// check for binary equality first
+		if (c1 == c2)
+		{
+			if (c1 == 0)
+			{
+				return 0; // We have reached the end of both strings. No difference found.
+			}
+		}
+		else
+		{
+			if (c1 == 0 || c2 == 0)
+			{
+				return (c1 - c2); // We have reached the end of one string
+			}
+
+			// IMPORTANT: this needs to be upper case to match the behavior of the operating system.
+			// See http://msdn.microsoft.com/library/default.asp?url=/library/en-us/dndotnet/html/StringsinNET20.asp
+			const wchar_t u1 = ToUpperInvariant(c1);
+			const wchar_t u2 = ToUpperInvariant(c2);
+			if (u1 != u2)
+			{
+				return (u1 - u2); // strings are different
+			}
+		}
+	}
+}
+
 ///   End of Helpers.c   \\\

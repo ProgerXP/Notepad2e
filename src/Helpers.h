@@ -272,6 +272,7 @@ VOID	HL_Grep(VOID* lpf, BOOL grep);
 void*	HL_Alloc(size_t);
 void*	HL_Realloc(void*,size_t);
 void	HL_Free(void*);
+int		HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2);
 
 #define HL_INI_SECTION L"extended"
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
