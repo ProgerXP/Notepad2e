@@ -223,6 +223,7 @@ NP2ENCODING mEncoding[] = {
 extern LPMRULIST mruFind;
 extern LPMRULIST mruReplace;
 
+#define HL_IS_LITERAL(CH) ( IsCharAlphaNumericW(CH) || NULL != StrChr(L"_", CH) )
 
 //=============================================================================
 //
@@ -4765,7 +4766,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 	struct Sci_TextRange	tr;
 	struct Sci_TextToFind	ttf;
 	int cpos , wlen , doclen , res , searchflags;
-#define _HL_SEARCH_FOR_WORD_LIMIT 0xff
+#define _HL_SEARCH_FOR_WORD_LIMIT 0x100
 	//
 	HL_TRACE(L"look for next(%d) word", next);
 	//
@@ -4794,7 +4795,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 				++counter;
 				//////////////////////////////////////////////////////////////////////////
 				symb = next ? tr.lpstrText[counter] : tr.lpstrText[wlen - counter];
-				if (IsCharAlphaNumericW(symb)){
+				if (HL_IS_LITERAL(symb)){
 					if (!res){
 						res = counter;
 					}
@@ -4802,12 +4803,12 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 				else{
 					if (res){
 						if (next){
-							tr.chrg.cpMax = cpos + res;
+							tr.chrg.cpMax = cpos + res - 1;
 							tr.lpstrText[counter] = '\0';
 							ttf.lpstrText = tr.lpstrText + res;
 						}
 						else{
-							tr.chrg.cpMin = cpos - res;
+							tr.chrg.cpMin = cpos - res + 1;
 							tr.lpstrText[wlen - res + 1] = '\0';
 							ttf.lpstrText = tr.lpstrText + wlen - counter + 1;
 						}
@@ -4825,6 +4826,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 	}
 	//
 	if (res){
+		HL_TRACE("search for '%s' " , ttf.lpstrText);
 		//
 		if (next){
 			ttf.chrg.cpMin = tr.chrg.cpMax;
@@ -5766,7 +5768,6 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 							wchIns[cchIns++] = *pwCur++;
 						}
 #else
-#define HL_IS_LITERAL(CH) ( IsCharAlphaNumericW(CH) || NULL != StrChr(L"_", CH) )
 						// trim left
 						while (
 							*pwCur &&
@@ -6483,6 +6484,58 @@ void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
 	}
 }
 
+
+void HL_Unwrap_selection(HWND hwnd) {
+	//
+	return;
+	//
+	int cpos , len , temp;
+	struct Sci_TextRange tr_1, tr_2;
+	//
+	const static int max_region_to_scan = 1024;
+	const WCHAR* _left_braces = L"<{([\"'";
+	const WCHAR* _right_braces = L">})]\"'";
+	//
+	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+	len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+	//
+	//
+	tr_1.chrg.cpMin = cpos;
+	tr_1.chrg.cpMax = max(0, cpos - max_region_to_scan);
+	{
+		temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
+		if (!temp) goto OUT_OF_UNWRAP;
+		tr_1.lpstrText = HL_Alloc(temp + 1);
+		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
+	}
+	//
+	tr_2.chrg.cpMin = cpos;
+	tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
+	{
+		temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
+		if (!temp) goto OUT_OF_UNWRAP;
+		tr_2.lpstrText = HL_Alloc(temp + 1);
+		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
+	}
+	// work
+	{
+		int pos_left = tr_1.chrg.cpMin;
+		while (1){
+			//
+			
+			//
+			if (--pos_left < tr_1.chrg.cpMax){
+				break;
+			}
+		}
+	}
+
+
+	//
+OUT_OF_UNWRAP:
+	HL_Free(tr_1.lpstrText);
+	HL_Free(tr_2.lpstrText);
+}
 
 
 
