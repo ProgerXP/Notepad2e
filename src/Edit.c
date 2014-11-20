@@ -4263,7 +4263,31 @@ void EditGetExcerpt ( HWND hwnd, LPWSTR lpszExcerpt, DWORD cchExcerpt )
     }
 }
 
+//////////////////////////////////////////////////////////////////////////
 
+//WNDPROC HL_find_DefEditProc;
+//LRESULT HL_find_overrride(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+//	switch (uMsg)
+//	{
+//	case WM_GETDLGCODE:
+//		{
+//		LRESULT result = CallWindowProc(HL_find_DefEditProc, hwnd, uMsg, wParam, lParam);
+//	
+//			MSG *m = (LPMSG)lParam;
+//			if (m) {
+//				if (m->wParam == VK_ESCAPE) return result | DLGC_WANTALLKEYS;
+//				else if (m->wParam == VK_RETURN) return result | DLGC_WANTALLKEYS;
+//			}
+//			return result;
+//}
+//		break;
+//	default:
+//		return CallWindowProc(HL_find_DefEditProc, hwnd, uMsg, wParam, lParam);
+//
+//	}
+//
+//	return FALSE;
+//}
 //=============================================================================
 //
 //  EditFindReplaceDlgProcW()
@@ -4275,7 +4299,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
     WCHAR tch[512 + 32];
     BOOL bCloseDlg;
     BOOL bIsFindDlg;
-    static UINT uCPEdit;
+	static UINT uCPEdit;
     switch ( umsg ) {
         case WM_INITDIALOG: {
                 int cchSelection;
@@ -4386,6 +4410,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                 GetString ( SC_RESETPOS, tch, COUNTOF ( tch ) );
                 InsertMenu ( hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch );
                 InsertMenu ( hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL );
+				//////////////////////////////////////////////////////////////////////////
+		//		HL_find_DefEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwnd, IDC_FINDTEXT), GWL_WNDPROC, (long)HL_find_overrride);
             }
             return TRUE;
         case WM_COMMAND:
@@ -4603,6 +4629,33 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                     CheckDlgButton ( hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED );
                     PostMessage ( hwnd, WM_NEXTDLGCTL, ( WPARAM ) ( GetDlgItem ( hwnd, IDC_FINDTEXT ) ), 1 );
                     break;
+				case IDACC_BACK:
+				{
+#define				_MAX_SIZE 1024
+					WCHAR buf[_MAX_SIZE];
+					WCHAR symb;
+					BOOL got;
+					int len, cou;
+					GetDlgItemText(hwnd, IDC_FINDTEXT, buf, _MAX_SIZE);
+					cou = lstrlen(buf) - 1;
+					got = FALSE;
+					while ( cou > -2 ){
+						if (cou < 0 ||!HL_IS_LITERAL(buf[cou]) ){
+							if (got){
+								buf[cou + 1] = L'\0';
+								SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
+								SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
+								break;
+							}
+							else{
+								got = TRUE;
+							}
+						}
+						cou--;
+					}
+
+				}
+					break;
             }
             return TRUE;
         case WM_SYSCOMMAND:
@@ -4627,10 +4680,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
                                 PostMessage ( GetParent ( hwnd ), WM_COMMAND, MAKELONG ( IDM_EDIT_REPLACE, 1 ), 0 );
                             }
                         }
-                        break;
+						break;
                 }
             }
             break;
+
     }
     return FALSE;
 }
