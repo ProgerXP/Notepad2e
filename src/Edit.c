@@ -4842,6 +4842,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 	struct Sci_TextRange	tr;
 	struct Sci_TextToFind	ttf;
 	int cpos , wlen , doclen , res , searchflags;
+	BOOL has;
 #define _HL_SEARCH_FOR_WORD_LIMIT 0x100
 	//
 	HL_TRACE(L"look for next(%d) word", next);
@@ -4855,8 +4856,10 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 	tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
 	wlen = tr.chrg.cpMax - tr.chrg.cpMin;
 	res = 0;// 
+	has = wlen > 0;
+	
 	// look up for new word for search
-	if (!wlen){
+	if (!has){
 		tr.chrg.cpMin = next ? cpos : max(cpos - _HL_SEARCH_FOR_WORD_LIMIT, 0);
 		tr.chrg.cpMax = next ? min(cpos + _HL_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
 		wlen = tr.chrg.cpMax - tr.chrg.cpMin;
@@ -4879,12 +4882,12 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 				else{
 					if (res){
 						if (next){
-							tr.chrg.cpMax = cpos + res - 1;
+							tr.chrg.cpMax = cpos + res ;
 							tr.lpstrText[counter] = '\0';
 							ttf.lpstrText = tr.lpstrText + res;
 						}
 						else{
-							tr.chrg.cpMin = cpos - res + 1;
+							tr.chrg.cpMin = cpos - res;
 							tr.lpstrText[wlen - res + 1] = '\0';
 							ttf.lpstrText = tr.lpstrText + wlen - counter + 1;
 						}
