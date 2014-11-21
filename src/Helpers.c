@@ -2486,7 +2486,7 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     do {
         if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
             HL_WTrace ( "file: '%s'" , wfd.cFileName );
-			if ( 0==temp[0] || lstrcmp(temp,wfd.cFileName) > 0 ) {
+			if (0 == temp[0] || HL_Compare_files(temp, wfd.cFileName) > 0) {
 				lstrcpy(temp, wfd.cFileName);
 			}
         }
@@ -2765,16 +2765,20 @@ void* HL_Realloc(void* ptr, size_t len) {
 }
 
 int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2) {
-	WCHAR b1[MAX_PATH], b2[MAX_PATH];
-	int res;
-	StrCpy(b1, sz1);
-	StrCpy(b2, sz2);
-	PathRemoveExtension(b1);
-	PathRemoveExtension(b2);
-	if (res = StrCmp(b1, b2)){
-		return res;
+	int res1, res2;
+	res1 = StrCmp(sz1, sz2);
+	if (res1){
+		WCHAR b1[MAX_PATH], b2[MAX_PATH];
+		StrCpy(b1, sz1);
+		StrCpy(b2, sz2);
+		PathRemoveExtension(b1);
+		PathRemoveExtension(b2);
+		res2 = StrCmp(b1, b2);
+		if (res2){
+			return res2;
+		}
 	}
-	return StrCmp(sz1, sz2);
+	return res1;
 }
 
 BOOL	hl_iswordchar(WCHAR ch) {
