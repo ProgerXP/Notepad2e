@@ -2529,7 +2529,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 #endif
 							SendMessage(GetParent(hdlg), CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
                             SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
-                            HL_Trace ( "OFN OK  " );
+							HL_TRACE("OFN OK  ");
                             if ( len ) {
                                 WCHAR	out[MAX_PATH];
                                 LPWSTR	final_str = buf;
@@ -2559,18 +2559,29 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                         }
                         return 1;
                     case CDN_SELCHANGE: {
-                            WCHAR buf[MAX_PATH];
-                            HL_Trace ( "OFN change  " );
+                            WCHAR buf[MAX_PATH] , testbuf[MAX_PATH];
+							HL_TRACE("OFN change  ");
                             if ( CommDlg_OpenSave_GetSpec ( GetParent ( hdlg ) , buf, MAX_PATH ) > 0 ) {
-                                HL_WTrace ( "Set OFN input %s" , buf );
-                                CommDlg_OpenSave_SetControlText ( GetParent ( hdlg ), cmb13 , ( LPARAM ) buf );
+								int test;
+								HL_TRACE("Set OFN input %S", buf);
+								CommDlg_OpenSave_SetControlText(GetParent(hdlg), cmb13, (LPARAM)buf); 
+								test = GetDlgItemText(GetParent(hdlg), cmb13, testbuf, MAX_PATH);
+#if 1
+								if (0 == test){
+									CommDlg_OpenSave_SetControlText(GetParent(hdlg), edt1, (LPARAM)buf);
+#ifdef _DEBUG
+									test = GetDlgItemText(GetParent(hdlg), edt1, testbuf, MAX_PATH);
+									HL_TRACE("OFN change fix =  %d  (%S)", test, testbuf);
+#endif
+								}
+#endif
                                 lstrcpy ( last_selected , buf );
                                 return 1;
                             }
                         }
                         break;
                     case CDN_INITDONE: {
-                            HL_Trace ( "OFN init  " );
+						HL_TRACE("OFN init  ");
                             take_call = FALSE;
                             last_selected[0] = 0;
                             SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) folder );
@@ -2580,7 +2591,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                         break;
                     case CDN_FOLDERCHANGE: {
                             WCHAR dir[MAX_PATH];
-                            HL_Trace ( "OFN folder change  " );
+							HL_TRACE("OFN folder change  ");
                             SendMessage ( GetParent ( hdlg ) , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
                         }
                         break;
