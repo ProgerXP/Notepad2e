@@ -223,7 +223,8 @@ NP2ENCODING mEncoding[] = {
 extern LPMRULIST mruFind;
 extern LPMRULIST mruReplace;
 
-#define HL_IS_LITERAL(CH) ( IsCharAlphaNumericW(CH) || NULL != StrChr(L"_", CH) )
+#define HL_IS_LITERAL(CH) hl_iswordchar(CH)
+#define HL_IS_SPACE(CH) hl_isspace(CH)
 
 //=============================================================================
 //
@@ -4633,25 +4634,46 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
 				{
 #define				_MAX_SIZE 1024
 					WCHAR buf[_MAX_SIZE];
-					WCHAR symb;
-					BOOL got;
-					int len, cou;
+					BOOL got ;
+					int prev , curr;
+					int  cou;
 					GetDlgItemText(hwnd, IDC_FINDTEXT, buf, _MAX_SIZE);
 					cou = lstrlen(buf) - 1;
 					got = FALSE;
-					while ( cou > -2 ){
-						if (cou < 0 ||!HL_IS_LITERAL(buf[cou]) ){
-							if (got){
-								buf[cou + 1] = L'\0';
-								SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
-								SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
+					curr = 0;
+					prev = 0;
+					while ( cou >= 0 ){
+						WCHAR ch = buf[cou];
+						if (HL_IS_SPACE(ch)){
+							curr = 0;
+						}
+						else if (HL_IS_LITERAL(ch)){
+							curr = 1;
+						}
+						else{
+							curr = -1;
+						}
+						//
+						if (got){
+							if (!curr){
 								break;
 							}
-							else{
-								got = TRUE;
+							else if (curr != prev){
+								break;
 							}
 						}
-						cou--;
+						else{
+							got = curr;
+						}
+						//
+						prev = curr;
+						--cou;
+					}
+					//
+					if (cou != lstrlen(buf) - 1){
+						buf[cou + 1] = L'\0';
+						SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
+						SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
 					}
 
 				}

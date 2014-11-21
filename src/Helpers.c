@@ -2777,4 +2777,11 @@ int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2) {
 	return StrCmp(sz1, sz2);
 }
 
+BOOL	hl_iswordchar(WCHAR ch) {
+	return	IsCharAlphaNumericW(ch) || NULL != StrChr(L"_", ch);
+}
+BOOL	hl_isspace(WCHAR ch) {
+	return isspace(ch);
+}
+
 ///   End of Helpers.c   \\\
