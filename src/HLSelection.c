@@ -227,7 +227,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 		}
 #endif
 		//
-		HL_TRACE(L"HL WORD RANGES %d-%d %d-%d", ttf.chrg.cpMin, ttf.chrg.cpMax, ttf1.chrg.cpMin, ttf1.chrg.cpMax);
+	//	HL_TRACE(L"HL WORD RANGES %d-%d %d-%d", ttf.chrg.cpMin, ttf.chrg.cpMax, ttf1.chrg.cpMin, ttf1.chrg.cpMax);
         ttf1.lpstrText = ( LPSTR ) word;
         res =   SendMessage ( hwndEdit , SCI_FINDTEXT , search_opt , ( LPARAM ) &ttf1 );
 		is_visible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
@@ -285,7 +285,7 @@ VOID HLS_Highlight_word ( LPCSTR  word )
 			}
         }
 		//
-		HL_TRACE("INDICATOR OF WORD '%s' is %d", word, curr_indi);
+//		HL_TRACE("INDICATOR OF WORD '%s' is %d", word, curr_indi);
 		SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
         //
         if ( _hl_se_init && !b_HL_edit_selection ) {
@@ -363,7 +363,7 @@ VOID	HLS_Get_word()
     if ( sel_len > ( !_hl_se_init || _hl_se_mode_whole_word ) ? 1 : 0 ) {
         _hl_se_tr.lpstrText = HL_Alloc ( sel_len + 1 );
         SendMessage ( hwndEdit, SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
-		HL_TRACE_TR(_hl_se_tr);
+	//	HL_TRACE_TR(_hl_se_tr);
     } else {
         _hl_se_tr.chrg.cpMin = 0;
         _hl_se_tr.chrg.cpMax = 0;

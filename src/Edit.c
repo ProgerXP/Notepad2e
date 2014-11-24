@@ -6566,21 +6566,21 @@ void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
 
 void HL_Unwrap_selection(HWND hwnd) {
 	//
-	return;
+	//return;
 	//
 	int cpos , len , temp;
 	struct Sci_TextRange tr_1, tr_2;
 	//
 	const static int max_region_to_scan = 1024;
-	const WCHAR* _left_braces = L"<{([\"'";
-	const WCHAR* _right_braces = L">})]\"'";
+	const char* _left_braces = "<{([\"'";
+	const char* _right_braces = ">})]\"'";
 	//
 	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
 	len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
 	//
 	//
-	tr_1.chrg.cpMin = cpos;
-	tr_1.chrg.cpMax = max(0, cpos - max_region_to_scan);
+	tr_1.chrg.cpMax = cpos;
+	tr_1.chrg.cpMin = max(0, cpos - max_region_to_scan);
 	{
 		temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
 		if (!temp) goto OUT_OF_UNWRAP;
@@ -6598,12 +6598,37 @@ void HL_Unwrap_selection(HWND hwnd) {
 	}
 	// work
 	{
-		int pos_left = tr_1.chrg.cpMin;
+		int pos_left = tr_1.chrg.cpMax , pos_right = tr_2.chrg.cpMin;
+		char* tchl = NULL , *tchr = NULL;
 		while (1){
 			//
-			
+			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
+			//
+			if (tchl = strchr(_left_braces, lch)){
+				HL_TRACE("Left bracket found '%c'", lch);
+				break;
+			}
+
 			//
 			if (--pos_left < tr_1.chrg.cpMax){
+				break;
+			}
+		}
+		// go right
+		while (1)
+		{
+			char rch = tr_2.lpstrText[pos_right-tr_2.chrg.cpMin];
+			if (tchr = strchr(_right_braces, rch)){
+				if (tchr - _right_braces == tchl - _left_braces){
+					HL_TRACE(" right bracket found '%c'", rch);
+					break;
+				}
+				else{
+					tchr = NULL;
+					HL_TRACE("Bad right bracket found '%c'", rch);
+				}
+			}
+			if (++pos_right > tr_2.chrg.cpMax){
 				break;
 			}
 		}
