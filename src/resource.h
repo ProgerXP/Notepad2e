@@ -35,6 +35,7 @@
 #define ID_BLOCK_WRAPSELECTION          42
 #define ID_BLOCK_UNWRAPSELECTION        43
 #define IDACC_BACK                      45
+#define ID_SPECIAL_ESCAPEHTML           47
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -440,7 +441,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         47
+#define _APS_NEXT_COMMAND_VALUE         48
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

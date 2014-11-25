@@ -115,6 +115,7 @@ void  HL_Get_offset(HWND,int*);
 void  HL_Find_next_word(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  HL_Open_nextFs_file(HWND,LPCWSTR,BOOL);
 void  HL_Strip_html_tags(HWND hwndEdit);
+void  HL_Escape_html(HWND hwnd);
 
 #if 0
 void  HL_Insert_html_characters(HWND hwnd, UINT ch_id);
@@ -231,6 +232,5 @@ BOOL FileVars_IsUTF8(LPFILEVARS);
 BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
 int  FileVars_GetEncoding(LPFILEVARS);
-
 
 ///   End of Edit.h   \\\

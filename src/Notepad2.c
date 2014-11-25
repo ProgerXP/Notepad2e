@@ -1686,6 +1686,7 @@ void MsgInitMenu ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 	// hl
 	//EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i /*&& !bReadOnly*/); 
 	//
+	EnableCmd(hmenu, ID_SPECIAL_ESCAPEHTML, i /*&& !bReadOnly*/);
     EnableCmd ( hmenu, IDM_EDIT_CHAR2HEX, i /*&& !bReadOnly*/ );
     EnableCmd ( hmenu, IDM_EDIT_HEX2CHAR, i /*&& !bReadOnly*/ );
     //EnableCmd(hmenu,IDM_EDIT_INCREASENUM,i /*&& !bReadOnly*/);
@@ -2800,6 +2801,11 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 		case IDM_EDIT_STRIP_HTML_TAGS:
 			BeginWaitCursor();
 			HL_Strip_html_tags(hwndEdit);
+			EndWaitCursor();
+			break;
+		case ID_SPECIAL_ESCAPEHTML:
+			BeginWaitCursor();
+			HL_Escape_html(hwndEdit);
 			EndWaitCursor();
 			break;
         case IDM_EDIT_CHAR2HEX:

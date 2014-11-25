@@ -6672,6 +6672,49 @@ OUT_OF_UNWRAP:
 }
 
 
+void HL_Escape_html(HWND hwnd) {
+	const char* _source = "&<>";
+	const char* _target[] = { "&amp;", "&lt;", "&gt;" };
+	assert(strlen(_source) == COUNTOF(_target));
+	//
+	int beg, end , symb , res ;
+	struct Sci_TextToFind ttf;
+	//
+	beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+	end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+	if (beg == end){
+		beg = 0;
+		end = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+	}
+	//
+	ttf.lpstrText = HL_Alloc(2);
+	ttf.lpstrText[1] = '\0';
+	for (symb = 0; symb < strlen(_source); ++symb)
+	{
+		ttf.chrg.cpMin = beg;
+		ttf.chrg.cpMax = end;
+		ttf.lpstrText[0] = _source[symb];
+		//
+		while (1)
+		{
+			res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf);
+			if (-1 != res){
+				assert(ttf.chrgText.cpMax == ttf.chrgText.cpMin + 1);
+				SendMessage(hwnd, SCI_DELETERANGE, ttf.chrgText.cpMin, 1);
+				SendMessage(hwnd, SCI_INSERTTEXT, ttf.chrgText.cpMin, (LPARAM)_target[symb]);
+				ttf.chrg.cpMin = ttf.chrgText.cpMin;
+				end += strlen(_target[symb]) - 1;
+				ttf.chrg.cpMax = end;
+			}
+			else{
+				break;
+			}
+		}
+	}
+	//
+	HL_Free(ttf.lpstrText);
+}
+
 
 //=============================================================================
 //

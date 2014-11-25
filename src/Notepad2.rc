@@ -216,6 +216,7 @@ BEGIN
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
             MENUITEM "Strip HTML Tags\tShift+Alt+X", 28
+            MENUITEM "Escape HTML",                 ID_SPECIAL_ESCAPEHTML
             MENUITEM SEPARATOR
             MENUITEM "C&har To Hex\tCtrl+Alt+X",    IDM_EDIT_CHAR2HEX
             MENUITEM "Hex To Cha&r\tCtrl+Alt+C",    IDM_EDIT_HEX2CHAR
