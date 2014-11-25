@@ -34,7 +34,6 @@
 #define ID_INSERT_APOS                  35
 #define ID_BLOCK_WRAPSELECTION          42
 #define ID_BLOCK_UNWRAPSELECTION        43
-#define ID_ACCELERATOR45                45
 #define IDACC_BACK                      45
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100

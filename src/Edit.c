@@ -6572,8 +6572,9 @@ void HL_Unwrap_selection(HWND hwnd) {
 	struct Sci_TextRange tr_1, tr_2;
 	//
 	const static int max_region_to_scan = 1024;
-	const char* _left_braces = "<{([\"'";
-	const char* _right_braces = ">})]\"'";
+	const static int max_brackets_to_skip = 100;
+	const char* _left_braces = "<{([";
+	const char* _right_braces = ">})]";
 	//
 	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
 	len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
@@ -6599,18 +6600,31 @@ void HL_Unwrap_selection(HWND hwnd) {
 	// work
 	{
 		int pos_left = tr_1.chrg.cpMax , pos_right = tr_2.chrg.cpMin;
-		char* tchl = NULL , *tchr = NULL;
+		char* tchl = NULL, *tchr = NULL;
+		int	  skipc = 0 ;
+		int*  skip = HL_Alloc(max_brackets_to_skip * sizeof(int));
+		// search left
 		while (1){
 			//
 			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
 			//
 			if (tchl = strchr(_left_braces, lch)){
-				HL_TRACE("Left bracket found '%c'", lch);
-				break;
+				if (skipc && tchl - _left_braces == skip[skipc-1] ){
+					HL_TRACE("Skipped braces pair found '%c'" , *tchl)
+					--skipc;
+				}
+				else{
+					HL_TRACE("Left bracket found '%c'", lch);
+					break;
+				}
 			}
-
 			//
-			if (--pos_left < tr_1.chrg.cpMax){
+			if (tchl = strchr(_right_braces, lch)){
+				skip[skipc++] = tchl - _right_braces;
+			}
+			//
+			if (--pos_left < tr_1.chrg.cpMin){
+				tchl = NULL;
 				break;
 			}
 		}
@@ -6629,9 +6643,20 @@ void HL_Unwrap_selection(HWND hwnd) {
 				}
 			}
 			if (++pos_right > tr_2.chrg.cpMax){
+				tchr = NULL;
 				break;
 			}
 		}
+		// remove
+		if (tchl && tchr){
+			SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+			SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
+			SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
+			SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_left - 1);
+			SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+		}
+		//
+		HL_Free(skip);
 	}
 
 
