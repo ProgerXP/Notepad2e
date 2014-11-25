@@ -6540,6 +6540,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	//
 	return TRUE;
 }
+#if 0
 
 void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
 //#define _HL_INSERT_CHS( TXT ) {SendMessage( hwnd , SCI_INSERTTEXT , -1 , (LPARAM)(TXT) );}
@@ -6565,6 +6566,7 @@ void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
 		break;
 	}
 }
+#endif
 
 
 void HL_Unwrap_selection(HWND hwnd) {

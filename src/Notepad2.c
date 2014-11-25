@@ -2694,6 +2694,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 //SendMessage(hwndEdit,SCI_SETANCHOR,(WPARAM)iSelStart,0);
             }
             break;
+#if 0
 		case ID_INSERT_AMP:
 		case ID_INSERT_LT:
 		case ID_INSERT_GT:
@@ -2701,6 +2702,7 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
 		case ID_INSERT_APOS:
 			HL_Insert_html_characters(hwndEdit, LOWORD(wParam));
 			break;
+#endif
 
         case IDM_EDIT_LINECOMMENT:
             switch ( SendMessage ( hwndEdit, SCI_GETLEXER, 0, 0 ) ) {
