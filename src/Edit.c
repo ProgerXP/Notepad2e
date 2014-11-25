@@ -4882,7 +4882,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 				else{
 					if (res){
 						if (next){
-							tr.chrg.cpMax = cpos + res ;
+							tr.chrg.cpMax = cpos + counter ;
 							tr.lpstrText[counter] = '\0';
 							ttf.lpstrText = tr.lpstrText + res;
 						}
@@ -4944,6 +4944,9 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 				lstrcpyA(lpref->szFind, lpref->szFindUTF8);
 			}
 			lpref->fuFlags = searchflags;
+		}
+		else{
+			SendMessage(hwnd, SCI_SETCURRENTPOS, cpos, 0);
 		}
 		//
 		if (tr.lpstrText){
