@@ -4633,17 +4633,21 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
 				case IDACC_BACK:
 				{
 #define				_MAX_SIZE 1024
-					WCHAR buf[_MAX_SIZE];
+					WCHAR buf[_MAX_SIZE] ;
 					BOOL got ;
 					int prev , curr;
-					int  cou;
+					int  cou, car, len;
 					GetDlgItemText(hwnd, IDC_FINDTEXT, buf, _MAX_SIZE);
-					cou = lstrlen(buf) - 1;
+					car = LOWORD(SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_GETEDITSEL, 0, 0));
+					len = min(lstrlen(buf) - 1, car - 1);
+					cou = len;
+					HL_TRACE("starting from %d", cou);
 					got = FALSE;
 					curr = 0;
 					prev = 0;
 					while ( cou >= 0 ){
 						WCHAR ch = buf[cou];
+						HL_TRACE("test '%c'", ch);
 						if (HL_IS_SPACE(ch)){
 							curr = 0;
 						}
@@ -4670,10 +4674,20 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
 						--cou;
 					}
 					//
-					if (cou != lstrlen(buf) - 1){
+					if (cou != len){
+						HL_TRACE("%d %d %d", cou, lstrlen(buf), len );
+						WCHAR tail[_MAX_SIZE];
+						*tail = 0;
+						if (car < lstrlen(buf) ){
+							lstrcpy(tail, buf + car);
+						}
 						buf[cou + 1] = L'\0';
+						if (*tail){
+							lstrcat(buf, tail);
+						}
 						SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
 						SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
+						PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
 					}
 
 				}
