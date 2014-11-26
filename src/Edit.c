@@ -4931,10 +4931,11 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next) {
 		}
 		//
 		if (res >= 0){
+			int cp;
 			EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 			//
 			strcpy(lpref->szFindUTF8, tr.lpstrText);
-			UINT cp = (UINT)SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
+			cp = (int)SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
 			if (cp != SC_CP_UTF8) {
 				WCHAR wch[512];
 				MultiByteToWideChar(CP_UTF8, 0, lpref->szFindUTF8, -1, wch, COUNTOF(wch));
@@ -5820,6 +5821,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 			if (HIWORD(wParam) == EN_CHANGE) {
 				WCHAR wchBuf[256];
 				WCHAR wchIns[256];
+				WCHAR *pwCur;
 				int  cchIns = 2;
 				BOOL bClear = TRUE;
 				BOOL bCopy = FALSE;
@@ -5836,7 +5838,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 						wchIns[open_tag_len] = L'/';
 						wchIns[open_tag_len + 1] = L'\0';
 						// get next char
-						const WCHAR *pwCur = wchBuf + open_tag_len;
+						pwCur = wchBuf + open_tag_len;
 						cchIns += open_tag_len - 1;
 
 						// extract tag
@@ -5932,11 +5934,12 @@ INT_PTR CALLBACK EditInsertTagDlgProc ( HWND hwnd, UINT umsg, WPARAM wParam, LPA
 				}
 				//
 				while (1){
+					int k;
 					WCHAR const* br = StrChr(_left_braces, pdata->pwsz1[idx++]);
 					if (!br){
 						break;
 					}
-					for (int k = idx; k >= 0;--k)
+					for (k = idx; k >= 0;--k)
 					{
 						pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k ];
 					}
@@ -6540,33 +6543,6 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	//
 	return TRUE;
 }
-#if 0
-
-void HL_Insert_html_characters(HWND hwnd, UINT ch_id) {
-//#define _HL_INSERT_CHS( TXT ) {SendMessage( hwnd , SCI_INSERTTEXT , -1 , (LPARAM)(TXT) );}
-#define _HL_INSERT_CHS( TXT ) {SendMessage( hwnd , SCI_ADDTEXT , strlen(TXT) , (LPARAM)(TXT) );}
-	switch (ch_id){
-	case ID_INSERT_AMP:
-		_HL_INSERT_CHS("&amp;")
-		break;
-	case ID_INSERT_LT:
-		_HL_INSERT_CHS("&lt;")
-		break;
-	case ID_INSERT_GT:
-		_HL_INSERT_CHS("&gt;")
-		break;
-	case ID_INSERT_QUOT:
-		_HL_INSERT_CHS("&quot;")
-		break;
-	case ID_INSERT_APOS:
-		_HL_INSERT_CHS("&apos;")
-		break;
-	default:
-		assert(0);
-		break;
-	}
-}
-#endif
 
 
 void HL_Unwrap_selection(HWND hwnd) {
@@ -6673,12 +6649,12 @@ OUT_OF_UNWRAP:
 
 
 void HL_Escape_html(HWND hwnd) {
+	int beg, end , symb , res ;
+	struct Sci_TextToFind ttf;
 	const char* _source = "&<>";
 	const char* _target[] = { "&amp;", "&lt;", "&gt;" };
 	assert(strlen(_source) == COUNTOF(_target));
 	//
-	int beg, end , symb , res ;
-	struct Sci_TextToFind ttf;
 	//
 	beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
 	end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);

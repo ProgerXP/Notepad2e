@@ -2695,16 +2695,6 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
                 //SendMessage(hwndEdit,SCI_SETANCHOR,(WPARAM)iSelStart,0);
             }
             break;
-#if 0
-		case ID_INSERT_AMP:
-		case ID_INSERT_LT:
-		case ID_INSERT_GT:
-		case ID_INSERT_QUOT:
-		case ID_INSERT_APOS:
-			HL_Insert_html_characters(hwndEdit, LOWORD(wParam));
-			break;
-#endif
-
         case IDM_EDIT_LINECOMMENT:
             switch ( SendMessage ( hwndEdit, SCI_GETLEXER, 0, 0 ) ) {
                 case SCLEX_NULL:
@@ -5751,7 +5741,7 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
         OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST |
         OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
     if ( b_Hl_use_prefix_in_open_dialog ) {
-        ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER );
+		ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER/*|OFN_NOVALIDATE*/ );
     } else {
         ofn.Flags |= OFN_FILEMUSTEXIST;
     }

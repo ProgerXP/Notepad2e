@@ -2514,7 +2514,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
         case WM_NOTIFY: {
                 OFNOTIFY *ofn = ( OFNOTIFY * ) lParam;
                 NMHDR nm = ofn->hdr;
-                //   HL_Trace ( " NOTIFY dlg mess %u from %d(%d)", nm.code , nm.idFrom , nm.hwndFrom );
+                HL_Trace ( " NOTIFY dlg mess %u from %d(%d)", nm.code , nm.idFrom , nm.hwndFrom );
                 switch ( nm.code ) {
                     case CDN_FILEOK: {
                             WCHAR buf[MAX_PATH];
@@ -2604,7 +2604,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                 SetWindowLong ( hdlg , DWL_MSGRESULT , take_call );
                 //    return	1;
             } else if ( lbl_ch = uiMsg ) {
-                //  HL_Trace ( "custom LBL" );
+                 HL_Trace ( "custom LBL" );
                 //  return	1;
             }
     }
@@ -2663,12 +2663,12 @@ VOID	HL_Grep( VOID* _lpf, BOOL grep) {
 	int res = 0;
 	int eol_len = 2;
 	int line_first, line_last;
+	char szFind2[512];
 
 	struct Sci_TextToFind ttf , tr;
 	if (!lstrlenA(lpf->szFind)) {
 		return;
 	}
-	char szFind2[512];
 	/*
 	 * detect scope
 	 **/
