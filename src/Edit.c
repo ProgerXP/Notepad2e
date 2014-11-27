@@ -4687,7 +4687,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
 						}
 						SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
 						SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
-						PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
+						PostMessage((hwnd), WM_COMMAND, MAKELONG(IDC_FINDTEXT, 1), 0);
+				//		PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
 					}
 
 				}
