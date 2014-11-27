@@ -6664,7 +6664,8 @@ OUT_OF_UNWRAP:
 
 
 void HL_Escape_html(HWND hwnd) {
-	int beg, end , symb , res ;
+	int beg, end , symb , res  ;
+	BOOL changed;
 	struct Sci_TextToFind ttf;
 	const char* _source = "&<>";
 	const char* _target[] = { "&amp;", "&lt;", "&gt;" };
@@ -6680,29 +6681,53 @@ void HL_Escape_html(HWND hwnd) {
 	//
 	ttf.lpstrText = HL_Alloc(2);
 	ttf.lpstrText[1] = '\0';
+	changed = FALSE;
 	for (symb = 0; symb < strlen(_source); ++symb)
 	{
 		ttf.chrg.cpMin = beg;
 		ttf.chrg.cpMax = end;
 		ttf.lpstrText[0] = _source[symb];
 		//
-		while (1)
+		res = 0;
+		while (-1 != res)
 		{
 			res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf);
 			if (-1 != res){
-				assert(ttf.chrgText.cpMax == ttf.chrgText.cpMin + 1);
-				SendMessage(hwnd, SCI_DELETERANGE, ttf.chrgText.cpMin, 1);
-				SendMessage(hwnd, SCI_INSERTTEXT, ttf.chrgText.cpMin, (LPARAM)_target[symb]);
-				ttf.chrg.cpMin = ttf.chrgText.cpMin;
-				end += strlen(_target[symb]) - 1;
-				ttf.chrg.cpMax = end;
-			}
-			else{
-				break;
+				if ('&' == _source[symb]){
+#define _HL_LEN_TO_CHECK 5
+					struct Sci_TextRange tr;
+					int k;
+					tr.chrg.cpMin = ttf.chrgText.cpMin;
+					tr.chrg.cpMax = min(tr.chrg.cpMin + _HL_LEN_TO_CHECK, end);
+					tr.lpstrText = HL_Alloc(tr.chrg.cpMax - tr.chrg.cpMin + 1);
+					SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+					for (k = 0; k < COUNTOF(_target); ++k)
+					{
+						if (strstr(tr.lpstrText, _target[k])){
+							res = -2;
+							ttf.chrg.cpMin = ttf.chrgText.cpMax;
+							break;
+						}
+					}
+					//
+					HL_Free(tr.lpstrText);
+				}
+				if (res >= 0){
+					assert(ttf.chrgText.cpMax == ttf.chrgText.cpMin + 1);
+					SendMessage(hwnd, SCI_DELETERANGE, ttf.chrgText.cpMin, 1);
+					SendMessage(hwnd, SCI_INSERTTEXT, ttf.chrgText.cpMin, (LPARAM)_target[symb]);
+					ttf.chrg.cpMin = ttf.chrgText.cpMax;
+					end += strlen(_target[symb]) - 1;
+					ttf.chrg.cpMax = end;
+					changed = TRUE;
+				}
 			}
 		}
 	}
 	//
+	if (changed){
+		SendMessage(hwnd, SCI_SETSEL, beg, beg);
+	}
 	HL_Free(ttf.lpstrText);
 }
 
