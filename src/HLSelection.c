@@ -463,7 +463,7 @@ BOOL HLS_process_changes ( UINT opt )
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
-		if (case_compare(old_word, _hl_se_tr.lpstrText, FALSE)) {
+		if (case_compare(old_word, _hl_se_tr.lpstrText, _hl_se_mode_whole_word)) {
             goto _EXIT;
         }
     }
@@ -588,7 +588,8 @@ VOID HLS_Edit_selection_stop ( UINT mode )
     int pos;
     if ( b_HL_edit_selection ) {
         if ( mode & HL_SE_REJECT ) {
-            HLS_process_changes ( SEO_ROLLBACK );
+           // HLS_process_changes ( SEO_ROLLBACK );
+			SendMessage(hwndEdit, SCI_UNDO, 0, 0);
         }
         /*
          * skip any selection
