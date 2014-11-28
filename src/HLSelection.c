@@ -62,7 +62,7 @@ char to_lower(char in){
 
 BOOL case_compare(const char* a, const char* b , BOOL ignore_case){
 	if (ignore_case){
-		return 0 == stricmp(a, b);
+		return 0 == _stricmp(a, b);
 	}
 	return 0 == strcmp(a, b);
 }
@@ -446,6 +446,11 @@ BOOL HLS_process_changes ( UINT opt )
     assert ( _hl_se_tr.lpstrText );
     strcpy ( old_word , _hl_se_tr.lpstrText );
     if ( rollback ) {
+#if 1
+		// try to replace this stuff with sci undo command
+#pragma CT_WARNING("Remove this on release")
+		assert(0);
+#endif
         if ( 0 == _hl_se_orig_word ) {
             //
             HL_TRACE ( "NO original word ????????????????" );
