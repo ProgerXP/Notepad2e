@@ -60,7 +60,10 @@ char to_lower(char in){
 }
 
 
-BOOL case_compare(const char* a, const char* b){
+BOOL case_compare(const char* a, const char* b , BOOL ignore_case){
+	if (ignore_case){
+		return 0 == stricmp(a, b);
+	}
 	return 0 == strcmp(a, b);
 }
 
@@ -388,7 +391,7 @@ VOID HLS_Highlight_turn ( )
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_SINGLE , 0 );
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
                       SendMessage ( hwndEdit , SCI_GETTEXTLENGTH , 0 , 0 ) );
-        SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
+        // SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , old , 0 );
         //
         SendMessage ( hwndEdit , SCI_SETINDICATORCURRENT , HL_SELECT_INDICATOR_EDIT , 0 );
         SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , 0 ,
@@ -445,7 +448,7 @@ BOOL HLS_process_changes ( UINT opt )
     if ( rollback ) {
         if ( 0 == _hl_se_orig_word ) {
             //
-            HL_TRACE ( "NO orginal word ????????????????" );
+            HL_TRACE ( "NO original word ????????????????" );
             goto _EXIT;
         }
         HL_TRACE ( "ROLLBACK to TR '%s' (%d - %d) " , _hl_se_orig_word , _hl_se_tr.chrg.cpMin , _hl_se_tr.chrg.cpMax );
@@ -460,7 +463,7 @@ BOOL HLS_process_changes ( UINT opt )
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
-		if (case_compare(old_word, _hl_se_tr.lpstrText)) {
+		if (case_compare(old_word, _hl_se_tr.lpstrText, FALSE)) {
             goto _EXIT;
         }
     }
@@ -476,7 +479,7 @@ BOOL HLS_process_changes ( UINT opt )
     //SendMessage ( hwndEdit , SCI_INDICATORCLEARRANGE , _hl_se_tr.chrg.cpMin , _hl_se_old_len );
     //	_hl_se_notif_block = TRUE;
     SendMessage ( hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask ( FALSE ), 0 );
-    tr.lpstrText = HL_Alloc ( _hl_se_old_len + 1 );
+    //tr.lpstrText = HL_Alloc ( _hl_se_old_len + 1 );
     for ( k = 0 ; k < _hl_se_count; ++ k ) {
         LPSE_DATA se = &_hl_se_array[k];
         // shifting
@@ -515,7 +518,7 @@ BOOL HLS_process_changes ( UINT opt )
                     break;
                 }
                 SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &tr );
-				work = case_compare(tr.lpstrText, old_word);
+				work = case_compare(tr.lpstrText, old_word, _hl_se_mode_whole_word);
             } else {
                 work = FALSE;
                 HL_TRACE ( "cur pos!" )
@@ -534,7 +537,8 @@ BOOL HLS_process_changes ( UINT opt )
                 _hl_se_tr.chrg.cpMax += ( new_len - _hl_se_old_len );
             }
         } else if ( !cur_se ) {
-            HL_TRACE ( "!!!SE mismatch error at idx %d pos %d expect %s but got %s then skip item" , k , se->pos , old_word , tr.lpstrText );
+            HL_TRACE ( "!!!SE mismatch error at idx %d pos %d expect '%s' but got '%s' then skip item" 
+				, k , se->pos , old_word , tr.lpstrText );
         }
         //
         SendMessage ( hwndEdit , SCI_INDICATORFILLRANGE , se->pos , new_len );
