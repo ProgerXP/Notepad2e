@@ -6672,6 +6672,7 @@ void HL_Escape_html(HWND hwnd) {
 	assert(strlen(_source) == COUNTOF(_target));
 	//
 	//
+	SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
 	beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
 	end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
 	if (beg == end){
@@ -6729,6 +6730,7 @@ void HL_Escape_html(HWND hwnd) {
 		SendMessage(hwnd, SCI_SETSEL, beg, beg);
 	}
 	HL_Free(ttf.lpstrText);
+	SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
 
