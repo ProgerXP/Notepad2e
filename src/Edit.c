@@ -6553,7 +6553,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 		StrCat(dirname, L"\\");
 		StrCat(dirname, found_path);
 		HL_TRACE(L"file to open %S", dirname);
-		FileLoad(TRUE, FALSE, FALSE, FALSE, dirname);
+		FileLoad(FALSE, FALSE, FALSE, FALSE, dirname);
 	}
 	//
 	return TRUE;
