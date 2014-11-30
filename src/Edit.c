@@ -6694,6 +6694,7 @@ void HL_Escape_html(HWND hwnd) {
 		{
 			res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf);
 			if (-1 != res){
+#if 0
 				if ('&' == _source[symb]){
 #define _HL_LEN_TO_CHECK 5
 					struct Sci_TextRange tr;
@@ -6714,6 +6715,9 @@ void HL_Escape_html(HWND hwnd) {
 					HL_Free(tr.lpstrText);
 				}
 				if (res >= 0){
+#else
+				{
+#endif
 					assert(ttf.chrgText.cpMax == ttf.chrgText.cpMin + 1);
 					SendMessage(hwnd, SCI_DELETERANGE, ttf.chrgText.cpMin, 1);
 					SendMessage(hwnd, SCI_INSERTTEXT, ttf.chrgText.cpMin, (LPARAM)_target[symb]);
