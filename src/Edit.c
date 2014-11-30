@@ -6492,7 +6492,7 @@ int FileVars_GetEncoding ( LPFILEVARS lpfv )
 
 
 BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
-	WCHAR	dirname[MAX_PATH] , found_path[MAX_PATH] , *filename;
+	WCHAR	dirname[MAX_PATH] , odn[MAX_PATH] , found_path[MAX_PATH] , *filename;
 	HANDLE	hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA	ffd;
 	INT		cmp_res;
@@ -6503,7 +6503,11 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	if (!PathRemoveFileSpec(dirname)){
 		return FALSE;
 	}
-	StrCat(dirname, L"\\*");
+	if (L'\\' != dirname[lstrlen(dirname) - 1]){
+		StrCat(dirname, L"\\");
+	}
+	StrCpy(odn, dirname);
+	StrCat(dirname, L"*");
 	//
 	hFind = FindFirstFile(dirname, &ffd);
 	if (INVALID_HANDLE_VALUE == hFind){
@@ -6545,15 +6549,15 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	FindClose(hFind);
 	//
 	if (*found_path){
+#if 0
 		StrCpy(dirname, file);
 		if (!PathRemoveFileSpec(dirname)){
 			return FALSE;
 		}
-		HL_TRACE(L"dir to open %S", dirname);
-		StrCat(dirname, L"\\");
-		StrCat(dirname, found_path);
-		HL_TRACE(L"file to open %S", dirname);
-		FileLoad(FALSE, FALSE, FALSE, FALSE, dirname);
+#endif
+		StrCat(odn, found_path);
+		HL_TRACE(L"file to open %S", odn);
+		FileLoad(FALSE, FALSE, FALSE, FALSE, odn);
 	}
 	//
 	return TRUE;
