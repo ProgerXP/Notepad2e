@@ -25,6 +25,8 @@
 #define HL_SELECT_MAX_SIZE	0xff
 #define HL_SELECT_MAX_COUNT	0xff
 
+#define HL_CASE_SENSITIVE_ROLLBACK 1
+
 
 BOOL	b_HL_highlight_selection = TRUE;
 BOOL	b_HL_edit_selection = FALSE;
@@ -33,8 +35,9 @@ BOOL	_hl_se_exit = FALSE;
 //
 //
 typedef struct tagHLSEdata {
-    UINT pos;
-    UINT len;
+    UINT	pos;
+    UINT	len;
+	char*	original;
 } SE_DATA, *LPSE_DATA ;
 
 typedef enum HL_SEOpt {
@@ -154,6 +157,14 @@ void HLS_release()
         HL_Free ( _hl_se_orig_word );
         _hl_se_orig_word = 0;
     }
+	for (int k = 0;k < COUNTOF(_hl_se_array);++k)
+	{
+		SE_DATA* se = &_hl_se_array [k];
+		if (se->original){
+			HL_Free(se->original);
+			se->original = NULL;
+		}
+	}
 }
 
 int HLS_get_wraps ( int beg , int end )
@@ -317,6 +328,19 @@ VOID HLS_Highlight_word ( LPCSTR  word )
                         LPSE_DATA dt = &_hl_se_array[_hl_se_count++];
                         dt->pos = ttf.chrgText.cpMin;
                         dt->len = wlen;
+#if HL_CASE_SENSITIVE_ROLLBACK
+						if (dt->original){
+							HL_Free(dt->original);
+						}
+						dt->original = HL_Alloc(wlen + 1);
+						{
+							struct Sci_TextRange str;
+							str.chrg.cpMin = dt->pos;
+							str.chrg.cpMax = dt->pos + wlen;
+							str.lpstrText = dt->original;
+							SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&str);
+						}
+#endif
 					}
 					else {
 						HL_TRACE("out of loop");
@@ -446,11 +470,6 @@ BOOL HLS_process_changes ( UINT opt )
     assert ( _hl_se_tr.lpstrText );
     strcpy ( old_word , _hl_se_tr.lpstrText );
     if ( rollback ) {
-#if 1
-		// try to replace this stuff with sci undo command
-#pragma CT_WARNING("Remove this on release")
-		assert(0);
-#endif
         if ( 0 == _hl_se_orig_word ) {
             //
             HL_TRACE ( "NO original word ????????????????" );
@@ -461,7 +480,9 @@ BOOL HLS_process_changes ( UINT opt )
         if ( _hl_se_tr.lpstrText && new_len != strlen ( _hl_se_tr.lpstrText ) ) {
             _hl_se_tr.lpstrText = HL_Realloc ( _hl_se_tr.lpstrText , strlen ( _hl_se_orig_word ) + 1 );
         }
+#if 0 == HL_CASE_SENSITIVE_ROLLBACK
         strcpy ( _hl_se_tr.lpstrText , _hl_se_orig_word );
+#endif
     } else {
         if ( _hl_se_tr.lpstrText && ( _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin ) != _hl_se_old_len ) {
             _hl_se_tr.lpstrText = HL_Realloc ( _hl_se_tr.lpstrText , _hl_se_tr.chrg.cpMax - _hl_se_tr.chrg.cpMin + 1 );
@@ -535,7 +556,16 @@ BOOL HLS_process_changes ( UINT opt )
             // SendMessage ( hwndEdit , SCI_DELETERANGE , se->pos , ( LPARAM ) _hl_se_old_len );
             SendMessage ( hwndEdit , SCI_SETTARGETSTART , se->pos , 0 );
             SendMessage ( hwndEdit , SCI_SETTARGETEND , se->pos + _hl_se_old_len , 0 );
-            SendMessage ( hwndEdit , SCI_REPLACETARGET , -1 , ( LPARAM ) _hl_se_tr.lpstrText );
+#if HL_CASE_SENSITIVE_ROLLBACK
+			if (rollback){
+				assert(case_compare(_hl_se_orig_word, se->original,TRUE));
+				SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)se->original);
+			}
+			else
+#endif
+			{
+				SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)_hl_se_tr.lpstrText);
+			}
             delta_len += ( new_len - _hl_se_old_len );
             if ( se->pos </*=*/ _hl_se_tr.chrg.cpMax ) {
                 _hl_se_tr.chrg.cpMin += ( new_len - _hl_se_old_len );
@@ -593,8 +623,8 @@ VOID HLS_Edit_selection_stop ( UINT mode )
     int pos;
     if ( b_HL_edit_selection ) {
         if ( mode & HL_SE_REJECT ) {
-           // HLS_process_changes ( SEO_ROLLBACK );
-			SendMessage(hwndEdit, SCI_UNDO, 0, 0);
+           HLS_process_changes ( SEO_ROLLBACK );
+			//SendMessage(hwndEdit, SCI_UNDO, 0, 0);
         }
         /*
          * skip any selection
