@@ -6492,7 +6492,7 @@ int FileVars_GetEncoding ( LPFILEVARS lpfv )
 
 
 BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
-	WCHAR	dirname[MAX_PATH] , found_path[MAX_PATH] , *filename;
+	WCHAR	dirname[MAX_PATH] , odn[MAX_PATH] , found_path[MAX_PATH] , *filename;
 	HANDLE	hFind = INVALID_HANDLE_VALUE;
 	WIN32_FIND_DATA	ffd;
 	INT		cmp_res;
@@ -6503,7 +6503,11 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	if (!PathRemoveFileSpec(dirname)){
 		return FALSE;
 	}
-	StrCat(dirname, L"\\*");
+	if (L'\\' != dirname[lstrlen(dirname) - 1]){
+		StrCat(dirname, L"\\");
+	}
+	StrCpy(odn, dirname);
+	StrCat(dirname, L"*");
 	//
 	hFind = FindFirstFile(dirname, &ffd);
 	if (INVALID_HANDLE_VALUE == hFind){
@@ -6545,15 +6549,15 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 	FindClose(hFind);
 	//
 	if (*found_path){
+#if 0
 		StrCpy(dirname, file);
 		if (!PathRemoveFileSpec(dirname)){
 			return FALSE;
 		}
-		HL_TRACE(L"dir to open %S", dirname);
-		StrCat(dirname, L"\\");
-		StrCat(dirname, found_path);
-		HL_TRACE(L"file to open %S", dirname);
-		FileLoad(TRUE, FALSE, FALSE, FALSE, dirname);
+#endif
+		StrCat(odn, found_path);
+		HL_TRACE(L"file to open %S", odn);
+		FileLoad(FALSE, FALSE, FALSE, FALSE, odn);
 	}
 	//
 	return TRUE;
@@ -6672,6 +6676,7 @@ void HL_Escape_html(HWND hwnd) {
 	assert(strlen(_source) == COUNTOF(_target));
 	//
 	//
+	SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
 	beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
 	end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
 	if (beg == end){
@@ -6693,6 +6698,7 @@ void HL_Escape_html(HWND hwnd) {
 		{
 			res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf);
 			if (-1 != res){
+#if 0
 				if ('&' == _source[symb]){
 #define _HL_LEN_TO_CHECK 5
 					struct Sci_TextRange tr;
@@ -6713,6 +6719,9 @@ void HL_Escape_html(HWND hwnd) {
 					HL_Free(tr.lpstrText);
 				}
 				if (res >= 0){
+#else
+				{
+#endif
 					assert(ttf.chrgText.cpMax == ttf.chrgText.cpMin + 1);
 					SendMessage(hwnd, SCI_DELETERANGE, ttf.chrgText.cpMin, 1);
 					SendMessage(hwnd, SCI_INSERTTEXT, ttf.chrgText.cpMin, (LPARAM)_target[symb]);
@@ -6729,6 +6738,7 @@ void HL_Escape_html(HWND hwnd) {
 		SendMessage(hwnd, SCI_SETSEL, beg, beg);
 	}
 	HL_Free(ttf.lpstrText);
+	SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
 

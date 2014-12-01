@@ -2495,7 +2495,9 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 	//
 	if (temp[0]) {
 		lstrcpy(out, dir);
-		lstrcat(out, L"\\");
+		if (L'\\' != out[lstrlen(out) - 1]){
+			lstrcat(out, L"\\");
+		}
 		lstrcat(out, temp);
 		return TRUE;
 	}
