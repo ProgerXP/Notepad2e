@@ -2508,29 +2508,37 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 {
     static UINT file_ok = 0;
     static UINT lbl_ch = 0;
-    static WCHAR folder[MAX_PATH];
     static WCHAR last_selected[MAX_PATH];
     // XP spec
     static BOOL take_call = FALSE ;
+#define HL_XP_ISSUE ( WINVER == 0x501 )
+#if HL_XP_ISSUE
+	static WCHAR xp_hook[MAX_PATH];
+#endif
 	//
 	HWND hPar = GetParent(hdlg);
-   // HL_Trace ( "  dlg mess %u ", uiMsg );
-	//
     switch ( uiMsg ) {
         case WM_NOTIFY: {
                 OFNOTIFY *ofn = ( OFNOTIFY * ) lParam;
                 NMHDR nm = ofn->hdr;
-             //   HL_Trace ( " NOTIFY dlg mess %u from %d(%d)", nm.code , nm.idFrom , nm.hwndFrom );
                 switch ( nm.code ) {
                     case CDN_FILEOK: {
                             WCHAR buf[MAX_PATH];
                             WCHAR dir[MAX_PATH];
                             //
 							int len = GetDlgItemText(hPar, cmb13, buf, MAX_PATH);
-#if 1
+#if HL_XP_ISSUE
 							if (0 == len){
-								len = GetDlgItemText(hPar, edt1, buf, MAX_PATH);
-								HL_TRACE("OFN OK =  %d  (%S)", len, buf);
+								if (*xp_hook){
+									len = lstrlen(xp_hook);
+									lstrcpy(buf, xp_hook);
+									*xp_hook = 0;
+									HL_TRACE("OFN XP HOOK OK =  %d  (%S)", len, buf);
+								}
+								else{
+									len = GetDlgItemText(hPar, edt1, buf, MAX_PATH);
+									HL_TRACE("OFN OK =  %d  (%S)", len, buf);
+								}
 							}
 #endif
 							SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
@@ -2565,21 +2573,20 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                         }
                         return 1;
                     case CDN_SELCHANGE: {
-                            WCHAR buf[MAX_PATH] , testbuf[MAX_PATH];
+                            WCHAR buf[MAX_PATH] ;
 							HL_TRACE("OFN change  ");
                             if ( CommDlg_OpenSave_GetSpec ( hPar , buf, MAX_PATH ) > 0 ) {
 								int test;
 								HL_TRACE("Set OFN input %S", buf);
 								CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf); 
-								test = GetDlgItemText(hPar, cmb13, testbuf, MAX_PATH);
-								//test = 0;
-#if 1
-								if (0 && (0 == test)){
+#if HL_XP_ISSUE
+								test = GetDlgItemText(hPar, cmb13, xp_hook, MAX_PATH);
+								if ((0 == test)){
 									CommDlg_OpenSave_SetControlText(hPar, edt1, (LPARAM)buf);
-#ifdef _DEBUG
-									test = GetDlgItemText(hPar, edt1, testbuf, MAX_PATH);
-									HL_TRACE("OFN change fix =  %d  (%S)", test, testbuf);
-#endif
+									lstrcpy(xp_hook,buf);
+								}
+								else{
+									*xp_hook = 0;
 								}
 #endif
                                 lstrcpy ( last_selected , buf );
@@ -2590,18 +2597,23 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                     case CDN_INITDONE: {
 						HL_TRACE("OFN init  ");
                             take_call = FALSE;
-                            last_selected[0] = 0;
-                            SendMessage ( hPar , CDM_GETFOLDERPATH , MAX_PATH, ( LPARAM ) folder );
-                            file_ok = RegisterWindowMessage ( FILEOKSTRING );
-                            lbl_ch = RegisterWindowMessage ( LBSELCHSTRING );
+							file_ok = RegisterWindowMessage ( FILEOKSTRING );
+							*xp_hook = 0;
+							*last_selected = 0;
+#if 0
+							SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)folder);
+							lbl_ch = RegisterWindowMessage(LBSELCHSTRING);
+#endif
                         }
-                        break;
+						break;
+#ifdef _DEBUG
                     case CDN_FOLDERCHANGE: {
-                            WCHAR dir[MAX_PATH];
+                           WCHAR dir[MAX_PATH];
 							HL_TRACE("OFN folder change  ");
-                            SendMessage ( hPar , CDM_GETFOLDERPATH       , MAX_PATH, ( LPARAM ) dir );
+                            SendMessage ( hPar , CDM_GETFOLDERPATH , MAX_PATH, ( LPARAM ) dir );
                         }
-                        break;
+						break;
+#endif
                 }
             }
             break;
@@ -2610,9 +2622,11 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                 HL_Trace ( "custom OK" );
                 SetWindowLong ( hdlg , DWL_MSGRESULT , take_call );
                 //    return	1;
+#if 0
             } else if ( lbl_ch = uiMsg ) {
 				HL_Trace ( "custom LBL from %d (action %d)" , wParam ,lParam );
                 //  return	1;
+#endif
             }
     }
     return take_call;
