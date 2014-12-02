@@ -4682,8 +4682,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW ( HWND hwnd, UINT umsg, WPARAM wParam, 
 					}
 					//
 					if (cou != len){
-						HL_TRACE("%d %d %d", cou, lstrlen(buf), len );
 						WCHAR tail[_MAX_SIZE];
+						HL_TRACE("%d %d %d", cou, lstrlen(buf), len );
 						*tail = 0;
 						if (car < lstrlen(buf) ){
 							lstrcpy(tail, buf + car);

@@ -149,6 +149,7 @@ void	HLS_init()
 
 void HLS_release()
 {
+	int k = 0;
     if ( _hl_se_tr.lpstrText ) {
         HL_Free ( _hl_se_tr.lpstrText );
         _hl_se_tr.lpstrText = 0;
@@ -157,7 +158,7 @@ void HLS_release()
         HL_Free ( _hl_se_orig_word );
         _hl_se_orig_word = 0;
     }
-	for (int k = 0;k < COUNTOF(_hl_se_array);++k)
+	for ( k = 0;k < COUNTOF(_hl_se_array);++k)
 	{
 		SE_DATA* se = &_hl_se_array [k];
 		if (se->original){

@@ -5737,11 +5737,19 @@ BOOL OpenFileDlg ( HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitia
     ofn.nMaxFile = COUNTOF ( szFile );
     ofn.lpfnHook = HL_OFN__hook_proc;
     ofn.Flags =
-        OFN_HIDEREADONLY | /* OFN_NOCHANGEDIR |*/
-        OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST |
-        OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
+        OFN_HIDEREADONLY | 
+		/* OFN_NOCHANGEDIR |*/
+        OFN_DONTADDTORECENT | 
+		/*OFN_PATHMUSTEXIST |*/
+        OFN_SHAREAWARE 
+		/*| OFN_NODEREFERENCELINKS*/;
     if ( b_Hl_use_prefix_in_open_dialog ) {
-		ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER/*|OFN_NOVALIDATE*/ );
+#if 1
+		HL_TRACE("WIN VERSION %d" , WINVER);
+		ofn.Flags |= ( OFN_ENABLEHOOK |	OFN_EXPLORER );
+#else
+		ofn.Flags |= ( OFN_ENABLEHOOK  );
+#endif
     } else {
         ofn.Flags |= OFN_FILEMUSTEXIST;
     }
