@@ -4145,7 +4145,14 @@ void HL_Get_offset ( HWND hwnd, int *out )
 void EditSelectEx ( HWND hwnd, int iAnchorPos, int iCurrentPos )
 {
     SendMessage ( hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50 );
-    SendMessage ( hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 5 );
+#if 0
+	SendMessage ( hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 5 );
+#else
+	{
+		int lines = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
+		SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, lines / 3);
+	}
+#endif
     SendMessage ( hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos );
     SendMessage ( hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50 );
     SendMessage ( hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0 );

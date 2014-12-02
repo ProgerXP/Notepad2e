@@ -1,4 +1,4 @@
 #ifndef _H_TIME_
 #define _H_TIME_
-#define H_TIMESTAMP L"01.12.2014 16:28:14,10" 
+#define H_TIMESTAMP L"02.12.2014 10:06:50,31" 
 #endif
