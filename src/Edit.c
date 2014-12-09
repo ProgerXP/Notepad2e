@@ -6580,8 +6580,8 @@ void HL_Unwrap_selection(HWND hwnd) {
 	//
 	const static int max_region_to_scan = 1024;
 	const static int max_brackets_to_skip = 100;
-	const char* _left_braces = "<{([";
-	const char* _right_braces = ">})]";
+	const char* _left_braces = "<{(['\"";
+	const char* _right_braces = ">})]'\"";
 	//
 	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
 	len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
@@ -6636,19 +6636,33 @@ void HL_Unwrap_selection(HWND hwnd) {
 			}
 		}
 		// go right
-		while (1)
+		skipc = 0;
+		while (tchl)
 		{
 			char rch = tr_2.lpstrText[pos_right-tr_2.chrg.cpMin];
 			if (tchr = strchr(_right_braces, rch)){
 				if (tchr - _right_braces == tchl - _left_braces){
-					HL_TRACE(" right bracket found '%c'", rch);
-					break;
+					if (skipc){
+						HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipc);
+						--skipc;
+					}
+					else{
+						HL_TRACE("Right bracket found '%c'", rch);
+						break;
+					}
 				}
 				else{
 					tchr = NULL;
 					HL_TRACE("Bad right bracket found '%c'", rch);
 				}
 			}
+			//
+			if (tchr = strchr(_left_braces, rch)){
+				if (tchr == tchl){
+					++skipc;
+				}
+			}
+			//
 			if (++pos_right > tr_2.chrg.cpMax){
 				tchr = NULL;
 				break;
@@ -6656,6 +6670,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 		}
 		// remove
 		if (tchl && tchr){
+			HL_TRACE("removing braces at %d and %d", pos_left-1, pos_right);
 			SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
 			SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
 			SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
