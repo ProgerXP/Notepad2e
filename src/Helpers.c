@@ -2504,6 +2504,18 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 	//
     return FALSE;
 }
+
+BOOL _HL_fileIsCdUp(LPCWSTR str){
+	int k ;
+	for (k = 0; k < lstrlen(str); ++k)
+	{
+		if (!StrChr(L". ", str[k])){
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam )
 {
     static UINT file_ok = 0;
@@ -2580,6 +2592,12 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 								HL_TRACE("Set OFN input %S", buf);
 								CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf); 
 #if HL_XP_ISSUE
+								
+								if( _HL_fileIsCdUp( buf )){
+									CommDlg_OpenSave_SetControlText(hPar, edt1, (LPARAM)L"");
+									*xp_hook = 0;
+									return 1;
+								}
 								test = GetDlgItemText(hPar, cmb13, xp_hook, MAX_PATH);
 								if ((0 == test)){
 									CommDlg_OpenSave_SetControlText(hPar, edt1, (LPARAM)buf);
