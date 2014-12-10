@@ -2805,8 +2805,10 @@ void* HL_Alloc(size_t size) {
 }
 
 void HL_Free(void* ptr) {
-	--_hl_alloc_count;
-	GlobalFree(ptr);
+	if( ptr){
+		--_hl_alloc_count;
+		GlobalFree(ptr);
+	}
 }
 
 void* HL_Realloc(void* ptr, size_t len) {

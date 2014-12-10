@@ -6589,6 +6589,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 	//
 	tr_1.chrg.cpMax = cpos;
 	tr_1.chrg.cpMin = max(0, cpos - max_region_to_scan);
+	tr_1.lpstrText = NULL;
 	{
 		temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
 		if (!temp) goto OUT_OF_UNWRAP;
@@ -6598,6 +6599,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 	//
 	tr_2.chrg.cpMin = cpos;
 	tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
+	tr_2.lpstrText = NULL;
 	{
 		temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
 		if (!temp) goto OUT_OF_UNWRAP;
@@ -6615,7 +6617,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 			//
 			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
 			//
-			if (tchl = strchr(_left_braces, lch)){
+			if (lch && (tchl = strchr(_left_braces, lch))){
 				if (skipc && tchl - _left_braces == skip[skipc-1] ){
 					HL_TRACE("Skipped braces pair found '%c'" , *tchl)
 					--skipc;
@@ -6630,7 +6632,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 				skip[skipc++] = tchl - _right_braces;
 			}
 			//
-			if (--pos_left < tr_1.chrg.cpMin){
+			if (--pos_left <= tr_1.chrg.cpMin){
 				tchl = NULL;
 				break;
 			}
@@ -6640,7 +6642,7 @@ void HL_Unwrap_selection(HWND hwnd) {
 		while (tchl)
 		{
 			char rch = tr_2.lpstrText[pos_right-tr_2.chrg.cpMin];
-			if (tchr = strchr(_right_braces, rch)){
+			if (rch && (tchr = strchr(_right_braces, rch))){
 				if (tchr - _right_braces == tchl - _left_braces){
 					if (skipc){
 						HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipc);
