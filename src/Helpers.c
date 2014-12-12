@@ -2442,7 +2442,7 @@ BOOL HL_Is_Empty ( LPCWSTR txt )
     }
     return TRUE;
 }
-BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
+BOOL	HL_Open_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 {
     WIN32_FIND_DATA	wfd;
 	WCHAR	path[MAX_PATH];
@@ -2476,7 +2476,7 @@ BOOL	HL_OPen_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
 	lstrcat(path, in);
     lstrcat ( path, L"*" );
     res = FindFirstFile ( path, &wfd );
-    HL_WTrace ( "search file by mask '%s'" , path );
+    HL_TRACE ( "search file by mask '%S'" , path );
     if ( INVALID_HANDLE_VALUE == res ) {
         return FALSE;
     }
@@ -2553,18 +2553,21 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 								}
 							}
 #endif
+							// can return -1 !!!
+							*dir = L'\0';
 							SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
+							//
                             SetWindowLong ( hdlg , DWL_MSGRESULT , 1 );
-							HL_TRACE("OFN OK  ");
+							HL_TRACE("OFN OK '%S' " , buf);
                             if ( len ) {
                                 WCHAR	out[MAX_PATH];
                                 LPWSTR	final_str = buf;
                                 if ( wcsstr ( last_selected , buf ) ) {
                                     final_str = last_selected;
-                                    HL_WTrace ( "OFN drop window text %s " , buf );
+                                    HL_TRACE ( "OFN drop window text %S " , buf );
                                 }
 								HL_TRACE("OFN input (%S) ", final_str);
-                                if ( !HL_OPen_File_by_prefix ( final_str , dir , out ) ) {
+                                if ( !HL_Open_File_by_prefix ( final_str , dir , out ) ) {
                                     WCHAR mess[1024];
                                     wsprintf ( mess ,
                                                L"%s\nFile not found.\n"
@@ -2577,16 +2580,18 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                                 } else {
                                     CommDlg_OpenSave_SetControlText ( hPar, cmb13 , ( LPARAM ) out );
                                     lstrcpy ( ofn->lpOFN->lpstrFile , out );
-                                    HL_WTrace ( "OFN final result (%s) " , out );
+                                    HL_TRACE ( "OFN final result (%S) " , out );
                                     SetWindowLong ( hdlg , DWL_MSGRESULT , 0 );
                                     take_call = FALSE;
                                 }
+								*xp_hook = 0;
                             }
                         }
                         return 1;
                     case CDN_SELCHANGE: {
                             WCHAR buf[MAX_PATH] ;
-							HL_TRACE("OFN change  ");
+							HL_TRACE("OFN sel change  ");
+							*xp_hook = 0;
                             if ( CommDlg_OpenSave_GetSpec ( hPar , buf, MAX_PATH ) > 0 ) {
 								int test;
 								HL_TRACE("Set OFN input %S", buf);
@@ -2595,16 +2600,12 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 								
 								if( _HL_fileIsCdUp( buf )){
 									CommDlg_OpenSave_SetControlText(hPar, edt1, (LPARAM)L"");
-									*xp_hook = 0;
 									return 1;
 								}
 								test = GetDlgItemText(hPar, cmb13, xp_hook, MAX_PATH);
 								if ((0 == test)){
 									CommDlg_OpenSave_SetControlText(hPar, edt1, (LPARAM)buf);
-									lstrcpy(xp_hook,buf);
-								}
-								else{
-									*xp_hook = 0;
+									lstrcpy(xp_hook,buf);							
 								}
 #endif
                                 lstrcpy ( last_selected , buf );
@@ -2624,20 +2625,22 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
 #endif
                         }
 						break;
-#ifdef _DEBUG
                     case CDN_FOLDERCHANGE: {
+#if 1
                            WCHAR dir[MAX_PATH];
 							HL_TRACE("OFN folder change  ");
                             SendMessage ( hPar , CDM_GETFOLDERPATH , MAX_PATH, ( LPARAM ) dir );
+#endif
+						*xp_hook = 0;
                         }
 						break;
-#endif
+
                 }
             }
             break;
         default:
             if ( file_ok == uiMsg ) {
-                HL_Trace ( "custom OK" );
+                HL_TRACE ( "custom OK" );
                 SetWindowLong ( hdlg , DWL_MSGRESULT , take_call );
                 //    return	1;
 #if 0
