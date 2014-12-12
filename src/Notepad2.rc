@@ -163,8 +163,9 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Enclose Selection...\tAlt+Q", IDM_EDIT_ENCLOSESELECTION
             MENUITEM "&Duplicate Selection\tAlt+D", IDM_EDIT_SELECTIONDUPLICATE
-            MENUITEM "Wrap selection\tCtrl+3",      CMD_EMBRACE
-            MENUITEM "Unwrap selection\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
+            MENUITEM "Wrap Selection\tCtrl+3",      CMD_EMBRACE
+            MENUITEM "Unwrap Brackes At Cursor\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
+            MENUITEM "Unwrap Quotes At Cursor\tCtrl+Shift+4", ID_BLOCK_UNWRAPQUOTESATCURSOR
             MENUITEM SEPARATOR
             MENUITEM "&Pad With Spaces\tAlt+B",     IDM_EDIT_PADWITHSPACES
             MENUITEM "Strip &First Character\tAlt+Z", IDM_EDIT_STRIP1STCHAR
@@ -360,6 +361,7 @@ BEGIN
     "3",            CMD_EMBRACE,            VIRTKEY, CONTROL, NOINVERT
     "3",            ID_BLOCK_UNWRAPSELECTION, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "4",            CMD_EMBRACE2,           VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_BLOCK_UNWRAPQUOTESATCURSOR, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "5",            CMD_EMBRACE3,           VIRTKEY, CONTROL, NOINVERT
     "6",            CMD_EMBRACE4,           VIRTKEY, CONTROL, NOINVERT
     "7",            IDM_VIEW_SHOWWHITESPACE, VIRTKEY, SHIFT, CONTROL, NOINVERT

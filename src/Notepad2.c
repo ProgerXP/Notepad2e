@@ -3701,12 +3701,15 @@ LRESULT MsgCommand ( HWND hwnd, WPARAM wParam, LPARAM lParam )
             break;
         case CMD_STRINGIFY2:
             EditEncloseSelection ( hwndEdit, L"\"", L"\"" );
-            break;
-        case CMD_EMBRACE:
-            EditEncloseSelection ( hwndEdit, L"(", L")" );
 			break;
 		case ID_BLOCK_UNWRAPSELECTION:
-			HL_Unwrap_selection(hwndEdit);
+			HL_Unwrap_selection(hwndEdit, FALSE);
+			break;
+		case ID_BLOCK_UNWRAPQUOTESATCURSOR:
+			HL_Unwrap_selection(hwndEdit, TRUE);
+			break;
+        case CMD_EMBRACE:
+			EditEncloseSelection(hwndEdit, L"(", L")");
 			break;
         case CMD_EMBRACE2:
             EditEncloseSelection ( hwndEdit, L"[", L"]" );

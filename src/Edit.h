@@ -116,7 +116,7 @@ void  HL_Find_next_word(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  HL_Open_nextFs_file(HWND,LPCWSTR,BOOL);
 void  HL_Strip_html_tags(HWND hwndEdit);
 void  HL_Escape_html(HWND hwnd);
-void  HL_Unwrap_selection(HWND hwnd);
+void  HL_Unwrap_selection(HWND hwnd, BOOL);
 
 void  EditJumpTo(HWND,int,int);
 void  EditSelectEx(HWND,int,int);
