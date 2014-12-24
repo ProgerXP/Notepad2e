@@ -6571,7 +6571,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next) {
 }
 
 
-void HL_Unwrap_selection(HWND hwnd) {
+void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 	//
 	//return;
 	//
@@ -6580,8 +6580,6 @@ void HL_Unwrap_selection(HWND hwnd) {
 	//
 	const static int max_region_to_scan = 1024;
 	const static int max_brackets_to_skip = 100;
-	const char* _left_braces = "<{([";
-	const char* _right_braces = ">})]";
 	//
 	cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
 	len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
@@ -6589,6 +6587,12 @@ void HL_Unwrap_selection(HWND hwnd) {
 	//
 	tr_1.chrg.cpMax = cpos;
 	tr_1.chrg.cpMin = max(0, cpos - max_region_to_scan);
+	tr_1.lpstrText = NULL;
+	//
+	tr_2.chrg.cpMin = cpos;
+	tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
+	tr_2.lpstrText = NULL;
+	//
 	{
 		temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
 		if (!temp) goto OUT_OF_UNWRAP;
@@ -6596,8 +6600,6 @@ void HL_Unwrap_selection(HWND hwnd) {
 		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
 	}
 	//
-	tr_2.chrg.cpMin = cpos;
-	tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
 	{
 		temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
 		if (!temp) goto OUT_OF_UNWRAP;
@@ -6605,66 +6607,135 @@ void HL_Unwrap_selection(HWND hwnd) {
 		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
 	}
 	// work
-	{
-		int pos_left = tr_1.chrg.cpMax , pos_right = tr_2.chrg.cpMin;
-		char* tchl = NULL, *tchr = NULL;
-		int	  skipc = 0 ;
+	int pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
+	BOOL found = FALSE;
+	if (quote_mode){
+		const char* _quotes = "\"'`";
+		char* qchl = NULL;
+		// search left
+		while (1){
+			//
+			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
+			if (lch)
+			{
+				if (qchl = strchr(_quotes, lch)){
+					HL_TRACE("Left quote found '%c'", lch);
+					break;
+				}
+			}
+			//
+			if (--pos_left <= tr_1.chrg.cpMin){
+				qchl = NULL;
+				break;
+			}
+		}
+
+
+		// go right
+		while (qchl)
+		{
+			char rch = tr_2.lpstrText[pos_right - tr_2.chrg.cpMin];
+			if (rch)
+			{
+				if (rch == *qchl){
+					HL_TRACE("Right quote found '%c'", rch);
+					break;
+				}
+			}
+			//
+			if (++pos_right > tr_2.chrg.cpMax){
+				qchl = NULL;
+				break;
+			}
+		}
+		//
+		found = NULL!=qchl;
+	}
+	else{
+		const char* _left_braces = "<{([";
+		const char* _right_braces = ">})]";
+		char* tchl = NULL, *tchr = NULL, *qchl = NULL;
+		int	  skipc = 0;
 		int*  skip = HL_Alloc(max_brackets_to_skip * sizeof(int));
+
 		// search left
 		while (1){
 			//
 			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
 			//
-			if (tchl = strchr(_left_braces, lch)){
-				if (skipc && tchl - _left_braces == skip[skipc-1] ){
-					HL_TRACE("Skipped braces pair found '%c'" , *tchl)
-					--skipc;
+			if (lch){
+				//
+				if (tchl = strchr(_left_braces, lch)){
+					if (skipc && tchl - _left_braces == skip[skipc - 1]){
+						HL_TRACE("Skipped braces pair found '%c'", *tchl)
+							--skipc;
+					}
+					else{
+						HL_TRACE("Left bracket found '%c'", lch);
+						break;
+					}
 				}
-				else{
-					HL_TRACE("Left bracket found '%c'", lch);
-					break;
+				//
+				if (tchl = strchr(_right_braces, lch)){
+					skip[skipc++] = tchl - _right_braces;
 				}
 			}
 			//
-			if (tchl = strchr(_right_braces, lch)){
-				skip[skipc++] = tchl - _right_braces;
-			}
-			//
-			if (--pos_left < tr_1.chrg.cpMin){
+			if (--pos_left <= tr_1.chrg.cpMin){
 				tchl = NULL;
 				break;
 			}
 		}
+		//
+		skipc = 0;
 		// go right
-		while (1)
+		while (tchl)
 		{
-			char rch = tr_2.lpstrText[pos_right-tr_2.chrg.cpMin];
-			if (tchr = strchr(_right_braces, rch)){
-				if (tchr - _right_braces == tchl - _left_braces){
-					HL_TRACE(" right bracket found '%c'", rch);
-					break;
+			char rch = tr_2.lpstrText[pos_right - tr_2.chrg.cpMin];
+			if (rch){
+				//
+				if (tchr = strchr(_right_braces, rch)){
+					if (tchr - _right_braces == tchl - _left_braces){
+						if (skipc){
+							HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipc);
+							--skipc;
+						}
+						else{
+							HL_TRACE("Right bracket found '%c'", rch);
+							break;
+						}
+					}
+					else{
+						tchr = NULL;
+						HL_TRACE("Bad right bracket found '%c'", rch);
+					}
 				}
-				else{
-					tchr = NULL;
-					HL_TRACE("Bad right bracket found '%c'", rch);
+				//
+				if (tchr = strchr(_left_braces, rch)){
+					if (tchr == tchl){
+						++skipc;
+					}
 				}
 			}
+			//
 			if (++pos_right > tr_2.chrg.cpMax){
 				tchr = NULL;
 				break;
 			}
 		}
-		// remove
-		if (tchl && tchr){
-			SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-			SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
-			SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
-			SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_left - 1);
-			SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-		}
-		//
 		HL_Free(skip);
+		found = tchr && tchl;
 	}
+	// remove
+	if (found){
+		HL_TRACE("removing braces OR quotes at %d and %d", pos_left - 1, pos_right);
+		SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+		SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
+		SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
+		SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_left - 1);
+		SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+	}
+	//
 
 
 	//

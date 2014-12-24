@@ -36,7 +36,8 @@
 #define ID_BLOCK_UNWRAPSELECTION        43
 #define IDACC_BACK                      45
 #define ID_SPECIAL_ESCAPEHTML           47
-#define ID_ACCELERATOR48                48
+#define ID_BLOCK_UNWRAPQUOTESATCURSOR   49
+#define QUOTE                           50
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -442,7 +443,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         49
+#define _APS_NEXT_COMMAND_VALUE         51
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
