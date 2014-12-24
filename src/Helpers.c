@@ -2486,6 +2486,12 @@ BOOL	HL_Open_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
     do {
         if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
             HL_TRACE ( "file: '%S'" , wfd.cFileName );
+			//
+			if (_tcsncmp(wfd.cFileName, in, 1)){
+				HL_TRACE("skip");
+				continue;
+			}
+			//
 			if (0 == temp[0] || HL_Compare_files(temp, wfd.cFileName) > 0) {
 				lstrcpy(temp, wfd.cFileName);
 			}
