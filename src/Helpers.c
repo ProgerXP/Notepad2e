@@ -2540,7 +2540,12 @@ UINT_PTR CALLBACK HL_OFN__hook_proc ( HWND hdlg, UINT uiMsg, WPARAM wParam, LPAR
                             WCHAR buf[MAX_PATH];
                             WCHAR dir[MAX_PATH];
                             //
+#if 0
 							int len = GetDlgItemText(hPar, cmb13, buf, MAX_PATH);
+#else
+							
+                            int len = CommDlg_OpenSave_GetSpec ( hPar , buf, MAX_PATH );
+#endif
 							// can return -1 !!!
 							*dir = L'\0';
 							SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);

@@ -6575,8 +6575,9 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 	//
 	//return;
 	//
-	int cpos , len , temp;
+	int cpos , len , temp , pos_left, pos_right;
 	struct Sci_TextRange tr_1, tr_2;
+	BOOL found;
 	//
 	const static int max_region_to_scan = 1024;
 	const static int max_brackets_to_skip = 100;
@@ -6607,8 +6608,8 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
 	}
 	// work
-	int pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
-	BOOL found = FALSE;
+	pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
+	found = FALSE;
 	if (quote_mode){
 		const char* _quotes = "\"'`";
 		char* qchl = NULL;
