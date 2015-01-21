@@ -2487,7 +2487,7 @@ BOOL	HL_Open_File_by_prefix ( LPCWSTR pref , LPCWSTR dir , LPWSTR out )
         if ( 0 == ( wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY ) ) {
             HL_TRACE ( "file: '%S'" , wfd.cFileName );
 			//
-			if (wcsncmp(wfd.cFileName, in, 1)){
+			if (wcsnicmp(wfd.cFileName, in, 1)){
 				HL_TRACE("skip");
 				continue;
 			}
