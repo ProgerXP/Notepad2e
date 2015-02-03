@@ -6734,12 +6734,11 @@ NEXT:
 				break;
 			}
 		}
-		if (tchl && !tchr){
+		if (tchl && !tchr && --pos_left > tr_1.chrg.cpMin){
 			tchl = NULL;
 			tchr = NULL;
 			skipcr = 0;
 			pos_right = tr_2.chrg.cpMin;
-			--pos_left;
 			goto RESUME_SEARCH;
 		}
 		HL_Free(skipl);
