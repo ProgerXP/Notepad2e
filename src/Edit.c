@@ -6656,10 +6656,11 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 		const char* _left_braces = "<{([";
 		const char* _right_braces = ">})]";
 		char* tchl = NULL, *tchr = NULL, *qchl = NULL;
-		int	  skipc = 0;
-		int*  skip = HL_Alloc(max_brackets_to_skip * sizeof(int));
+		int	  skipcl = 0 , skipcr = 0;
+		int*  skipl = HL_Alloc(max_brackets_to_skip * sizeof(int));
 
 		// search left
+RESUME_SEARCH:
 		while (1){
 			//
 			char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
@@ -6667,28 +6668,37 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 			if (lch){
 				//
 				if (tchl = strchr(_left_braces, lch)){
-					if (skipc && tchl - _left_braces == skip[skipc - 1]){
-						HL_TRACE("Skipped braces pair found '%c'", *tchl)
-							--skipc;
+					if (skipcl){
+						int ti = 0;
+						for (; ti < skipcl; ++ti)
+						{
+							if (tchl - _left_braces == skipl[ti]){
+								HL_TRACE("Skipped braces pair found '%c'", *tchl);
+								// --skipc; // can't do that !!!
+								skipl[ti] = -1;
+								goto NEXT;
+							}
+						}
 					}
-					else{
+					//
+					{
 						HL_TRACE("Left bracket found '%c'", lch);
 						break;
 					}
 				}
 				//
 				if (tchl = strchr(_right_braces, lch)){
-					skip[skipc++] = tchl - _right_braces;
+					skipl[skipcl++] = tchl - _right_braces;
 				}
 			}
 			//
+NEXT:
 			if (--pos_left <= tr_1.chrg.cpMin){
 				tchl = NULL;
 				break;
 			}
 		}
 		//
-		skipc = 0;
 		// go right
 		while (tchl)
 		{
@@ -6697,9 +6707,9 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 				//
 				if (tchr = strchr(_right_braces, rch)){
 					if (tchr - _right_braces == tchl - _left_braces){
-						if (skipc){
-							HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipc);
-							--skipc;
+						if (skipcr){
+							HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipcr);
+							--skipcr;
 						}
 						else{
 							HL_TRACE("Right bracket found '%c'", rch);
@@ -6714,7 +6724,7 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 				//
 				if (tchr = strchr(_left_braces, rch)){
 					if (tchr == tchl){
-						++skipc;
+						++skipcr;
 					}
 				}
 			}
@@ -6724,7 +6734,15 @@ void HL_Unwrap_selection(HWND hwnd , BOOL quote_mode) {
 				break;
 			}
 		}
-		HL_Free(skip);
+		if (tchl && !tchr){
+			tchl = NULL;
+			tchr = NULL;
+			skipcr = 0;
+			pos_right = tr_2.chrg.cpMin;
+			--pos_left;
+			goto RESUME_SEARCH;
+		}
+		HL_Free(skipl);
 		found = tchr && tchl;
 	}
 	// remove
