@@ -490,7 +490,8 @@ BOOL HLS_process_changes ( UINT opt )
         }
         SendMessage ( hwndEdit , SCI_GETTEXTRANGE , 0 , ( LPARAM ) &_hl_se_tr );
         //
-		if (case_compare(old_word, _hl_se_tr.lpstrText, _hl_se_mode_whole_word)) {
+		if (case_compare(old_word, _hl_se_tr.lpstrText, 0/*_hl_se_mode_whole_word*/)) {
+			HL_TRACE("case (%d) compare exit  ????????????????", _hl_se_mode_whole_word);
             goto _EXIT;
         }
     }
@@ -633,6 +634,7 @@ VOID HLS_Edit_selection_stop ( UINT mode )
         pos = SendMessage ( hwndEdit , SCI_GETCURRENTPOS , 0 , 0 );
         SendMessage ( hwndEdit , SCI_SETANCHOR , pos , 0 );
         b_HL_edit_selection = FALSE;
+		
         //
 		HLS_Highlight_turn();
         SendMessage ( hwndEdit , SCI_ENDUNDOACTION , 0, 0 );
