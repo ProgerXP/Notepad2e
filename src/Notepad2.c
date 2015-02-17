@@ -4262,15 +4262,18 @@ void LoadSettings()
 {
     WCHAR *pIniSection = LocalAlloc ( LPTR, sizeof ( WCHAR ) * 32 * 1024 );
     int   cchIniSection = ( int ) LocalSize ( pIniSection ) / sizeof ( WCHAR );
-    LoadIniSection ( L"Settings", pIniSection, cchIniSection );
+	LoadIniSection(L"Settings", pIniSection, cchIniSection);
+	WCHAR *pHlIniSection = LocalAlloc(LPTR, sizeof (WCHAR)* 32 * 1024);
+	int   cchHlIniSection = (int)LocalSize(pIniSection) / sizeof (WCHAR);
+	LoadIniSection(HL_INI_SECTION, pHlIniSection, cchHlIniSection);
     bSaveSettings =
-        IniSectionGetInt ( pIniSection, L"SaveSettings", 1 );
+		IniSectionGetInt(pHlIniSection, L"SaveSettings", 1);
     if ( bSaveSettings ) {
         bSaveSettings = 1;
     }
     // haccel
     b_HL_highlight_selection =
-        IniSectionGetInt ( pIniSection, L"HightLightSelection", 1 );
+		IniSectionGetInt(pHlIniSection, L"HightLightSelection", 1);
     if ( b_HL_highlight_selection ) {
         b_HL_highlight_selection = 1;
     }
@@ -4278,7 +4281,9 @@ void LoadSettings()
         IniSectionGetInt ( pIniSection, L"WheelScroll", 1 );
     if ( b_HL_ctrl_wheel_scroll ) {
         b_HL_ctrl_wheel_scroll = 1;
-    }
+	}
+	LocalFree(pHlIniSection);
+	pHlIniSection = NULL;
     //
     bSaveRecentFiles =
         IniSectionGetInt ( pIniSection, L"SaveRecentFiles", 0 );
@@ -4539,7 +4544,7 @@ void LoadSettings()
             wi.max = 1;
         }
     }
-    LocalFree ( pIniSection );
+	LocalFree(pIniSection);
     iDefaultCodePage = 0;
     {
         int acp = GetACP();

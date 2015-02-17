@@ -17,44 +17,39 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <PlatformToolset>v120_xp</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC70.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\bin</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bin\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
-    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" />
-    <CodeAnalysisRuleSet Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">AllRules.ruleset</CodeAnalysisRuleSet>
-    <CodeAnalysisRules Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <CodeAnalysisRuleAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectName)_d</TargetName>
+    <_ProjectFileVersion>12.0.21005.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>bin\</OutDir>
+    <IntDir>Debug\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>Release\</OutDir>
+    <IntDir>Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
     <GenerateManifest>false</GenerateManifest>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -65,22 +60,23 @@
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
     </ClCompile>
-    <Link>
-      <AdditionalDependencies>comctl32.lib;shlwapi.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>bin/Notepad2_d.exe</OutputFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
-      <ProgramDatabaseFile>$(OutDir)Notepad2.pdb</ProgramDatabaseFile>
-      <SubSystem>Windows</SubSystem>
-      <TargetMachine>MachineX86</TargetMachine>
-    </Link>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>comctl32.lib;shlwapi.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)Notepad2.exe</OutputFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)Notepad2.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -92,12 +88,13 @@
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader />
       <WarningLevel>Level3</WarningLevel>
-      <DebugInformationFormat>
-      </DebugInformationFormat>
+      <DebugInformationFormat />
     </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;shlwapi.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)Notepad2.exe</OutputFile>
@@ -105,18 +102,27 @@
       <SubSystem>Windows</SubSystem>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <RandomizedBaseAddress>false</RandomizedBaseAddress>
+      <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
-    <ResourceCompile>
-      <PreprocessorDefinitions>NDEBUG;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\Dialogs.c" />
+    <ClCompile Include="src\Dlapi.c" />
+    <ClCompile Include="src\Edit.c" />
+    <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="hl_helper.cpp" />
+    <ClCompile Include="src\HLSelection.c" />
+    <ClCompile Include="src\Notepad2.c" />
+    <ClCompile Include="src\Print.cpp" />
+    <ClCompile Include="src\Styles.c" />
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
     <ClCompile Include="scintilla\lexers\LexAbaqus.cxx" />
     <ClCompile Include="scintilla\lexers\LexAda.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAHK.cxx" />
     <ClCompile Include="scintilla\lexers\LexAPDL.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAsm.cxx" />
     <ClCompile Include="scintilla\lexers\LexAsn1.cxx" />
     <ClCompile Include="scintilla\lexers\LexASY.cxx" />
     <ClCompile Include="scintilla\lexers\LexAU3.cxx" />
@@ -131,8 +137,11 @@
     <ClCompile Include="scintilla\lexers\LexCmake.cxx" />
     <ClCompile Include="scintilla\lexers\LexCOBOL.cxx" />
     <ClCompile Include="scintilla\lexers\LexCoffeeScript.cxx" />
+    <ClCompile Include="scintilla\lexers\LexConf.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCPP.cxx" />
     <ClCompile Include="scintilla\lexers\LexCrontab.cxx" />
     <ClCompile Include="scintilla\lexers\LexCsound.cxx" />
+    <ClCompile Include="scintilla\lexers\LexCSS.cxx" />
     <ClCompile Include="scintilla\lexers\LexD.cxx" />
     <ClCompile Include="scintilla\lexers\LexECL.cxx" />
     <ClCompile Include="scintilla\lexers\LexEiffel.cxx" />
@@ -144,6 +153,7 @@
     <ClCompile Include="scintilla\lexers\LexGAP.cxx" />
     <ClCompile Include="scintilla\lexers\LexGui4Cli.cxx" />
     <ClCompile Include="scintilla\lexers\LexHaskell.cxx" />
+    <ClCompile Include="scintilla\lexers\LexHTML.cxx" />
     <ClCompile Include="scintilla\lexers\LexInno.cxx" />
     <ClCompile Include="scintilla\lexers\LexKix.cxx" />
     <ClCompile Include="scintilla\lexers\LexLaTeX.cxx" />
@@ -163,13 +173,18 @@
     <ClCompile Include="scintilla\lexers\LexNsis.cxx" />
     <ClCompile Include="scintilla\lexers\LexOpal.cxx" />
     <ClCompile Include="scintilla\lexers\LexOScript.cxx" />
+    <ClCompile Include="scintilla\lexers\LexOthers.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPascal.cxx" />
     <ClCompile Include="scintilla\lexers\LexPB.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPerl.cxx" />
     <ClCompile Include="scintilla\lexers\LexPLM.cxx" />
     <ClCompile Include="scintilla\lexers\LexPO.cxx" />
     <ClCompile Include="scintilla\lexers\LexPOV.cxx" />
     <ClCompile Include="scintilla\lexers\LexPowerPro.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPowerShell.cxx" />
     <ClCompile Include="scintilla\lexers\LexProgress.cxx" />
     <ClCompile Include="scintilla\lexers\LexPS.cxx" />
+    <ClCompile Include="scintilla\lexers\LexPython.cxx" />
     <ClCompile Include="scintilla\lexers\LexR.cxx" />
     <ClCompile Include="scintilla\lexers\LexRebol.cxx" />
     <ClCompile Include="scintilla\lexers\LexRuby.cxx" />
@@ -179,6 +194,7 @@
     <ClCompile Include="scintilla\lexers\LexSorcus.cxx" />
     <ClCompile Include="scintilla\lexers\LexSpecman.cxx" />
     <ClCompile Include="scintilla\lexers\LexSpice.cxx" />
+    <ClCompile Include="scintilla\lexers\LexSQL.cxx" />
     <ClCompile Include="scintilla\lexers\LexTACL.cxx" />
     <ClCompile Include="scintilla\lexers\LexTADS3.cxx" />
     <ClCompile Include="scintilla\lexers\LexTAL.cxx" />
@@ -186,30 +202,11 @@
     <ClCompile Include="scintilla\lexers\LexTCMD.cxx" />
     <ClCompile Include="scintilla\lexers\LexTeX.cxx" />
     <ClCompile Include="scintilla\lexers\LexTxt2tags.cxx" />
+    <ClCompile Include="scintilla\lexers\LexVB.cxx" />
     <ClCompile Include="scintilla\lexers\LexVerilog.cxx" />
     <ClCompile Include="scintilla\lexers\LexVHDL.cxx" />
     <ClCompile Include="scintilla\lexers\LexVisualProlog.cxx" />
     <ClCompile Include="scintilla\lexers\LexYAML.cxx" />
-    <ClCompile Include="src\Dialogs.c" />
-    <ClCompile Include="src\Dlapi.c" />
-    <ClCompile Include="src\Edit.c" />
-    <ClCompile Include="src\Helpers.c" />
-    <ClCompile Include="src\HLSelection.c" />
-    <ClCompile Include="src\Notepad2.c" />
-    <ClCompile Include="src\Print.cpp" />
-    <ClCompile Include="src\Styles.c" />
-    <ClCompile Include="scintilla\lexers\LexAsm.cxx" />
-    <ClCompile Include="scintilla\lexers\LexCPP.cxx" />
-    <ClCompile Include="scintilla\lexers\LexCSS.cxx" />
-    <ClCompile Include="scintilla\lexers\LexConf.cxx" />
-    <ClCompile Include="scintilla\lexers\LexHTML.cxx" />
-    <ClCompile Include="scintilla\lexers\LexOthers.cxx" />
-    <ClCompile Include="scintilla\lexers\LexPascal.cxx" />
-    <ClCompile Include="scintilla\lexers\LexPerl.cxx" />
-    <ClCompile Include="scintilla\lexers\LexPowerShell.cxx" />
-    <ClCompile Include="scintilla\lexers\LexPython.cxx" />
-    <ClCompile Include="scintilla\lexers\LexSQL.cxx" />
-    <ClCompile Include="scintilla\lexers\LexVB.cxx" />
     <ClCompile Include="scintilla\lexlib\Accessor.cxx" />
     <ClCompile Include="scintilla\lexlib\CharacterSet.cxx" />
     <ClCompile Include="scintilla\lexlib\LexerBase.cxx" />
@@ -251,9 +248,8 @@
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\HLSelection.h" />
     <ClInclude Include="src\Notepad2.h" />
-    <ClInclude Include="src\SciCall.h" />
-    <ClInclude Include="src\Styles.h" />
     <ClInclude Include="src\resource.h" />
+    <ClInclude Include="src\Styles.h" />
     <ClInclude Include="src\version.h" />
     <ClInclude Include="scintilla\include\ILexer.h" />
     <ClInclude Include="scintilla\include\Platform.h" />
@@ -289,35 +285,30 @@
     <ClInclude Include="scintilla\src\PositionCache.h" />
     <ClInclude Include="scintilla\src\RESearch.h" />
     <ClInclude Include="scintilla\src\RunStyles.h" />
-    <ClInclude Include="scintilla\src\SVector.h" />
     <ClInclude Include="scintilla\src\ScintillaBase.h" />
     <ClInclude Include="scintilla\src\Selection.h" />
     <ClInclude Include="scintilla\src\SplitVector.h" />
     <ClInclude Include="scintilla\src\Style.h" />
+    <ClInclude Include="scintilla\src\SVector.h" />
     <ClInclude Include="scintilla\src\UniConversion.h" />
     <ClInclude Include="scintilla\src\ViewStyle.h" />
     <ClInclude Include="scintilla\src\XPM.h" />
-    <CustomBuild Include="src\_version.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">print build time</Outputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">111</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\Copy.cur" />
-    <None Include="res\Encoding.bmp" />
     <None Include="res\Hover.cur" />
-    <None Include="res\Next.bmp" />
-    <None Include="res\Notepad2.ico" />
     <None Include="src\Notepad2.ver" />
-    <None Include="res\Open.bmp" />
-    <None Include="res\Pick.bmp" />
-    <None Include="res\Prev.bmp" />
-    <None Include="res\Run.ico" />
-    <None Include="res\Styles.ico" />
-    <None Include="res\Toolbar.bmp" />
-    <None Include="src\printtime.bat" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Encoding.bmp" />
+    <Image Include="res\Next.bmp" />
+    <Image Include="res\Notepad2.ico" />
+    <Image Include="res\Open.bmp" />
+    <Image Include="res\Pick.bmp" />
+    <Image Include="res\Prev.bmp" />
+    <Image Include="res\Run.ico" />
+    <Image Include="res\Styles.ico" />
+    <Image Include="res\Toolbar.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Notepad2.exe.manifest" />
