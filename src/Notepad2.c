@@ -5648,7 +5648,8 @@ BOOL FileSave ( BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy , BOOL
         if ( SaveFileDlg ( hwndMain, tchFile, COUNTOF ( tchFile ), tchInitialDir ) ) {
             HL_WTrace ( "SAVED PATH '%s'" , tchFile );
             //////////
-            if ( fSuccess = FileIO ( FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy ) ) {
+			if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)) {
+				*_hl_last_run = 0;
                 //
                 if ( bDeleteOld
                         && lstrlen ( szCurFile )
