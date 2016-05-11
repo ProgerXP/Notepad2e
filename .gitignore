@@ -5,4 +5,12 @@
 
 *.log
 .hg/
-/bin/Notepad2.ini
+
+/DTAR_08E86330_4835_4B5C_9E5A_61F37AE1A077_DTAR/
+/Backup/
+/Debug/
+/.vs/
+/obj/
+/Notepad2e_vs2015.VC.opendb
+/Notepad2e_vs2015.sdf
+/Release/
