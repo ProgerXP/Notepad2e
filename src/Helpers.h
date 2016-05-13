@@ -18,8 +18,6 @@
 *
 ******************************************************************************/
 
-
-
 extern HINSTANCE g_hInstance;
 extern UINT16 g_uWinVer;
 
@@ -28,12 +26,12 @@ extern UINT16 g_uWinVer;
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)
 #define CT_WARNING(M) message("\n\t** " M " => [ "__FILE__ ":" STRING(__LINE__) " ]  **\n")
-typedef enum CSS_PROP{
-	css_prop_sassy = 1 << 0,
-	css_prop_less = 1 << 1,
-	css_prop_hss = 1 << 2,
+typedef enum CSS_PROP
+{
+  css_prop_sassy = 1 << 0,
+  css_prop_less = 1 << 1,
+  css_prop_hss = 1 << 2,
 };
-
 
 extern WCHAR szIniFile[MAX_PATH];
 #define IniGetString(lpSection,lpName,lpDefault,lpReturnedStr,nSize) \
@@ -44,41 +42,39 @@ extern WCHAR szIniFile[MAX_PATH];
     WritePrivateProfileString(lpSection,lpName,lpString,szIniFile)
 #define IniDeleteSection(lpSection) \
     WritePrivateProfileSection(lpSection,NULL,szIniFile)
-__inline BOOL IniSetInt ( LPCWSTR lpSection, LPCWSTR lpName, int i )
+__inline BOOL IniSetInt(LPCWSTR lpSection, LPCWSTR lpName, int i)
 {
-    WCHAR tch[32];
-    wsprintf ( tch, L"%i", i );
-    return IniSetString ( lpSection, lpName, tch );
+  WCHAR tch[32];
+  wsprintf(tch, L"%i", i);
+  return IniSetString(lpSection, lpName, tch);
 }
 #define LoadIniSection(lpSection,lpBuf,cchBuf) \
     GetPrivateProfileSection(lpSection,lpBuf,cchBuf,szIniFile);
 #define SaveIniSection(lpSection,lpBuf) \
     WritePrivateProfileSection(lpSection,lpBuf,szIniFile)
-int IniSectionGetString ( LPCWSTR, LPCWSTR, LPCWSTR, LPWSTR, int );
-int IniSectionGetInt ( LPCWSTR, LPCWSTR, int );
-BOOL IniSectionSetString ( LPWSTR, LPCWSTR, LPCWSTR );
-__inline BOOL IniSectionSetInt ( LPWSTR lpCachedIniSection, LPCWSTR lpName, int i )
+int IniSectionGetString(LPCWSTR, LPCWSTR, LPCWSTR, LPWSTR, int);
+int IniSectionGetInt(LPCWSTR, LPCWSTR, int);
+BOOL IniSectionSetString(LPWSTR, LPCWSTR, LPCWSTR);
+__inline BOOL IniSectionSetInt(LPWSTR lpCachedIniSection, LPCWSTR lpName, int i)
 {
-    WCHAR tch[32];
-    wsprintf ( tch, L"%i", i );
-    return IniSectionSetString ( lpCachedIniSection, lpName, tch );
+  WCHAR tch[32];
+  wsprintf(tch, L"%i", i);
+  return IniSectionSetString(lpCachedIniSection, lpName, tch);
 }
-
 
 extern HWND hwndEdit;
 
 __inline void BeginWaitCursor()
 {
-    SendMessage ( hwndEdit, SCI_SETCURSOR, ( WPARAM ) SC_CURSORWAIT, 0 );
+  SendMessage(hwndEdit, SCI_SETCURSOR, (WPARAM)SC_CURSORWAIT, 0);
 }
 __inline void EndWaitCursor()
 {
-    POINT pt;
-    SendMessage ( hwndEdit, SCI_SETCURSOR, ( WPARAM ) SC_CURSORNORMAL, 0 );
-    GetCursorPos ( &pt );
-    SetCursorPos ( pt.x, pt.y );
+  POINT pt;
+  SendMessage(hwndEdit, SCI_SETCURSOR, (WPARAM)SC_CURSORNORMAL, 0);
+  GetCursorPos(&pt);
+  SetCursorPos(pt.x, pt.y);
 }
-
 
 #define Is2k()    (g_uWinVer >= 0x0500)
 #define IsXP()    (g_uWinVer >= 0x0501)
@@ -88,44 +84,40 @@ __inline void EndWaitCursor()
 #define	HL_MAX_PATH_N_CMD_LINE	MAX_PATH + 40
 
 BOOL PrivateIsAppThemed();
-HRESULT PrivateSetCurrentProcessExplicitAppUserModelID ( PCWSTR );
+HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCWSTR);
 BOOL IsElevated();
 //BOOL SetExplorerTheme(HWND);
 
+BOOL BitmapMergeAlpha(HBITMAP, COLORREF);
+BOOL BitmapAlphaBlend(HBITMAP, COLORREF, BYTE);
+BOOL BitmapGrayScale(HBITMAP);
+BOOL VerifyContrast(COLORREF, COLORREF);
+BOOL IsFontAvailable(LPCWSTR);
 
-BOOL BitmapMergeAlpha ( HBITMAP, COLORREF );
-BOOL BitmapAlphaBlend ( HBITMAP, COLORREF, BYTE );
-BOOL BitmapGrayScale ( HBITMAP );
-BOOL VerifyContrast ( COLORREF, COLORREF );
-BOOL IsFontAvailable ( LPCWSTR );
+BOOL SetWindowTitle(HWND, UINT, BOOL, UINT, LPCWSTR, int, BOOL, UINT, BOOL, LPCWSTR);
+void SetWindowTransparentMode(HWND, BOOL);
 
-
-BOOL SetWindowTitle ( HWND, UINT, BOOL, UINT, LPCWSTR, int, BOOL, UINT, BOOL, LPCWSTR );
-void SetWindowTransparentMode ( HWND, BOOL );
-
-
-void CenterDlgInParent ( HWND );
-void GetDlgPos ( HWND, LPINT, LPINT );
-void SetDlgPos ( HWND, int, int );
-void ResizeDlg_Init ( HWND, int, int, int );
-void ResizeDlg_Destroy ( HWND, int *, int * );
-void ResizeDlg_Size ( HWND, LPARAM, int *, int * );
-void ResizeDlg_GetMinMaxInfo ( HWND, LPARAM );
-HDWP DeferCtlPos ( HDWP, HWND, int, int, int, UINT );
-void MakeBitmapButton ( HWND, int, HINSTANCE, UINT );
-void MakeColorPickButton ( HWND, int, HINSTANCE, COLORREF );
-void DeleteBitmapButton ( HWND, int );
-
+void CenterDlgInParent(HWND);
+void GetDlgPos(HWND, LPINT, LPINT);
+void SetDlgPos(HWND, int, int);
+void ResizeDlg_Init(HWND, int, int, int);
+void ResizeDlg_Destroy(HWND, int *, int *);
+void ResizeDlg_Size(HWND, LPARAM, int *, int *);
+void ResizeDlg_GetMinMaxInfo(HWND, LPARAM);
+HDWP DeferCtlPos(HDWP, HWND, int, int, int, UINT);
+void MakeBitmapButton(HWND, int, HINSTANCE, UINT);
+void MakeColorPickButton(HWND, int, HINSTANCE, COLORREF);
+void DeleteBitmapButton(HWND, int);
 
 #define StatusSetSimple(hwnd,b) SendMessage(hwnd,SB_SIMPLE,(WPARAM)b,0)
-BOOL StatusSetText ( HWND, UINT, LPCWSTR );
-BOOL StatusSetTextID ( HWND, UINT, UINT );
-int  StatusCalcPaneWidth ( HWND, LPCWSTR );
+BOOL StatusSetText(HWND, UINT, LPCWSTR);
+BOOL StatusSetTextID(HWND, UINT, UINT);
+int  StatusCalcPaneWidth(HWND, LPCWSTR);
 
-int Toolbar_GetButtons ( HWND, int, LPWSTR, int );
-int Toolbar_SetButtons ( HWND, int, LPCWSTR, void *, int );
+int Toolbar_GetButtons(HWND, int, LPWSTR, int);
+int Toolbar_SetButtons(HWND, int, LPCWSTR, void *, int);
 
-LRESULT SendWMSize ( HWND );
+LRESULT SendWMSize(HWND);
 
 #define EnableCmd(hmenu,id,b) EnableMenuItem(hmenu,id,(b)\
         ?MF_BYCOMMAND|MF_ENABLED:MF_BYCOMMAND|MF_GRAYED)
@@ -133,147 +125,134 @@ LRESULT SendWMSize ( HWND );
 #define CheckCmd(hmenu,id,b)  CheckMenuItem(hmenu,id,(b)\
         ?MF_BYCOMMAND|MF_CHECKED:MF_BYCOMMAND|MF_UNCHECKED)
 
-BOOL IsCmdEnabled ( HWND, UINT );
-
+BOOL IsCmdEnabled(HWND, UINT);
 
 #define GetString(id,pb,cb) LoadString(g_hInstance,id,pb,cb)
 
 #define StrEnd(pStart) (pStart + lstrlen(pStart))
 
-int FormatString ( LPWSTR, int, UINT, ... );
+int FormatString(LPWSTR, int, UINT, ...);
 
+void PathRelativeToApp(LPWSTR, LPWSTR, int, BOOL, BOOL, BOOL);
+void PathAbsoluteFromApp(LPWSTR, LPWSTR, int, BOOL);
 
-void PathRelativeToApp ( LPWSTR, LPWSTR, int, BOOL, BOOL, BOOL );
-void PathAbsoluteFromApp ( LPWSTR, LPWSTR, int, BOOL );
+BOOL PathIsLnkFile(LPCWSTR);
+BOOL PathGetLnkPath(LPCWSTR, LPWSTR, int);
+BOOL PathIsLnkToDirectory(LPCWSTR, LPWSTR, int);
+BOOL PathCreateDeskLnk(LPCWSTR);
+BOOL PathCreateFavLnk(LPCWSTR, LPCWSTR, LPCWSTR);
 
+BOOL StrLTrim(LPWSTR, LPCWSTR);
+BOOL TrimString(LPWSTR);
+BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
 
-BOOL PathIsLnkFile ( LPCWSTR );
-BOOL PathGetLnkPath ( LPCWSTR, LPWSTR, int );
-BOOL PathIsLnkToDirectory ( LPCWSTR, LPWSTR, int );
-BOOL PathCreateDeskLnk ( LPCWSTR );
-BOOL PathCreateFavLnk ( LPCWSTR, LPCWSTR, LPCWSTR );
+void PrepareFilterStr(LPWSTR);
 
+void StrTab2Space(LPWSTR);
+void PathFixBackslashes(LPWSTR);
 
-BOOL StrLTrim ( LPWSTR, LPCWSTR );
-BOOL TrimString ( LPWSTR );
-BOOL ExtractFirstArgument ( LPCWSTR, LPWSTR, LPWSTR );
+void  ExpandEnvironmentStringsEx(LPWSTR, DWORD);
+void  PathCanonicalizeEx(LPWSTR);
+DWORD GetLongPathNameEx(LPWSTR, DWORD);
+DWORD_PTR SHGetFileInfo2(LPCWSTR, DWORD, SHFILEINFO *, UINT, UINT);
 
-void PrepareFilterStr ( LPWSTR );
-
-void StrTab2Space ( LPWSTR );
-void PathFixBackslashes ( LPWSTR );
-
-
-void  ExpandEnvironmentStringsEx ( LPWSTR, DWORD );
-void  PathCanonicalizeEx ( LPWSTR );
-DWORD GetLongPathNameEx ( LPWSTR, DWORD );
-DWORD_PTR SHGetFileInfo2 ( LPCWSTR, DWORD, SHFILEINFO *, UINT, UINT );
-
-
-int  FormatNumberStr ( LPWSTR );
-BOOL SetDlgItemIntEx ( HWND, int, UINT );
-
+int  FormatNumberStr(LPWSTR);
+BOOL SetDlgItemIntEx(HWND, int, UINT);
 
 #define MBCSToWChar(c,a,w,i) MultiByteToWideChar(c,0,a,-1,w,i)
 #define WCharToMBCS(c,w,a,i) WideCharToMultiByte(c,0,w,-1,a,i,NULL,NULL)
 
-UINT    GetDlgItemTextA2W ( UINT, HWND, int, LPSTR, int );
-UINT    SetDlgItemTextA2W ( UINT, HWND, int, LPSTR );
-LRESULT ComboBox_AddStringA2W ( UINT, HWND, LPCSTR );
+UINT    GetDlgItemTextA2W(UINT, HWND, int, LPSTR, int);
+UINT    SetDlgItemTextA2W(UINT, HWND, int, LPSTR);
+LRESULT ComboBox_AddStringA2W(UINT, HWND, LPCSTR);
 
-
-UINT CodePageFromCharSet ( UINT );
-
+UINT CodePageFromCharSet(UINT);
 
 //==== MRU Functions ==========================================================
 #define MRU_MAXITEMS 24
 #define MRU_NOCASE    1
 #define MRU_UTF8      2
 
-typedef struct _mrulist {
-
-    WCHAR  szRegKey[256];
-    int   iFlags;
-    int   iSize;
-    LPWSTR pszItems[MRU_MAXITEMS];
-
+typedef struct _mrulist
+{
+  WCHAR  szRegKey[256];
+  int   iFlags;
+  int   iSize;
+  LPWSTR pszItems[MRU_MAXITEMS];
 } MRULIST, *PMRULIST, *LPMRULIST;
 
-LPMRULIST MRU_Create ( LPCWSTR, int, int );
-BOOL      MRU_Destroy ( LPMRULIST );
-BOOL      MRU_Add ( LPMRULIST, LPCWSTR );
-BOOL      MRU_AddFile ( LPMRULIST, LPCWSTR, BOOL, BOOL );
-BOOL      MRU_Delete ( LPMRULIST, int );
-BOOL      MRU_DeleteFileFromStore ( LPMRULIST, LPCWSTR );
-BOOL      MRU_Empty ( LPMRULIST );
-int       MRU_Enum ( LPMRULIST, int, LPWSTR, int );
-BOOL      MRU_Load ( LPMRULIST );
-BOOL      MRU_Save ( LPMRULIST );
-BOOL      MRU_MergeSave ( LPMRULIST, BOOL, BOOL, BOOL );
-
+LPMRULIST MRU_Create(LPCWSTR, int, int);
+BOOL      MRU_Destroy(LPMRULIST);
+BOOL      MRU_Add(LPMRULIST, LPCWSTR);
+BOOL      MRU_AddFile(LPMRULIST, LPCWSTR, BOOL, BOOL);
+BOOL      MRU_Delete(LPMRULIST, int);
+BOOL      MRU_DeleteFileFromStore(LPMRULIST, LPCWSTR);
+BOOL      MRU_Empty(LPMRULIST);
+int       MRU_Enum(LPMRULIST, int, LPWSTR, int);
+BOOL      MRU_Load(LPMRULIST);
+BOOL      MRU_Save(LPMRULIST);
+BOOL      MRU_MergeSave(LPMRULIST, BOOL, BOOL, BOOL);
 
 //==== Themed Dialogs =========================================================
 #ifndef DLGTEMPLATEEX
 #pragma pack(push, 1)
-typedef struct {
-    WORD      dlgVer;
-    WORD      signature;
-    DWORD     helpID;
-    DWORD     exStyle;
-    DWORD     style;
-    WORD      cDlgItems;
-    short     x;
-    short     y;
-    short     cx;
-    short     cy;
+typedef struct
+{
+  WORD      dlgVer;
+  WORD      signature;
+  DWORD     helpID;
+  DWORD     exStyle;
+  DWORD     style;
+  WORD      cDlgItems;
+  short     x;
+  short     y;
+  short     cx;
+  short     cy;
 } DLGTEMPLATEEX;
 #pragma pack(pop)
 #endif
 
-BOOL GetThemedDialogFont ( LPWSTR, WORD * );
-DLGTEMPLATE *LoadThemedDialogTemplate ( LPCTSTR, HINSTANCE );
+BOOL GetThemedDialogFont(LPWSTR, WORD *);
+DLGTEMPLATE *LoadThemedDialogTemplate(LPCTSTR, HINSTANCE);
 #define ThemedDialogBox(hInstance,lpTemplate,hWndParent,lpDialogFunc) \
     ThemedDialogBoxParam(hInstance,lpTemplate,hWndParent,lpDialogFunc,0)
-INT_PTR ThemedDialogBoxParam ( HINSTANCE, LPCTSTR, HWND, DLGPROC, LPARAM );
-HWND    CreateThemedDialogParam ( HINSTANCE, LPCTSTR, HWND, DLGPROC, LPARAM );
-
+INT_PTR ThemedDialogBoxParam(HINSTANCE, LPCTSTR, HWND, DLGPROC, LPARAM);
+HWND    CreateThemedDialogParam(HINSTANCE, LPCTSTR, HWND, DLGPROC, LPARAM);
 
 //==== UnSlash Functions ======================================================
-void TransformBackslashes ( char *, BOOL, UINT );
-
+void TransformBackslashes(char *, BOOL, UINT);
 
 //==== MinimizeToTray Functions - see comments in Helpers.c ===================
-BOOL GetDoAnimateMinimize ( VOID );
-VOID MinimizeWndToTray ( HWND hWnd );
-VOID RestoreWndFromTray ( HWND hWnd );
-
+BOOL GetDoAnimateMinimize(VOID);
+VOID MinimizeWndToTray(HWND hWnd);
+VOID RestoreWndFromTray(HWND hWnd);
 
 //============== haccel work
 VOID	HL_Init(HWND hwnd);
 VOID	HL_Release();
-VOID	HL_Trace ( const char *fmt , ... );
-VOID	HL_WTrace ( const char *fmt , LPCWSTR word );
-VOID	HL_WTrace2 ( const char *fmt , LPCWSTR word1 , LPCWSTR word2 );
-BOOL	HL_Is_Empty(LPCWSTR txt );
-BOOL	HL_Get_goto_number ( LPTSTR txt , int *out , BOOL hex );
-VOID	HL_Set_wheel_scroll ( BOOL on );
+VOID	HL_Trace(const char *fmt, ...);
+VOID	HL_WTrace(const char *fmt, LPCWSTR word);
+VOID	HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2);
+BOOL	HL_Is_Empty(LPCWSTR txt);
+BOOL	HL_Get_goto_number(LPTSTR txt, int *out, BOOL hex);
+VOID	HL_Set_wheel_scroll(BOOL on);
 VOID	HL_Reload_Settings();
-VOID	HL_Get_last_dir( LPTSTR out );
+VOID	HL_Get_last_dir(LPTSTR out);
 void	HL_inplace_rev(WCHAR * s);
-BOOL	HL_Explorer_cxt_menu(LPCWSTR path , void * parentWindow);
+BOOL	HL_Explorer_cxt_menu(LPCWSTR path, void * parentWindow);
 UINT_PTR CALLBACK HL_OFN__hook_proc(
-	HWND hdlg,
-	UINT uiMsg,
-	WPARAM wParam,
-	LPARAM lParam
-	);
+  HWND hdlg,
+  UINT uiMsg,
+  WPARAM wParam,
+  LPARAM lParam
+  );
 
-VOID	HL_Move_Carret_Silently( BOOL up );
+VOID	HL_Move_Carret_Silently(BOOL up);
 
 VOID	HL_Grep(VOID* lpf, BOOL grep);
 
 void*	HL_Alloc(size_t);
-void*	HL_Realloc(void*,size_t);
+void*	HL_Realloc(void*, size_t);
 void	HL_Free(void*);
 int		HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2);
 BOOL	hl_iswordchar(WCHAR ch);
@@ -289,8 +268,8 @@ BOOL	hl_isspace(WCHAR ch);
 #else
 #define HL_TRACE(FMT,...)	 (void)(FMT);
 #define HL_TRACE_S(OBJ)		(void)(OBJ);
-#define HL_TRACE_I(OBJ)		(void)(OBJ);	
-#define HL_TRACE_TR(OBJ)		(void)(OBJ);	
+#define HL_TRACE_I(OBJ)		(void)(OBJ);
+#define HL_TRACE_TR(OBJ)		(void)(OBJ);
 #endif
 
 ///   End of Helpers.h   \\\

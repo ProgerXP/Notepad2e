@@ -18,12 +18,9 @@
 *
 ******************************************************************************/
 
-
-
 // extern "C" declarations of Scintilla functions
 BOOL Scintilla_RegisterClasses(void*);
 BOOL Scintilla_ReleaseResources();
-
 
 typedef struct _editfindreplace
 {
@@ -43,20 +40,16 @@ typedef struct _editfindreplace
 #endif
   //HANDLE hMRUFind;
   //HANDLE hMRUReplace;
-
 } EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;
-
 
 #define IDMSG_SWITCHTOFIND    300
 #define IDMSG_SWITCHTOREPLACE 301
-
 
 #define ALIGN_LEFT       0
 #define ALIGN_RIGHT      1
 #define ALIGN_CENTER     2
 #define ALIGN_JUSTIFY    3
 #define ALIGN_JUSTIFY_EX 4
-
 
 #define SORT_ASCENDING  0
 #define SORT_DESCENDING 1
@@ -68,16 +61,15 @@ typedef struct _editfindreplace
 #define SORT_LOGICAL   64
 #define SORT_COLUMN   128
 
-
 HWND  EditCreate(HWND);
-void  EditSetNewText(HWND,char*,DWORD);
-BOOL  EditConvertText(HWND,UINT,UINT,BOOL);
-BOOL  EditSetNewEncoding(HWND,int,int,BOOL,BOOL);
+void  EditSetNewText(HWND, char*, DWORD);
+BOOL  EditConvertText(HWND, UINT, UINT, BOOL);
+BOOL  EditSetNewEncoding(HWND, int, int, BOOL, BOOL);
 char* EditGetClipboardText(HWND);
 BOOL  EditCopyAppend(HWND);
-int   EditDetectEOLMode(HWND,char*,DWORD);
-BOOL  EditLoadFile(HWND,LPCWSTR,BOOL,int*,int*,BOOL*,BOOL*);
-BOOL  EditSaveFile(HWND,LPCWSTR,int,BOOL*,BOOL);
+int   EditDetectEOLMode(HWND, char*, DWORD);
+BOOL  EditLoadFile(HWND, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*);
+BOOL  EditSaveFile(HWND, LPCWSTR, int, BOOL*, BOOL);
 
 void  EditInvertCase(HWND);
 void  EditTitleCase(HWND);
@@ -89,57 +81,57 @@ void  EditEscapeCChars(HWND);
 void  EditUnescapeCChars(HWND);
 void  EditChar2Hex(HWND);
 void  EditHex2Char(HWND);
-void  EditModifyNumber(HWND,BOOL);
+void  EditModifyNumber(HWND, BOOL);
 
-void  EditTabsToSpaces(HWND,int,BOOL);
-void  EditSpacesToTabs(HWND,int,BOOL);
+void  EditTabsToSpaces(HWND, int, BOOL);
+void  EditSpacesToTabs(HWND, int, BOOL);
 
 void  EditMoveUp(HWND);
 void  EditMoveDown(HWND);
-void  EditModifyLines(HWND,LPCWSTR,LPCWSTR);
-void  EditAlignText(HWND,int);
-void  EditEncloseSelection(HWND,LPCWSTR,LPCWSTR);
-void  EditToggleLineComments(HWND,LPCWSTR,BOOL);
-void  EditPadWithSpaces(HWND,BOOL,BOOL);
+void  EditModifyLines(HWND, LPCWSTR, LPCWSTR);
+void  EditAlignText(HWND, int);
+void  EditEncloseSelection(HWND, LPCWSTR, LPCWSTR);
+void  EditToggleLineComments(HWND, LPCWSTR, BOOL);
+void  EditPadWithSpaces(HWND, BOOL, BOOL);
 void  EditStripFirstCharacter(HWND);
 void  EditStripLastCharacter(HWND);
-void  EditStripTrailingBlanks(HWND,BOOL);
+void  EditStripTrailingBlanks(HWND, BOOL);
 void  EditCompressSpaces(HWND);
-void  EditRemoveBlankLines(HWND,BOOL);
-void  EditWrapToColumn(HWND,int);
+void  EditRemoveBlankLines(HWND, BOOL);
+void  EditWrapToColumn(HWND, int);
 void  EditJoinLinesEx(HWND);
-void  EditSortLines(HWND,int);
+void  EditSortLines(HWND, int);
 
-void  HL_Jump_offset(HWND,int);
-void  HL_Get_offset(HWND,int*);
+void  HL_Jump_offset(HWND, int);
+void  HL_Get_offset(HWND, int*);
 void  HL_Find_next_word(HWND, LPCEDITFINDREPLACE, BOOL);
-BOOL  HL_Open_nextFs_file(HWND,LPCWSTR,BOOL);
+BOOL  HL_Open_nextFs_file(HWND, LPCWSTR, BOOL);
 void  HL_Strip_html_tags(HWND hwndEdit);
 void  HL_Escape_html(HWND hwnd);
 void  HL_Unwrap_selection(HWND hwnd, BOOL);
 
-void  EditJumpTo(HWND,int,int);
-void  EditSelectEx(HWND,int,int);
+void  EditJumpTo(HWND, int, int);
+void  EditSelectEx(HWND, int, int);
 void  EditFixPositions(HWND);
 void  EditEnsureSelectionVisible(HWND);
-void  EditGetExcerpt(HWND,LPWSTR,DWORD);
+void  EditGetExcerpt(HWND, LPWSTR, DWORD);
 
-HWND  EditFindReplaceDlg(HWND,LPCEDITFINDREPLACE,BOOL);
-BOOL  EditFindNext(HWND,LPCEDITFINDREPLACE,BOOL);
-BOOL  EditFindPrev(HWND,LPCEDITFINDREPLACE,BOOL);
-BOOL  EditReplace(HWND,LPCEDITFINDREPLACE);
-BOOL  EditReplaceAll(HWND,LPCEDITFINDREPLACE,BOOL);
-BOOL  EditReplaceAllInSelection(HWND,LPCEDITFINDREPLACE,BOOL);
+HWND  EditFindReplaceDlg(HWND, LPCEDITFINDREPLACE, BOOL);
+BOOL  EditFindNext(HWND, LPCEDITFINDREPLACE, BOOL);
+BOOL  EditFindPrev(HWND, LPCEDITFINDREPLACE, BOOL);
+BOOL  EditReplace(HWND, LPCEDITFINDREPLACE);
+BOOL  EditReplaceAll(HWND, LPCEDITFINDREPLACE, BOOL);
+BOOL  EditReplaceAllInSelection(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditLinenumDlg(HWND);
-BOOL  EditModifyLinesDlg(HWND,LPWSTR,LPWSTR);
-BOOL  EditEncloseSelectionDlg(HWND,LPWSTR,LPWSTR);
-BOOL  EditInsertTagDlg(HWND,LPWSTR,LPWSTR);
-BOOL  EditSortDlg(HWND,int*);
-BOOL  EditAlignDlg(HWND,int*);
-BOOL  EditPrint(HWND,LPCWSTR,LPCWSTR);
+BOOL  EditModifyLinesDlg(HWND, LPWSTR, LPWSTR);
+BOOL  EditEncloseSelectionDlg(HWND, LPWSTR, LPWSTR);
+BOOL  EditInsertTagDlg(HWND, LPWSTR, LPWSTR);
+BOOL  EditSortDlg(HWND, int*);
+BOOL  EditAlignDlg(HWND, int*);
+BOOL  EditPrint(HWND, LPCWSTR, LPCWSTR);
 void  EditPrintSetup(HWND);
 void  EditPrintInit();
-void  EditMarkAll(HWND,int,BOOL,BOOL);
+void  EditMarkAll(HWND, int, BOOL, BOOL);
 void  CompleteWord(HWND, BOOL);
 
 extern int g_DOSEncoding;
@@ -167,7 +159,8 @@ extern int g_DOSEncoding;
 #define IDS_ENCODINGNAME0  61000
 #define IDS_EOLMODENAME0   62000
 
-typedef struct _np2encoding {
+typedef struct _np2encoding
+{
   UINT    uFlags;
   UINT    uCodePage;
   char*   pszParseNames;
@@ -176,24 +169,22 @@ typedef struct _np2encoding {
 } NP2ENCODING;
 
 void Encoding_InitDefaults();
-int  Encoding_MapIniSetting(BOOL,int);
+int  Encoding_MapIniSetting(BOOL, int);
 void Encoding_GetLabel(int);
 int  Encoding_MatchW(LPCWSTR);
 int  Encoding_MatchA(char*);
 BOOL Encoding_IsValid(int);
-void Encoding_AddToListView(HWND,int,BOOL);
-BOOL Encoding_GetFromListView(HWND,int *);
-void Encoding_AddToComboboxEx(HWND,int,BOOL);
-BOOL Encoding_GetFromComboboxEx(HWND,int *);
+void Encoding_AddToListView(HWND, int, BOOL);
+BOOL Encoding_GetFromListView(HWND, int *);
+void Encoding_AddToComboboxEx(HWND, int, BOOL);
+BOOL Encoding_GetFromComboboxEx(HWND, int *);
 
-BOOL IsUnicode(const char*,int,LPBOOL,LPBOOL);
-BOOL IsUTF8(const char*,int);
-BOOL IsUTF7(const char*,int);
-
+BOOL IsUnicode(const char*, int, LPBOOL, LPBOOL);
+BOOL IsUTF8(const char*, int);
+BOOL IsUTF7(const char*, int);
 
 //void SciInitThemes(HWND);
 //LRESULT CALLBACK SciThemedWndProc(HWND,UINT,WPARAM,LPARAM);
-
 
 #define FV_TABWIDTH        1
 #define FV_INDENTWIDTH     2
@@ -204,8 +195,8 @@ BOOL IsUTF7(const char*,int);
 #define FV_ENCODING       64
 #define FV_MODE          128
 
-typedef struct _filevars {
-
+typedef struct _filevars
+{
   int mask;
   int iTabWidth;
   int iIndentWidth;
@@ -216,13 +207,12 @@ typedef struct _filevars {
   char tchEncoding[32];
   int  iEncoding;
   char tchMode[32];
-
 } FILEVARS, *LPFILEVARS;
 
-BOOL FileVars_Init(char*,DWORD,LPFILEVARS);
-BOOL FileVars_Apply(HWND,LPFILEVARS);
-BOOL FileVars_ParseInt(char*,char*,int*);
-BOOL FileVars_ParseStr(char*,char*,char*,int);
+BOOL FileVars_Init(char*, DWORD, LPFILEVARS);
+BOOL FileVars_Apply(HWND, LPFILEVARS);
+BOOL FileVars_ParseInt(char*, char*, int*);
+BOOL FileVars_ParseStr(char*, char*, char*, int);
 BOOL FileVars_IsUTF8(LPFILEVARS);
 BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
