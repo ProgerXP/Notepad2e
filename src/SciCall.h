@@ -13,7 +13,6 @@
 *
 ******************************************************************************/
 
-
 //=============================================================================
 //
 //  g_hScintilla
@@ -21,10 +20,10 @@
 //
 extern HANDLE g_hScintilla;
 
-__forceinline void InitScintillaHandle(HWND hwnd) {
+__forceinline void InitScintillaHandle(HWND hwnd)
+{
   g_hScintilla = (HANDLE)SendMessage(hwnd, SCI_GETDIRECTPOINTER, 0, 0);
 }
-
 
 //=============================================================================
 //
@@ -33,7 +32,6 @@ __forceinline void InitScintillaHandle(HWND hwnd) {
 //
 LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
 #define SciCall(m, w, l) Scintilla_DirectFunction(g_hScintilla, m, w, l)
-
 
 //=============================================================================
 //
@@ -69,7 +67,6 @@ __forceinline LRESULT SciCall_##fn(type1 var1, type2 var2) {       \
   return(SciCall(SCI_##msg, (WPARAM)(var1), (LPARAM)(var2)));      \
 }
 
-
 //=============================================================================
 //
 //  Selection and information
@@ -82,7 +79,6 @@ DeclareSciCallV1(GotoLine, GOTOLINE, int, line);
 DeclareSciCallR0(GetCurrentPos, GETCURRENTPOS, int);
 DeclareSciCallR1(LineFromPosition, LINEFROMPOSITION, int, int, position);
 
-
 //=============================================================================
 //
 //  Scrolling and automatic scrolling
@@ -92,7 +88,6 @@ DeclareSciCallV0(ScrollCaret, SCROLLCARET);
 DeclareSciCallV2(SetXCaretPolicy, SETXCARETPOLICY, int, caretPolicy, int, caretSlop);
 DeclareSciCallV2(SetYCaretPolicy, SETYCARETPOLICY, int, caretPolicy, int, caretSlop);
 
-
 //=============================================================================
 //
 //  Style definition
@@ -100,7 +95,6 @@ DeclareSciCallV2(SetYCaretPolicy, SETYCARETPOLICY, int, caretPolicy, int, caretS
 //
 DeclareSciCallR1(StyleGetFore, STYLEGETFORE, COLORREF, int, styleNumber);
 DeclareSciCallR1(StyleGetBack, STYLEGETBACK, COLORREF, int, styleNumber);
-
 
 //=============================================================================
 //
@@ -114,7 +108,6 @@ DeclareSciCallV2(SetMarginSensitive, SETMARGINSENSITIVEN, int, margin, BOOL, sen
 DeclareSciCallV2(SetFoldMarginColour, SETFOLDMARGINCOLOUR, BOOL, useSetting, COLORREF, colour);
 DeclareSciCallV2(SetFoldMarginHiColour, SETFOLDMARGINHICOLOUR, BOOL, useSetting, COLORREF, colour);
 
-
 //=============================================================================
 //
 //  Markers
@@ -123,7 +116,6 @@ DeclareSciCallV2(SetFoldMarginHiColour, SETFOLDMARGINHICOLOUR, BOOL, useSetting,
 DeclareSciCallV2(MarkerDefine, MARKERDEFINE, int, markerNumber, int, markerSymbols);
 DeclareSciCallV2(MarkerSetFore, MARKERSETFORE, int, markerNumber, COLORREF, colour);
 DeclareSciCallV2(MarkerSetBack, MARKERSETBACK, int, markerNumber, COLORREF, colour);
-
 
 //=============================================================================
 //
@@ -137,7 +129,6 @@ DeclareSciCallR1(GetFoldParent, GETFOLDPARENT, int, int, line);
 DeclareSciCallR1(GetFoldExpanded, GETFOLDEXPANDED, int, int, line);
 DeclareSciCallV1(ToggleFold, TOGGLEFOLD, int, line);
 DeclareSciCallV1(EnsureVisible, ENSUREVISIBLE, int, line);
-
 
 //=============================================================================
 //
