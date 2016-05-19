@@ -45,7 +45,7 @@ KEYWORDLIST KeyWords_NULL ={
 
 EDITLEXER lexDefault ={SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; log; asc; doc; diz; nfo", L"", &KeyWords_NULL, {
   /*  0 */ { STYLE_DEFAULT, 63100, L"Default Style", L"font:Lucida Console; size:10", L"" },
-  /*  1 */ { STYLE_LINENUMBER, 63101, L"Margins and Line Numbers", L"size:-2; fore:#FF0000", L"" },
+  /*  1 */ { STYLE_LINENUMBER, 63101, L"Margins and Line Numbers", L"fore:#000000;", L"" },
   /*  2 */ { STYLE_BRACELIGHT, 63102, L"Matching Braces", L"size:+1; bold; fore:#FF0000", L"" },
   /*  3 */ { STYLE_BRACEBAD, 63103, L"Matching Braces Error", L"size:+1; bold; fore:#000080", L"" },
   /*  4 */ { STYLE_CONTROLCHAR, 63104, L"Control Characters (Font)", L"size:-1", L"" },
@@ -1034,9 +1034,12 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
     &lexRUBY
 };
 
+#define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"
+
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
+COLORREF crLineIndex;
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
@@ -1078,20 +1081,13 @@ void Style_Load()
   crCustom[14] = RGB(0xB0, 0x00, 0xB0);
   crCustom[15] = RGB(0xB2, 0x8B, 0x40);
   LoadIniSection(L"Custom Colors", pIniSection, cchIniSection);
-  for (i = 0; i < 16; i++) {
-    int itok;
-    int irgb;
-    WCHAR wch[32];
-    wsprintf(tch, L"%02i", i + 1);
-    if (IniSectionGetString(pIniSection, tch, L"", wch, COUNTOF(wch))) {
-      if (wch[0] == L'#') {
-        itok = swscanf(CharNext(wch), L"%x", &irgb);
-        if (itok == 1) {
-          crCustom[i] = RGB((irgb & 0xFF0000) >> 16, (irgb & 0xFF00) >> 8, irgb & 0xFF);
-        }
-      }
-    }
+  for (i = 0; i < 16; i++)
+  {
+	  wsprintf(tch, L"%02i", i + 1);
+	  crCustom[i] = IniSectionGetColor(pIniSection, tch);
   }
+  crLineIndex = IniSectionGetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR);
+
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
@@ -1135,12 +1131,10 @@ void Style_Save()
   int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   // Custom colors
   for (i = 0; i < 16; i++) {
-    WCHAR wch[32];
     wsprintf(tch, L"%02i", i + 1);
-    wsprintf(wch, L"#%02X%02X%02X",
-             (int)GetRValue(crCustom[i]), (int)GetGValue(crCustom[i]), (int)GetBValue(crCustom[i]));
-    IniSectionSetString(pIniSection, tch, wch);
+	IniSectionSetColor(pIniSection, tch, crCustom[i]);
   }
+  IniSectionSetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR, crLineIndex);
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
   // auto select
@@ -2001,6 +1995,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     }
   }
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
+  SendMessage(hwnd, SCI_STYLESETFORE, STYLE_LINENUMBER, crLineIndex);
   // Save current lexer
   pLexCurrent = pLexNew;
 #endif

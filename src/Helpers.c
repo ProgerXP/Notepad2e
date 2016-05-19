@@ -133,6 +133,32 @@ int IniSectionGetInt(
   return (iDefault);
 }
 
+COLORREF IniSectionGetColor(LPCWSTR lpSection, LPCWSTR lpName)
+{
+	COLORREF res = DEFAULT_INI_COLOR;
+	WCHAR wch[32];
+	if (IniSectionGetString(lpSection, lpName, L"", wch, COUNTOF(wch)))
+	{
+		if (wch[0] == L'#')
+		{
+			int itok, irgb;
+			itok = swscanf(CharNext(wch), L"%x", &irgb);
+			if (itok == 1)
+			{
+				res = RGB((irgb & 0xFF0000) >> 16, (irgb & 0xFF00) >> 8, irgb & 0xFF);
+			}
+		}
+	}
+	return res;
+}
+
+void IniSectionSetColor(LPCWSTR lpSection, LPCWSTR lpName, const COLORREF rgb)
+{
+	WCHAR wch[32];
+	wsprintf(wch, L"#%02X%02X%02X", (int)GetRValue(rgb), (int)GetGValue(rgb), (int)GetBValue(rgb));
+	IniSectionSetString(lpSection, lpName, &wch[0]);
+}
+
 BOOL IniSectionSetString(LPWSTR lpCachedIniSection, LPCWSTR lpName, LPCWSTR lpString)
 {
   WCHAR tch[32 + 512 * 3 + 32];
