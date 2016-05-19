@@ -1035,11 +1035,13 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 };
 
 #define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"
+#define INI_SETTING_LINE_INDEX_FONT_SIZE	L"LineIndexFontSize"
 
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
-COLORREF crLineIndex;
+COLORREF crLineIndex = DEFAULT_INI_COLOR;
+int iLineIndexFontSize = 0;
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
@@ -1089,6 +1091,7 @@ void Style_Load()
   crLineIndex = IniSectionGetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR);
 
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
+  iLineIndexFontSize = IniSectionGetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
   // default scheme
@@ -1137,6 +1140,7 @@ void Style_Save()
   IniSectionSetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR, crLineIndex);
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
+  IniSectionSetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   // auto select
   IniSectionSetInt(pIniSection, L"Use2ndDefaultStyle", bUse2ndDefaultStyle);
   // default scheme
@@ -1996,6 +2000,10 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   }
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
   SendMessage(hwnd, SCI_STYLESETFORE, STYLE_LINENUMBER, crLineIndex);
+  if (iLineIndexFontSize != 0) {
+	  const int iDefaultFontSize = SendMessage(hwnd, SCI_STYLEGETSIZE, STYLE_LINENUMBER, 0);
+	  SendMessage(hwnd, SCI_STYLESETSIZE, STYLE_LINENUMBER, iDefaultFontSize + iLineIndexFontSize);
+  }
   // Save current lexer
   pLexCurrent = pLexNew;
 #endif
