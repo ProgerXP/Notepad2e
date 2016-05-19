@@ -1007,6 +1007,25 @@ EDITLEXER lexRUBY ={SCLEX_RUBY, 63022, L"Ruby Script", L"rb; ruby; rbw; rake; rj
     }
 };
 
+KEYWORDLIST KeyWords_BASH = {
+	"! { } [[ ]] coproc elif fi if then while do else for in time case done esac function select until",
+	"", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"BASH Script", L"sh; bash", L"", &KeyWords_BASH, {
+	{ STYLE_DEFAULT, 63126, L"Default", L"", L"" },
+	//{ SCE_P_DEFAULT, L"Default", L"", L"" },
+	{ SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#008000", L"" },
+	{ SCE_SH_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
+	{ SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#003CE6; back:#FFF1A8", L"" },
+	{ SCE_SH_OPERATOR, 63132, L"Operator", L"", L"" },
+	{ SCE_SH_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
+	{ MULTI_STYLE(SCE_SH_STRING, SCE_SH_CHARACTER, 0, 0), 63131, L"String", L"fore:#008000", L"" },
+	{ SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#0A246A", L"" },
+	{ -1, 00000, L"", L"", L"" }
+}
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] ={
     &lexDefault,
@@ -1031,7 +1050,8 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
     &lexPS,
     &lexBAT,
     &lexDIFF,
-    &lexRUBY
+    &lexRUBY,
+	&lexBASH
 };
 
 #define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"

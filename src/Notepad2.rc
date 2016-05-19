@@ -1522,6 +1522,8 @@ BEGIN
     63019                   "Python Script"
     63020                   "Apache Config Files"
     63021                   "PowerShell Script"
+	63022                   "Ruby Script"
+	63023                   "BASH Script"
 END
 
 STRINGTABLE
