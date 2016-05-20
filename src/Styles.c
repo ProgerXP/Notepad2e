@@ -1008,20 +1008,51 @@ EDITLEXER lexRUBY ={SCLEX_RUBY, 63022, L"Ruby Script", L"rb; ruby; rbw; rake; rj
 };
 
 KEYWORDLIST KeyWords_BASH = {
-	"! { } [[ ]] coproc elif fi if then while do else for in time case done esac function select until",
+	"alias \
+	ar asa awk banner basename bash bc bdiff break \
+	bunzip2 bzip2 cal calendar case cat cc cd chmod cksum \
+	clear cmp col comm compress continue cp cpio crypt \
+	csplit ctags cut date dc dd declare deroff dev df diff diff3 \
+	dircmp dirname do done du echo ed egrep elif else env \
+	esac eval ex exec exit expand export expr false fc \
+	fgrep fi file find fmt fold for function functions \
+	getconf getopt getopts grep gres hash head help \
+	history iconv id if in integer jobs join kill local lc \
+	let line ln logname look ls m4 mail mailx make \
+	man mkdir more mt mv newgrp nl nm nohup ntps od \
+	pack paste patch pathchk pax pcat perl pg pr print \
+	printf ps pwd read readonly red return rev rm rmdir \
+	sed select set sh shift size sleep sort spell \
+	split start stop strings strip stty sum suspend \
+	sync tail tar tee test then time times touch tr \
+	trap true tsort tty type typeset ulimit umask unalias \
+	uname uncompress unexpand uniq unpack unset until \
+	uudecode uuencode vi vim vpax wait wc whence which \
+	while who wpaste wstart xargs zcat \
+	chgrp chown chroot dir dircolors \
+	factor groups hostid install link md5sum mkfifo \
+	mknod nice pinky printenv ptx readlink seq \
+	sha1sum shred stat su tac unlink users vdir whoami yes",
 	"", "", "", "", "", "", "", ""
 };
 
-EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"BASH Script", L"sh; bash", L"", &KeyWords_BASH, {
+EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash", L"", &KeyWords_BASH, {
 	{ STYLE_DEFAULT, 63126, L"Default", L"", L"" },
 	//{ SCE_P_DEFAULT, L"Default", L"", L"" },
-	{ SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#008000", L"" },
-	{ SCE_SH_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
-	{ SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#003CE6; back:#FFF1A8", L"" },
-	{ SCE_SH_OPERATOR, 63132, L"Operator", L"", L"" },
-	{ SCE_SH_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
-	{ MULTI_STYLE(SCE_SH_STRING, SCE_SH_CHARACTER, 0, 0), 63131, L"String", L"fore:#008000", L"" },
-	{ SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#0A246A", L"" },
+ 	{ SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+	{ SCE_SH_ERROR, 63127, L"Error", L"fore:#FFFF00,back:#FF0000", L"" },
+	{ SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+	{ SCE_SH_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+	{ SCE_SH_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+	{ SCE_SH_STRING, 63131, L"String", L"fore:#7F007F,font:Consolas", L"" },
+	{ SCE_SH_CHARACTER, 63131, L"String", L"fore:#7F007F,font:Consolas", L"" },
+	{ SCE_SH_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+	{ SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#000000", L"" },
+	{ SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#000000,back:#FFE0E0", L"" },
+	{ SCE_SH_PARAM, 63124, L"Parameter", L"fore:#000000,back:#FFFFE0", L"" },
+	{ SCE_SH_BACKTICKS, 63221, "Back ticks", L"fore:#FFFF00,back:#A08080", L"" },
+	{ SCE_SH_HERE_DELIM, 63223, "Here-doc (delimiter)", L"fore:#000000,back:#DDD0DD", L"" },
+	{ SCE_SH_HERE_Q, 63224, "Here-doc (single quoted, q)", L"fore:#7F007F,back:#DDD0DD,eolfilled,notbold", L"" },
 	{ -1, 00000, L"", L"", L"" }
 }
 };
