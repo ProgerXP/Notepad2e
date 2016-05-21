@@ -1526,7 +1526,6 @@ BOOL MRU_Add(LPMRULIST pmru, LPCWSTR pszNew)
 
 BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnexpandMyDocs)
 {
-  return (1); // crash on file open
   int i;
   for (i = 0; i < pmru->iSize; i++) {
     if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
