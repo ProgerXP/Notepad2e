@@ -2395,6 +2395,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iSel =
           (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
           (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+		if (iSel > 0)
+			break;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         if (iSel == 0) {
           int iWordStart = (int)SendMessage(hwndEdit, SCI_WORDSTARTPOSITION, iPos, TRUE);
