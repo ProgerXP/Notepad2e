@@ -6488,9 +6488,7 @@ void Editor::ButtonDown ( Point pt, unsigned int curTime, bool shift, bool ctrl,
                     selectionType = selWord;
                     doubleClick = true;
                 } else if ( selectionType == selWord ) {
-                    // Since we ended up here, we're inside a *triple* click, which should always select
-                    // whole line irregardless of word wrap being enabled or not.
-                    selectionType = selWholeLine;
+                    // do nothing on *triple* click
                 } else {
                     selectionType = selChar;
                     originalAnchorPos = sel.MainCaret();
