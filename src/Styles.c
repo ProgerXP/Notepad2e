@@ -1087,12 +1087,14 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 
 #define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"
 #define INI_SETTING_LINE_INDEX_FONT_SIZE	L"LineIndexFontSize"
+#define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
 
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
 COLORREF crLineIndex = DEFAULT_INI_COLOR;
 int iLineIndexFontSize = 0;
+int iScrollYCaretPolicy = 0;
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
@@ -1143,6 +1145,7 @@ void Style_Load()
 
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
   iLineIndexFontSize = IniSectionGetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
+  iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
   // default scheme
@@ -1192,6 +1195,7 @@ void Style_Save()
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
   IniSectionSetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
+  IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   // auto select
   IniSectionSetInt(pIniSection, L"Use2ndDefaultStyle", bUse2ndDefaultStyle);
   // default scheme

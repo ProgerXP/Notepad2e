@@ -52,6 +52,8 @@ static int yFindReplaceDlgSave;
 extern int xFindReplaceDlg;
 extern int yFindReplaceDlg;
 
+extern int iScrollYCaretPolicy;
+
 extern int iDefaultEncoding;
 extern int iDefaultEOLMode;
 extern int iLineEndings[3];
@@ -4267,14 +4269,22 @@ void HL_Get_offset(HWND hwnd, int *out)
 void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
 {
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
-#if 0
-  SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 5);
-#else
+  const int linesOnScreen = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
+  int yCaretSlop = 5;
+  switch (iScrollYCaretPolicy)
   {
-    int lines = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, lines / 3);
+  case 0:
+  default:
+	  // legacy Notepad2 behavior
+	  break;
+  case 1:
+	  yCaretSlop = linesOnScreen / 3;
+	  break;
+  case 2:
+	  yCaretSlop = linesOnScreen / 2;
+	  break;
   }
-#endif
+  SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, yCaretSlop);
   SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
   SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0);
