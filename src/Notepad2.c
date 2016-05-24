@@ -24,6 +24,7 @@
 #include <shlwapi.h>
 #include <shellapi.h>
 #include <commdlg.h>
+#include <locale.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -314,6 +315,8 @@ int flagDisplayHelp        = 0;
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
+  setlocale(LC_ALL, L"");
+
   MSG msg;
   HWND hwnd;
   HACCEL hAccMain;
