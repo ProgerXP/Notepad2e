@@ -29,6 +29,7 @@
 
 BOOL	b_HL_highlight_selection = TRUE;
 BOOL	b_HL_edit_selection = FALSE;
+BOOL	b_HL_highlight_all = TRUE;
 BOOL	_hl_se_init = FALSE;
 BOOL	_hl_se_exit = FALSE;
 //
@@ -188,12 +189,19 @@ VOID HLS_Highlight_word(LPCSTR  word)
   struct Sci_TextToFind ttf1;
   //
   //
-  lstart = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-  lstart = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart, 0);
-  lrange = min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0));
-  ttf.chrg.cpMin  = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, lstart, 0);
   len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+  if (b_HL_highlight_all) {
+	  lstart = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
+	  lstart = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart, 0);
+  }
+  else {
+	  lstart = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, curr, 0);
+  }
+  lrange = b_HL_highlight_all
+			? min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0))
+			: 0;
+  ttf.chrg.cpMin  = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, lstart, 0);
   ttf.chrg.cpMax  = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, lstart + lrange, 0) + 1;
   old = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, HL_SELECT_INDICATOR, 0);
@@ -600,8 +608,9 @@ _EXIT:
   return out;
 }
 
-VOID HLS_Edit_selection_start()
+VOID HLS_Edit_selection_start(const BOOL highlightAll)
 {
+  b_HL_highlight_all = highlightAll;
     // if mode already ON - then turn it OFF
   if (b_HL_edit_selection) {
     HLS_Edit_selection_stop(HL_SE_APPLY);
@@ -632,6 +641,7 @@ VOID HLS_Edit_selection_stop(UINT mode)
     pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
     SendMessage(hwndEdit, SCI_SETANCHOR, pos, 0);
     b_HL_edit_selection = FALSE;
+	b_HL_highlight_all = TRUE;
 
     //
     HLS_Highlight_turn();

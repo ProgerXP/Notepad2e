@@ -165,6 +165,7 @@ BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
 /* haccel */
 extern	BOOL		b_HL_highlight_selection;
+extern	BOOL		b_HL_highlight_all;
 extern	BOOL		b_Hl_use_prefix_in_open_dialog;
 extern	BOOL		b_HL_edit_selection;
 extern	BOOL		b_HL_ctrl_wheel_scroll;
@@ -3446,12 +3447,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDH_MOVE_DOWN_SILENT:
     //	HL_Move_Carret_Silently(FALSE);
       break;
-    case ID_EDIT_EDITSELECTION: {
-        HLS_Edit_selection_start();
-        return 1;
-      }
-                                break;
-    case ID_SETTINGS_RELOADFROMDISK: {
+	case ID_EDIT_EDITSELECTION:
+		HLS_Edit_selection_start(TRUE);
+		return 1;
+	case ID_EDIT_EDITSELECTION_LINE:
+		HLS_Edit_selection_start(FALSE);
+		return 1;
+	case ID_SETTINGS_RELOADFROMDISK: {
         PostMessage(hwnd, HWM_RELOAD_SETTINGS, 0, 0);
       }
                                      break;
