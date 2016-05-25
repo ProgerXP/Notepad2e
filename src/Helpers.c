@@ -2620,14 +2620,16 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
           case CDN_SELCHANGE: {
               WCHAR buf[MAX_PATH];
               HL_TRACE("OFN sel change  ");
-              if (CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH) > 0) {
-                if (_HL_fileIsCdUp(buf)) {
-                  *buf = 0;
-                }
-                HL_TRACE("Set OFN input %S", buf);
-                CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf);
-                lstrcpy(last_selected, buf);
-                return 1;
+			  if ((CommDlg_OpenSave_GetFilePath(hPar, buf, MAX_PATH) > 0) && !PathIsDirectory(buf)) {
+				  if (CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH) > 0) {
+					  if (_HL_fileIsCdUp(buf)) {
+						  *buf = 0;
+					  }
+					  HL_TRACE("Set OFN input %S", buf);
+					  CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf);
+					  lstrcpy(last_selected, buf);
+					  return 1;
+				  }
               }
             }
                               break;
@@ -2648,6 +2650,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
               HL_TRACE("OFN folder change  ");
               SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
 #endif
+			  *last_selected = 0;
             }
                                  break;
         }
