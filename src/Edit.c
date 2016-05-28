@@ -5092,20 +5092,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     }
     //
     if (res >= 0) {
-      int cp;
       EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
-      //
-      strcpy(lpref->szFindUTF8, tr.lpstrText);
-      cp = (int)SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
-      if (cp != SC_CP_UTF8) {
-        WCHAR wch[512];
-        MultiByteToWideChar(CP_UTF8, 0, lpref->szFindUTF8, -1, wch, COUNTOF(wch));
-        WideCharToMultiByte(cp, 0, wch, -1, lpref->szFind, COUNTOF(lpref->szFind), NULL, NULL);
-      }
-      else {
-        lstrcpyA(lpref->szFind, lpref->szFindUTF8);
-      }
-      lpref->fuFlags = searchflags;
     }
     else {
       SendMessage(hwnd, SCI_SETCURRENTPOS, cpos, 0);
