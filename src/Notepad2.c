@@ -55,8 +55,13 @@ HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
 
-#define NUMTOOLBITMAPS  25
-#define NUMINITIALTOOLS 24
+#define NUMTOOLBITMAPS  26
+#define NUMINITIALTOOLS 25
+
+#define ICON_FIND_OK	 9
+#define ICON_FIND_FAILED 25
+
+#define FIND_INFO_INDEX 12
 
 TBBUTTON  tbbMainWnd[] ={{0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -70,7 +75,7 @@ TBBUTTON  tbbMainWnd[] ={{0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0
     {7, IDT_EDIT_COPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {8, IDT_EDIT_PASTE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
-    {9, IDT_EDIT_FIND, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+	{ICON_FIND_OK, IDT_EDIT_FIND, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
     {10, IDT_EDIT_REPLACE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {11, IDT_VIEW_WORDWRAP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -4381,6 +4386,19 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
   }
   return (0);
+}
+
+void UpdateFindIcon(const BOOL findOK)
+{
+	TBBUTTON* pBtn = &tbbMainWnd[FIND_INFO_INDEX];
+	pBtn->iBitmap = findOK ? ICON_FIND_OK : ICON_FIND_FAILED;
+
+	TBBUTTONINFO tbbi = { 0 };
+	tbbi.cbSize = sizeof(tbbi);
+	tbbi.idCommand = pBtn->idCommand;
+	tbbi.iImage = pBtn->iBitmap;
+	tbbi.dwMask = TBIF_IMAGE;
+	SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
 }
 //=============================================================================
 //

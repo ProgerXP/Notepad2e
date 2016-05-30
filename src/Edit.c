@@ -4603,6 +4603,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               !bIsFindDlg && LOWORD(wParam) == IDMSG_SWITCHTOFIND)) {
             GetDlgPos(hwnd, &xFindReplaceDlgSave, &yFindReplaceDlgSave);
             bSwitchedFindReplace = TRUE;
+			UpdateFindIcon(TRUE);
             CopyMemory(&efrSave, lpefr, sizeof(EDITFINDREPLACE));
           }
           // Get current code page for Unicode conversion
@@ -4700,6 +4701,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
           if (bCloseDlg) {
               //EndDialog(hwnd,LOWORD(wParam));
+			UpdateFindIcon(TRUE);
             DestroyWindow(hwnd);
             hDlgFindReplace = NULL;
           }
@@ -4740,6 +4742,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           break;
         case IDCANCEL:
             //EndDialog(hwnd,IDCANCEL);
+		  UpdateFindIcon(TRUE);
           DestroyWindow(hwnd);
           break;
         case IDACC_FIND:
@@ -4917,13 +4920,18 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
   iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
-  if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection) {
+  const BOOL bTextFound = (iPos >= 0);
+  UpdateFindIcon(bTextFound);
+  if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection) {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW)) {
       ttf.chrg.cpMin = 0;
       iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+	  UpdateFindIcon(iPos >= 0);
     }
     else {
       bSuppressNotFound = TRUE;
+	  if (!IsWindowVisible(hDlgFindReplace))
+		  UpdateFindIcon(TRUE);
     }
   }
   if (iPos == -1) {
