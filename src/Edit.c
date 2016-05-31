@@ -242,6 +242,7 @@ HWND EditCreate(HWND hwndParent)
     (HMENU)IDC_EDIT,
     g_hInstance,
     NULL);
+  SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, TRUE, 0);
   SendMessage(hwnd, SCI_SETCODEPAGE, iDefaultCodePage, 0);
   SendMessage(hwnd, SCI_SETEOLMODE, SC_EOL_CRLF, 0);
   SendMessage(hwnd, SCI_SETPASTECONVERTENDINGS, 1, 0);
