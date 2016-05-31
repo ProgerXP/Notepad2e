@@ -1088,6 +1088,8 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 #define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"
 #define INI_SETTING_LINE_INDEX_FONT_SIZE	L"LineIndexFontSize"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
+#define INI_SETTING_FIND_WORD_MATCH_CASE	L"FindWordMatchCase"
+#define INI_SETTING_FIND_WRAP_AROUND	L"FindWordWrapAround"
 
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
@@ -1095,6 +1097,8 @@ COLORREF crCustom[16];
 COLORREF crLineIndex = DEFAULT_INI_COLOR;
 int iLineIndexFontSize = 0;
 int iScrollYCaretPolicy = 0;
+int iFindWordMatchCase = 0;
+int iFindWordWrapAround = 0;
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
@@ -1146,6 +1150,8 @@ void Style_Load()
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
   iLineIndexFontSize = IniSectionGetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
   // default scheme
@@ -1196,6 +1202,9 @@ void Style_Save()
   ZeroMemory(pIniSection, cchIniSection);
   IniSectionSetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+
   // auto select
   IniSectionSetInt(pIniSection, L"Use2ndDefaultStyle", bUse2ndDefaultStyle);
   // default scheme

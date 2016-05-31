@@ -53,6 +53,8 @@ extern int xFindReplaceDlg;
 extern int yFindReplaceDlg;
 
 extern int iScrollYCaretPolicy;
+extern int iFindWordMatchCase;
+extern int iFindWordWrapAround;
 
 extern int iDefaultEncoding;
 extern int iDefaultEOLMode;
@@ -5106,8 +5108,11 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     }
     //
     searchflags = SCFIND_WHOLEWORD;
+	if (iFindWordMatchCase != 0)
+		searchflags |= SCFIND_MATCHCASE;
+
     res = SendMessage(hwnd, SCI_FINDTEXT, searchflags, (LPARAM)&ttf);
-    if (-1 == res) {
+	if ((-1 == res) && (iFindWordWrapAround != 0)) {
       if (next) {
         ttf.chrg.cpMin = 0;
         ttf.chrg.cpMax = tr.chrg.cpMin;
