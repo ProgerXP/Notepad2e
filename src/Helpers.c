@@ -1502,18 +1502,20 @@ BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnex
 {
   int i;
   for (i = 0; i < pmru->iSize; i++) {
-    if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
-      LocalFree(pmru->pszItems[i]);
-      break;
-    }
-    else {
-      WCHAR wchItem[MAX_PATH];
-      PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
-      if (lstrcmpi(wchItem, pszFile) == 0) {
-        LocalFree(pmru->pszItems[i]);
-        break;
-      }
-    }
+	if (pmru->pszItems[i]) {
+		if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
+		  LocalFree(pmru->pszItems[i]);
+		  break;
+		}
+		else {
+		  WCHAR wchItem[MAX_PATH];
+		  PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
+		  if (lstrcmpi(wchItem, pszFile) == 0) {
+			LocalFree(pmru->pszItems[i]);
+			break;
+		  }
+		}
+	}
   }
   i = min(i, pmru->iSize - 1);
   for (; i > 0; i--) {
