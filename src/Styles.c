@@ -1085,8 +1085,6 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 	&lexBASH
 };
 
-#define INI_SETTING_LINE_INDEX_COLOR	L"LineIndexColor"
-#define INI_SETTING_LINE_INDEX_FONT_SIZE	L"LineIndexFontSize"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
 #define INI_SETTING_FIND_WORD_MATCH_CASE	L"FindWordMatchCase"
 #define INI_SETTING_FIND_WRAP_AROUND	L"FindWordWrapAround"
@@ -1094,8 +1092,6 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
-COLORREF crLineIndex = DEFAULT_INI_COLOR;
-int iLineIndexFontSize = 0;
 int iScrollYCaretPolicy = 0;
 int iFindWordMatchCase = 0;
 int iFindWordWrapAround = 0;
@@ -1140,15 +1136,21 @@ void Style_Load()
   crCustom[14] = RGB(0xB0, 0x00, 0xB0);
   crCustom[15] = RGB(0xB2, 0x8B, 0x40);
   LoadIniSection(L"Custom Colors", pIniSection, cchIniSection);
-  for (i = 0; i < 16; i++)
-  {
-	  wsprintf(tch, L"%02i", i + 1);
-	  crCustom[i] = IniSectionGetColor(pIniSection, tch);
+  for (i = 0; i < 16; i++) {
+    int itok;
+    int irgb;
+    WCHAR wch[32];
+    wsprintf(tch, L"%02i", i + 1);
+    if (IniSectionGetString(pIniSection, tch, L"", wch, COUNTOF(wch))) {
+      if (wch[0] == L'#') {
+        itok = swscanf(CharNext(wch), L"%x", &irgb);
+        if (itok == 1) {
+          crCustom[i] = RGB((irgb & 0xFF0000) >> 16, (irgb & 0xFF00) >> 8, irgb & 0xFF);
+        }
+      }
+    }
   }
-  crLineIndex = IniSectionGetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR);
-
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
-  iLineIndexFontSize = IniSectionGetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
@@ -1194,13 +1196,14 @@ void Style_Save()
   int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   // Custom colors
   for (i = 0; i < 16; i++) {
+    WCHAR wch[32];
     wsprintf(tch, L"%02i", i + 1);
-	IniSectionSetColor(pIniSection, tch, crCustom[i]);
+    wsprintf(wch, L"#%02X%02X%02X",
+             (int)GetRValue(crCustom[i]), (int)GetGValue(crCustom[i]), (int)GetBValue(crCustom[i]));
+    IniSectionSetString(pIniSection, tch, wch);
   }
-  IniSectionSetColor(pIniSection, INI_SETTING_LINE_INDEX_COLOR, crLineIndex);
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
-  IniSectionSetInt(pIniSection, INI_SETTING_LINE_INDEX_FONT_SIZE, iLineIndexFontSize);
   IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
@@ -2063,11 +2066,6 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     }
   }
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
-  SendMessage(hwnd, SCI_STYLESETFORE, STYLE_LINENUMBER, crLineIndex);
-  if (iLineIndexFontSize != 0) {
-	  const int iDefaultFontSize = SendMessage(hwnd, SCI_STYLEGETSIZE, STYLE_LINENUMBER, 0);
-	  SendMessage(hwnd, SCI_STYLESETSIZE, STYLE_LINENUMBER, iDefaultFontSize + iLineIndexFontSize);
-  }
   // Save current lexer
   pLexCurrent = pLexNew;
 #endif

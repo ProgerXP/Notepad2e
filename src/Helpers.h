@@ -33,8 +33,6 @@ typedef enum CSS_PROP
   css_prop_hss = 1 << 2,
 };
 
-#define DEFAULT_INI_COLOR	RGB(0, 0, 0)
-
 extern WCHAR szIniFile[MAX_PATH];
 #define IniGetString(lpSection,lpName,lpDefault,lpReturnedStr,nSize) \
     GetPrivateProfileString(lpSection,lpName,lpDefault,lpReturnedStr,nSize,szIniFile)
@@ -56,8 +54,6 @@ __inline BOOL IniSetInt(LPCWSTR lpSection, LPCWSTR lpName, int i)
     WritePrivateProfileSection(lpSection,lpBuf,szIniFile)
 int IniSectionGetString(LPCWSTR, LPCWSTR, LPCWSTR, LPWSTR, int);
 int IniSectionGetInt(LPCWSTR, LPCWSTR, int);
-COLORREF IniSectionGetColor(LPCWSTR lpSection, LPCWSTR lpName);
-void IniSectionSetColor(LPCWSTR lpSection, LPCWSTR lpName, const COLORREF rgb);
 BOOL IniSectionSetString(LPWSTR, LPCWSTR, LPCWSTR);
 __inline BOOL IniSectionSetInt(LPWSTR lpCachedIniSection, LPCWSTR lpName, int i)
 {
