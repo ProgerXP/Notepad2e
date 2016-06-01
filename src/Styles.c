@@ -1085,6 +1085,7 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 	&lexBASH
 };
 
+#define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE	L"HighlightLineIfWindowInactive"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
 #define INI_SETTING_FIND_WORD_MATCH_CASE	L"FindWordMatchCase"
 #define INI_SETTING_FIND_WRAP_AROUND	L"FindWordWrapAround"
@@ -1092,6 +1093,7 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
+int iHighligthLineIfWindowInactive = 0;
 int iScrollYCaretPolicy = 0;
 int iFindWordMatchCase = 0;
 int iFindWordWrapAround = 0;
@@ -1151,6 +1153,7 @@ void Style_Load()
     }
   }
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
+  iHighligthLineIfWindowInactive = IniSectionGetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
   iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
@@ -1204,6 +1207,7 @@ void Style_Save()
   }
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
+  IniSectionSetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
   IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);

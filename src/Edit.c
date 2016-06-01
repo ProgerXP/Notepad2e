@@ -52,6 +52,7 @@ static int yFindReplaceDlgSave;
 extern int xFindReplaceDlg;
 extern int yFindReplaceDlg;
 
+extern int iHighligthLineIfWindowInactive;
 extern int iScrollYCaretPolicy;
 extern int iFindWordMatchCase;
 extern int iFindWordWrapAround;
@@ -244,7 +245,7 @@ HWND EditCreate(HWND hwndParent)
     (HMENU)IDC_EDIT,
     g_hInstance,
     NULL);
-  SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, TRUE, 0);
+  SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, iHighligthLineIfWindowInactive, 0);
   SendMessage(hwnd, SCI_SETCODEPAGE, iDefaultCodePage, 0);
   SendMessage(hwnd, SCI_SETEOLMODE, SC_EOL_CRLF, 0);
   SendMessage(hwnd, SCI_SETPASTECONVERTENDINGS, 1, 0);
