@@ -239,7 +239,7 @@ BEGIN
         MENUITEM "Find Previous Word\tCtrl+Shift+8", ID_EDIT_FINDPREVIOUSWORD
         MENUITEM "&Goto...\tCtrl+G",            IDM_EDIT_GOTOLINE
         MENUITEM "Edit Selection\tCtrl+Tab",    ID_EDIT_EDITSELECTION
-		MENUITEM "Edit Selection on line\tCtrl+Caps Lock", ID_EDIT_EDITSELECTION_LINE
+		MENUITEM "Edit Selection On Line\tCtrl+Caps Lock", ID_EDIT_EDITSELECTION_LINE
     END
     POPUP "&View"
     BEGIN
