@@ -5032,6 +5032,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
 {
   struct Sci_TextRange	tr;
   struct Sci_TextToFind	ttf;
+  static char* szPrevWord = NULL;
   int cpos, wlen, doclen, res, searchflags;
   BOOL has;
 #define _HL_SEARCH_FOR_WORD_LIMIT 0x100
@@ -5047,52 +5048,73 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
   tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
   wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   res = 0;//
-  has = wlen > 0;
 
-  // look up for new word for search
-  if (!has) {
-    tr.chrg.cpMin = next ? cpos : max(cpos - _HL_SEARCH_FOR_WORD_LIMIT, 0);
-    tr.chrg.cpMax = next ? min(cpos + _HL_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
-    wlen = tr.chrg.cpMax - tr.chrg.cpMin;
-    if (wlen > 0) {
-      int counter;
-      char symb;
-      //
-      tr.lpstrText = HL_Alloc(wlen + 1);
-      SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-      counter = 0;
-      while (counter <= wlen) {
-        ++counter;
-        //////////////////////////////////////////////////////////////////////////
-        symb = next ? tr.lpstrText[counter] : tr.lpstrText[wlen - counter];
-        if (HL_IS_LITERAL(symb)) {
-          if (!res) {
-            res = counter;
-          }
-        }
-        else {
-          if (res) {
-            if (next) {
-              tr.chrg.cpMax = cpos + counter;
-              tr.lpstrText[counter] = '\0';
-              ttf.lpstrText = tr.lpstrText + res;
-            }
-            else {
-              tr.chrg.cpMin = cpos - res;
-              tr.lpstrText[wlen - res + 1] = '\0';
-              ttf.lpstrText = tr.lpstrText + wlen - counter + 1;
-            }
-            break;
-          }
-        }
-      }
-    }
+  tr.lpstrText = HL_Alloc(wlen + 1);
+  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+
+  const int iSelCount = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) -
+	  (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  const BOOL bAnotherSelectedWord = szPrevWord ? (lstrcmpA(tr.lpstrText, szPrevWord) != 0) : FALSE;
+
+  HL_Free(tr.lpstrText);
+
+  if ((iSelCount > 0) && bAnotherSelectedWord) {
+	  const size_t prevWordLength = szPrevWord ? strlen(szPrevWord)+1 : 0;
+	  if (szPrevWord && (prevWordLength > 0)) {
+		tr.lpstrText = HL_Alloc(prevWordLength);
+		lstrcpynA(tr.lpstrText, szPrevWord, prevWordLength);
+		ttf.lpstrText = tr.lpstrText;
+		res = 1;
+	  }
   }
-  else {
-    tr.lpstrText = HL_Alloc(wlen + 1);
-    SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-    ttf.lpstrText = tr.lpstrText;
-    res = 1;
+  if (res == 0) {
+	  has = wlen > 0;
+
+	  // look up for new word for search
+	  if (!has) {
+		tr.chrg.cpMin = next ? cpos : max(cpos - _HL_SEARCH_FOR_WORD_LIMIT, 0);
+		tr.chrg.cpMax = next ? min(cpos + _HL_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
+		wlen = tr.chrg.cpMax - tr.chrg.cpMin;
+		if (wlen > 0) {
+		  int counter;
+		  char symb;
+		  //
+		  tr.lpstrText = HL_Alloc(wlen + 1);
+		  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+		  counter = 0;
+		  while (counter <= wlen) {
+			++counter;
+			//////////////////////////////////////////////////////////////////////////
+			symb = next ? tr.lpstrText[counter] : tr.lpstrText[wlen - counter];
+			if (HL_IS_LITERAL(symb)) {
+			  if (!res) {
+				res = counter;
+			  }
+			}
+			else {
+			  if (res) {
+				if (next) {
+				  tr.chrg.cpMax = cpos + counter;
+				  tr.lpstrText[counter] = '\0';
+				  ttf.lpstrText = tr.lpstrText + res;
+				}
+				else {
+				  tr.chrg.cpMin = cpos - res;
+				  tr.lpstrText[wlen - res + 1] = '\0';
+				  ttf.lpstrText = tr.lpstrText + wlen - counter + 1;
+				}
+				break;
+			  }
+			}
+		  }
+		}
+	  }
+	  else {
+		tr.lpstrText = HL_Alloc(wlen + 1);
+		SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+		ttf.lpstrText = tr.lpstrText;
+		res = 1;
+	  }
   }
   //
   if (res) {
@@ -5136,6 +5158,9 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     }
     //
     if (tr.lpstrText) {
+	  HL_Free(szPrevWord);
+	  szPrevWord = HL_Alloc(strlen(tr.lpstrText)+1);
+	  lstrcpynA(szPrevWord, tr.lpstrText, strlen(tr.lpstrText)+1);
       HL_Free(tr.lpstrText);
       tr.lpstrText = 0;
     }
