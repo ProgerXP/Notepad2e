@@ -1878,6 +1878,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
             }
           }
+		  ResetFindIcon();
         }
       }
                           break;
@@ -4400,6 +4401,11 @@ void UpdateFindIcon(const BOOL findOK)
 	tbbi.dwMask = TBIF_IMAGE;
 	SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
 }
+
+void ResetFindIcon()
+{
+	UpdateFindIcon(TRUE);
+}
 //=============================================================================
 //
 //  LoadSettings()
@@ -5644,6 +5650,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       iFileWatchingMode = 0;
     }
     InstallFileWatching(NULL);
+	ResetFindIcon();
     *_hl_last_run = 0;
     return TRUE;
   }
@@ -5764,6 +5771,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
   if (fSuccess) {
     //lstrcpy(_hl_last_run, szCurFile);
+	 ResetFindIcon();
     *_hl_last_run = 0;
   }
 

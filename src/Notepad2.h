@@ -96,6 +96,7 @@ void CALLBACK WatchTimerProc(HWND, UINT, UINT_PTR, DWORD);
 void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
 void UpdateFindIcon(const BOOL findOK);
+void ResetFindIcon();
 void LoadSettings();
 void SaveSettings(BOOL);
 void ParseCommandLine();
