@@ -5054,11 +5054,10 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
 
   const int iSelCount = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) -
 	  (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  const BOOL bAnotherSelectedWord = szPrevWord ? (lstrcmpA(tr.lpstrText, szPrevWord) != 0) : FALSE;
 
   HL_Free(tr.lpstrText);
 
-  if ((iSelCount > 0) && bAnotherSelectedWord) {
+  if (iSelCount > 0) {
 	  const size_t prevWordLength = szPrevWord ? strlen(szPrevWord)+1 : 0;
 	  if (szPrevWord && (prevWordLength > 0)) {
 		tr.lpstrText = HL_Alloc(prevWordLength);
