@@ -1085,19 +1085,9 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 	&lexBASH
 };
 
-#define INI_SETTING_SECTION_EXTENDED  L"Notepad2e"
-#define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE	L"HighlightLineIfWindowInactive"
-#define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
-#define INI_SETTING_FIND_WORD_MATCH_CASE	L"FindWordMatchCase"
-#define INI_SETTING_FIND_WRAP_AROUND	L"FindWordWrapAround"
-
 // Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
-int iHighligthLineIfWindowInactive = 0;
-int iScrollYCaretPolicy = 0;
-int iFindWordMatchCase = 0;
-int iFindWordWrapAround = 0;
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
@@ -1181,13 +1171,6 @@ void Style_Load()
       i++;
     }
   }
-
-  LoadIniSection(INI_SETTING_SECTION_EXTENDED, pIniSection, cchIniSection);
-  iHighligthLineIfWindowInactive = IniSectionGetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
-  iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
-
   LocalFree(pIniSection);
 }
 
@@ -1222,13 +1205,6 @@ void Style_Save()
   IniSectionSetInt(pIniSection, L"SelectDlgSizeX", cxStyleSelectDlg);
   IniSectionSetInt(pIniSection, L"SelectDlgSizeY", cyStyleSelectDlg);
   SaveIniSection(L"Styles", pIniSection);
-
-  ZeroMemory(pIniSection, cchIniSection);
-  IniSectionSetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
-  IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
-  SaveIniSection(INI_SETTING_SECTION_EXTENDED, pIniSection);
 
   if (!fStylesModified) {
     LocalFree(pIniSection);

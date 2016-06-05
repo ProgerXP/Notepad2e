@@ -257,7 +257,13 @@ void	HL_Free(void*);
 int		HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2);
 BOOL	hl_iswordchar(WCHAR ch);
 BOOL	hl_isspace(WCHAR ch);
-#define HL_INI_SECTION L"extended"
+
+#define HL_INI_SECTION L"Notepad2e"
+#define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
+#define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"
+#define INI_SETTING_FIND_WORD_MATCH_CASE  L"FindWordMatchCase"
+#define INI_SETTING_FIND_WRAP_AROUND  L"FindWordWrapAround"
+
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG
 #define __FILE_LOC (1+strrchr(__FILE__,'\\')/*?strrchr(__FILE__,'\\')+1:__FILE__*/)
