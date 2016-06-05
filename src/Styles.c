@@ -1085,6 +1085,7 @@ PEDITLEXER pLexArray[NUMLEXERS] ={
 	&lexBASH
 };
 
+#define INI_SETTING_SECTION_EXTENDED  L"Extended"
 #define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE	L"HighlightLineIfWindowInactive"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY	L"ScrollYCaretPolicy"
 #define INI_SETTING_FIND_WORD_MATCH_CASE	L"FindWordMatchCase"
@@ -1153,10 +1154,6 @@ void Style_Load()
     }
   }
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
-  iHighligthLineIfWindowInactive = IniSectionGetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
-  iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
   // default scheme
@@ -1184,6 +1181,13 @@ void Style_Load()
       i++;
     }
   }
+
+  LoadIniSection(INI_SETTING_SECTION_EXTENDED, pIniSection, cchIniSection);
+  iHighligthLineIfWindowInactive = IniSectionGetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
+  iScrollYCaretPolicy = IniSectionGetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  iFindWordMatchCase = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  iFindWordWrapAround = IniSectionGetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+
   LocalFree(pIniSection);
 }
 
@@ -1207,10 +1211,6 @@ void Style_Save()
   }
   SaveIniSection(L"Custom Colors", pIniSection);
   ZeroMemory(pIniSection, cchIniSection);
-  IniSectionSetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
-  IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
 
   // auto select
   IniSectionSetInt(pIniSection, L"Use2ndDefaultStyle", bUse2ndDefaultStyle);
@@ -1222,6 +1222,14 @@ void Style_Save()
   IniSectionSetInt(pIniSection, L"SelectDlgSizeX", cxStyleSelectDlg);
   IniSectionSetInt(pIniSection, L"SelectDlgSizeY", cyStyleSelectDlg);
   SaveIniSection(L"Styles", pIniSection);
+
+  ZeroMemory(pIniSection, cchIniSection);
+  IniSectionSetInt(pIniSection, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
+  IniSectionSetInt(pIniSection, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  IniSectionSetInt(pIniSection, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+  SaveIniSection(INI_SETTING_SECTION_EXTENDED, pIniSection);
+
   if (!fStylesModified) {
     LocalFree(pIniSection);
     return;
