@@ -2211,18 +2211,18 @@ VOID RestoreWndFromTray(HWND hWnd)
 
 VOID HL_Init(HWND hWnd)
 {
-    //
   g_hwnd = hWnd;
-  //
-  //#ifdef _DEBUG
   if (IniGetInt(HL_INI_SECTION, L"DebugLog", 0)) {
     _hL_log = fopen("hl_log.log", "w");
   }
-  //
-#if 1
-    //
   HL_Set_wheel_scroll(b_HL_ctrl_wheel_scroll);
-  //
+  *_hl_last_run = 0;
+
+  HLS_init();
+}
+
+VOID HL_LoadINI()
+{
   _hl_wheel_timer_to = IniGetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
   _hl_sel_edit_timer_to = IniGetInt(HL_INI_SECTION, L"SelectionScrollTimeout", _hl_sel_edit_timer_to);
   _hl_css_property = IniGetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
@@ -2233,14 +2233,20 @@ VOID HL_Init(HWND hWnd)
   iScrollYCaretPolicy = IniGetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   iFindWordMatchCase = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   iFindWordWrapAround = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+}
 
-//
-  *_hl_last_run = 0;
-  //
-  HLS_init();
-
-  //
-#endif
+VOID HL_SaveINI()
+{
+  IniSetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
+  IniSetInt(HL_INI_SECTION, L"SelectionScrollTimeout", _hl_sel_edit_timer_to);
+  IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
+  IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
+  IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range/1024);
+  IniSetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
 }
 
 VOID HL_Release()

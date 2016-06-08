@@ -229,6 +229,8 @@ VOID RestoreWndFromTray(HWND hWnd);
 
 //============== haccel work
 VOID	HL_Init(HWND hwnd);
+VOID	HL_LoadINI();
+VOID	HL_SaveINI();
 VOID	HL_Release();
 VOID	HL_Trace(const char *fmt, ...);
 VOID	HL_WTrace(const char *fmt, LPCWSTR word);

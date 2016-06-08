@@ -412,6 +412,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     return FALSE;
   }
   //
+  HL_LoadINI();
   HL_Init(hwnd);
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
@@ -429,6 +430,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   Scintilla_ReleaseResources();
   //
   HL_Release();
+  HL_SaveINI();
   //
   UnregisterClass(wchWndClass, hInstance);
   if (hModUxTheme) {
