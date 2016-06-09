@@ -455,7 +455,7 @@ void SetWindowTransparentMode(HWND hwnd, BOOL bTransparentMode)
     if (fp = GetProcAddress(GetModuleHandle(L"User32"), "SetLayeredWindowAttributes")) {
       SetWindowLongPtr(hwnd, GWL_EXSTYLE,
                        GetWindowLongPtr(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
-    // get opacity level from registry
+      // get opacity level from registry
       iAlphaPercent = IniGetInt(L"Settings2", L"OpacityLevel", 75);
       if (iAlphaPercent < 0 || iAlphaPercent > 100) {
         iAlphaPercent = 75;
@@ -466,7 +466,7 @@ void SetWindowTransparentMode(HWND hwnd, BOOL bTransparentMode)
   }
   else
     SetWindowLongPtr(hwnd, GWL_EXSTYLE,
-                     GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+    GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 }
 
 //=============================================================================
@@ -498,7 +498,7 @@ void CenterDlgInParent(HWND hDlg)
     x = rcParent.left + 70;
   }
   if ((rcParent.bottom - rcParent.top) - (rcDlg.bottom - rcDlg.top) > 20) {
-    y = rcParent.top  + (((rcParent.bottom - rcParent.top) - (rcDlg.bottom - rcDlg.top)) / 2);
+    y = rcParent.top + (((rcParent.bottom - rcParent.top) - (rcDlg.bottom - rcDlg.top)) / 2);
   }
   else {
     y = rcParent.top + 60;
@@ -675,22 +675,22 @@ void MakeColorPickButton(HWND hwnd, int nCtlId, HINSTANCE hInstance, COLORREF cr
   }
   if (IsWindowEnabled(hwndCtl) && crColor != -1) {
     colormap[0].from = RGB(0x00, 0x00, 0x00);
-    colormap[0].to   = GetSysColor(COLOR_3DSHADOW);
+    colormap[0].to = GetSysColor(COLOR_3DSHADOW);
   }
   else {
     colormap[0].from = RGB(0x00, 0x00, 0x00);
-    colormap[0].to   = RGB(0xFF, 0xFF, 0xFF);
+    colormap[0].to = RGB(0xFF, 0xFF, 0xFF);
   }
   if (IsWindowEnabled(hwndCtl) && crColor != -1) {
     if (crColor == RGB(0xFF, 0xFF, 0xFF)) {
       crColor = RGB(0xFF, 0xFF, 0xFE);
     }
     colormap[1].from = RGB(0xFF, 0xFF, 0xFF);
-    colormap[1].to   = crColor;
+    colormap[1].to = crColor;
   }
   else {
     colormap[1].from = RGB(0xFF, 0xFF, 0xFF);
-    colormap[1].to   = RGB(0xFF, 0xFF, 0xFF);
+    colormap[1].to = RGB(0xFF, 0xFF, 0xFF);
   }
   hBmp = CreateMappedBitmap(hInstance, IDB_PICK, 0, colormap, 2);
   bi.himl = ImageList_Create(10, 10, ILC_COLORDDB | ILC_MASK, 1, 0);
@@ -737,7 +737,7 @@ LRESULT SendWMSize(HWND hwnd)
   RECT rc;
   GetClientRect(hwnd, &rc);
   return (SendMessage(hwnd, WM_SIZE, SIZE_RESTORED,
-          MAKELPARAM(rc.right, rc.bottom)));
+    MAKELPARAM(rc.right, rc.bottom)));
 }
 
 //=============================================================================
@@ -765,7 +765,7 @@ BOOL StatusSetTextID(HWND hwnd, UINT nPart, UINT uID)
 int StatusCalcPaneWidth(HWND hwnd, LPCWSTR lpsz)
 {
   SIZE  size;
-  HDC   hdc   = GetDC(hwnd);
+  HDC   hdc = GetDC(hwnd);
   HFONT hfont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
   HFONT hfold = SelectObject(hdc, hfont);
   int   mmode = SetMapMode(hdc, MM_TEXT);
@@ -969,7 +969,7 @@ void PathAbsoluteFromApp(LPWSTR lpszSrc, LPWSTR lpszDest, int cchDest, BOOL bExp
 //
 BOOL PathIsLnkFile(LPCWSTR pszPath)
 {
-    //WCHAR *pszExt;
+  //WCHAR *pszExt;
   WCHAR tchResPath[256];
   if (!pszPath || !*pszPath) {
     return FALSE;
@@ -977,13 +977,13 @@ BOOL PathIsLnkFile(LPCWSTR pszPath)
   /*pszExt = StrRChr(pszPath,NULL,L'.');
 
     if (!pszExt)
-      return FALSE;
+    return FALSE;
 
     if (!lstrcmpi(pszExt,L".lnk"))
-      return TRUE;
+    return TRUE;
 
     else
-      return FALSE;*/
+    return FALSE;*/
   //if (!lstrcmpi(PathFindExtension(pszPath),L".lnk"))
   //  return TRUE;
   //else
@@ -1012,8 +1012,8 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
   WIN32_FIND_DATA  fd;
   BOOL             bSucceeded = FALSE;
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-      CLSCTX_INPROC_SERVER,
-      &IID_IShellLink, &psl))) {
+    CLSCTX_INPROC_SERVER,
+    &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1108,8 +1108,8 @@ BOOL PathCreateDeskLnk(LPCWSTR pszDocument)
     return (FALSE);
   }
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-      CLSCTX_INPROC_SERVER,
-      &IID_IShellLink, &psl))) {
+    CLSCTX_INPROC_SERVER,
+    &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1153,8 +1153,8 @@ BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszDir)
     return FALSE;
   }
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-      CLSCTX_INPROC_SERVER,
-      &IID_IShellLink, &psl))) {
+    CLSCTX_INPROC_SERVER,
+    &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1379,9 +1379,9 @@ int FormatNumberStr(LPWSTR lpNumberStr)
     return (0);
   }
   if (!GetLocaleInfo(LOCALE_USER_DEFAULT,
-      LOCALE_STHOUSAND,
-      szSep,
-      COUNTOF(szSep))) {
+    LOCALE_STHOUSAND,
+    szSep,
+    COUNTOF(szSep))) {
     szSep[0] = L'\'';
   }
   c = StrEnd(lpNumberStr);
@@ -1507,20 +1507,20 @@ BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnex
 {
   int i;
   for (i = 0; i < pmru->iSize; i++) {
-	if (pmru->pszItems[i]) {
-		if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
-		  LocalFree(pmru->pszItems[i]);
-		  break;
-		}
-		else {
-		  WCHAR wchItem[MAX_PATH];
-		  PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
-		  if (lstrcmpi(wchItem, pszFile) == 0) {
-			LocalFree(pmru->pszItems[i]);
-			break;
-		  }
-		}
-	}
+    if (pmru->pszItems[i]) {
+      if (lstrcmpi(pmru->pszItems[i], pszFile) == 0) {
+        LocalFree(pmru->pszItems[i]);
+        break;
+      }
+      else {
+        WCHAR wchItem[MAX_PATH];
+        PathAbsoluteFromApp(pmru->pszItems[i], wchItem, COUNTOF(wchItem), TRUE);
+        if (lstrcmpi(wchItem, pszFile) == 0) {
+          LocalFree(pmru->pszItems[i]);
+          break;
+        }
+      }
+    }
   }
   i = min(i, pmru->iSize - 1);
   for (; i > 0; i--) {
@@ -1617,11 +1617,11 @@ BOOL MRU_Load(LPMRULIST pmru)
   for (i = 0; i < pmru->iSize; i++) {
     wsprintf(tchName, L"%.2i", i + 1);
     if (IniSectionGetString(pIniSection, tchName, L"", tchItem, COUNTOF(tchItem))) {
-        /*if (pmru->iFlags & MRU_UTF8) {
-          WCHAR wchItem[1024];
-          int cbw = MultiByteToWideChar(CP_UTF7,0,tchItem,-1,wchItem,COUNTOF(wchItem));
-          WideCharToMultiByte(CP_UTF8,0,wchItem,cbw,tchItem,COUNTOF(tchItem),NULL,NULL);
-          pmru->pszItems[n++] = StrDup(tchItem);
+      /*if (pmru->iFlags & MRU_UTF8) {
+        WCHAR wchItem[1024];
+        int cbw = MultiByteToWideChar(CP_UTF7,0,tchItem,-1,wchItem,COUNTOF(wchItem));
+        WideCharToMultiByte(CP_UTF8,0,wchItem,cbw,tchItem,COUNTOF(tchItem),NULL,NULL);
+        pmru->pszItems[n++] = StrDup(tchItem);
         }
         else*/
       pmru->pszItems[n++] = StrDup(tchItem);
@@ -1646,8 +1646,8 @@ BOOL MRU_Save(LPMRULIST pmru)
         int cbw = MultiByteToWideChar(CP_UTF8,0,pmru->pszItems[i],-1,wchItem,COUNTOF(wchItem));
         WideCharToMultiByte(CP_UTF7,0,wchItem,cbw,tchItem,COUNTOF(tchItem),NULL,NULL);
         IniSectionSetString(pIniSection,tchName,tchItem);
-      }
-      else*/
+        }
+        else*/
       IniSectionSetString(pIniSection, tchName, pmru->pszItems[i]);
     }
   }
@@ -1689,7 +1689,7 @@ BOOL MRU_MergeSave(LPMRULIST pmru, BOOL bAddFiles, BOOL bRelativePath, BOOL bUne
   Modify dialog templates to use current theme font
   Based on code of MFC helper class CDialogTemplate
 
-*/
+  */
 
 BOOL GetThemedDialogFont(LPWSTR lpFaceName, WORD *wSize)
 {
@@ -1723,15 +1723,15 @@ BOOL GetThemedDialogFont(LPWSTR lpFaceName, WORD *wSize)
   }
   /*
   if (!bSucceed) {
-    NONCLIENTMETRICS ncm;
-    ncm.cbSize = sizeof(NONCLIENTMETRICS);
-    SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof(NONCLIENTMETRICS),&ncm,0);
-    if (ncm.lfMessageFont.lfHeight < 0)
-      ncm.lfMessageFont.lfHeight = -ncm.lfMessageFont.lfHeight;
-    *wSize = (WORD)MulDiv(ncm.lfMessageFont.lfHeight,72,iLogPixelsY);
-    if (*wSize == 0)
-      *wSize = 8;
-    StrCpyN(lpFaceName,ncm.lfMessageFont.lfFaceName,LF_FACESIZE);
+  NONCLIENTMETRICS ncm;
+  ncm.cbSize = sizeof(NONCLIENTMETRICS);
+  SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof(NONCLIENTMETRICS),&ncm,0);
+  if (ncm.lfMessageFont.lfHeight < 0)
+  ncm.lfMessageFont.lfHeight = -ncm.lfMessageFont.lfHeight;
+  *wSize = (WORD)MulDiv(ncm.lfMessageFont.lfHeight,72,iLogPixelsY);
+  if (*wSize == 0)
+  *wSize = 8;
+  StrCpyN(lpFaceName,ncm.lfMessageFont.lfFaceName,LF_FACESIZE);
   }*/
   return (bSucceed);
 }
@@ -1814,8 +1814,8 @@ DLGTEMPLATE *LoadThemedDialogTemplate(LPCTSTR lpDialogTemplateID, HINSTANCE hIns
   if (!GetThemedDialogFont(wchFaceName, &wFontSize)) {
     return (pTemplate);
   }
-  bDialogEx  = DialogTemplate_IsDialogEx(pTemplate);
-  bHasFont   = DialogTemplate_HasFont(pTemplate);
+  bDialogEx = DialogTemplate_IsDialogEx(pTemplate);
+  bHasFont = DialogTemplate_HasFont(pTemplate);
   cbFontAttr = DialogTemplate_FontAttrSize(bDialogEx);
   if (bDialogEx) {
     ((DLGTEMPLATEEX *)pTemplate)->style |= DS_SHELLFONT;
@@ -1882,8 +1882,8 @@ HWND CreateThemedDialogParam(
 /
 
 /**
- * Is the character an octal digit?
- */
+* Is the character an octal digit?
+*/
 static BOOL IsOctalDigit(char ch)
 {
   return ch >= '0' && ch <= '7';
@@ -2040,10 +2040,10 @@ void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
   MinimizeToTray - Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
 
   Changes made by flo:
-   - Commented out: #include "stdafx.h"
-   - Moved variable declaration: APPBARDATA appBarData;
+  - Commented out: #include "stdafx.h"
+  - Moved variable declaration: APPBARDATA appBarData;
 
-*/
+  */
 
 // MinimizeToTray
 //
@@ -2110,12 +2110,12 @@ static VOID GetTrayWndRect(LPRECT lpTrayRect)
   /*APPBARDATA appBarData;*/
   appBarData.cbSize = sizeof(appBarData);
   if (SHAppBarMessage(ABM_GETTASKBARPOS, &appBarData)) {
-      // We know the edge the taskbar is connected to, so guess the rect of the
-      // system tray. Use various fudge factor to make it look good
+    // We know the edge the taskbar is connected to, so guess the rect of the
+    // system tray. Use various fudge factor to make it look good
     switch (appBarData.uEdge) {
       case ABE_LEFT:
       case ABE_RIGHT:
-          // We want to minimize to the bottom of the taskbar
+        // We want to minimize to the bottom of the taskbar
         lpTrayRect->top = appBarData.rc.bottom - 100;
         lpTrayRect->bottom = appBarData.rc.bottom - 16;
         lpTrayRect->left = appBarData.rc.left;
@@ -2123,7 +2123,7 @@ static VOID GetTrayWndRect(LPRECT lpTrayRect)
         break;
       case ABE_TOP:
       case ABE_BOTTOM:
-          // We want to minimize to the right of the taskbar
+        // We want to minimize to the right of the taskbar
         lpTrayRect->top = appBarData.rc.top;
         lpTrayRect->bottom = appBarData.rc.bottom;
         lpTrayRect->left = appBarData.rc.right - 100;
@@ -2192,8 +2192,8 @@ VOID MinimizeWndToTray(HWND hWnd)
 VOID RestoreWndFromTray(HWND hWnd)
 {
   if (GetDoAnimateMinimize()) {
-      // Get the rect of the tray and the window. Note that the window rect
-      // is still valid even though the window is hidden
+    // Get the rect of the tray and the window. Note that the window rect
+    // is still valid even though the window is hidden
     RECT rcFrom, rcTo;
     GetTrayWndRect(&rcFrom);
     GetWindowRect(hWnd, &rcTo);
@@ -2241,7 +2241,7 @@ VOID HL_SaveINI()
   IniSetInt(HL_INI_SECTION, L"SelectionScrollTimeout", _hl_sel_edit_timer_to);
   IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
   IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
-  IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range/1024);
+  IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range / 1024);
   IniSetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
   IniSetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
   IniSetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
@@ -2266,14 +2266,14 @@ VOID HL_Trace(const char *fmt, ...)
     SYSTEMTIME st;
     char	buff[0xff + 1];
     char* ch = 0;
-        //
+    //
     GetLocalTime(&st);
     fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
     //
     va_start(vl, fmt);
     vsprintf_s(buff, 0xff, fmt, vl);
     va_end(vl);
-//
+    //
     ch = buff;
     while (*ch) {
       if ('\n' == *ch) {
@@ -2281,7 +2281,7 @@ VOID HL_Trace(const char *fmt, ...)
       }
       ++ch;
     }
-        //
+    //
     fprintf(_hL_log, "%s\r\n", buff);
     fflush(_hL_log);
   }
@@ -2404,7 +2404,7 @@ VOID HL_Wheel_scroll_worker(int lines)
   _hl_wheel_timer = TRUE;
   SetTimer(NULL, HL_WHEEL_TIMER_ID, _hl_wheel_timer_to, HL_wheel_timer_proc);
 #if 0
-    //
+  //
   anch = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
   sel = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
   //
@@ -2507,13 +2507,13 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPCWSTR dir, LPWSTR out)
   if (INVALID_HANDLE_VALUE == res) {
     return FALSE;
   }
-//
+  //
   temp[0] = 0;
   //
   do {
     if (0 == (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
       HL_TRACE("file: '%S'", wfd.cFileName);
-//
+      //
       if (wcsnicmp(wfd.cFileName, in, 1)) {
         HL_TRACE("skip");
         continue;
@@ -2525,7 +2525,7 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPCWSTR dir, LPWSTR out)
     }
   } while (FindNextFile(res, &wfd) != 0);
   FindClose(res);
-//
+  //
   if (temp[0]) {
     lstrcpy(out, dir);
     if (L'\\' != out[lstrlen(out) - 1]) {
@@ -2552,11 +2552,11 @@ BOOL _HL_fileIsCdUp(LPCWSTR str)
 UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
   static UINT file_ok = 0;
- // static UINT lbl_ch = 0;
+  // static UINT lbl_ch = 0;
   static WCHAR last_selected[MAX_PATH];
   // XP spec
   static BOOL take_call = FALSE;
-//
+  //
   HWND hPar = GetParent(hdlg);
   switch (uiMsg) {
     case WM_NOTIFY: {
@@ -2611,16 +2611,16 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
           case CDN_SELCHANGE: {
               WCHAR buf[MAX_PATH];
               HL_TRACE("OFN sel change  ");
-			  if ((CommDlg_OpenSave_GetFilePath(hPar, buf, MAX_PATH) > 0) && !PathIsDirectory(buf)) {
-				  if (CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH) > 0) {
-					  if (_HL_fileIsCdUp(buf)) {
-						  *buf = 0;
-					  }
-					  HL_TRACE("Set OFN input %S", buf);
-					  CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf);
-					  lstrcpy(last_selected, buf);
-					  return 1;
-				  }
+              if ((CommDlg_OpenSave_GetFilePath(hPar, buf, MAX_PATH) > 0) && !PathIsDirectory(buf)) {
+                if (CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH) > 0) {
+                  if (_HL_fileIsCdUp(buf)) {
+                    *buf = 0;
+                  }
+                  HL_TRACE("Set OFN input %S", buf);
+                  CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf);
+                  lstrcpy(last_selected, buf);
+                  return 1;
+                }
               }
             }
                               break;
@@ -2641,7 +2641,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
               HL_TRACE("OFN folder change  ");
               SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
 #endif
-			  *last_selected = 0;
+              *last_selected = 0;
             }
                                  break;
         }
@@ -2656,7 +2656,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
       }
       else if (lbl_ch = uiMsg) {
         HL_Trace("custom LBL from %d (action %d)", wParam, lParam);
-                //  return	1;
+        //  return	1;
 #endif
       }
   }
@@ -2694,7 +2694,7 @@ VOID HL_Move_Carret_Silently(BOOL up)
   tline = SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, tline, 0);
   if (!up) {
     int len = max(0, SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0));
-    int wraps =  HLS_get_wraps(tline, tline + len);
+    int wraps = HLS_get_wraps(tline, tline + len);
     HL_TRACE_I(len);
     HL_TRACE_I(wraps);
     tline -= wraps;
@@ -2757,7 +2757,7 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   for (k = line_first; k <= line_last; k++) {
     //
     res = 0;
-    ttf.chrg.cpMin	= SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
+    ttf.chrg.cpMin = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
     ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
 #ifdef _DEBUG
     tr.chrg = ttf.chrg;

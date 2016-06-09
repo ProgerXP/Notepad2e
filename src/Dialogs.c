@@ -276,7 +276,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         SetDlgItemText(hwnd, IDC_COMMANDLINE, (LPCWSTR)lParam);
         SHAutoComplete(GetDlgItem(hwnd, IDC_COMMANDLINE), SHACF_FILESYSTEM);
         CenterDlgInParent(hwnd);
-//	SetDlgItemText(hwnd, IDC_COMMANDLINE, _hl_last_run);
+        //	SetDlgItemText(hwnd, IDC_COMMANDLINE, _hl_last_run);
       }
                         return TRUE;
     case WM_DESTROY:
@@ -364,7 +364,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
                 }
                 else
                   PostMessage(hwnd, WM_NEXTDLGCTL,
-                              (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
+                  (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
               }
             }
           }
@@ -406,7 +406,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 {
   switch (umsg) {
     case WM_INITDIALOG: {
-        LVCOLUMN lvc ={LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0};
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         ResizeDlg_Init(hwnd, cxOpenWithDlg, cyOpenWithDlg, IDC_RESIZEGRIP3);
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
         //SetExplorerTheme(GetDlgItem(hwnd,IDC_OPENWITHDIR));
@@ -511,7 +511,7 @@ BOOL OpenWithDlg(HWND hwnd, LPCWSTR lpstrFile)
   DLITEM dliOpenWith;
   dliOpenWith.mask = DLI_FILENAME;
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_OPENWITH),
-      hwnd, OpenWithDlgProc, (LPARAM)&dliOpenWith)) {
+    hwnd, OpenWithDlgProc, (LPARAM)&dliOpenWith)) {
     SHELLEXECUTEINFO sei;
     WCHAR szParam[MAX_PATH];
     WCHAR wchDirectory[MAX_PATH] = L"";
@@ -555,7 +555,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
   static HWND hwndLV;
   switch (umsg) {
     case WM_INITDIALOG: {
-        LVCOLUMN lvc ={LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0};
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         ResizeDlg_Init(hwnd, cxFavoritesDlg, cyFavoritesDlg, IDC_RESIZEGRIP3);
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
         //SetExplorerTheme(GetDlgItem(hwnd,IDC_FAVORITESDIR));
@@ -660,7 +660,7 @@ BOOL FavoritesDlg(HWND hwnd, LPWSTR lpstrFile)
   DLITEM dliFavorite;
   dliFavorite.mask = DLI_FILENAME;
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_FAVORITES),
-      hwnd, FavoritesDlgProc, (LPARAM)&dliFavorite)) {
+    hwnd, FavoritesDlgProc, (LPARAM)&dliFavorite)) {
     lstrcpyn(lpstrFile, dliFavorite.szFileName, MAX_PATH);
     return (TRUE);
   }
@@ -760,7 +760,7 @@ DWORD WINAPI FileMRUIconThread(LPVOID lpParam)
   WCHAR tch[MAX_PATH];
   SHFILEINFO shfi;
   DWORD dwFlags = SHGFI_SMALLICON | SHGFI_SYSICONINDEX | SHGFI_ATTRIBUTES | SHGFI_ATTR_SPECIFIED;
-  DWORD dwAttr  = 0;
+  DWORD dwAttr = 0;
   int iItem = 0;
   int iMaxItem;
   lpit = (LPICONTHREADINFO)lpParam;
@@ -869,7 +869,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
   switch (umsg) {
     case WM_INITDIALOG: {
         SHFILEINFO shfi;
-        LVCOLUMN lvc ={LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0};
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         LPICONTHREADINFO lpit = (LPVOID)GlobalAlloc(GPTR, sizeof(ICONTHREADINFO));
         SetProp(hwnd, L"it", (HANDLE)lpit);
         lpit->hwnd = GetDlgItem(hwnd, IDC_FILEMRU);
@@ -883,7 +883,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU),
                               (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
-      //SetExplorerTheme(GetDlgItem(hwnd,IDC_FILEMRU));
+        //SetExplorerTheme(GetDlgItem(hwnd,IDC_FILEMRU));
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FILEMRU), 0, &lvc);
         // Update view
@@ -992,7 +992,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
             //int  iItem;
             //if ((iItem = SendDlgItemMessage(hwnd,IDC_FILEMRU,LB_GETCURSEL,0,0)) != LB_ERR)
             if (ListView_GetSelectedCount(GetDlgItem(hwnd, IDC_FILEMRU))) {
-                //SendDlgItemMessage(hwnd,IDC_FILEMRU,LB_GETTEXT,(WPARAM)iItem,(LPARAM)tch);
+              //SendDlgItemMessage(hwnd,IDC_FILEMRU,LB_GETTEXT,(WPARAM)iItem,(LPARAM)tch);
               LV_ITEM lvi;
               ZeroMemory(&lvi, sizeof(LV_ITEM));
               lvi.mask = LVIF_TEXT;
@@ -1002,7 +1002,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
               ListView_GetItem(GetDlgItem(hwnd, IDC_FILEMRU), &lvi);
               PathUnquoteSpaces(tch);
               if (!PathFileExists(tch)) {
-                  // Ask...
+                // Ask...
                 if (IDYES == MsgBox(MBYESNO, IDS_ERR_MRUDLG)) {
                   MRU_Delete(pFileMRU, lvi.iItem);
                   MRU_DeleteFileFromStore(pFileMRU, tch);
@@ -1040,7 +1040,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 BOOL FileMRUDlg(HWND hwnd, LPWSTR lpstrFile)
 {
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_FILEMRU),
-      hwnd, FileMRUDlgProc, (LPARAM)lpstrFile)) {
+    hwnd, FileMRUDlgProc, (LPARAM)lpstrFile)) {
     return TRUE;
   }
   else {
@@ -1497,7 +1497,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
   static HWND hwndLV;
   switch (umsg) {
     case WM_INITDIALOG: {
-        LVCOLUMN lvc ={LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0};
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         HBITMAP hbmp;
         HIMAGELIST himl;
         pdd = (PENCODEDLG)lParam;
