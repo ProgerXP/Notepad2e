@@ -466,7 +466,7 @@ void SetWindowTransparentMode(HWND hwnd, BOOL bTransparentMode)
   }
   else
     SetWindowLongPtr(hwnd, GWL_EXSTYLE,
-    GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
+                     GetWindowLongPtr(hwnd, GWL_EXSTYLE) & ~WS_EX_LAYERED);
 }
 
 //=============================================================================
@@ -737,7 +737,7 @@ LRESULT SendWMSize(HWND hwnd)
   RECT rc;
   GetClientRect(hwnd, &rc);
   return (SendMessage(hwnd, WM_SIZE, SIZE_RESTORED,
-    MAKELPARAM(rc.right, rc.bottom)));
+                      MAKELPARAM(rc.right, rc.bottom)));
 }
 
 //=============================================================================
@@ -791,7 +791,7 @@ int Toolbar_GetButtons(HWND hwnd, int cmdBase, LPWSTR lpszButtons, int cchButton
   for (i = 0; i < c; i++) {
     SendMessage(hwnd, TB_GETBUTTON, (WPARAM)i, (LPARAM)&tbb);
     wsprintf(tchItem, L"%i ",
-             (tbb.idCommand == 0) ? 0 : tbb.idCommand - cmdBase + 1);
+      (tbb.idCommand == 0) ? 0 : tbb.idCommand - cmdBase + 1);
     lstrcat(tchButtons, tchItem);
   }
   TrimString(tchButtons);
@@ -805,7 +805,7 @@ int Toolbar_SetButtons(HWND hwnd, int cmdBase, LPCWSTR lpszButtons, LPCTBBUTTON 
   WCHAR *p;
   int i, c;
   int iCmd;
-  ZeroMemory(tchButtons, COUNTOF(tchButtons) *sizeof(tchButtons[0]));
+  ZeroMemory(tchButtons, COUNTOF(tchButtons) * sizeof(tchButtons[0]));
   lstrcpyn(tchButtons, lpszButtons, COUNTOF(tchButtons) - 2);
   TrimString(tchButtons);
   while (p = StrStr(tchButtons, L"  ")) {
@@ -984,10 +984,10 @@ BOOL PathIsLnkFile(LPCWSTR pszPath)
 
     else
     return FALSE;*/
-  //if (!lstrcmpi(PathFindExtension(pszPath),L".lnk"))
-  //  return TRUE;
-  //else
-  //  return FALSE;
+    //if (!lstrcmpi(PathFindExtension(pszPath),L".lnk"))
+    //  return TRUE;
+    //else
+    //  return FALSE;
   if (lstrcmpi(PathFindExtension(pszPath), L".lnk")) {
     return FALSE;
   }
@@ -1012,8 +1012,8 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
   WIN32_FIND_DATA  fd;
   BOOL             bSucceeded = FALSE;
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-    CLSCTX_INPROC_SERVER,
-    &IID_IShellLink, &psl))) {
+                                 CLSCTX_INPROC_SERVER,
+                                 &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1108,8 +1108,8 @@ BOOL PathCreateDeskLnk(LPCWSTR pszDocument)
     return (FALSE);
   }
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-    CLSCTX_INPROC_SERVER,
-    &IID_IShellLink, &psl))) {
+                                 CLSCTX_INPROC_SERVER,
+                                 &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1153,8 +1153,8 @@ BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszDir)
     return FALSE;
   }
   if (SUCCEEDED(CoCreateInstance(&CLSID_ShellLink, NULL,
-    CLSCTX_INPROC_SERVER,
-    &IID_IShellLink, &psl))) {
+                                 CLSCTX_INPROC_SERVER,
+                                 &IID_IShellLink, &psl))) {
     IPersistFile *ppf;
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf))) {
       WORD wsz[MAX_PATH];
@@ -1379,9 +1379,9 @@ int FormatNumberStr(LPWSTR lpNumberStr)
     return (0);
   }
   if (!GetLocaleInfo(LOCALE_USER_DEFAULT,
-    LOCALE_STHOUSAND,
-    szSep,
-    COUNTOF(szSep))) {
+                     LOCALE_STHOUSAND,
+                     szSep,
+                     COUNTOF(szSep))) {
     szSep[0] = L'\'';
   }
   c = StrEnd(lpNumberStr);
@@ -1744,7 +1744,7 @@ __inline BOOL DialogTemplate_IsDialogEx(const DLGTEMPLATE *pTemplate)
 __inline BOOL DialogTemplate_HasFont(const DLGTEMPLATE *pTemplate)
 {
   return (DS_SETFONT &
-          (DialogTemplate_IsDialogEx(pTemplate) ? ((DLGTEMPLATEEX *)pTemplate)->style : pTemplate->style));
+    (DialogTemplate_IsDialogEx(pTemplate) ? ((DLGTEMPLATEEX *)pTemplate)->style : pTemplate->style));
 }
 
 __inline int DialogTemplate_FontAttrSize(BOOL bDialogEx)
@@ -1803,7 +1803,7 @@ DLGTEMPLATE *LoadThemedDialogTemplate(LPCTSTR lpDialogTemplateID, HINSTANCE hIns
   pRsrcMem = (DLGTEMPLATE *)LockResource(hRsrcMem);
   dwTemplateSize = (UINT)SizeofResource(hInstance, hRsrc);
   if ((dwTemplateSize == 0) ||
-      (pTemplate = LocalAlloc(LPTR, dwTemplateSize + LF_FACESIZE * 2)) == NULL) {
+    (pTemplate = LocalAlloc(LPTR, dwTemplateSize + LF_FACESIZE * 2)) == NULL) {
     UnlockResource(hRsrcMem);
     FreeResource(hRsrcMem);
     return (NULL);
@@ -2045,29 +2045,29 @@ void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
 
   */
 
-// MinimizeToTray
-//
-// A couple of routines to show how to make it produce a custom caption
-// animation to make it look like we are minimizing to and maximizing
-// from the system tray
-//
-// These routines are public domain, but it would be nice if you dropped
-// me a line if you use them!
-//
-// 1.0 29.06.2000 Initial version
-// 1.1 01.07.2000 The window retains it's place in the Z-order of windows
-//     when minimized/hidden. This means that when restored/shown, it doen't
-//     always appear as the foreground window unless we call SetForegroundWindow
-//
-// Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
-/*#include "stdafx.h"*/
+  // MinimizeToTray
+  //
+  // A couple of routines to show how to make it produce a custom caption
+  // animation to make it look like we are minimizing to and maximizing
+  // from the system tray
+  //
+  // These routines are public domain, but it would be nice if you dropped
+  // me a line if you use them!
+  //
+  // 1.0 29.06.2000 Initial version
+  // 1.1 01.07.2000 The window retains it's place in the Z-order of windows
+  //     when minimized/hidden. This means that when restored/shown, it doen't
+  //     always appear as the foreground window unless we call SetForegroundWindow
+  //
+  // Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
+  /*#include "stdafx.h"*/
 
-// Odd. VC++6 winuser.h has IDANI_CAPTION defined (as well as IDANI_OPEN and
-// IDANI_CLOSE), but the Platform SDK only has IDANI_OPEN...
+  // Odd. VC++6 winuser.h has IDANI_CAPTION defined (as well as IDANI_OPEN and
+  // IDANI_CLOSE), but the Platform SDK only has IDANI_OPEN...
 
-// I don't know what IDANI_OPEN or IDANI_CLOSE do. Trying them in this code
-// produces nothing. Perhaps they were intended for window opening and closing
-// like the MAC provides...
+  // I don't know what IDANI_OPEN or IDANI_CLOSE do. Trying them in this code
+  // produces nothing. Perhaps they were intended for window opening and closing
+  // like the MAC provides...
 #ifndef IDANI_OPEN
 #define IDANI_OPEN 1
 #endif
@@ -2439,7 +2439,7 @@ VOID HL_Set_wheel_scroll(BOOL on)
 BOOL CALLBACK HL_Enum_proc(
   HWND hwnd,
   LPARAM lParam
-  )
+)
 {
   WCHAR title[0xff + 1];
   GetWindowText(hwnd, title, 0xff);
@@ -2744,7 +2744,7 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   ZeroMemory(&ttf, sizeof(ttf));
   if (lpf->bTransformBS) {
     TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
+      (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
   }
   if (lstrlenA(szFind2) == 0) {
     return;
