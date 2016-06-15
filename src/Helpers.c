@@ -2743,8 +2743,8 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
   ZeroMemory(&ttf, sizeof(ttf));
   if (lpf->bTransformBS) {
-    TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP),
-      (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP)
+                         , (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
   }
   if (lstrlenA(szFind2) == 0) {
     return;
