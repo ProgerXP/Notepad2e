@@ -363,8 +363,8 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
                   EndDialog(hwnd, IDOK);
                 }
                 else
-                  PostMessage(hwnd, WM_NEXTDLGCTL,
-                  (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
+                  PostMessage(hwnd, WM_NEXTDLGCTL
+                              , (WPARAM)(GetDlgItem(hwnd, IDC_COMMANDLINE)), 1);
               }
             }
           }
@@ -511,7 +511,7 @@ BOOL OpenWithDlg(HWND hwnd, LPCWSTR lpstrFile)
   DLITEM dliOpenWith;
   dliOpenWith.mask = DLI_FILENAME;
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_OPENWITH),
-    hwnd, OpenWithDlgProc, (LPARAM)&dliOpenWith)) {
+                                   hwnd, OpenWithDlgProc, (LPARAM)&dliOpenWith)) {
     SHELLEXECUTEINFO sei;
     WCHAR szParam[MAX_PATH];
     WCHAR wchDirectory[MAX_PATH] = L"";
@@ -660,7 +660,7 @@ BOOL FavoritesDlg(HWND hwnd, LPWSTR lpstrFile)
   DLITEM dliFavorite;
   dliFavorite.mask = DLI_FILENAME;
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_FAVORITES),
-    hwnd, FavoritesDlgProc, (LPARAM)&dliFavorite)) {
+                                   hwnd, FavoritesDlgProc, (LPARAM)&dliFavorite)) {
     lstrcpyn(lpstrFile, dliFavorite.szFileName, MAX_PATH);
     return (TRUE);
   }
@@ -877,11 +877,11 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         lpit->hTerminatedThread = CreateEvent(NULL, TRUE, TRUE, NULL);
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
         ResizeDlg_Init(hwnd, cxFileMRUDlg, cyFileMRUDlg, IDC_RESIZEGRIP);
-        ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU),
-                              (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_SMALLICON | SHGFI_SYSICONINDEX),
+        ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU)
+                              , (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_SMALLICON | SHGFI_SYSICONINDEX),
                               LVSIL_SMALL);
-        ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU),
-                              (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
+        ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU)
+                              , (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
         //SetExplorerTheme(GetDlgItem(hwnd,IDC_FILEMRU));
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
@@ -1040,7 +1040,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 BOOL FileMRUDlg(HWND hwnd, LPWSTR lpstrFile)
 {
   if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_FILEMRU),
-    hwnd, FileMRUDlgProc, (LPARAM)lpstrFile)) {
+                                   hwnd, FileMRUDlgProc, (LPARAM)lpstrFile)) {
     return TRUE;
   }
   else {
@@ -1205,8 +1205,8 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
         }
         SendDlgItemMessage(hwnd, 100, CB_SETCURSEL, (WPARAM)iWordWrapIndent, 0);
         SendDlgItemMessage(hwnd, 101, CB_SETCURSEL, (WPARAM)(bShowWordWrapSymbols) ? iWordWrapSymbols % 10 : 0, 0);
-        SendDlgItemMessage(hwnd, 102, CB_SETCURSEL,
-                           (WPARAM)(bShowWordWrapSymbols) ? ((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10 : 0, 0);
+        SendDlgItemMessage(hwnd, 102, CB_SETCURSEL
+                           , (WPARAM)(bShowWordWrapSymbols) ? ((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10 : 0, 0);
         SendDlgItemMessage(hwnd, 103, CB_SETCURSEL, (WPARAM)iWordWrapMode, 0);
         CenterDlgInParent(hwnd);
       }
@@ -1720,8 +1720,8 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
     case WM_INITDIALOG:
       lpib = (LPINFOBOX)lParam;
       SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
-      SendDlgItemMessage(hwnd, IDC_INFOBOXICON, STM_SETICON,
-                         (WPARAM)LoadIcon(NULL, IDI_EXCLAMATION), 0);
+      SendDlgItemMessage(hwnd, IDC_INFOBOXICON, STM_SETICON
+                         , (WPARAM)LoadIcon(NULL, IDI_EXCLAMATION), 0);
       SetDlgItemText(hwnd, IDC_INFOBOXTEXT, lpib->lpstrMessage);
       if (lpib->bDisableCheckBox) {
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
