@@ -63,37 +63,37 @@ HWND      hDlgFindReplace = NULL;
 
 #define FIND_INFO_INDEX 12
 
-TBBUTTON  tbbMainWnd[] = { { 0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 2, IDT_FILE_BROWSE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 3, IDT_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 4, IDT_EDIT_UNDO, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 5, IDT_EDIT_REDO, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 6, IDT_EDIT_CUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 7, IDT_EDIT_COPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 8, IDT_EDIT_PASTE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ ICON_FIND_OK, IDT_EDIT_FIND, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 10, IDT_EDIT_REPLACE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 11, IDT_VIEW_WORDWRAP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 12, IDT_VIEW_ZOOMIN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 13, IDT_VIEW_ZOOMOUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 14, IDT_VIEW_SCHEME, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 15, IDT_VIEW_SCHEMECONFIG, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 0, 0, 0, TBSTYLE_SEP, 0, 0 },
-{ 16, IDT_FILE_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 18, IDT_FILE_SAVECOPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 19, IDT_EDIT_CLEAR, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 20, IDT_FILE_PRINT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 21, IDT_FILE_OPENFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 22, IDT_FILE_ADDTOFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
-{ 23, IDT_FILE_OPEN_PREV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {2, IDT_FILE_BROWSE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {3, IDT_FILE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {4, IDT_EDIT_UNDO, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {5, IDT_EDIT_REDO, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {6, IDT_EDIT_CUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {7, IDT_EDIT_COPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {8, IDT_EDIT_PASTE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {ICON_FIND_OK, IDT_EDIT_FIND, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+    {10, IDT_EDIT_REPLACE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {11, IDT_VIEW_WORDWRAP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {12, IDT_VIEW_ZOOMIN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {13, IDT_VIEW_ZOOMOUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {14, IDT_VIEW_SCHEME, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {15, IDT_VIEW_SCHEMECONFIG, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {16, IDT_FILE_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {18, IDT_FILE_SAVECOPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {19, IDT_EDIT_CLEAR, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {20, IDT_FILE_PRINT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {21, IDT_FILE_OPENFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+  { 22, IDT_FILE_ADDTOFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
+  { 23, IDT_FILE_OPEN_PREV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
 { 24, IDT_FILE_OPEN_NEXT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0 },
 };
 
@@ -259,9 +259,9 @@ BOOL bReplaceInitialized = FALSE;
 extern NP2ENCODING mEncoding[];
 
 int iLineEndings[3] = {
-  SC_EOL_CRLF,
-  SC_EOL_LF,
-  SC_EOL_CR
+    SC_EOL_CRLF,
+    SC_EOL_LF,
+    SC_EOL_CR
 };
 
 WCHAR wchPrefixSelection[256] = L"";
@@ -991,7 +991,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         POINT pt;
         int nID = GetDlgCtrlID((HWND)wParam);
         if ((nID != IDC_EDIT) && (nID != IDC_STATUSBAR) &&
-            (nID != IDC_REBAR) && (nID != IDC_TOOLBAR)) {
+          (nID != IDC_REBAR) && (nID != IDC_TOOLBAR)) {
           return DefWindowProc(hwnd, umsg, wParam, lParam);
         }
         hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
@@ -1588,7 +1588,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
         GetWindowRect(hwndToolbar,&rc);
         y = (rc.bottom - rc.top);
         cy -= (rc.bottom - rc.top);*/
-    //SendMessage(hwndToolbar,TB_GETITEMRECT,0,(LPARAM)&rc);
+        //SendMessage(hwndToolbar,TB_GETITEMRECT,0,(LPARAM)&rc);
     SetWindowPos(hwndReBar, NULL, 0, 0, LOWORD(lParam), cyReBar, SWP_NOZORDER);
     // the ReBar automatically sets the correct height
     // calling SetWindowPos() with the height of one toolbar button
@@ -1738,12 +1738,12 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   EnableCmd(hmenu, IDM_EDIT_LINECOMMENT,
             !(i == SCLEX_NULL
-            //|| i == SCLEX_CSS
-            || i == SCLEX_DIFF));
+              //|| i == SCLEX_CSS
+              || i == SCLEX_DIFF));
   EnableCmd(hmenu, IDM_EDIT_STREAMCOMMENT,
             !(i == SCLEX_NULL || i == SCLEX_VBSCRIPT || i == SCLEX_MAKEFILE || i == SCLEX_VB || i == SCLEX_ASM ||
-            i == SCLEX_SQL || i == SCLEX_PERL || i == SCLEX_PYTHON || i == SCLEX_PROPERTIES || i == SCLEX_CONF ||
-            i == SCLEX_POWERSHELL || i == SCLEX_BATCH || i == SCLEX_DIFF));
+              i == SCLEX_SQL || i == SCLEX_PERL || i == SCLEX_PYTHON || i == SCLEX_PROPERTIES || i == SCLEX_CONF ||
+              i == SCLEX_POWERSHELL || i == SCLEX_BATCH || i == SCLEX_DIFF));
   EnableCmd(hmenu, IDM_EDIT_INSERT_ENCODING, *mEncoding[iEncoding].pszParseNames);
   //EnableCmd(hmenu,IDM_EDIT_INSERT_SHORTDATE,!bReadOnly);
   //EnableCmd(hmenu,IDM_EDIT_INSERT_LONGDATE,!bReadOnly);
@@ -2232,8 +2232,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           }
         }
         if (EditSetNewEncoding(hwndEdit,
-          iEncoding, iNewEncoding,
-          (flagSetEncoding), lstrlen(szCurFile) == 0)) {
+                               iEncoding, iNewEncoding,
+                               (flagSetEncoding), lstrlen(szCurFile) == 0)) {
           if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) == 0) {
             iEncoding = iNewEncoding;
             iOriginalEncoding = iNewEncoding;
@@ -2492,10 +2492,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       SendMessage(hwndEdit, SCI_DELLINERIGHT, 0, 0);
       break;
     case IDM_EDIT_INDENT: {
-        int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                             (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0);
-        int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                           (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
+        int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION
+                                             , (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0);
+        int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION
+                                           , (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
         SendMessage(hwndEdit, SCI_SETTABINDENTS, TRUE, 0);
         if (iLineSelStart == iLineSelEnd) {
           SendMessage(hwndEdit, SCI_VCHOME, 0, 0);
@@ -2508,10 +2508,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       }
                           break;
     case IDM_EDIT_UNINDENT: {
-        int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                             (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0);
-        int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                           (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
+        int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION
+                                             , (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0);
+        int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION
+                                           , (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
         SendMessage(hwndEdit, SCI_SETTABINDENTS, TRUE, 0);
         if (iLineSelStart == iLineSelEnd) {
           SendMessage(hwndEdit, SCI_VCHOME, 0, 0);
@@ -2707,7 +2707,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         GetLocalTime(&st);
         if (IniGetString(L"Settings2",
           (LOWORD(wParam) == IDM_EDIT_INSERT_SHORTDATE) ? L"DateTimeShort" : L"DateTimeLong",
-          L"", tchTemplate, COUNTOF(tchTemplate))) {
+                         L"", tchTemplate, COUNTOF(tchTemplate))) {
           struct tm sst;
           sst.tm_isdst = -1;
           sst.tm_sec = (int)st.wSecond;
@@ -4463,14 +4463,14 @@ void LoadSettings()
     efrData.bNoFindWrap = TRUE;
   }
   if (!IniSectionGetString(pIniSection, L"OpenWithDir", L"",
-    tchOpenWithDir, COUNTOF(tchOpenWithDir))) {
+                           tchOpenWithDir, COUNTOF(tchOpenWithDir))) {
     SHGetSpecialFolderPath(NULL, tchOpenWithDir, CSIDL_DESKTOPDIRECTORY, TRUE);
   }
   else {
     PathAbsoluteFromApp(tchOpenWithDir, NULL, COUNTOF(tchOpenWithDir), TRUE);
   }
   if (!IniSectionGetString(pIniSection, L"Favorites", L"",
-    tchFavoritesDir, COUNTOF(tchFavoritesDir))) {
+                           tchFavoritesDir, COUNTOF(tchFavoritesDir))) {
     SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, tchFavoritesDir);
   }
   else {
@@ -4820,7 +4820,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
   LocalFree(pIniSection);
   /*
     SaveSettingsNow(): query Window Dimensions
-    */
+  */
   if (bSaveSettingsNow) {
     WINDOWPLACEMENT wndpl;
     // GetWindowPlacement
@@ -6179,7 +6179,7 @@ BOOL ActivatePrevInst()
         return (TRUE);
       }
       else { // IsWindowEnabled()
-        // Ask...
+       // Ask...
         if (IDYES == MsgBox(MBYESNO, IDS_ERR_PREVWINDISABLED)) {
           return (FALSE);
         }
@@ -6275,7 +6275,7 @@ BOOL ActivatePrevInst()
       return (TRUE);
     }
     else { // IsWindowEnabled()
-      // Ask...
+     // Ask...
       if (IDYES == MsgBox(MBYESNO, IDS_ERR_PREVWINDISABLED)) {
         return (FALSE);
       }
@@ -6425,7 +6425,7 @@ void ShowNotifyIcon(HWND hwnd, BOOL bAdd)
   NOTIFYICONDATA nid;
   if (!hIcon)
     hIcon = LoadImage(g_hInstance, MAKEINTRESOURCE(IDR_MAINWND),
-    IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+                      IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
   ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
   nid.cbSize = sizeof(NOTIFYICONDATA);
   nid.hWnd = hwnd;
