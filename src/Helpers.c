@@ -2043,31 +2043,31 @@ void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
   - Commented out: #include "stdafx.h"
   - Moved variable declaration: APPBARDATA appBarData;
 
-  */
+*/
 
-  // MinimizeToTray
-  //
-  // A couple of routines to show how to make it produce a custom caption
-  // animation to make it look like we are minimizing to and maximizing
-  // from the system tray
-  //
-  // These routines are public domain, but it would be nice if you dropped
-  // me a line if you use them!
-  //
-  // 1.0 29.06.2000 Initial version
-  // 1.1 01.07.2000 The window retains it's place in the Z-order of windows
-  //     when minimized/hidden. This means that when restored/shown, it doen't
-  //     always appear as the foreground window unless we call SetForegroundWindow
-  //
-  // Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
-  /*#include "stdafx.h"*/
+// MinimizeToTray
+//
+// A couple of routines to show how to make it produce a custom caption
+// animation to make it look like we are minimizing to and maximizing
+// from the system tray
+//
+// These routines are public domain, but it would be nice if you dropped
+// me a line if you use them!
+//
+// 1.0 29.06.2000 Initial version
+// 1.1 01.07.2000 The window retains it's place in the Z-order of windows
+//     when minimized/hidden. This means that when restored/shown, it doen't
+//     always appear as the foreground window unless we call SetForegroundWindow
+//
+// Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
+/*#include "stdafx.h"*/
 
-  // Odd. VC++6 winuser.h has IDANI_CAPTION defined (as well as IDANI_OPEN and
-  // IDANI_CLOSE), but the Platform SDK only has IDANI_OPEN...
+// Odd. VC++6 winuser.h has IDANI_CAPTION defined (as well as IDANI_OPEN and
+// IDANI_CLOSE), but the Platform SDK only has IDANI_OPEN...
 
-  // I don't know what IDANI_OPEN or IDANI_CLOSE do. Trying them in this code
-  // produces nothing. Perhaps they were intended for window opening and closing
-  // like the MAC provides...
+// I don't know what IDANI_OPEN or IDANI_CLOSE do. Trying them in this code
+// produces nothing. Perhaps they were intended for window opening and closing
+// like the MAC provides...
 #ifndef IDANI_OPEN
 #define IDANI_OPEN 1
 #endif
