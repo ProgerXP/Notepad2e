@@ -1191,7 +1191,7 @@ void Style_Save()
   WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
   int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   // Custom colors
-  for (i = 0; i < 161; i++)
+  for (i = 0; i < 16; i++)
   {
     WCHAR wch[32];
     wsprintf(tch, L"%02i", i + 1);

@@ -4102,7 +4102,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (bCmdEnabled)
         {
           cchSelection = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-            (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+                         (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
           if (cchSelection > 0 && cchSelection <= 500 && SendMessage(hwndEdit, SCI_GETSELTEXT, 0, 0) < COUNTOF(mszSelection))
           {
             SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)mszSelection);
@@ -4159,12 +4159,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_FINDPREVSEL:
     case IDM_EDIT_SAVEFIND: {
         int cchSelection = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-          (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+                           (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
         if (cchSelection == 0)
         {
           SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
           cchSelection = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-            (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+                         (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
         }
         if (cchSelection > 0 && cchSelection <= 500 && SendMessage(hwndEdit, SCI_GETSELTEXT, 0, 0) < 512)
         {
