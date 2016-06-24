@@ -501,22 +501,18 @@ char *EditGetClipboardText(HWND hwnd)
 //
 BOOL EditCopyAppend(HWND hwnd)
 {
-  HANDLE hOld;
-  WCHAR  *pszOld;
+  HANDLE hOld = NULL;
+  WCHAR  *pszOld = L"";
   HANDLE hNew;
   WCHAR  *pszNew;
   char  *pszText;
   int   cchTextW;
   WCHAR *pszTextW;
-  WCHAR *pszSep = L"\r\n";
+  const BOOL bClipboardDataAvailable = IsClipboardFormatAvailable(CF_UNICODETEXT);
+  const WCHAR *pszSep = bClipboardDataAvailable ? L"\r\n" : L"";
   UINT  uCodePage;
   int iCurPos;
   int iAnchorPos;
-  if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
-  {
-    SendMessage(hwnd, SCI_COPY, 0, 0);
-    return (TRUE);
-  }
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
   if (iCurPos != iAnchorPos)
@@ -574,15 +570,21 @@ BOOL EditCopyAppend(HWND hwnd)
     LocalFree(pszTextW);
     return (FALSE);
   }
-  hOld = GetClipboardData(CF_UNICODETEXT);
-  pszOld = GlobalLock(hOld);
+  if (bClipboardDataAvailable)
+  {
+    hOld = GetClipboardData(CF_UNICODETEXT);
+    pszOld = GlobalLock(hOld);
+  }
   hNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT,
                      sizeof(WCHAR) * (lstrlen(pszOld) + lstrlen(pszTextW) + 1));
   pszNew = GlobalLock(hNew);
   lstrcpy(pszNew, pszOld);
   lstrcat(pszNew, pszTextW);
   GlobalUnlock(hNew);
-  GlobalUnlock(hOld);
+  if (bClipboardDataAvailable)
+  {
+    GlobalUnlock(hOld);
+  }
   EmptyClipboard();
   SetClipboardData(CF_UNICODETEXT, hNew);
   CloseClipboard();
