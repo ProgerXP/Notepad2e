@@ -2876,7 +2876,13 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
 #endif
               // can return -1 !!!
               *dir = L'\0';
-              SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
+              if (CommDlg_OpenSave_GetFolderPath(hPar, dir, COUNTOF(dir)) < 0)
+              {
+                if (CommDlg_OpenSave_GetFilePathW(hPar, dir, COUNTOF(dir)) > 0)
+                {
+                  PathRemoveFileSpec(dir);
+                }
+              }
               //
               SetWindowLong(hdlg, DWL_MSGRESULT, 1);
               HL_TRACE("OFN OK '%S' ", buf);
