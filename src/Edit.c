@@ -8010,7 +8010,7 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
     SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
     SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
     SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
-    SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_left - 1);
+    SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_right - 1);
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   }
   //
