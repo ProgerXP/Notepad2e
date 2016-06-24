@@ -24,6 +24,6 @@ void	HLS_Update_selection(UINT place);
 /************************************************************************/
 /* for edit                                                                     */
 /************************************************************************/
-void	HLS_Edit_selection_start();
+void	HLS_Edit_selection_start(const BOOL highlightAll);
 //void	HLS_Edit_selection( );
 void	HLS_Edit_selection_stop(UINT mode);

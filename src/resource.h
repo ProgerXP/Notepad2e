@@ -16,6 +16,7 @@
 #define ID_SETTINGS_RELOADFROMDISK      10
 #define ID_ACCELERATOR12                12
 #define ID_EDIT_EDITSELECTION           13
+#define ID_EDIT_EDITSELECTION_LINE      14
 #define IDH_MOVE_UP_SILENT              15
 #define ID_ACCELERATOR16                16
 #define IDH_MOVE_DOWN_SILENT            17

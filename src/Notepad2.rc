@@ -238,7 +238,8 @@ BEGIN
         MENUITEM "Find Next Word\tCtrl+8",      ID_EDIT_FINDNEXTWORD
         MENUITEM "Find Previous Word\tCtrl+Shift+8", ID_EDIT_FINDPREVIOUSWORD
         MENUITEM "&Goto...\tCtrl+G",            IDM_EDIT_GOTOLINE
-        MENUITEM "Edit selection\tCtrl+Tab",    ID_EDIT_EDITSELECTION
+        MENUITEM "Edit Selection\tCtrl+Tab",    ID_EDIT_EDITSELECTION
+		MENUITEM "Edit Selection On Line\tCtrl+Caps Lock", ID_EDIT_EDITSELECTION_LINE
     END
     POPUP "&View"
     BEGIN
@@ -504,6 +505,7 @@ BEGIN
     VK_SUBTRACT,    CMD_DECLINELIMIT,       VIRTKEY, ALT, NOINVERT
     VK_SUBTRACT,    CMD_DECREASENUM,        VIRTKEY, CONTROL, ALT, NOINVERT
     VK_TAB,         ID_EDIT_EDITSELECTION,  VIRTKEY, CONTROL, NOINVERT
+	VK_CAPITAL,     ID_EDIT_EDITSELECTION_LINE, VIRTKEY, CONTROL, NOINVERT
     VK_TAB,         CMD_CTRLTAB,            VIRTKEY, SHIFT, CONTROL, NOINVERT
     VK_UP,          IDM_EDIT_MOVELINEUP,    VIRTKEY, SHIFT, CONTROL, NOINVERT
     "W",            IDM_VIEW_WORDWRAP,      VIRTKEY, CONTROL, NOINVERT
@@ -568,7 +570,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP | WS
 CAPTION "Find Text"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Search Strin&g:",IDC_STATIC,7,7,46,8
+    LTEXT           "Search Stri&ng:",IDC_STATIC,7,7,46,8
     COMBOBOX        IDC_FINDTEXT,7,17,192,116,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Match &case",IDC_FINDCASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,37,53,10
     CONTROL         "Match &whole word only",IDC_FINDWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,49,89,10
@@ -591,7 +593,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP | WS
 CAPTION "Replace Text"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    LTEXT           "Search Strin&g:",IDC_STATIC,7,7,46,8
+    LTEXT           "Search Stri&ng:",IDC_STATIC,7,7,46,8
     COMBOBOX        IDC_FINDTEXT,7,17,192,116,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Replace wit&h:",IDC_STATIC,7,35,44,8
     COMBOBOX        IDC_REPLACETEXT,7,46,192,116,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
@@ -1522,6 +1524,8 @@ BEGIN
     63019                   "Python Script"
     63020                   "Apache Config Files"
     63021                   "PowerShell Script"
+    63022                   "Ruby Script"
+    63023                   "Bash Script"
 END
 
 STRINGTABLE
@@ -1558,6 +1562,7 @@ BEGIN
     63121                   "2nd Caret (Color, Size 1-3)"
     63122                   "2nd Long Line Marker (Colors)"
     63123                   "2nd Extra Line Spacing (Size)"
+    63124                   "Parameter"
     63126                   "Default"
     63127                   "Comment"
     63128                   "Keyword"
