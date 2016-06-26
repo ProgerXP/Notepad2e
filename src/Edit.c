@@ -5651,6 +5651,11 @@ int FindTextTest(const HWND hwnd, const int searchFlags, const struct TextToFind
   return FindTextImpl(hwnd, searchFlags, &ttf);
 }
 
+BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos)
+{
+  return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
+}
+
 //=============================================================================
 //
 //  EditFindNext()
@@ -5683,14 +5688,14 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.lpstrText = szFind2;
   iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
   const BOOL bTextFound = (iPos >= 0);
-  UpdateFindIcon(bTextFound && (FindTextTest(hwnd, lpefr->fuFlags, &ttf, iPos + 1) >= 0));
+  UpdateFindIcon(bTextFound && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
     {
       ttf.chrg.cpMin = 0;
       iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
-      UpdateFindIcon(iPos >= 0);
+      UpdateFindIcon((iPos >= 0) && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
     }
     else
     {
@@ -5752,7 +5757,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.lpstrText = szFind2;
   iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
   const BOOL bTextFound = (iPos >= 0);
-  UpdateFindIcon(bTextFound && (FindTextTest(hwnd, lpefr->fuFlags, &ttf, iPos - 1) >= 0));
+  UpdateFindIcon(bTextFound && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
   {
@@ -5760,7 +5765,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     {
       ttf.chrg.cpMin = iLength;
       iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
-      UpdateFindIcon(iPos >= 0);
+      UpdateFindIcon((iPos >= 0) && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
     }
     else
     {
