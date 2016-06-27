@@ -2888,6 +2888,65 @@ void EditMoveDown(HWND hwnd)
   }
 }
 
+extern BOOL bAutoIndent;
+
+void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
+{
+  const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+  const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
+  SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
+  const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
+  if (insertAbove)
+  {
+    if (bAutoIndent)
+    {
+      const BOOL isLineStart = (iCurPos == SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0));
+      if (isLineStart)
+      {
+        const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
+        SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+      }
+      else
+      {
+        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+        const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
+        SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+      }
+    }
+    else
+    {
+      const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
+      SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+      SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+    }
+  }
+  else
+  {
+    if (bAutoIndent)
+    {
+      const BOOL isLineEnd = (iCurPos == SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0));
+      if (isLineEnd)
+      {
+        const int iIndentColOriginal = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iCurLine, 0);
+        const int iIndentColLinePrev = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iPrevLine, 0);
+        SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColLinePrev);
+        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+        SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColOriginal);
+      }
+      else
+      {
+        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+      }
+    }
+    else
+    {
+      SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+    }
+  }
+  SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+}
+
 //=============================================================================
 //
 //  EditModifyLines()

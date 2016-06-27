@@ -2751,6 +2751,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_MOVELINEDOWN:
       EditMoveDown(hwndEdit);
       break;
+    case IDM_EDIT_NEWLINEABOVE:
+      EditInsertNewLine(hwndEdit, TRUE);
+      break;
+    case IDM_EDIT_NEWLINEBELOW:
+      EditInsertNewLine(hwndEdit, FALSE);
+      break;
     case IDM_EDIT_DUPLICATELINE:
       SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
       break;
