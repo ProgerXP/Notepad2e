@@ -1530,6 +1530,7 @@ BEGIN
     63021                   "PowerShell Script"
     63022                   "Ruby Script"
     63023                   "Bash Script"
+    63024                   "ASN1 Script"
 END
 
 STRINGTABLE
@@ -1731,6 +1732,9 @@ BEGIN
     63255                   "Format body"
     63256                   "HTML Element Text"
     63257                   "XML Element Text"
+    63258                   "Attribute"
+    63259                   "Descriptor"
+    63260                   "Type"
 END
 
 #endif    // English (United States) resources

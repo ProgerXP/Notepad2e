@@ -85,7 +85,7 @@ int Scintilla_LinkLexers() {
 	//LINK_LEXER(lmAbaqus);
 	//LINK_LEXER(lmAda);
 	//LINK_LEXER(lmAHK);
-	//LINK_LEXER(lmAns1);
+	LINK_LEXER(lmAns1);
 	//LINK_LEXER(lmAPDL);
 	LINK_LEXER(lmAsm);
 	//LINK_LEXER(lmASY);
@@ -97,18 +97,18 @@ int Scintilla_LinkLexers() {
 	LINK_LEXER(lmBatch);
 	//LINK_LEXER(lmBlitzBasic);
 	//LINK_LEXER(lmBullant);
-	//LINK_LEXER(lmCaml);
+	LINK_LEXER(lmCaml);
 	//LINK_LEXER(lmClw);
 	//LINK_LEXER(lmClwNoCase);
 	LINK_LEXER(lmCmake);
 	//LINK_LEXER(lmCOBOL);
-	//LINK_LEXER(lmCoffeeScript);
+	LINK_LEXER(lmCoffeeScript);
 	LINK_LEXER(lmConf);
 	LINK_LEXER(lmCPP);
 	LINK_LEXER(lmCPPNoCase);
 	//LINK_LEXER(lmCsound);
 	LINK_LEXER(lmCss);
-	//LINK_LEXER(lmD);
+	LINK_LEXER(lmD);
 	LINK_LEXER(lmDiff);
 	//LINK_LEXER(lmECL);
 	//LINK_LEXER(lmEiffel);
@@ -128,7 +128,7 @@ int Scintilla_LinkLexers() {
 	LINK_LEXER(lmInno);
 	//LINK_LEXER(lmKix);
 	LINK_LEXER(lmLatex);
-	//LINK_LEXER(lmLISP);
+	LINK_LEXER(lmLISP);
 	//LINK_LEXER(lmLiterateHaskell);
 	//LINK_LEXER(lmLot);
 	//LINK_LEXER(lmLout);
@@ -178,7 +178,7 @@ int Scintilla_LinkLexers() {
 	//LINK_LEXER(lmTAL);
 	LINK_LEXER(lmTCL);
 	//LINK_LEXER(lmTCMD);
-	//LINK_LEXER(lmTeX);
+	LINK_LEXER(lmTeX);
 	//LINK_LEXER(lmTxt2tags);
 	LINK_LEXER(lmVB);
 	LINK_LEXER(lmVBScript);

@@ -1036,7 +1036,7 @@ KEYWORDLIST KeyWords_BASH = {
     "", "", "", "", "", "", "", ""
 };
 
-EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash", L"", &KeyWords_BASH, {
+EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; ksh", L"", &KeyWords_BASH, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
@@ -1053,6 +1053,77 @@ EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash", L"", &KeyW
         { SCE_SH_BACKTICKS, 63221, L"Back ticks", L"fore:#FFFF00,back:#A08080", L"" },
         { SCE_SH_HERE_DELIM, 63223, L"Here-doc (delimiter)", L"fore:#000000,back:#DDD0DD", L"" },
         { SCE_SH_HERE_Q, 63224, L"Here-doc (single quoted, q)", L"fore:#7F007F,back:#DDD0DD,eolfilled,notbold", L"" },
+        { -1, 00000, L"", L"", L"" }
+    }
+};
+
+KEYWORDLIST KeyWords_ASN1 = {
+    "ACCESS AGENT AUGMENTS "
+    "BEGIN BITS "
+    "CAPABILITIES CHOICE COMPLIANCE CONTACT CONVENTION "
+    "DEFINITIONS DEFVAL DESCRIPTION DISPLAY "
+    "END ENTERPRISE EXPORTS "
+    "FALSE FROM "
+    "GROUP GROUPS "
+    "HINT "
+    "IDENTITY IMPLIED IMPORTS INCLUDES INDEX INFO "
+    "LAST "
+    "MANDATORY MAX MIN MODULE "
+    "NOTATION NOTIFICATION NULL "
+    "OBJECTS OBJECT-TYPE OF ORGANIZATION "
+    "PRODUCT "
+    "RELEASE REFERENCE REQUIRES REVISION "
+    "SEQUENCE SIZE STATUS SUPPORTS SYNTAX "
+    "TEXTUAL TRAP TYPE TRAP-TYPE "
+    "UPDATED "
+    "VALUE VARIABLES VARIATION "
+    "WRITE "
+    "accessible "
+    "create current "
+    "deprecated "
+    "for "
+    "mandatory "
+    "not notify not-accessible "
+    "obsolete only optional "
+    "read read-only read-write "
+    "write "
+    "ABSENT ANY APPLICATION "
+    "BIT BOOLEAN BY "
+    "COMPONENT COMPONENTS "
+    "DEFAULT DEFINED "
+    "ENUMERATED EXPLICIT EXTERNAL "
+    "IMPLICIT INIFINITY "
+    "MAX MIN MINUS "
+    "OPTIONAL "
+    "PRESENT PRIVATE "
+    "REAL "
+    "SET "
+    "TAGS TRUE "
+    "Counter Counter32 Counter64 "
+    "DisplayString "
+    "Gauge Gauge32 "
+    "IDENTIFIER INTEGER Integer32 IpAddress "
+    "NetworkAddress NsapAddress "
+    "OBJECT OCTET Opaque "
+    "PhysAddress "
+    "STRING "
+    "TimeTicks "
+    "UInteger32 UNITS Unsigned32",
+    "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexASN1= { SCLEX_ASN1, 63024, L"ASN.1", L"mib", L"", &KeyWords_ASN1, {
+        { SCE_ASN1_DEFAULT, 63126, L"Default", L"fore:#000000", L"" },
+        { SCE_ASN1_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_ASN1_IDENTIFIER, 63129, L"Identifier", L"fore:#000000,bold", L"" },
+        { SCE_ASN1_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_ASN1_OID, 63129, L"Identifier", L"fore:#007F7F,bold", L"" },
+        { SCE_ASN1_SCALAR, 63215, L"Scalar $var", L"fore:#7F0000", L"" },
+        { SCE_ASN1_KEYWORD, 63128, L"Keyword", L"fore:#00007F", L"" },
+        { SCE_ASN1_ATTRIBUTE, 63258, L"Attribute", L"fore:#F07800", L"" },
+        { SCE_ASN1_DESCRIPTOR, 63259, L"Descriptor", L"fore:#00007F", L"" },
+        { SCE_ASN1_TYPE, 63260, L"Type", L"fore:#00007F", L"" },
+        { SCE_ASN1_OPERATOR, 63132, L"Operator", L"fore:#00007F", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -1082,7 +1153,8 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexBAT,
     &lexDIFF,
     &lexRUBY,
-    &lexBASH
+    &lexBASH,
+    &lexASN1,
 };
 
 // Currently used lexer
