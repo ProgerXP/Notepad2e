@@ -986,6 +986,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCN_AUTOCCANCELLED 2025
 #define SCN_AUTOCCHARDELETED 2026
 #define SCN_HOTSPOTRELEASECLICK 2027
+#define SCN_CARETMOVED 2028
 #ifndef SCI_DISABLE_PROVISIONAL
 #define SC_LINE_END_TYPE_DEFAULT 0
 #define SC_LINE_END_TYPE_UNICODE 1

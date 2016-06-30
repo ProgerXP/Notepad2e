@@ -4807,6 +4807,13 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                          iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                          IDS_READONLY, bReadOnly, szTitleExcerpt);
           break;
+        case SCN_CARETMOVED:
+          {
+            const int iSelPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+            const int iSelAnchor = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
+            EditSelectEx(hwndEdit, iSelAnchor, iSelPos);
+          }
+          break;
       }
       //
       HLS_on_notification(pnmh->code, scn);

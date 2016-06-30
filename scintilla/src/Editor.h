@@ -488,6 +488,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifyLexerChanged(Document *doc, void *userData);
 	void NotifyErrorOccurred(Document *doc, void *userData, int status);
 	void NotifyMacroRecord(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
+	void NotifyCaretMoved();
 
 	void ContainerNeedsUpdate(int flags);
 	void PageMove(int direction, Selection::selTypes sel=Selection::noSel, bool stuttered = false);

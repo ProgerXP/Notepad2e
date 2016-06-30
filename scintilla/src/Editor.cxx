@@ -5014,6 +5014,14 @@ void Editor::NotifyMacroRecord ( unsigned int iMessage, uptr_t wParam, sptr_t lP
     NotifyParent ( scn );
 }
 
+void Editor::NotifyCaretMoved()
+{
+  // Send notification
+  SCNotification scn = { 0 };
+  scn.nmhdr.code = SCN_CARETMOVED;
+  NotifyParent(scn);
+}
+
 // Something has changed that the container should know about
 void Editor::ContainerNeedsUpdate ( int flags )
 {
@@ -5323,9 +5331,11 @@ int Editor::KeyCommand ( unsigned int iMessage )
             break;
         case SCI_PARADOWN:
             ParaUpOrDown ( 1 );
+            NotifyCaretMoved();
             break;
         case SCI_PARADOWNEXTEND:
             ParaUpOrDown ( 1, Selection::selStream );
+            NotifyCaretMoved();
             break;
         case SCI_LINESCROLLDOWN:
             ScrollTo ( topLine + 1 );
@@ -5342,9 +5352,11 @@ int Editor::KeyCommand ( unsigned int iMessage )
             break;
         case SCI_PARAUP:
             ParaUpOrDown ( -1 );
+            NotifyCaretMoved();
             break;
         case SCI_PARAUPEXTEND:
             ParaUpOrDown ( -1, Selection::selStream );
+            NotifyCaretMoved();
             break;
         case SCI_LINESCROLLUP:
             ScrollTo ( topLine - 1 );
@@ -5550,21 +5562,27 @@ int Editor::KeyCommand ( unsigned int iMessage )
             break;
         case SCI_PAGEUP:
             PageMove ( -1 );
+            NotifyCaretMoved();
             break;
         case SCI_PAGEUPEXTEND:
             PageMove ( -1, Selection::selStream );
+            NotifyCaretMoved();
             break;
         case SCI_PAGEUPRECTEXTEND:
             PageMove ( -1, Selection::selRectangle );
+            NotifyCaretMoved();
             break;
         case SCI_PAGEDOWN:
             PageMove ( 1 );
+            NotifyCaretMoved();
             break;
         case SCI_PAGEDOWNEXTEND:
             PageMove ( 1, Selection::selStream );
+            NotifyCaretMoved();
             break;
         case SCI_PAGEDOWNRECTEXTEND:
             PageMove ( 1, Selection::selRectangle );
+            NotifyCaretMoved();
             break;
         case SCI_EDITTOGGLEOVERTYPE:
             inOverstrike = !inOverstrike;
