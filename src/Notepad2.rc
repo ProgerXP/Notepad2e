@@ -1531,6 +1531,7 @@ BEGIN
     63022                   "Ruby Script"
     63023                   "Bash Script"
     63024                   "ASN1 Script"
+    63025                   "OCaml Source Code"
 END
 
 STRINGTABLE
@@ -1735,6 +1736,15 @@ BEGIN
     63258                   "Attribute"
     63259                   "Descriptor"
     63260                   "Type"
+    63261                   "Tag Name"
+    63262                   "Keyword 2"
+    63263                   "Keyword 3"
+    63264                   "Linenum"
+    63265                   "Char"
+    63266                   "Whitespace"
+    63267                   "Comment 1"
+    63268                   "Comment 2"
+    63269                   "Comment 3"
 END
 
 #endif    // English (United States) resources

@@ -1128,6 +1128,43 @@ EDITLEXER lexASN1= { SCLEX_ASN1, 63024, L"ASN.1", L"mib", L"", &KeyWords_ASN1, {
     }
 };
 
+KEYWORDLIST KeyWords_CAML = {
+    "and as assert asr begin class "
+    "constraint do done downto else end "
+    "exception external false for fun function "
+    "functor if in include inherit initializer "
+    "land lazy let lor lsl lsr "
+    "lxor match method mod module mutable "
+    "new object of open or private "
+    "rec sig struct then to true "
+    "try type val virtual when while "
+    "with ",
+    "option Some None ignore ref lnot succ pred parser ",
+    "array bool char float int list string unit",
+    "", "", "", "", "", ""
+};
+
+EDITLEXER lexCAML = { SCLEX_CAML, 63025, L"OCaml Source Code", L"ml; mli", L"", &KeyWords_CAML,{
+        { SCE_CAML_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+        { SCE_CAML_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_CAML_TAGNAME, 63261, L"Tag Name", L"fore:#000000,back:#ffe0ff", L"" },
+        { SCE_CAML_KEYWORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+        { SCE_CAML_KEYWORD2, 63262, L"Keyword 2", L"fore:#000000,back:#e0e0ff", L"" },
+        { SCE_CAML_KEYWORD3, 63263, L"Keyword 3", L"fore:#a0000,bold", L"" },
+        { SCE_CAML_LINENUM, 63264, L"Linenum", L"back:#C0C0C0", L"" },
+        { SCE_CAML_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+        { SCE_CAML_NUMBER, 63130, L"Number", L"fore:#000000,back:#ffff00", L"" },
+        { SCE_CAML_CHAR, 63265, L"Char", L"fore:#000000,back:#ffff00", L"" },
+        { SCE_CAML_WHITE, 63266, L"Whitespace", L"fore:#000000,back:#e0e0e0", L"" },
+        { SCE_CAML_STRING, 63131, L"String", L"fore:#000000,back:#ffff00", L"" },
+        { SCE_CAML_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_CAML_COMMENT1, 63267, L"Comment 1", L"back:#E0EEFF,font:Georgia", L"" },
+        { SCE_CAML_COMMENT2, 63268, L"Comment 2", L"back:#E0EEFF,font:Georgia", L"" },
+        { SCE_CAML_COMMENT3, 63269, L"Comment 3", L"back:#E0EEFF,font:Georgia", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1155,6 +1192,7 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexRUBY,
     &lexBASH,
     &lexASN1,
+    &lexCAML,
 };
 
 // Currently used lexer
