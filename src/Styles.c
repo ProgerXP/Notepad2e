@@ -1165,6 +1165,136 @@ EDITLEXER lexCAML = { SCLEX_CAML, 63025, L"OCaml Source Code", L"ml; mli", L"", 
       }
 };
 
+KEYWORDLIST KeyWords_COFFEESCRIPT = {
+      "", "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63026, L"Coffee Script", L"coffee", L"", &KeyWords_COFFEESCRIPT,{
+        { SCE_COFFEESCRIPT_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+        { SCE_COFFEESCRIPT_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_COFFEESCRIPT_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+        { SCE_COFFEESCRIPT_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_COFFEESCRIPT_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
+        { SCE_COFFEESCRIPT_UUID, 63272, L"UUID", L"fore:#804080", L"" },
+        { SCE_COFFEESCRIPT_PREPROCESSOR, 63273, L"Preprocessor", L"fore:#7F7F00", L"" },
+        { SCE_COFFEESCRIPT_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+        { SCE_COFFEESCRIPT_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_COFFEESCRIPT_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Consolas,back:#E0C0E0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_VERBATIM, 63275, L"Verbatim", L"fore:#007F00,font:Consolas,back:#E0FFE0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_REGEX, 63135, L"Regex", L"fore:#3F7F3F,font:Consolas,back:#E0F0FF,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_WORD2, 63262, L"Keyword 2", L"fore:#B00040", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_GLOBALCLASS, 63279, L"Global Class", L"fore:#DD9900", L"" },
+        { SCE_COFFEESCRIPT_STRINGRAW, 63280, L"String Raw", L"fore:#7F007F,back:#FFF3FF,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_TRIPLEVERBATIM, 63281, L"Trip Lever Batim", L"font:Consolas,fore:#007F00,back:#E0FFE0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_COMMENTBLOCK, 63282, L"Comment Block", L"font:Consolas,fore:#007F00,back:#E7FFD7,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_VERBOSE_REGEX, 63283, L"Verbose Regex", L"fore:#659900", L"" },
+        { SCE_COFFEESCRIPT_VERBOSE_REGEX_COMMENT, 63284, L"Regex Comment", L"fore:#3F703F", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
+KEYWORDLIST KeyWords_D = {
+    "abstract alias align asm assert auto "
+    "body bool break byte "
+    "case cast catch cdouble cent cfloat char class const continue creal "
+    "dchar debug default delegate delete deprecated do double "
+    "else enum export extern "
+    "false final finally float for foreach foreach_reverse function "
+    "goto "
+    "idouble if ifloat import in inout int interface invariant ireal is "
+    "lazy long "
+    "mixin module "
+    "new null "
+    "out override "
+    "package pragma private protected public "
+    "real return "
+    "scope short static struct super switch synchronized "
+    "template this throw true try typedef typeid typeof "
+    "ubyte ucent uint ulong union unittest ushort "
+    "version void volatile "
+    "wchar while with",
+    "",
+    "a addindex addtogroup anchor arg attention "
+    "author b brief bug c class code date def defgroup deprecated dontinclude "
+    "e em endcode endhtmlonly endif endlatexonly endlink endverbatim enum example exception "
+    "f$ f[ f] file fn hideinitializer htmlinclude htmlonly "
+    "if image include ingroup internal invariant interface latexonly li line link "
+    "mainpage name namespace nosubgrouping note overload "
+    "p page par param post pre ref relates remarks return retval "
+    "sa section see showinitializer since skip skipline struct subsection "
+    "test throw todo typedef union until "
+    "var verbatim verbinclude version warning weakgroup $ @ \\ & < > # { }",
+    "", "", "", "", "", ""
+};
+
+EDITLEXER lexD = { SCLEX_D, 63027, L"D Source Code", L"d", L"", &KeyWords_D,{
+        { SCE_D_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+        { SCE_D_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_D_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_D_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_D_COMMENTNESTED, 63286, L"Comment Nested", L"fore:#A0C0A0,font:Georgia", L"" },
+        { SCE_D_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_D_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+        { SCE_D_WORD2, 63262, L"Keyword 2", L"fore:#00007F,bold", L"" },
+        { SCE_D_WORD3, 63263, L"Keyword 3", L"fore:#00007F,bold", L"" },
+        { SCE_D_TYPEDEF, 63285, L"Typedef", L"fore:#00007F,bold", L"" },
+        { SCE_D_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_D_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Consolas,back:#E0C0E0,eolfilled", L"" },
+        { SCE_D_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
+        { SCE_D_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+        { SCE_D_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_D_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_D_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0,font:Georgia", L"" },
+        { SCE_D_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020,font:Georgia", L"" },
+        { SCE_D_STRINGB, 63287, L"String B", L"fore:#DD9900", L"" },
+        { SCE_D_STRINGR, 63288, L"String R", L"fore:#DD9900", L"" },
+        { SCE_D_WORD5, 63289, L"Keyword 5", L"fore:#DD9900", L"" },
+        { SCE_D_WORD6, 63290, L"Keyword 6", L"fore:#DD9900", L"" },
+        { SCE_D_WORD7, 63291, L"Keyword 7", L"fore:#DD9900", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
+KEYWORDLIST KeyWords_Lisp = {
+    "not defun + - * / = < > <= >= princ "
+    "eval apply funcall quote identity function complement backquote lambda set setq setf "
+    "defun defmacro gensym make symbol intern symbol name symbol value symbol plist get "
+    "getf putprop remprop hash make array aref car cdr caar cadr cdar cddr caaar caadr cadar "
+    "caddr cdaar cdadr cddar cdddr caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr "
+    "cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr cons list append reverse last nth "
+    "nthcdr member assoc subst sublis nsubst  nsublis remove length list length "
+    "mapc mapcar mapl maplist mapcan mapcon rplaca rplacd nconc delete atom symbolp numberp "
+    "boundp null listp consp minusp zerop plusp evenp oddp eq eql equal cond case and or let l if prog "
+    "prog1 prog2 progn go return do dolist dotimes catch throw error cerror break "
+    "continue errset baktrace evalhook truncate float rem min max abs sin cos tan expt exp sqrt "
+    "random logand logior logxor lognot bignums logeqv lognand lognor "
+    "logorc2 logtest logbitp logcount integer length nil",
+    "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexLisp = { SCLEX_LISP, 63028, L"Lisp Source Code", L"lsp;lisp", L"", &KeyWords_Lisp,{
+        { SCE_LISP_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+        { SCE_LISP_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LISP_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_LISP_KEYWORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+        { SCE_LISP_KEYWORD_KW, 63262, L"Keyword 2", L"fore:#EE00AA", L"" },
+        { SCE_LISP_SYMBOL, 63292, L"Symbol", L"fore:#DD9900", L"" },
+        { SCE_LISP_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_LISP_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Verdana,back:#fefecc,eolfilled", L"" },
+        { SCE_LISP_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_LISP_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+        { SCE_LISP_SPECIAL, 63293, L"Special", L"fore:#60AA00", L"" },
+        { SCE_LISP_MULTI_COMMENT, 63294, L"Multi-line Comment", L"fore:#007F00,font:Georgia", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1193,6 +1323,9 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexBASH,
     &lexASN1,
     &lexCAML,
+    &lexCOFFEESCRIPT,
+    &lexD,
+    &lexLisp,
 };
 
 // Currently used lexer

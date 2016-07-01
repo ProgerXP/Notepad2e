@@ -1532,6 +1532,9 @@ BEGIN
     63023                   "Bash Script"
     63024                   "ASN1 Script"
     63025                   "OCaml Source Code"
+    63026                   "Coffee Script"
+    63027                   "D Source Code"
+    63028                   "Lisp Source Code"
 END
 
 STRINGTABLE
@@ -1745,6 +1748,31 @@ BEGIN
     63267                   "Comment 1"
     63268                   "Comment 2"
     63269                   "Comment 3"
+    63270                   "Comment Line"
+    63271                   "Comment Doc"
+    63272                   "UUID"
+    63273                   "Preprocessor"
+    63274                   "String EOL"
+    63275                   "Verbatim"
+    63276                   "Comment Line Doc"
+    63277                   "Comment Doc Keyword"
+    63278                   "Comment Doc Keyword Error"
+    63279                   "Global Class"
+    63280                   "String Raw"
+    63281                   "Trip Lever Batim"
+    63282                   "Comment Block"
+    63283                   "Verbose Regex"
+    63284                   "Regex Comment"
+    63285                   "Typedef"
+    63286                   "Comment Nested"
+    63287                   "String B"
+    63288                   "String R"
+    63289                   "Keyword 5"
+    63290                   "Keyword 6"
+    63291                   "Keyword 7"
+    63292                   "Symbol"
+    63293                   "Special"
+    63294                   "Multi-line Comment"
 END
 
 #endif    // English (United States) resources
