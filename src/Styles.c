@@ -1254,9 +1254,9 @@ EDITLEXER lexD = { SCLEX_D, 63027, L"D Source Code", L"d", L"", &KeyWords_D,{
         { SCE_D_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020,font:Georgia", L"" },
         { SCE_D_STRINGB, 63287, L"String B", L"fore:#DD9900", L"" },
         { SCE_D_STRINGR, 63288, L"String R", L"fore:#DD9900", L"" },
-        { SCE_D_WORD5, 63289, L"Keyword 5", L"fore:#DD9900", L"" },
-        { SCE_D_WORD6, 63290, L"Keyword 6", L"fore:#DD9900", L"" },
-        { SCE_D_WORD7, 63291, L"Keyword 7", L"fore:#DD9900", L"" },
+        { SCE_D_WORD5, 63290, L"Keyword 5", L"fore:#DD9900", L"" },
+        { SCE_D_WORD6, 63291, L"Keyword 6", L"fore:#DD9900", L"" },
+        { SCE_D_WORD7, 63292, L"Keyword 7", L"fore:#DD9900", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1284,13 +1284,88 @@ EDITLEXER lexLisp = { SCLEX_LISP, 63028, L"Lisp Source Code", L"lsp;lisp", L"", 
         { SCE_LISP_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_LISP_KEYWORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_LISP_KEYWORD_KW, 63262, L"Keyword 2", L"fore:#EE00AA", L"" },
-        { SCE_LISP_SYMBOL, 63292, L"Symbol", L"fore:#DD9900", L"" },
+        { SCE_LISP_SYMBOL, 63294, L"Symbol", L"fore:#DD9900", L"" },
         { SCE_LISP_STRING, 63131, L"String", L"fore:#7F007F", L"" },
         { SCE_LISP_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Verdana,back:#fefecc,eolfilled", L"" },
         { SCE_LISP_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { SCE_LISP_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
-        { SCE_LISP_SPECIAL, 63293, L"Special", L"fore:#60AA00", L"" },
-        { SCE_LISP_MULTI_COMMENT, 63294, L"Multi-line Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LISP_SPECIAL, 63295, L"Special", L"fore:#60AA00", L"" },
+        { SCE_LISP_MULTI_COMMENT, 63296, L"Multi-line Comment", L"fore:#007F00,font:Georgia", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
+KEYWORDLIST KeyWords_Lua = {
+    "and break do else elseif "
+    "end for function if in "
+    "local nil not or repeat "
+    "return then until while false true goto",
+    "assert collectgarbage dofile error _G "
+    "getmetatable ipairs loadfile next pairs "
+    "pcall print rawequal rawget rawset "
+    "setmetatable tonumber tostring type _VERSION "
+    "xpcall string table math coroutine io os debug "
+    "getfenv gcinfo load loadlib loadstring "
+    "require select setfenv unpack "
+    "_LOADED LUA_PATH _REQUIREDNAME "
+    "package rawlen package bit32 utf8 _ENV",
+    "string.byte string.char string.dump string.find string.format "
+    "string.gsub string.len string.lower string.rep string.sub string.upper "
+    "table.concat table.insert table.remove table.sort "
+    "math.abs math.acos math.asin math.atan math.atan2 "
+    "math.ceil math.cos math.deg math.exp math.floor "
+    "math.frexp math.ldexp math.log math.max math.min "
+    "math.pi math.pow math.rad math.random math.randomseed "
+    "math.sin math.sqrt math.tan "
+    "string.gfind string.gmatch string.match string.reverse "
+    "string.pack string.packsize string.unpack "
+    "table.foreach table.foreachi table.getn table.setn "
+    "table.maxn table.pack table.unpack table.move "
+    "math.cosh math.fmod math.huge math.log10 math.modf "
+    "math.mod math.sinh math.tanh math.maxinteger math.mininteger "
+    "math.tointeger math.type math.ult "
+    "bit32.arshift bit32.band bit32.bnot bit32.bor bit32.btest "
+    "bit32.bxor bit32.extract bit32.replace bit32.lrotate bit32.lshift "
+    "bit32.rrotate bit32.rshift "
+    "utf8.char utf8.charpattern utf8.codes "
+    "utf8.codepoint utf8.len utf8.offset",
+    "coroutine.create coroutine.resume coroutine.status coroutine.wrap coroutine.yield "
+    "io.close io.flush io.input io.lines io.open "
+    "io.output io.read io.tmpfile io.type io.write "
+    "io.stdin io.stdout io.stderr "
+    "os.clock os.date os.difftime os.execute os.exit "
+    "os.getenv os.remove os.rename os.setlocale os.time "
+    "os.tmpname "
+    "coroutine.isyieldable coroutine.running io.popen "
+    "module package.loaders package.seeall "
+    "package.config package.searchers package.searchpath "
+    "require package.cpath package.loaded "
+    "package.loadlib package.path package.preload",
+    "", "", "", "", ""
+};
+
+EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua Source Code", L"lua", L"", &KeyWords_Lua,{
+        { SCE_LUA_DEFAULT, 63126, L"Default", L"fore:#FF0000", L"" },
+        { SCE_LUA_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia,back:#D0F0F0,eolfilled", L"" },
+        { SCE_LUA_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LUA_COMMENTDOC, 63271, L"Comment Doc", L"back:#FF0000", L"" },
+        { SCE_LUA_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_LUA_WORD, 63128, L"Keyword", L"fore:#00007F", L"" },
+        { SCE_LUA_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_LUA_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
+        { SCE_LUA_LITERALSTRING, 63295, "Literal String", L"fore:#7F007F,font:Georgia,back:#E0FFFF", L"" },
+        { SCE_LUA_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#7F7F00", L"" },
+        { SCE_LUA_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
+        { SCE_LUA_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_LUA_STRINGEOL, 63274, L"String EOL", L"back:#E0C0E0,eolfilled", L"" },
+        { SCE_LUA_WORD2, 63262, L"Keyword 2", L"fore:#00007F,back:#F5FFF5", L"" },
+        { SCE_LUA_WORD3, 63263, L"Keyword 3", L"fore:#00007F,back:#F5F5FF", L"" },
+        { SCE_LUA_WORD4, 63289, L"Keyword 4", L"fore:#00007F,back:#FFF5F5", L"" },
+        { SCE_LUA_WORD5, 63290, L"Keyword 5", L"fore:#00007F,back:#FFF5FF", L"" },
+        { SCE_LUA_WORD6, 63291, L"Keyword 6", L"fore:#00007F,back:#FFFFF5", L"" },
+        { SCE_LUA_WORD7, 63292, L"Keyword 7", L"fore:#00007F,back:#FFA0A0", L"" },
+        { SCE_LUA_WORD8, 63293, L"Keyword 8", L"fore:#00007F,back:#FFF5F5", L"" },
+        { SCE_LUA_LABEL, 63235, L"Label", L"fore:#7F7F00", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1326,6 +1401,7 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexCOFFEESCRIPT,
     &lexD,
     &lexLisp,
+    &lexLua
 };
 
 // Currently used lexer

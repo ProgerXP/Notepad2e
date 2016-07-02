@@ -1535,6 +1535,7 @@ BEGIN
     63026                   "Coffee Script"
     63027                   "D Source Code"
     63028                   "Lisp Source Code"
+    63029                   "Lua Source Code"
 END
 
 STRINGTABLE
@@ -1767,12 +1768,15 @@ BEGIN
     63286                   "Comment Nested"
     63287                   "String B"
     63288                   "String R"
-    63289                   "Keyword 5"
-    63290                   "Keyword 6"
-    63291                   "Keyword 7"
-    63292                   "Symbol"
-    63293                   "Special"
-    63294                   "Multi-line Comment"
+    63289                   "Keyword 4"
+    63290                   "Keyword 5"
+    63291                   "Keyword 6"
+    63292                   "Keyword 7"
+    63293                   "Keyword 8"
+    63294                   "Symbol"
+    63295                   "Special"
+    63296                   "Multi-line Comment"
+    63297                   "Literal String"
 END
 
 #endif    // English (United States) resources
