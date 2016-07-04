@@ -1574,6 +1574,44 @@ EDITLEXER lexYaml = { SCLEX_YAML, 63032, L"YAML Source Code", L"yaml;yml", L"", 
       }
 };
 
+KEYWORDLIST KeyWords_Rust = {
+  "alignof as be box break const continue crate do else enum extern false fn "
+  "for if impl in let loop match mod mut offsetof once priv proc pub pure ref "
+  "return self sizeof static struct super trait true type typeof unsafe unsized use virtual while yield",
+  "bool char f32 f64 i16 i32 i64 i8 int str u16 u32 u64 u8 uint",
+  "Self",
+  "", "", "", "", "", ""
+};
+
+EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust Source Code", L"rs", L"", &KeyWords_Rust,{
+        { SCE_RUST_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
+        { SCE_RUST_COMMENTBLOCK, 63282, L"Comment Block", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_RUST_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_RUST_COMMENTBLOCKDOC, 63326, L"Comment Block Dock", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_RUST_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_RUST_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_RUST_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_WORD2, 63262, L"Keyword 2", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_WORD3, 63263, L"Keyword 3", L"fore:#00007F", L"" },
+        { SCE_RUST_WORD4, 63289, L"Keyword 4", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_WORD5, 63290, L"Keyword 5", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_WORD6, 63291, L"Keyword 6", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_WORD7, 63292, L"Keyword 7", L"fore:#00007F,bold", L"" },
+        { SCE_RUST_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_RUST_STRINGR, 63288, L"String R", L"fore:#B090B0", L"" },
+        { SCE_RUST_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
+        { SCE_RUST_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
+        { SCE_RUST_IDENTIFIER, 63129, L"Identifier", L"", L"" },
+        { SCE_RUST_LIFETIME, 63327, L"Lifetime", L"fore:#007F7F", L"" },
+        { SCE_RUST_MACRO, 63303, L"Macro def", L"fore:#7F7F00", L"" },
+        { SCE_RUST_LEXERROR, 63325, L"Error", L"fore:#000000,font:Consolas,back:#E0C0E0", L"" },
+        { SCE_RUST_BYTESTRING, 63328, L"Byte String", L"fore:#7F007F", L"" },
+        { SCE_RUST_BYTESTRINGR, 63329, L"Byte String R", L"fore:#B090B0", L"" },
+        { SCE_RUST_BYTECHARACTER, 63330, L"Byte Char", L"fore:#7F007F", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1608,7 +1646,8 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexLua,
     &lexNSIS,
     &lexTeX,
-    &lexYaml
+    &lexYaml,
+    &lexRust
 };
 
 // Currently used lexer

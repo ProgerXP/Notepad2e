@@ -1539,6 +1539,7 @@ BEGIN
     63030                   "NSIS Script"
     63031                   "TeX Source Code"
     63032                   "YAML Source Code"
+    63033                   "Rust Source Code"
 END
 
 STRINGTABLE
@@ -1802,6 +1803,11 @@ BEGIN
     63323                   "Reference"
     63324                   "Document"
     63325                   "Error"
+    63326                   "Comment Block Dock"
+    63327                   "Lifetime"
+    63328                   "Byte String"
+    63329                   "Byte String R"
+    63330                   "Byte Char"
 END
 
 #endif    // English (United States) resources
