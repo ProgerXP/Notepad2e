@@ -8087,7 +8087,8 @@ OUT_OF_UNWRAP:
 
 void HL_Escape_html(HWND hwnd)
 {
-  int beg, end, symb, res;
+  int beg, end, res;
+  size_t symb;
   BOOL changed;
   struct Sci_TextToFind ttf;
   const char* _source = "&<>";
