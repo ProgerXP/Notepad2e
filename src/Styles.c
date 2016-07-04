@@ -1612,6 +1612,37 @@ EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust Source Code", L"rs", L"", &KeyWo
       }
 };
 
+KEYWORDLIST KeyWords_Markdown = {
+    "", "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown Source Code", L"markdown;mdown;mkdn;md;mkd;mdwn;mdtxt;mdtext", L"", &KeyWords_Markdown,{
+        { SCE_MARKDOWN_DEFAULT, 63126, L"Default", L"", L"" },
+        { SCE_MARKDOWN_LINE_BEGIN, 63331, L"Line Begin", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_STRONG1, 63332, L"Strong", L"fore:#DDBB99,bold", L"" },
+        { SCE_MARKDOWN_STRONG2, 63333, L"Strong 2", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_EM1, 63334, L"EM1", L"fore:#CC00FF,italics", L"" },
+        { SCE_MARKDOWN_EM2, 63335, L"EM2", L"fore:#9999FF,italics", L"" },
+        { SCE_MARKDOWN_HEADER1, 63336, L"Header 1", L"fore:#0088FF,bold", L"" },
+        { SCE_MARKDOWN_HEADER2, 63337, L"Header 2", L"fore:#2299FF,bold", L"" },
+        { SCE_MARKDOWN_HEADER3, 63338, L"Header 3", L"fore:#44AAFF,bold", L"" },
+        { SCE_MARKDOWN_HEADER4, 63339, L"Header 4", L"fore:#CC00FF,bold", L"" },
+        { SCE_MARKDOWN_HEADER5, 63340, L"Header 5", L"fore:#CC00FF,bold", L"" },
+        { SCE_MARKDOWN_HEADER6, 63341, L"Header 6", L"fore:#CC00FF,bold", L"" },
+        { SCE_MARKDOWN_PRECHAR, 63342, L"Prechar", L"fore:#000000", L"" },
+        { SCE_MARKDOWN_ULIST_ITEM, 63343, L"UList Item", L"fore:#CC33FF", L"" },
+        { SCE_MARKDOWN_OLIST_ITEM, 63344, L"OList Item", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_BLOCKQUOTE, 63345, L"Block Quote", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_STRIKEOUT, 63346, L"Strike Out", L"", L"" },
+        { SCE_MARKDOWN_HRULE, 63347, L"HRule", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_LINK, 63348, L"Link", L"fore:#FF5555", L"" },
+        { SCE_MARKDOWN_CODE, 63349, L"Code", L"fore:#80FF80,font:Consolas,back:#100010", L"" },
+        { SCE_MARKDOWN_CODE2, 63350, L"Code 2", L"fore:#CC00FF", L"" },
+        { SCE_MARKDOWN_CODEBK, 63351, L"Code Block", L"fore:#CC00FF", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1647,7 +1678,8 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexNSIS,
     &lexTeX,
     &lexYaml,
-    &lexRust
+    &lexRust,
+    &lexMarkdown
 };
 
 // Currently used lexer
