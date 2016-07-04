@@ -1040,12 +1040,12 @@ EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; 
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
-        { SCE_SH_ERROR, 63127, L"Error", L"fore:#FFFF00,back:#FF0000", L"" },
+        { SCE_SH_ERROR, 63325, L"Error", L"fore:#FFFF00,back:#FF0000", L"" },
         { SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
         { SCE_SH_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_SH_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_SH_STRING, 63131, L"String", L"fore:#7F007F,font:Consolas", L"" },
-        { SCE_SH_CHARACTER, 63131, L"String", L"fore:#7F007F,font:Consolas", L"" },
+        { SCE_SH_CHARACTER, 63265, L"Char", L"fore:#7F007F,font:Consolas", L"" },
         { SCE_SH_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#000000", L"" },
         { SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#000000,back:#FFE0E0", L"" },
@@ -1554,6 +1554,26 @@ EDITLEXER lexTeX = { SCLEX_TEX, 63031, L"TeX Source Code", L"tex;sty", L"", &Key
       }
 };
 
+KEYWORDLIST KeyWords_Yaml = {
+    "true false yes no",
+    "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexYaml = { SCLEX_YAML, 63032, L"YAML Source Code", L"yaml;yml", L"", &KeyWords_Yaml,{
+        { SCE_YAML_DEFAULT, 63126, L"Default", L"font:Times New Roman,fore:#000000", L"" },
+        { SCE_YAML_COMMENT, 63127, L"Comment", L"font:Georgia,fore:#008800", L"" },
+        { SCE_YAML_IDENTIFIER, 63129, L"Identifier", L"font:Verdana,fore:#000088,bold", L"" },
+        { SCE_YAML_KEYWORD, 63128, L"Keyword", L"font:Verdana,fore:#880088", L"" },
+        { SCE_YAML_NUMBER, 63130, L"Number", L"font:Verdana,fore:#880000", L"" },
+        { SCE_YAML_REFERENCE, 63323, L"Reference", L"font:Verdana,fore:#008888", L"" },
+        { SCE_YAML_DOCUMENT, 63324, L"Document", L"font:Georgia,fore:#FFFFFF,bold,back:#000088,eolfilled", L"" },
+        { SCE_YAML_TEXT, 63322, L"Text", L"font:Times New Roman,fore:#333366", L"" },
+        { SCE_YAML_ERROR, 63325, L"Error", L"font:Times New Roman,fore:#FFFFFF,italics,bold,back:#FF0000,eolfilled", L"" },
+        { SCE_YAML_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
 // This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1587,7 +1607,8 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexLisp,
     &lexLua,
     &lexNSIS,
-    &lexTeX
+    &lexTeX,
+    &lexYaml
 };
 
 // Currently used lexer

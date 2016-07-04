@@ -1538,6 +1538,7 @@ BEGIN
     63029                   "Lua Source Code"
     63030                   "NSIS Script"
     63031                   "TeX Source Code"
+    63032                   "YAML Source Code"
 END
 
 STRINGTABLE
@@ -1798,6 +1799,9 @@ BEGIN
     63320                   "Data Section"
     63321                   "Group"
     63322                   "Text"
+    63323                   "Reference"
+    63324                   "Document"
+    63325                   "Error"
 END
 
 #endif    // English (United States) resources
