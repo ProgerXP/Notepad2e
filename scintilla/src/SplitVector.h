@@ -9,6 +9,10 @@
 #ifndef SPLITVECTOR_H
 #define SPLITVECTOR_H
 
+#ifdef SCI_NAMESPACE
+namespace Scintilla {
+#endif
+
 template <typename T>
 class SplitVector {
 protected:
@@ -81,6 +85,9 @@ public:
 	/// copy exisiting contents to the new buffer.
 	/// Must not be used to decrease the size of the buffer.
 	void ReAllocate(int newSize) {
+		if (newSize < 0)
+			throw std::runtime_error("SplitVector::ReAllocate: negative size.");
+
 		if (newSize > size) {
 			// Move the gap to the end
 			GapTo(lengthBody);
@@ -268,7 +275,7 @@ public:
 				GapTo(position);
 				return body + position + gapLength;
 			} else {
-				return body + position ;
+				return body + position;
 			}
 		} else {
 			return body + position + gapLength;
@@ -276,8 +283,12 @@ public:
 	}
 
 	int GapPosition() const {
-		return part1Length; 
+		return part1Length;
 	}
 };
+
+#ifdef SCI_NAMESPACE
+}
+#endif
 
 #endif

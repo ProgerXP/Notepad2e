@@ -581,10 +581,6 @@
 					>
 				</File>
 				<File
-					RelativePath="scintilla\lexers\LexOthers.cxx"
-					>
-				</File>
-				<File
 					RelativePath="scintilla\lexers\LexPascal.cxx"
 					>
 				</File>

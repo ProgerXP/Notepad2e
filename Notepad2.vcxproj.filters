@@ -220,9 +220,6 @@
     <ClCompile Include="scintilla\lexers\LexOScript.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
-    <ClCompile Include="scintilla\lexers\LexOthers.cxx">
-      <Filter>scintilla</Filter>
-    </ClCompile>
     <ClCompile Include="scintilla\lexers\LexPascal.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>

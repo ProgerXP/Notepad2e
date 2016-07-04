@@ -203,7 +203,6 @@
     <ClCompile Include="scintilla\lexers\LexCSS.cxx" />
     <ClCompile Include="scintilla\lexers\LexConf.cxx" />
     <ClCompile Include="scintilla\lexers\LexHTML.cxx" />
-    <ClCompile Include="scintilla\lexers\LexOthers.cxx" />
     <ClCompile Include="scintilla\lexers\LexPascal.cxx" />
     <ClCompile Include="scintilla\lexers\LexPerl.cxx" />
     <ClCompile Include="scintilla\lexers\LexPowerShell.cxx" />
