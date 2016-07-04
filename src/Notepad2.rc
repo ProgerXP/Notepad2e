@@ -1536,6 +1536,8 @@ BEGIN
     63027                   "D Source Code"
     63028                   "Lisp Source Code"
     63029                   "Lua Source Code"
+    63030                   "NSIS Script"
+    63031                   "TeX Source Code"
 END
 
 STRINGTABLE
@@ -1777,6 +1779,25 @@ BEGIN
     63295                   "Special"
     63296                   "Multi-line Comment"
     63297                   "Literal String"
+    63298                   "String left quote"
+    63299                   "String right quote"
+    63300                   "User defined"
+    63301                   "Subsection"
+    63302                   "If def"
+    63303                   "Macro def"
+    63304                   "Variable within string"
+    63305                   "Section Group"
+    63306                   "Page Ex"
+    63307                   "Function Definition"
+    63308                   "Comment Box"
+    63314                   "POD"
+    63316                   "Symbol"
+    63317                   "Module name"
+    63318                   "Instance Var"
+    63319                   "Class Var"
+    63320                   "Data Section"
+    63321                   "Group"
+    63322                   "Text"
 END
 
 #endif    // English (United States) resources

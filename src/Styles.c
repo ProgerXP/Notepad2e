@@ -997,7 +997,7 @@ EDITLEXER lexRUBY = { SCLEX_RUBY, 63022, L"Ruby Script", L"rb; ruby; rbw; rake; 
         { SCE_RB_CLASSNAME, 63246, L"Class name", L"fore:#0000FF", L"" },
         { SCE_RB_DEFNAME, 63247, L"Function name", L"fore:#007F7F", L"" },
         { SCE_RB_POD, 63314, L"POD", L"fore:#004000; back:#C0FFC0; eolfilled", L"" },
-        { SCE_RB_REGEX, 63315, L"Regex", L"fore:#000000; back:#A0FFA0", L"" },
+        { SCE_RB_REGEX, 63135, L"Regex", L"fore:#000000; back:#A0FFA0", L"" },
         { SCE_RB_SYMBOL, 63316, L"Symbol", L"fore:#C0A030", L"" },
         { SCE_RB_MODULE_NAME, 63317, L"Module name", L"fore:#A000A0", L"" },
         { SCE_RB_INSTANCE_VAR, 63318, L"Instance Var", L"fore:#B00080", L"" },
@@ -1353,7 +1353,7 @@ EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua Source Code", L"lua", L"", &KeyWord
         { SCE_LUA_WORD, 63128, L"Keyword", L"fore:#00007F", L"" },
         { SCE_LUA_STRING, 63131, L"String", L"fore:#7F007F", L"" },
         { SCE_LUA_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
-        { SCE_LUA_LITERALSTRING, 63295, "Literal String", L"fore:#7F007F,font:Georgia,back:#E0FFFF", L"" },
+        { SCE_LUA_LITERALSTRING, 63295, L"Literal String", L"fore:#7F007F,font:Georgia,back:#E0FFFF", L"" },
         { SCE_LUA_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#7F7F00", L"" },
         { SCE_LUA_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
         { SCE_LUA_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -1366,6 +1366,190 @@ EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua Source Code", L"lua", L"", &KeyWord
         { SCE_LUA_WORD7, 63292, L"Keyword 7", L"fore:#00007F,back:#FFA0A0", L"" },
         { SCE_LUA_WORD8, 63293, L"Keyword 8", L"fore:#00007F,back:#FFF5F5", L"" },
         { SCE_LUA_LABEL, 63235, L"Label", L"fore:#7F7F00", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
+KEYWORDLIST KeyWords_NSIS = {
+    "!addincludedir !addplugindir MakeNSIS Portions "
+    "Contributors: Abort AddBrandingImage AddSize AutoCloseWindow BGFont "
+    "BGGradient BrandingText BringToFront Call CallInstDLL Caption ChangeUI "
+    "ClearErrors ComponentText GetDLLVersion GetDLLVersionLocal GetFileTime "
+    "GetFileTimeLocal CopyFiles CRCCheck CreateDirectory CreateFont CreateShortCut "
+    "SetDatablockOptimize DeleteINISec DeleteINIStr DeleteRegKey DeleteRegValue "
+    "Delete DetailPrint DirText DirShow DirVar DirVerify GetInstDirError AllowRootDirInstall "
+    "CheckBitmap EnableWindow EnumRegKey EnumRegValue Exch Exec ExecWait "
+    "ExecShell ExpandEnvStrings FindWindow FindClose FindFirst FindNext File FileBufSize "
+    "FlushINI ReserveFile FileClose FileErrorText FileOpen FileRead FileWrite FileReadByte "
+    "FileWriteByte FileSeek Function FunctionEnd GetDlgItem GetFullPathName "
+    "GetTempFileName HideWindow Icon IfAbort IfErrors IfFileExists IfRebootFlag IfSilent "
+    "InstallDirRegKey InstallColors InstallDir InstProgressFlags InstType IntOp IntCmp "
+    "IntCmpU IntFmt IsWindow Goto LangString LangStringUP LicenseData "
+    "LicenseForceSelection LicenseLangString LicenseText LicenseBkColor "
+    "LoadLanguageFile LogSet LogText MessageBox Nop Name OutFile Page "
+    "PageCallbacks PageEx PageExEnd Pop Push Quit ReadINIStr ReadRegDWORD "
+    "ReadRegStr ReadEnvStr Reboot RegDLL Rename Return RMDir Section SectionEnd "
+    "SectionIn SubSection SectionGroup SubSectionEnd SectionGroupEnd SearchPath "
+    "SectionSetFlags SectionGetFlags SectionSetInstTypes SectionGetInstTypes "
+    "SectionGetText SectionSetText SectionGetSize SectionSetSize GetCurInstType "
+    "SetCurInstType InstTypeSetText InstTypeGetText SendMessage SetAutoClose "
+    "SetCtlColors SetBrandingImage SetCompress SetCompressor SetCompressorDictSize "
+    "SetCompressionLevel SetDateSave SetDetailsView SetDetailsPrint SetErrors "
+    "SetErrorLevel GetErrorLevel SetFileAttributes SetFont SetOutPath SetOverwrite "
+    "SetPluginUnload SetRebootFlag SetShellVarContext SetSilent ShowInstDetails "
+    "ShowUninstDetails ShowWindow SilentInstall SilentUnInstall Sleep StrCmp StrCpy "
+    "StrLen SubCaption UninstallExeName UninstallCaption UninstallIcon UninstPage "
+    "UninstallText UninstallSubCaption UnRegDLL WindowIcon WriteINIStr WriteRegBin "
+    "WriteRegDWORD WriteRegStr WriteRegExpandStr WriteUninstaller XPStyle !packhdr "
+    "!system !execute !AddIncludeDir !include !cd !ifdef !ifndef !endif !define !undef !else !echo !warning "
+    "!error !verbose !macro !macroend !insertmacro !ifmacrodef !ifmacrondef MiscButtonText "
+    "DetailsButtonText UninstallButtonText InstallButtonText SpaceTexts "
+    "CompletedText GetFunctionAddress GetLabelAddress GetCurrentAddress "
+    "!AddPluginDir InitPluginsDir AllowSkipFiles Var VIAddVersionKey VIProductVersion LockWindow",
+    "$0 $1 $2 $3 $4 $5 $6 $7 $8 $9 "
+    "$R0 $R1 $R2 $R3 $R4 $R5 $R6 $R7 $R8 $R9 $\\t $\\\" $\\' $\\` "
+    "$VARNAME $0, $INSTDIR $OUTDIR $CMDLINE $LANGUAGE $PROGRAMFILES "
+    "$COMMONFILES $DESKTOP $EXEDIR ${NSISDIR} $WINDIR $SYSDIR $TEMP "
+    "$STARTMENU $SMPROGRAMS $SMSTARTUP $QUICKLAUNCH $DOCUMENTS "
+    "$SENDTO $RECENT $FAVORITES $MUSIC $PICTURES $VIDEOS $NETHOOD "
+    "$FONTS $TEMPLATES $APPDATA $PRINTHOOD $INTERNET_CACHE $COOKIES "
+    "$HISTORY $PROFILE $ADMINTOOLS $RESOURCES $RESOURCES_LOCALIZED "
+    "$CDBURN_AREA $HWNDPARENT $PLUGINSDIR $$ $\\r $\\n",
+    "ARCHIVE FILE_ATTRIBUTE_ARCHIVE FILE_ATTRIBUTE_HIDDEN "
+    "FILE_ATTRIBUTE_NORMAL FILE_ATTRIBUTE_OFFLINE FILE_ATTRIBUTE_READONLY "
+    "FILE_ATTRIBUTE_SYSTEM FILE_ATTRIBUTE_TEMPORARY HIDDEN HKCC HKCR HKCU "
+    "HKDD HKEY_CLASSES_ROOT HKEY_CURRENT_CONFIG HKEY_CURRENT_USER HKEY_DYN_DATA "
+    "HKEY_LOCAL_MACHINE HKEY_PERFORMANCE_DATA HKEY_USERS HKLM HKPD HKU IDABORT "
+    "IDCANCEL IDIGNORE IDNO IDOK IDRETRY IDYES MB_ABORTRETRYIGNORE MB_DEFBUTTON1 "
+    "MB_DEFBUTTON2 MB_DEFBUTTON3 MB_DEFBUTTON4 MB_ICONEXCLAMATION "
+    "MB_ICONINFORMATION MB_ICONQUESTION MB_ICONSTOP MB_OK MB_OKCANCEL "
+    "MB_RETRYCANCEL MB_RIGHT MB_SETFOREGROUND MB_TOPMOST MB_YESNO "
+    "MB_YESNOCANCEL NORMAL OFFLINE READONLY SW_SHOWMAXIMIZED SW_SHOWMINIMIZED "
+    "SW_SHOWNORMAL SYSTEM TEMPORARY auto colored false force hide ifnewer nevershow "
+    "normal off on show silent silentlog smooth true try lzma zlib bzip2 none listonly textonly "
+    "both top left bottom right license components directory instfiles uninstConfirm custom "
+    "all leave current ifdiff lastused LEFT RIGHT CENTER dlg_id ALT CONTROL EXT SHIFT "
+    "open print manual alwaysoff",
+    "", "", "", "", "", ""
+};
+
+EDITLEXER lexNSIS = { SCLEX_NSIS, 63030, L"NSIS Script", L"nsi;nsh", L"", &KeyWords_NSIS,{
+        { SCE_NSIS_DEFAULT, 63126, L"Default", L"fore:#000000,font:Verdana", L"" },
+        { SCE_NSIS_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_NSIS_STRINGDQ, 63211, L"String double quoted", L"fore:#999999,back:#EEEEEE", L"" },
+        { SCE_NSIS_STRINGLQ, 63298, L"String left quote", L"fore:#999999,back:#EEEEEE", L"" },
+        { SCE_NSIS_STRINGRQ, 63299, L"String right quote", L"fore:#999999,back:#EEEEEE", L"" },
+        { SCE_NSIS_FUNCTION, 63247, L"Function name", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_VARIABLE, 63249, L"Variable", L"fore:#CC3300", L"" },
+        { SCE_NSIS_LABEL, 63235, L"Label", L"fore:#FF9900", L"" },
+        { SCE_NSIS_USERDEFINED, 63300, L"User defined", L"fore:#000000", L"" },
+        { SCE_NSIS_SECTIONDEF, 63232, L"Section", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_SUBSECTIONDEF, 63301, L"Subsection", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_IFDEFINEDEF, 63302, L"If def", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_MACRODEF, 63303, L"Macro def", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_STRINGVAR, 63304, L"Variable within string", L"fore:#CC3300,back:#EEEEEE", L"" },
+        { SCE_NSIS_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
+        { SCE_NSIS_SECTIONGROUP, 63305, L"Section Group", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_PAGEEX, 63306, L"Page Ex", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_FUNCTIONDEF, 63307, L"Function Definition", L"fore:#00007F,bold", L"" },
+        { SCE_NSIS_COMMENTBOX, 63308, L"Comment Box", L"fore:#007F00,font:Georgia,bold", L"" },
+        { -1, 00000, L"", L"", L"" }
+      }
+};
+
+KEYWORDLIST KeyWords_TeX = {
+    "above abovedisplayshortskip abovedisplayskip "
+    "abovewithdelims accent adjdemerits advance afterassignment "
+    "aftergroup atop atopwithdelims "
+    "badness baselineskip batchmode begingroup "
+    "belowdisplayshortskip belowdisplayskip binoppenalty botmark "
+    "box boxmaxdepth brokenpenalty "
+    "catcode char chardef cleaders closein closeout clubpenalty "
+    "copy count countdef cr crcr csname "
+    "day deadcycles def defaulthyphenchar defaultskewchar "
+    "delcode delimiter delimiterfactor delimeters "
+    "delimitershortfall delimeters dimen dimendef discretionary "
+    "displayindent displaylimits displaystyle "
+    "displaywidowpenalty displaywidth divide "
+    "doublehyphendemerits dp dump "
+    "edef else emergencystretch end endcsname endgroup endinput "
+    "endlinechar eqno errhelp errmessage errorcontextlines "
+    "errorstopmode escapechar everycr everydisplay everyhbox "
+    "everyjob everymath everypar everyvbox exhyphenpenalty "
+    "expandafter "
+    "fam fi finalhyphendemerits firstmark floatingpenalty font "
+    "fontdimen fontname futurelet "
+    "gdef global group globaldefs "
+    "halign hangafter hangindent hbadness hbox hfil horizontal "
+    "hfill horizontal hfilneg hfuzz hoffset holdinginserts hrule "
+    "hsize hskip hss horizontal ht hyphenation hyphenchar "
+    "hyphenpenalty hyphen "
+    "if ifcase ifcat ifdim ifeof iffalse ifhbox ifhmode ifinner "
+    "ifmmode ifnum ifodd iftrue ifvbox ifvmode ifvoid ifx "
+    "ignorespaces immediate indent input inputlineno "
+    "insert insertpenalties interlinepenalty "
+    "jobname "
+    "kern "
+    "language lastbox lastkern lastpenalty lastskip lccode "
+    "leaders left lefthyphenmin leftskip leqno let limits "
+    "linepenalty line lineskip lineskiplimit long looseness "
+    "lower lowercase "
+    "mag mark mathaccent mathbin mathchar mathchardef mathchoice "
+    "mathclose mathcode mathinner mathop mathopen mathord "
+    "mathpunct mathrel mathsurround maxdeadcycles maxdepth "
+    "meaning medmuskip message mkern month moveleft moveright "
+    "mskip multiply muskip muskipdef "
+    "newlinechar noalign noboundary noexpand noindent nolimits "
+    "nonscript scriptscript nonstopmode nulldelimiterspace "
+    "nullfont number "
+    "omit openin openout or outer output outputpenalty over "
+    "overfullrule overline overwithdelims "
+    "pagedepth pagefilllstretch pagefillstretch pagefilstretch "
+    "pagegoal pageshrink pagestretch pagetotal par parfillskip "
+    "parindent parshape parskip patterns pausing penalty "
+    "postdisplaypenalty predisplaypenalty predisplaysize "
+    "pretolerance prevdepth prevgraf "
+    "radical raise read relax relpenalty right righthyphenmin "
+    "rightskip romannumeral "
+    "scriptfont scriptscriptfont scriptscriptstyle scriptspace "
+    "scriptstyle scrollmode setbox setlanguage sfcode shipout "
+    "show showbox showboxbreadth showboxdepth showlists showthe "
+    "skewchar skip skipdef spacefactor spaceskip span special "
+    "splitbotmark splitfirstmark splitmaxdepth splittopskip "
+    "string "
+    "tabskip textfont textstyle the thickmuskip thinmuskip time "
+    "toks toksdef tolerance topmark topskip tracingcommands "
+    "tracinglostchars tracingmacros tracingonline tracingoutput "
+    "tracingpages tracingparagraphs tracingrestores tracingstats "
+    "uccode uchyph underline unhbox unhcopy unkern unpenalty "
+    "unskip unvbox unvcopy uppercase "
+    "vadjust valign vbadness vbox vcenter vfil vfill vfilneg "
+    "vfuzz voffset vrule vsize vskip vsplit vss vtop "
+    "wd widowpenalty write "
+    "xdef xleaders xspaceskip "
+    "year "
+    "TeX "
+    "bgroup egroup endgraf space empty null "
+    "newcount newdimen newskip newmuskip newbox newtoks newhelp newread newwrite newfam newlanguage newinsert newif "
+    "maxdimen magstephalf magstep "
+    "frenchspacing nonfrenchspacing normalbaselines obeylines obeyspaces raggedright ttraggedright "
+    "thinspace negthinspace enspace enskip quad qquad "
+    "smallskip medskip bigskip removelastskip topglue vglue hglue "
+    "break nobreak allowbreak filbreak goodbreak smallbreak medbreak bigbreak "
+    "line leftline rightline centerline rlap llap underbar strutbox strut "
+    "cases matrix pmatrix bordermatrix eqalign displaylines eqalignno leqalignno "
+    "pageno folio tracingall showhyphens fmtname fmtversion "
+    "hphantom vphantom phantom smash",
+    "", "", "", "", "", "", "", ""
+};
+
+EDITLEXER lexTeX = { SCLEX_TEX, 63031, L"TeX Source Code", L"tex;sty", L"", &KeyWords_TeX,{
+        { SCE_TEX_DEFAULT, 63126, L"Default", L"fore:#3F3F3F", L"" },
+        { SCE_TEX_SPECIAL, 63295, L"Special", L"fore:#007F7F", L"" },
+        { SCE_TEX_GROUP, 63321, L"Group", L"fore:#7F0000", L"" },
+        { SCE_TEX_SYMBOL, 63316, L"Symbol", L"fore:#7F7F00", L"" },
+        { SCE_TEX_COMMAND, 63236, L"Command", L"fore:#007F00", L"" },
+        { SCE_TEX_TEXT, 63322, L"Text", L"", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1401,7 +1585,9 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexCOFFEESCRIPT,
     &lexD,
     &lexLisp,
-    &lexLua
+    &lexLua,
+    &lexNSIS,
+    &lexTeX
 };
 
 // Currently used lexer
