@@ -6240,18 +6240,23 @@ void UpdateStatusbar()
   const int iSelCount =
     (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
     (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-  if (iSelCount > 0)
+
+#define MAX_EXPRESSION_LENGTH 4096
+
+  if ((iSelCount > 0) && (iSelCount <= MAX_EXPRESSION_LENGTH))
   {
     char *pszText = LocalAlloc(LPTR, iSelCount + 1);
     SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)pszText);
     int error = 0;
-    const double exprValue = te_interp(pszText, &error);
+    const double exprValue = te_interp(te_prepare(pszText), &error);
     if ((error == 0) && !isnan(exprValue))
     {
-      FormatString(tchDocSize, COUNTOF(tchDocSize), IDS_EXPRESSION_VALUE, exprValue);
+      FormatString(tchDocSize,
+                   COUNTOF(tchDocSize),
+                   (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT,
+                   exprValue);
       docSizeOK = TRUE;
     }
-
     LocalFree(pszText);
   }
   if (!docSizeOK)

@@ -177,7 +177,8 @@
 #define IDS_FILTER_INI                  10016
 #define IDS_OPENWITH                    10017
 #define IDS_FAVORITES                   10018
-#define IDS_EXPRESSION_VALUE            10019
+#define IDS_EXPRESSION_VALUE_FLOAT      10019
+#define IDS_EXPRESSION_VALUE_INTEGER    10020
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
 #define CMD_CTRLENTER                   20002

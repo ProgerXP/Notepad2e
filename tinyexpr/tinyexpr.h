@@ -58,6 +58,11 @@ typedef struct te_variable {
     void *context;
 } te_variable;
 
+typedef struct te_operator
+{
+  const char *name;
+  const void *address;
+} te_operator;
 
 
 /* Parses the input expression, evaluates it, and frees it. */
@@ -77,6 +82,9 @@ void te_print(const te_expr *n);
 /* Frees the expression. */
 /* This is safe to call on NULL pointers. */
 void te_free(te_expr *n);
+
+/* Prepare input string */
+char *te_prepare(char *pszSrc);
 
 
 #ifdef __cplusplus
