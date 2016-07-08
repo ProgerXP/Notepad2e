@@ -179,6 +179,9 @@
 #define IDS_FAVORITES                   10018
 #define IDS_EXPRESSION_VALUE_FLOAT      10019
 #define IDS_EXPRESSION_VALUE_INTEGER    10020
+#define IDS_EXPRESSION_VALUE_HEX        10021
+#define IDS_EXPRESSION_VALUE_OCT        10022
+#define IDS_EXPRESSION_VALUE_BINARY_STRING  10023
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
 #define CMD_CTRLENTER                   20002

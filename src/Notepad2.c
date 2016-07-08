@@ -29,6 +29,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
+#include "fp2bin.h"
 #include "scintilla.h"
 #include "scilexer.h"
 #include "notepad2.h"
@@ -56,6 +57,25 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
+
+typedef enum
+{
+  EVM_DEC,
+  EVM_HEX,
+  EVM_BIN,
+  EVM_OCT,
+  EVM_MAX = EVM_OCT,
+  EVM_MIN = EVM_DEC
+} ExpressionValueMode;
+
+ExpressionValueMode modeExpressionValue = EVM_DEC;
+WCHAR     wchExpressionValue[MAX_PATH];
+
+#define       STATUS_PANE_SIZE_CLICK_TIMER  0x1000
+#define       STATUS_PANE_SIZE_DBLCLICK_TIMER 0x1001
+UINT_PTR      timerIDPaneSizeClick = 0;
+UINT_PTR      timerIDPaneSizeDblClick = 0;
+
 
 #define NUMTOOLBITMAPS  26
 #define NUMINITIALTOOLS 25
@@ -813,6 +833,51 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   return (hwndMain);
 }
 
+void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler)
+{
+  if (timerIDPaneSizeClick > 0)
+  {
+    KillTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER);
+    timerIDPaneSizeClick = 0;
+  }
+  if (timerIDPaneSizeDblClick > 0)
+  {
+    KillTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER);
+    timerIDPaneSizeDblClick = 0;
+    if (singleClick)
+    {
+      return;
+    }
+  }
+
+  if (singleClick)
+  {
+    if (runHandler)
+    {
+      ++modeExpressionValue;
+      if (modeExpressionValue > EVM_MAX)
+      {
+        modeExpressionValue = EVM_MIN;
+      }
+      UpdateStatusbar();
+    }
+    else
+    {
+      // wait for possible double click
+      timerIDPaneSizeClick = SetTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER, GetDoubleClickTime()/2, NULL);
+    }
+  }
+  else
+  {
+    if (wcslen(wchExpressionValue) > 0)
+    {
+      SetClipboardText(hwnd, wchExpressionValue);
+    }
+    // skip useless single click
+    timerIDPaneSizeDblClick = SetTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER, 100, NULL);
+  }
+}
+
 //=============================================================================
 //
 //  MainWndProc()
@@ -945,8 +1010,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         Style_SetLexer(hwndEdit, pLexCurrent);
         return DefWindowProc(hwnd, umsg, wParam, lParam);
       }
-                            //case WM_TIMER:
-                            //  break;
+    case WM_TIMER:
+      if ((timerIDPaneSizeClick > 0) && (wParam == timerIDPaneSizeClick))
+      {
+        OnPaneSizeClick(hwnd, TRUE, TRUE);
+      }
+      break;
     case WM_SIZE:
       MsgSize(hwnd, wParam, lParam);
       break;
@@ -4859,6 +4928,9 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             LPNMMOUSE pnmm = (LPNMMOUSE)lParam;
             switch (pnmm->dwItemSpec)
             {
+              case STATUS_DOCSIZE:
+                OnPaneSizeClick(hwnd, TRUE, FALSE);
+                return TRUE;
               case STATUS_EOLMODE:
                 SendMessage(hwndEdit, SCI_CONVERTEOLS, SendMessage(hwndEdit, SCI_GETEOLMODE, 0, 0), 0);
                 EditFixPositions(hwndEdit);
@@ -4872,6 +4944,9 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             LPNMMOUSE pnmm = (LPNMMOUSE)lParam;
             switch (pnmm->dwItemSpec)
             {
+              case STATUS_DOCSIZE:
+                OnPaneSizeClick(hwnd, FALSE, TRUE);
+                return TRUE;
               case STATUS_CODEPAGE:
                 SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_ENCODING_SELECT, 1), 0);
                 return TRUE;
@@ -6243,24 +6318,73 @@ void UpdateStatusbar()
 
 #define MAX_EXPRESSION_LENGTH 4096
 
+  memset(wchExpressionValue, 0, sizeof(wchExpressionValue));
   if ((iSelCount > 0) && (iSelCount <= MAX_EXPRESSION_LENGTH))
   {
     char *pszText = LocalAlloc(LPTR, iSelCount + 1);
     SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)pszText);
     int error = 0;
-    const double exprValue = te_interp(te_prepare(pszText), &error);
-    if ((error == 0) && !isnan(exprValue))
+    double exprValue = te_interp(te_prepare(pszText), &error);
+    if ((error == 0) && !isnan(exprValue) && !isinf(exprValue))
     {
-      FormatString(tchDocSize,
-                   COUNTOF(tchDocSize),
-                   (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT,
-                   exprValue);
+      UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
+      switch (modeExpressionValue)
+      {
+        case EVM_DEC:
+          idExpressionFormatString = (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
+          break;
+        case EVM_HEX:
+          idExpressionFormatString = IDS_EXPRESSION_VALUE_HEX;
+          break;
+        case EVM_BIN:
+          {
+            char chBuffer[FP2BIN_STRING_MAX + 1];
+            fp2bin(ceil(exprValue), chBuffer);
+            ASCIItoUCS2(chBuffer, wchExpressionValue, COUNTOF(wchExpressionValue) - 1);
+            LPWSTR pDot = wcschr(wchExpressionValue, L'.');
+            if (pDot)
+            {
+              *pDot = 0x0;
+            }
+            idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
+          }
+          break;
+        case EVM_OCT:
+          idExpressionFormatString = IDS_EXPRESSION_VALUE_OCT;
+          break;
+        default:
+          break;
+      }
+      switch (modeExpressionValue)
+      {
+        case EVM_BIN:
+          FormatString(tchDocSize,
+                       COUNTOF(tchDocSize) - 1,
+                       idExpressionFormatString,
+                       wchExpressionValue);
+          break;
+        case EVM_DEC:
+          FormatString(tchDocSize,
+                       COUNTOF(tchDocSize) - 1,
+                       idExpressionFormatString,
+                       exprValue);
+          break;
+        case EVM_HEX:
+        case EVM_OCT:
+          FormatString(tchDocSize,
+                       COUNTOF(tchDocSize) - 1,
+                       idExpressionFormatString,
+                       (int)exprValue);
+          break;
+      }
+      wcsncpy_s(wchExpressionValue, COUNTOF(wchExpressionValue) - 1, tchDocSize, COUNTOF(tchDocSize)-1);
       docSizeOK = TRUE;
     }
     LocalFree(pszText);
   }
   if (!docSizeOK)
   {
+    modeExpressionValue = EVM_DEC;
     iBytes = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
     StrFormatByteSize(iBytes, tchBytes, COUNTOF(tchBytes));
     FormatString(tchDocSize, COUNTOF(tchDocSize), IDS_DOCSIZE, tchBytes);

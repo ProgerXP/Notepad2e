@@ -3201,4 +3201,32 @@ BOOL	hl_isspace(WCHAR ch)
   return isspace(ch);
 }
 
+BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
+{
+  if ((wcslen(text) <= 0) || !OpenClipboard(hwnd))
+  {
+    return FALSE;
+  }
+
+  HANDLE hNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT, sizeof(WCHAR) * (lstrlen(text) + 1));
+  LPWSTR pszNew = hNew ? GlobalLock(hNew) : NULL;
+  if (!hNew || !pszNew)
+  {
+    return FALSE;
+  }
+  
+  lstrcpy(pszNew, text);
+  GlobalUnlock(hNew);
+  EmptyClipboard();
+  SetClipboardData(CF_UNICODETEXT, hNew);
+  CloseClipboard();
+
+  return TRUE;
+}
+
+BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest)
+{
+  return MultiByteToWideChar(CP_ACP, 0, lpSrc, -1, lpDest, maxDest);
+}
+
 ///   End of Helpers.c   \\\

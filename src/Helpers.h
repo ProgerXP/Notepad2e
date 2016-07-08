@@ -280,4 +280,7 @@ BOOL	hl_isspace(WCHAR ch);
 #define HL_TRACE_TR(OBJ)		(void)(OBJ);
 #endif
 
+BOOL SetClipboardText(const HWND hwnd, const wchar_t* text);
+BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest);
+
 ///   End of Helpers.h   \\\
