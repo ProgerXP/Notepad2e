@@ -459,7 +459,8 @@ static te_expr *term(state *s) {
     te_expr *ret = factor(s);
 
     while (s->type == TOK_INFIX
-           && (s->function == mul || s->function == divide || s->function == fmod || find_operator_by_function(s->function))) {
+           && (s->function == mul || s->function == divide || s->function == fmod
+               || (find_operator_by_function(s->function) && (s->function != __not)))) {
         te_fun2 t = s->function;
         next_token(s);
         ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, factor(s));
