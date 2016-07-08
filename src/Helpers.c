@@ -940,11 +940,14 @@ BOOL IsCmdEnabled(HWND hwnd, UINT uId)
 //
 int FormatString(LPWSTR lpOutput, int nOutput, UINT uIdFormat, ...)
 {
+  va_list arguments;
+  va_start(arguments, uIdFormat);
   WCHAR *p = LocalAlloc(LPTR, sizeof(WCHAR) * nOutput);
   if (GetString(uIdFormat, p, nOutput))
   {
-    wvsprintf(lpOutput, p, (LPVOID)((PUINT_PTR)&uIdFormat + 1));
+    vswprintf(lpOutput, nOutput, p, arguments);
   }
+  va_end(arguments);
   LocalFree(p);
   return lstrlen(lpOutput);
 }

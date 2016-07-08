@@ -362,6 +362,7 @@
     <ClCompile Include="scintilla\src\XPM.cxx" />
     <ClCompile Include="scintilla\win32\PlatWin.cxx" />
     <ClCompile Include="scintilla\win32\ScintillaWin.cxx" />
+    <ClCompile Include="tinyexpr\tinyexpr.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scintilla\include\Sci_Position.h" />
@@ -431,6 +432,7 @@
     <ClInclude Include="scintilla\src\UniConversion.h" />
     <ClInclude Include="scintilla\src\ViewStyle.h" />
     <ClInclude Include="scintilla\src\XPM.h" />
+    <ClInclude Include="tinyexpr\tinyexpr.h" />
     <CustomBuild Include="src\_version.h">
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>

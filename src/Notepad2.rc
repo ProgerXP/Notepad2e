@@ -1293,6 +1293,7 @@ BEGIN
     IDS_FILTER_INI          "Configuration files (*.ini)|*.ini|All files (*.*)|*.*|"
     IDS_OPENWITH            "Select the directory with links to your favorite applications."
     IDS_FAVORITES           "Select the directory with links to your favorite files."
+    IDS_EXPRESSION_VALUE    "%f"
 END
 
 STRINGTABLE
