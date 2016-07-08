@@ -659,8 +659,27 @@ int is_digit_or_dot(const char ch)
           || (ch == 'h')) ? 1 : 0;
 }
 
+char *te_trimwhitespace(char *str)
+{
+  // Trim leading space
+  while (isspace(*str)) str++;
+
+  if (*str == 0)  // All spaces?
+    return str;
+
+  // Trim trailing space
+  char *end = str + strlen(str) - 1;
+  while (end > str && isspace(*end)) end--;
+
+  // Write new null terminator
+  *(end + 1) = 0;
+
+  return str;
+}
+
 char *te_prepare(char *pszSrc)
 {
+  pszSrc = te_trimwhitespace(pszSrc);
   char *pszTemp = malloc(strlen(pszSrc) + 1);
   char *src = pszSrc;
   char *res = pszTemp;
