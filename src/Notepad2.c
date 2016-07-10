@@ -4885,6 +4885,9 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             EditSelectEx(hwndEdit, iSelAnchor, iSelPos);
           }
           break;
+        case SCN_LINECOUNTCHANGED:
+          UpdateLineNumberWidth();
+          break;
       }
       //
       HLS_on_notification(pnmh->code, scn);

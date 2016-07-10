@@ -2491,6 +2491,14 @@ void Editor::NotifyCaretMoved()
   NotifyParent(scn);
 }
 
+void Editor::NotifyLineCountChanged()
+{
+  // Send notification
+  SCNotification scn = { 0 };
+  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
+  NotifyParent(scn);
+}
+
 // Notifications from document
 void Editor::NotifyModifyAttempt(Document *, void *) {
 	//Platform::DebugPrintf("** Modify Attempt\n");
@@ -3745,6 +3753,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_NEWLINE:
 		NewLine();
+		NotifyLineCountChanged();
 		break;
 	case SCI_FORMFEED:
 		AddChar('\f');
@@ -3793,6 +3802,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 			int start = pdoc->LineStart(line);
 			int end = pdoc->LineStart(line + 1);
 			pdoc->DeleteChars(start, end - start);
+			NotifyLineCountChanged();
 		}
 		break;
 	case SCI_LINETRANSPOSE:
@@ -5734,6 +5744,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_CUT:
 		Cut();
 		SetLastXChosen();
+		NotifyLineCountChanged();
 		break;
 
 	case SCI_COPY:
@@ -5770,17 +5781,20 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			SetLastXChosen();
 		}
 		EnsureCaretVisible();
+		NotifyLineCountChanged();
 		break;
 
 	case SCI_CLEAR:
 		Clear();
 		SetLastXChosen();
 		EnsureCaretVisible();
+		NotifyLineCountChanged();
 		break;
 
 	case SCI_UNDO:
 		Undo();
 		SetLastXChosen();
+		NotifyLineCountChanged();
 		break;
 
 	case SCI_CANUNDO:
@@ -6244,6 +6258,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	case SCI_REDO:
 		Redo();
+		NotifyLineCountChanged();
 		break;
 
 	case SCI_SELECTALL:
