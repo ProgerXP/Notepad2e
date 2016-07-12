@@ -170,8 +170,20 @@ static double negate(double a) {return -a;}
 static double comma(double a, double b) {return b;}
 static double __not(double a) { return ~(int)a; }
 
-static double __div(double a, double b) { return (int)(a / b); }
-static double __mod(double a, double b) { return (int)a % (int)b; }
+static double __div(double a, double b) {
+  if ((int)b == 0)
+  {
+    return NAN;
+  }
+  return (int)(a / b);
+}
+static double __mod(double a, double b) {
+  if ((int)b == 0)
+  {
+    return NAN;
+  }
+  return (int)a % (int)b;
+}
 static double __shl(double a, double b) { return (int)a << (int)b; }
 static double __shr(double a, double b) { return (int)a >> (int)b; }
 static double __and(double a, double b) { return (int)a & (int)b; }
