@@ -6388,7 +6388,6 @@ void UpdateStatusbar()
   }
   if (!docSizeOK)
   {
-    modeExpressionValue = EVM_DEC;
     iBytes = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
     StrFormatByteSize(iBytes, tchBytes, COUNTOF(tchBytes));
     FormatString(tchDocSize, COUNTOF(tchDocSize), IDS_DOCSIZE, tchBytes);
