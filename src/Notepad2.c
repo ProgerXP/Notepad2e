@@ -5019,6 +5019,11 @@ void UpdateFindIcon(const BOOL findOK)
   tbbi.iImage = pBtn->iBitmap;
   tbbi.dwMask = TBIF_IMAGE;
   SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
+
+  if (!findOK)
+  {
+    MessageBeep(MB_ICONINFORMATION);
+  }
 }
 
 void ResetFindIcon()
