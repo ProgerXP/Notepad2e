@@ -62,7 +62,7 @@ WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 INT		_hl_alloc_count = 0;
 extern	UINT	_hl_max_search_range;
 
-int iHighligthLineIfWindowInactive = 0;
+int iHighlightLineIfWindowInactive = 0;
 int iScrollYCaretPolicy = 0;
 int iFindWordMatchCase = 0;
 int iFindWordWrapAround = 0;
@@ -2485,7 +2485,7 @@ VOID HL_LoadINI()
   _hl_ctx_menu_type = IniGetInt(HL_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
   _hl_max_search_range = IniGetInt(HL_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
   b_Hl_use_prefix_in_open_dialog = IniGetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
-  iHighligthLineIfWindowInactive = IniGetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
+  iHighlightLineIfWindowInactive = IniGetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   iFindWordMatchCase = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   iFindWordWrapAround = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
@@ -2499,7 +2499,7 @@ VOID HL_SaveINI()
   IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
   IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range / 1024);
   IniSetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighligthLineIfWindowInactive);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
   IniSetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);

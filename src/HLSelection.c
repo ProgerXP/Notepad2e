@@ -33,7 +33,7 @@ BOOL	b_HL_highlight_all = TRUE;
 BOOL	_hl_se_init = FALSE;
 BOOL	_hl_se_exit = FALSE;
 
-extern int iHighligthLineIfWindowInactive;
+extern int iHighlightLineIfWindowInactive;
 //
 //
 typedef struct tagHLSEdata
@@ -114,7 +114,7 @@ int	HLS_key_action(int key, int msg)
 
 void	HLS_init()
 {
-  SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, iHighligthLineIfWindowInactive, 0);
+  SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, iHighlightLineIfWindowInactive, 0);
   int indi_style = IniGetInt(HL_INI_SECTION, L"SelectionType", 6);
   if (indi_style >= 0)
   {
