@@ -313,7 +313,6 @@
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />
-    <ClCompile Include="src\fp2bin.c" />
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\HLSelection.c" />
     <ClCompile Include="src\Notepad2.c" />
@@ -384,7 +383,6 @@
     <ClInclude Include="src\Dialogs.h" />
     <ClInclude Include="src\Dlapi.h" />
     <ClInclude Include="src\Edit.h" />
-    <ClInclude Include="src\fp2bin.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\HLSelection.h" />
     <ClInclude Include="src\Notepad2.h" />

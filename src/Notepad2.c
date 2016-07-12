@@ -29,7 +29,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
-#include "fp2bin.h"
 #include "scintilla.h"
 #include "scilexer.h"
 #include "notepad2.h"
@@ -1869,7 +1868,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EndDeferWindowPos(hdwp);
   // Statusbar width
   aWidth[0] = max(120, min(cx / 3, StatusCalcPaneWidth(hwndStatus, L"Ln 9'999'999 : 9'999'999   Col 9'999'999 : 999   Sel 9'999'999")));
-  aWidth[1] = aWidth[0] + StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes");
+  aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, wchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
   aWidth[2] = aWidth[1] + StatusCalcPaneWidth(hwndStatus, L"Unicode BE BOM");
   aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
   aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
@@ -6253,6 +6252,25 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_CLEAR, i /*&& !bReadOnly*/);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
 }
+
+void int2bin(unsigned int val, LPWSTR binString)
+{
+  int bitCount = 0;
+  int i;
+  WCHAR binString_temp[MAX_PATH];
+
+  do
+  {
+    binString_temp[bitCount++] = '0' + val % 2;
+    val /= 2;
+  } while (val > 0);
+
+  /* Reverse the binary string */
+  for (i = 0; i < bitCount; i++)
+    binString[i] = binString_temp[bitCount - i - 1];
+
+  binString[bitCount] = 0; //Null terminator
+}
 //=============================================================================
 //
 //  UpdateStatusbar()
@@ -6342,14 +6360,7 @@ void UpdateStatusbar()
           break;
         case EVM_BIN:
           {
-            char chBuffer[FP2BIN_STRING_MAX + 1];
-            fp2bin(ceil(exprValue), chBuffer);
-            ASCIItoUCS2(chBuffer, wchExpressionValue, COUNTOF(wchExpressionValue) - 1);
-            LPWSTR pDot = wcschr(wchExpressionValue, L'.');
-            if (pDot)
-            {
-              *pDot = 0x0;
-            }
+            int2bin((unsigned int)ceil(exprValue), wchExpressionValue);
             idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
           }
           break;
