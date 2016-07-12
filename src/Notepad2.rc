@@ -1294,7 +1294,7 @@ BEGIN
     IDS_OPENWITH            "Select the directory with links to your favorite applications."
     IDS_FAVORITES           "Select the directory with links to your favorite files."
     IDS_EXPRESSION_VALUE_FLOAT    "%f"
-    IDS_EXPRESSION_VALUE_INTEGER  "%g"
+    IDS_EXPRESSION_VALUE_INTEGER  "%.0f"
     IDS_EXPRESSION_VALUE_HEX  "%Xh"
     IDS_EXPRESSION_VALUE_OCT  "%oo"
     IDS_EXPRESSION_VALUE_BINARY_STRING "%sb"
