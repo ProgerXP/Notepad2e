@@ -344,6 +344,7 @@ int flagDisplayHelp = 0;
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
   setlocale(LC_ALL, "");
+  setlocale(LC_NUMERIC, "C");
 
   MSG msg;
   HWND hwnd;
