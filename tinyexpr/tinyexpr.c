@@ -651,11 +651,6 @@ void te_print(const te_expr *n) {
     pn(n, 0);
 }
 
-int is_space(const char ch)
-{
-  return ((ch == ' ') || (ch == '\t')) ? 1 : 0;
-}
-
 int is_filtered(const char ch)
 {
   return ((ch == '$') || (ch == ',')) ? 1 : 0;
@@ -720,7 +715,7 @@ char *te_prepare(char *pszSrc)
     char prevChar = 0x0;
     while (*res)
     {
-      if (is_space(*res) && !is_space(prevChar))
+      if (isspace(*res) && !isspace(prevChar))
       {
         prevChar = *res;
         *res = '+';
