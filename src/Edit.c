@@ -2891,31 +2891,39 @@ extern BOOL bAutoIndent;
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
+  const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
+  const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
   SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
   const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
+  const int iIndentColOriginal = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iCurLine, 0);
   if (insertAbove)
   {
+    const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
     if (bAutoIndent)
     {
       const BOOL isLineStart = (iCurPos == SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0));
       if (isLineStart)
       {
-        const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
-        SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+        SendMessage(hwndEdit, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
         SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+        if (iPrevLine == iCurLine)
+        {
+          const int iNewPrevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
+          SendMessage(hwndEdit, SCI_SETSEL, iNewPrevLineEndPos, iNewPrevLineEndPos);
+        }
       }
       else
       {
+        SendMessage(hwndEdit, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
         SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
-        const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
-        SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+        SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColOriginal);
+        const int iNewCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
+        SendMessage(hwndEdit, SCI_SETSEL, iNewCurLineEndPos, iNewCurLineEndPos);
       }
     }
     else
     {
-      const int prevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
-      SendMessage(hwndEdit, SCI_SETSEL, prevLineEndPos, prevLineEndPos);
+      SendMessage(hwndEdit, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
       SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
     }
   }
@@ -2923,10 +2931,9 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   {
     if (bAutoIndent)
     {
-      const BOOL isLineEnd = (iCurPos == SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0));
+      const BOOL isLineEnd = (iCurPos == iCurLineEndPos);
       if (isLineEnd)
       {
-        const int iIndentColOriginal = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iCurLine, 0);
         const int iIndentColLinePrev = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iPrevLine, 0);
         SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColLinePrev);
         SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
@@ -2934,6 +2941,7 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
       }
       else
       {
+        SendMessage(hwndEdit, SCI_SETSEL, iCurLineEndPos, iCurLineEndPos);
         SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
       }
     }
