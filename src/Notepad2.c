@@ -6364,14 +6364,14 @@ void UpdateStatusbar()
         switch (modeExpressionValue)
         {
           case EVM_DEC:
-            idExpressionFormatString = (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
+            idExpressionFormatString = (floor(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
             break;
           case EVM_HEX:
             idExpressionFormatString = IDS_EXPRESSION_VALUE_HEX;
             break;
           case EVM_BIN:
             {
-              int2bin((unsigned int)ceil(exprValue), arrwchExpressionValue);
+              int2bin((unsigned int)floor(exprValue), arrwchExpressionValue);
               idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
             }
             break;
