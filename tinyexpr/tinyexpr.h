@@ -84,7 +84,7 @@ void te_print(const te_expr *n);
 void te_free(te_expr *n);
 
 /* Prepare input string */
-char *te_prepare(char *pszSrc);
+char *te_prepare(unsigned char *pszSrc);
 
 
 #ifdef __cplusplus

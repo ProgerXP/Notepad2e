@@ -651,12 +651,12 @@ void te_print(const te_expr *n) {
     pn(n, 0);
 }
 
-int is_filtered(const char ch)
+int is_filtered(const unsigned char ch)
 {
   return ((ch == '$') || (ch == ',')) ? 1 : 0;
 }
 
-int is_digit_or_dot(const char ch)
+int is_digit_or_dot(const unsigned char ch)
 {
   return (isxdigit(ch)
           || (ch == '.')
@@ -666,26 +666,26 @@ int is_digit_or_dot(const char ch)
           || (ch == 'h')) ? 1 : 0;
 }
 
-int is_newline(const char ch)
+int is_newline(const unsigned char ch)
 {
   return (ch == '\r') || (ch == '\n') ? 1 : 0;
 }
 
-int is_space_or_newline(const char ch)
+int is_space_or_newline(const unsigned char ch)
 {
   return (isspace(ch) || is_newline(ch)) ? 1 : 0;
 }
 
-char *te_trimwhitespace(char *str)
+char *te_trimwhitespace(unsigned char *str)
 {
   // Trim leading space
-  while (isspace(*str)) str++;
+  while (isspace((const unsigned char)*str)) str++;
 
   if (*str == 0)  // All spaces?
     return str;
 
   // Trim trailing space
-  char *end = str + strlen(str) - 1;
+  unsigned char *end = str + strlen(str) - 1;
   while (end > str && isspace(*end)) end--;
 
   // Write new null terminator
@@ -694,7 +694,7 @@ char *te_trimwhitespace(char *str)
   return str;
 }
 
-char *te_prepare(char *pszSrc)
+char *te_prepare(unsigned char *pszSrc)
 {
   pszSrc = te_trimwhitespace(pszSrc);
   char *pszTemp = malloc(strlen(pszSrc) + 1);
