@@ -67,8 +67,13 @@ typedef enum
   EVM_MIN = EVM_DEC
 } ExpressionValueMode;
 
+#define MAX_EXPRESSION_LENGTH 4096
+
+ExpressionValueMode modePrevExpressionValue = EVM_DEC;
+char      arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
+
 ExpressionValueMode modeExpressionValue = EVM_DEC;
-WCHAR     wchExpressionValue[MAX_PATH];
+WCHAR     arrwchExpressionValue[MAX_PATH];
 
 #define       STATUS_PANE_SIZE_CLICK_TIMER  0x1000
 #define       STATUS_PANE_SIZE_DBLCLICK_TIMER 0x1001
@@ -616,6 +621,8 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       wi.x = mi.rcWork.right - wi.cx - 16;
     }
   }
+  memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
+  memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
   hwndMain = CreateWindowEx(
     0,
     wchWndClass,
@@ -869,9 +876,9 @@ void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHand
   }
   else
   {
-    if (wcslen(wchExpressionValue) > 0)
+    if (wcslen(arrwchExpressionValue) > 0)
     {
-      SetClipboardText(hwnd, wchExpressionValue);
+      SetClipboardText(hwnd, arrwchExpressionValue);
     }
     // skip useless single click
     timerIDPaneSizeDblClick = SetTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER, 100, NULL);
@@ -1868,7 +1875,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EndDeferWindowPos(hdwp);
   // Statusbar width
   aWidth[0] = max(120, min(cx / 3, StatusCalcPaneWidth(hwndStatus, L"Ln 9'999'999 : 9'999'999   Col 9'999'999 : 999   Sel 9'999'999")));
-  aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, wchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
+  aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, arrwchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
   aWidth[2] = aWidth[1] + StatusCalcPaneWidth(hwndStatus, L"Unicode BE BOM");
   aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
   aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
@@ -6343,64 +6350,76 @@ void UpdateStatusbar()
     (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
     (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
 
-#define MAX_EXPRESSION_LENGTH 4096
-
-  memset(wchExpressionValue, 0, sizeof(wchExpressionValue));
   if ((iSelCount > 0) && (iSelCount <= MAX_EXPRESSION_LENGTH))
   {
     char *pszText = LocalAlloc(LPTR, iSelCount + 1);
     SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)pszText);
-    int error = 0;
-    double exprValue = te_interp(te_prepare(pszText), &error);
-    if ((error == 0) && !isnan(exprValue) && !isinf(exprValue))
+    if ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue))
     {
-      UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
-      switch (modeExpressionValue)
+      int error = 0;
+      double exprValue = te_interp(te_prepare(pszText), &error);
+      if ((error == 0) && !isnan(exprValue) && !isinf(exprValue))
       {
-        case EVM_DEC:
-          idExpressionFormatString = (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
-          break;
-        case EVM_HEX:
-          idExpressionFormatString = IDS_EXPRESSION_VALUE_HEX;
-          break;
-        case EVM_BIN:
-          {
-            int2bin((unsigned int)ceil(exprValue), wchExpressionValue);
-            idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
-          }
-          break;
-        case EVM_OCT:
-          idExpressionFormatString = IDS_EXPRESSION_VALUE_OCT;
-          break;
-        default:
-          break;
+        UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
+        switch (modeExpressionValue)
+        {
+          case EVM_DEC:
+            idExpressionFormatString = (ceil(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
+            break;
+          case EVM_HEX:
+            idExpressionFormatString = IDS_EXPRESSION_VALUE_HEX;
+            break;
+          case EVM_BIN:
+            {
+              int2bin((unsigned int)ceil(exprValue), arrwchExpressionValue);
+              idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
+            }
+            break;
+          case EVM_OCT:
+            idExpressionFormatString = IDS_EXPRESSION_VALUE_OCT;
+            break;
+          default:
+            break;
+        }
+        switch (modeExpressionValue)
+        {
+          case EVM_BIN:
+            FormatString(tchDocSize,
+                         COUNTOF(tchDocSize) - 1,
+                         idExpressionFormatString,
+                         arrwchExpressionValue);
+            break;
+          case EVM_DEC:
+            FormatString(tchDocSize,
+                         COUNTOF(tchDocSize) - 1,
+                         idExpressionFormatString,
+                         exprValue);
+            break;
+          case EVM_HEX:
+          case EVM_OCT:
+            FormatString(tchDocSize,
+                         COUNTOF(tchDocSize) - 1,
+                         idExpressionFormatString,
+                         (int)exprValue);
+            break;
+        }
+        modePrevExpressionValue = modeExpressionValue;
+        strncpy_s(arrchPrevExpressionText, COUNTOF(arrchPrevExpressionText) - 1, pszText, strlen(pszText));
+        wcsncpy_s(arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1, tchDocSize, COUNTOF(tchDocSize) - 1);
+        docSizeOK = TRUE;
       }
-      switch (modeExpressionValue)
-      {
-        case EVM_BIN:
-          FormatString(tchDocSize,
-                       COUNTOF(tchDocSize) - 1,
-                       idExpressionFormatString,
-                       wchExpressionValue);
-          break;
-        case EVM_DEC:
-          FormatString(tchDocSize,
-                       COUNTOF(tchDocSize) - 1,
-                       idExpressionFormatString,
-                       exprValue);
-          break;
-        case EVM_HEX:
-        case EVM_OCT:
-          FormatString(tchDocSize,
-                       COUNTOF(tchDocSize) - 1,
-                       idExpressionFormatString,
-                       (int)exprValue);
-          break;
-      }
-      wcsncpy_s(wchExpressionValue, COUNTOF(wchExpressionValue) - 1, tchDocSize, COUNTOF(tchDocSize)-1);
+    }
+    else
+    {
+      wcsncpy_s(tchDocSize, COUNTOF(tchDocSize) - 1, arrwchExpressionValue, wcslen(arrwchExpressionValue));
       docSizeOK = TRUE;
     }
     LocalFree(pszText);
+  }
+  else
+  {
+    memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
+    memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
   }
   if (!docSizeOK)
   {
