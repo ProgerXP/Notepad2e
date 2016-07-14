@@ -666,6 +666,16 @@ int is_digit_or_dot(const char ch)
           || (ch == 'h')) ? 1 : 0;
 }
 
+int is_newline(const char ch)
+{
+  return (ch == '\r') || (ch == '\n') ? 1 : 0;
+}
+
+int is_space_or_newline(const char ch)
+{
+  return (isspace(ch) || is_newline(ch)) ? 1 : 0;
+}
+
 char *te_trimwhitespace(char *str)
 {
   // Trim leading space
@@ -700,7 +710,7 @@ char *te_prepare(char *pszSrc)
       *res++ = *src;
       if (onlyDigitsAndDots)
       {
-        onlyDigitsAndDots &= (is_digit_or_dot(*src) || (*src == ' '));
+        onlyDigitsAndDots &= (is_digit_or_dot(*src) || is_space_or_newline(*src));
       }
     }
     ++src;
@@ -715,7 +725,7 @@ char *te_prepare(char *pszSrc)
     char prevChar = 0x0;
     while (*res)
     {
-      if (isspace(*res) && !isspace(prevChar))
+      if (is_space_or_newline(*res) && !is_space_or_newline(prevChar))
       {
         prevChar = *res;
         *res = '+';
