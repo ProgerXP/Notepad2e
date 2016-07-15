@@ -77,9 +77,12 @@ extern "C"
   LPCONTEXTMENU2	g_IContext2 = NULL;
   LPCONTEXTMENU3	g_IContext3 = NULL;
   //
-  VOID Invoke(int cmd, LPCONTEXTMENU menu, HWND win)
+  VOID Invoke(int cmd, LPCONTEXTMENU menu, HWND win, LPCWSTR path)
   {
     if (cmd > 0) {
+      std::wstring pathFolder = path;
+      PathRemoveFileSpec((LPWSTR)pathFolder.data());
+
       CMINVOKECOMMANDINFOEX info ={0};
       info.cbSize = sizeof(info);
       info.fMask = CMIC_MASK_UNICODE;
@@ -87,6 +90,7 @@ extern "C"
       info.lpVerb  = MAKEINTRESOURCEA(cmd - 1);
       info.lpVerbW = MAKEINTRESOURCEW(cmd - 1);
       info.nShow = SW_SHOWNORMAL;
+      info.lpDirectoryW = pathFolder.c_str();
       menu->InvokeCommand((LPCMINVOKECOMMANDINFO)&info);
     }
   }
@@ -219,7 +223,7 @@ extern "C"
     POINT pt;
     GetCursorPos(&pt);
     int iCmd = TrackPopupMenuEx(h_menu, TPM_RETURNCMD, pt.x, pt.y, (HWND)parentWindow, NULL);
-    Invoke(iCmd, pContextMenu, (HWND)parentWindow);
+    Invoke(iCmd, pContextMenu, (HWND)parentWindow, path);
     if (OldWndProc) {
       SetWindowLong((HWND)parentWindow, GWL_WNDPROC, (DWORD)OldWndProc);
     }
