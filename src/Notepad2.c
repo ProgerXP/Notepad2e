@@ -776,7 +776,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       cpLastFind = cp;
       if (flagMatchText & 4)
       {
-        efrData.fuFlags |= SCFIND_REGEXP | SCFIND_POSIX;
+        efrData.fuFlags |= SCFIND_REGEXP | SCFIND_CXX11REGEX | SCFIND_POSIX;
       }
       else if (flagMatchText & 8)
       {
@@ -4131,7 +4131,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SYSTEMTIME st;
         struct tm sst;
         UINT cp;
-        EDITFINDREPLACE efrTS = { "", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, hwndEdit };
+        EDITFINDREPLACE efrTS = { "", "", "", "", SCFIND_REGEXP | SCFIND_CXX11REGEX, 0, 0, 0, 0, 0, hwndEdit };
         IniGetString(L"Settings2", L"TimeStamp", L"\\$Date:[^\\$]+\\$ | $Date: %Y/%m/%d %H:%M:%S $", wchFind, COUNTOF(wchFind));
         if (pwchSep = StrChr(wchFind, L'|'))
         {
@@ -4279,7 +4279,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             lstrcpyA(efrData.szFindUTF8, mszSelection);
           }
-          efrData.fuFlags &= (~(SCFIND_REGEXP | SCFIND_POSIX));
+          efrData.fuFlags &= (~(SCFIND_REGEXP | SCFIND_CXX11REGEX | SCFIND_POSIX));
           efrData.bTransformBS = FALSE;
           switch (LOWORD(wParam))
           {
