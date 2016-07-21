@@ -3038,35 +3038,25 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
   int res = 0;
-  int eol_len = 2;
   int line_first, line_last;
   char szFind2[512];
 
-  struct Sci_TextToFind ttf, tr;
+  struct Sci_TextToFind ttf;
   if (!lstrlenA(lpf->szFind))
   {
     return;
   }
-  /*
-   * detect scope
-   **/
+
+  const int selStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+  const int selEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+  line_first = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, selStart, 0);
+  line_last = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, selEnd, 0);
+  if (line_last - line_first + 1 <= 2)
   {
-    int beg, end;
-    beg = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-    end = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-    line_first = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, beg, 0);
-    line_last = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, end, 0);
-    if (line_last - line_first + 1 <= 2)
-    {
-      line_first = 0;
-      line_last = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) - 1;
-    }
-    else
-    {
-      HL_TRACE(L"USE SHORT REGION");
-    }
+    line_first = 0;
+    line_last = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) - 1;
   }
-  //
+
   lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
   ZeroMemory(&ttf, sizeof(ttf));
   if (lpf->bTransformBS)
@@ -3078,64 +3068,55 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   {
     return;
   }
-  if (SC_EOL_CRLF != SendMessage(lpf->hwnd, SCI_GETEOLMODE, 0, 0))
-  {
-    eol_len = 1;
-  }
-  ttf.lpstrText = szFind2;
+
   SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
-  for (k = line_first; k <= line_last; k++)
+
+  ttf.lpstrText = szFind2;
+  ttf.chrg.cpMin = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, line_last, 0);
+  ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, line_first, 0);
+
+  BOOL bIsLastLine = TRUE;
+
+  res = SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
+  while (ttf.chrg.cpMin > ttf.chrg.cpMax)
   {
-    //
-    res = 0;
-    ttf.chrg.cpMin = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, k, 0);
-    ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, k, 0);
-#ifdef _DEBUG
-    tr.chrg = ttf.chrg;
-    tr.lpstrText = HL_Alloc(tr.chrg.cpMax - tr.chrg.cpMin + 1);
-    SendMessage(lpf->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-#endif
-    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-    {
-      res = -2;
-    }
-    //
+    const int lineIndex = (res >= 0) ? SendMessage(lpf->hwnd, SCI_LINEFROMPOSITION, res, 0) : 0;
+    const int lineStart = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, lineIndex, 0);
+    int lineEnd = 0;
     if (res >= 0)
     {
-      res = (int)SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
+      BOOL bDone = FALSE;
+      if (grep && bIsLastLine)
+      {
+        if (lineIndex + 2 == SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0))
+        {
+          lineEnd = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, lineIndex, 0);
+          bIsLastLine = FALSE;
+          bDone = TRUE;
+        }
+      }
+      if (!bDone)
+      {
+        lineEnd = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, lineIndex + 1, 0);
+      }
     }
-#ifdef _DEBUG
-    HL_TRACE(L"LINE result : %s (%d) [%d - %d] LINE:%d", tr.lpstrText, res, ttf.chrg.cpMin, ttf.chrg.cpMax, k);
-#endif
-    if ((grep &&  res < 0) || (!grep &&  res >= 0))
+    else
     {
-      //
-#if 0
-      SendMessage(lpf->hwnd, SCI_HIDELINES, k, k);
-#else
-
-      if (k + 1 != SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0))
-      {
-        ttf.chrg.cpMax += eol_len;
-      }
-      SendMessage(lpf->hwnd, SCI_DELETERANGE, ttf.chrg.cpMin, ttf.chrg.cpMax - ttf.chrg.cpMin);
-      //if (SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) < line_last)
-      {
-        --k;
-        --line_last;
-      }
-#endif
-
-#ifdef _DEBUG
-      HL_TRACE(L"LINE TO HIDE: %s", tr.lpstrText);
-#endif
-      //
+      lineEnd = ttf.chrg.cpMax;
     }
-#ifdef _DEBUG
-    HL_Free(tr.lpstrText);
-#endif
+
+    SendMessage(lpf->hwnd,
+                SCI_SETTARGETRANGE,
+                grep ? lineEnd : lineStart,
+                grep ? ttf.chrg.cpMin : lineEnd);
+    SendMessage(lpf->hwnd, SCI_REPLACETARGET, 0, (LPARAM)"");
+
+    ttf.chrg.cpMin = lineStart;
+    res = SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
   }
+
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
+  UpdateLineNumberWidth();
 }
 
 void HL_inplace_rev(WCHAR * s)
