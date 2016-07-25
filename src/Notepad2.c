@@ -955,34 +955,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         }
         // call SaveSettings() when hwndToolbar is still valid
         SaveSettings(FALSE);
-        if (lstrlen(szIniFile) != 0)
-        {
-          // Cleanup unwanted MRU's
-          if (!bSaveRecentFiles)
-          {
-            MRU_Empty(pFileMRU);
-            MRU_Save(pFileMRU);
-          }
-          else
-          {
-            MRU_MergeSave(pFileMRU, TRUE, flagRelativeFileMRU, flagPortableMyDocs);
-          }
-          MRU_Destroy(pFileMRU);
-          if (!bSaveFindReplace)
-          {
-            MRU_Empty(mruFind);
-            MRU_Empty(mruReplace);
-            MRU_Save(mruFind);
-            MRU_Save(mruReplace);
-          }
-          else
-          {
-            MRU_MergeSave(mruFind, FALSE, FALSE, FALSE);
-            MRU_MergeSave(mruReplace, FALSE, FALSE, FALSE);
-          }
-          MRU_Destroy(mruFind);
-          MRU_Destroy(mruReplace);
-        }
+        MRU_Destroy(pFileMRU);
+        MRU_Destroy(mruFind);
+        MRU_Destroy(mruReplace);
         // Remove tray icon if necessary
         ShowNotifyIcon(hwnd, FALSE);
         bShutdownOK = TRUE;
@@ -5523,6 +5498,30 @@ void SaveSettings(BOOL bSaveSettingsNow)
   }
   // Scintilla Styles
   Style_Save();
+  HL_SaveINI();
+
+  // Cleanup unwanted MRU's
+  if (!bSaveRecentFiles)
+  {
+    MRU_Empty(pFileMRU);
+    MRU_Save(pFileMRU);
+  }
+  else
+  {
+    MRU_MergeSave(pFileMRU, TRUE, flagRelativeFileMRU, flagPortableMyDocs);
+  }
+  if (!bSaveFindReplace)
+  {
+    MRU_Empty(mruFind);
+    MRU_Empty(mruReplace);
+    MRU_Save(mruFind);
+    MRU_Save(mruReplace);
+  }
+  else
+  {
+    MRU_MergeSave(mruFind, FALSE, FALSE, FALSE);
+    MRU_MergeSave(mruReplace, FALSE, FALSE, FALSE);
+  }
 }
 //=============================================================================
 //
