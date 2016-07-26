@@ -2489,6 +2489,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           if (FileMRUDlg(hwnd, tchFile))
           {
             FileLoad(TRUE, FALSE, FALSE, FALSE, tchFile);
+            MRU_AddFile(pFileMRU, tchFile, flagRelativeFileMRU, flagPortableMyDocs);
+            if (flagUseSystemMRU == 2)
+            {
+              SHAddToRecentDocs(SHARD_PATHW, tchFile);
+            }
           }
         }
       }
