@@ -315,6 +315,7 @@
     <ClCompile Include="src\Edit.c" />
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\HLSelection.c" />
+    <ClCompile Include="src\InlineProgressBarCtrl.c" />
     <ClCompile Include="src\Notepad2.c" />
     <ClCompile Include="src\Print.cpp" />
     <ClCompile Include="src\Styles.c" />
@@ -385,6 +386,7 @@
     <ClInclude Include="src\Edit.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\HLSelection.h" />
+    <ClInclude Include="src\InlineProgressBarCtrl.h" />
     <ClInclude Include="src\Notepad2.h" />
     <ClInclude Include="src\SciCall.h" />
     <ClInclude Include="src\Styles.h" />

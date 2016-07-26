@@ -109,6 +109,9 @@ int  CreateIniFile();
 int  CreateIniFileEx(LPCWSTR);
 
 void UpdateStatusbar();
+void CreateProgressInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos);
+void DestroyProgressInStatusBar();
+void UpdateProgressInStatusBar(const int nCurrentValue);
 void UpdateToolbar();
 void UpdateLineNumberWidth();
 

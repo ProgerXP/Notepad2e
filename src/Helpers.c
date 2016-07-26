@@ -3069,11 +3069,13 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
     return;
   }
 
+  BeginWaitCursor();
   SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
-
   ttf.lpstrText = szFind2;
   ttf.chrg.cpMin = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, line_last, 0);
   ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, line_first, 0);
+  const int maxPos = ttf.chrg.cpMin;
+  CreateProgressInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
 
   BOOL bIsLastLine = TRUE;
 
@@ -3085,6 +3087,7 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
     int lineEnd = 0;
     if (res >= 0)
     {
+      UpdateProgressInStatusBar(maxPos - res);
       BOOL bDone = FALSE;
       if (grep && bIsLastLine)
       {
@@ -3117,6 +3120,8 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
 
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
   UpdateLineNumberWidth();
+  DestroyProgressInStatusBar();
+  EndWaitCursor();
 }
 
 void HL_inplace_rev(WCHAR * s)

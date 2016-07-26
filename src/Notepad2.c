@@ -40,6 +40,7 @@
 #include "SciCall.h"
 #include "HLSelection.h"
 #include "../tinyexpr/tinyexpr.h"
+#include "InlineProgressBarCtrl.h"
 
 VOID HL_Msg_create();
 
@@ -49,6 +50,9 @@ VOID HL_Msg_create();
 *
 */
 HWND      hwndStatus;
+HWND      hwndStatusProgressBar = NULL;
+BOOL      bShowProgressBar = FALSE;
+WCHAR     tchProgressProcessName[MAX_PATH];
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      hwndEdit;
@@ -1856,7 +1860,10 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
   aWidth[5] = -1;
   SendMessage(hwndStatus, SB_SETPARTS, COUNTOF(aWidth), (LPARAM)aWidth);
-  //UpdateStatusbar();
+  if (bShowProgressBar && hwndStatusProgressBar)
+  {
+    InlineProgressBarCtrl_Resize(hwndStatusProgressBar);
+  }
 }
 
 //=============================================================================
@@ -6448,9 +6455,33 @@ void UpdateStatusbar()
   StatusSetText(hwndStatus, STATUS_CODEPAGE, mEncoding[iEncoding].wchLabel);
   StatusSetText(hwndStatus, STATUS_EOLMODE, tchEOLMode);
   StatusSetText(hwndStatus, STATUS_OVRMODE, tchOvrMode);
-  StatusSetText(hwndStatus, STATUS_LEXER, tchLexerName);
+  StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressProcessName : tchLexerName);
   //InvalidateRect(hwndStatus,NULL,TRUE);
 }
+
+void CreateProgressInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos)
+{
+  wcscpy_s(tchProgressProcessName, _countof(tchProgressProcessName), pProgressText);
+  hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, nCurPos, nMaxPos, TRUE, STATUS_LEXER);
+  bShowProgressBar = TRUE;
+  UpdateStatusbar();
+}
+
+void DestroyProgressInStatusBar()
+{
+  bShowProgressBar = FALSE;
+  DestroyWindow(hwndStatusProgressBar);
+  hwndStatusProgressBar = NULL;
+  wcscpy_s(tchProgressProcessName, _countof(tchProgressProcessName), L"");
+  UpdateStatusbar();
+}
+
+void UpdateProgressInStatusBar(const int nCurrentValue)
+{
+  InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurrentValue);
+  InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
+}
+
 //=============================================================================
 //
 //  UpdateLineNumberWidth()
