@@ -52,7 +52,7 @@ VOID HL_Msg_create();
 HWND      hwndStatus;
 HWND      hwndStatusProgressBar = NULL;
 BOOL      bShowProgressBar = FALSE;
-WCHAR     tchProgressProcessName[MAX_PATH];
+WCHAR     tchProgressBarTaskName[MAX_PATH];
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      hwndEdit;
@@ -1726,6 +1726,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
     dwStatusbarStyle |= WS_VISIBLE;
   }
   hwndStatus = CreateStatusWindow(dwStatusbarStyle, NULL, hwnd, IDC_STATUSBAR);
+  CreateProgressBarInStatusBar();
   // Create ReBar and add Toolbar
   hwndReBar = CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, dwReBarStyle,
                              0, 0, 0, 0, hwnd, (HMENU)IDC_REBAR, hInstance, NULL);
@@ -1796,6 +1797,7 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   DestroyWindow(hwndToolbar);
   DestroyWindow(hwndReBar);
   DestroyWindow(hwndStatus);
+  DestroyProgressBarInStatusBar();
   CreateBars(hwnd, hInstance);
   UpdateToolbar();
   GetClientRect(hwnd, &rc);
@@ -6460,30 +6462,49 @@ void UpdateStatusbar()
   StatusSetText(hwndStatus, STATUS_CODEPAGE, mEncoding[iEncoding].wchLabel);
   StatusSetText(hwndStatus, STATUS_EOLMODE, tchEOLMode);
   StatusSetText(hwndStatus, STATUS_OVRMODE, tchOvrMode);
-  StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressProcessName : tchLexerName);
+  StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressBarTaskName : tchLexerName);
   //InvalidateRect(hwndStatus,NULL,TRUE);
 }
 
-void CreateProgressInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos)
+void CreateProgressBarInStatusBar()
 {
-  wcscpy_s(tchProgressProcessName, _countof(tchProgressProcessName), pProgressText);
-  hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, nCurPos, nMaxPos, TRUE, STATUS_LEXER);
-  bShowProgressBar = TRUE;
-  UpdateStatusbar();
+  hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, 0, 100, TRUE, STATUS_LEXER);
 }
 
-void DestroyProgressInStatusBar()
+void DestroyProgressBarInStatusBar()
 {
-  bShowProgressBar = FALSE;
   DestroyWindow(hwndStatusProgressBar);
   hwndStatusProgressBar = NULL;
-  wcscpy_s(tchProgressProcessName, _countof(tchProgressProcessName), L"");
-  UpdateStatusbar();
 }
 
-void UpdateProgressInStatusBar(const int nCurrentValue)
+void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos)
 {
-  InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurrentValue);
+  if (hwndStatusProgressBar)
+  {
+    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), pProgressText);
+    bShowProgressBar = TRUE;
+    InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, nCurPos, nMaxPos, 1);
+    InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
+    InlineProgressBarCtrl_Resize(hwndStatusProgressBar);
+    ShowWindow(hwndStatusProgressBar, SW_SHOW);
+    UpdateStatusbar();
+  }
+}
+
+void HideProgressBarInStatusBar()
+{
+  if (hwndStatusProgressBar)
+  {
+    bShowProgressBar = FALSE;
+    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), L"");
+    ShowWindow(hwndStatusProgressBar, SW_HIDE);
+    UpdateStatusbar();
+  }
+}
+
+void UpdateProgressBarInStatusBar(const int nCurPos)
+{
+  InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
   InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
 }
 

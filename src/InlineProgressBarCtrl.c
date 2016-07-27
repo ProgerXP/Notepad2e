@@ -26,7 +26,7 @@ HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const int nCurrentValue, c
  	if (!hwndStatusBar)
  		return FALSE;
 
-	DWORD dwStyle = WS_CHILD|WS_VISIBLE;
+	DWORD dwStyle = WS_CHILD;
 	if (bSmooth)
 		dwStyle |= PBS_SMOOTH;
 
@@ -94,7 +94,7 @@ void InlineProgressBarCtrl_SetPos(HWND hwnd, const int nValue)
   SendMessage(hwnd, PBM_SETPOS, nValue, 0);
 }
 
-extern WCHAR tchProgressProcessName[MAX_PATH];
+extern WCHAR tchProgressBarTaskName[MAX_PATH];
 
 BOOL InlineProgressBarCtrl_Resize(HWND hwnd)
 {
@@ -106,12 +106,12 @@ BOOL InlineProgressBarCtrl_Resize(HWND hwnd)
 		return FALSE;
 
   const int nPane = (int)GetProp(hwnd, PROPERTY_PANE_ID);
-  LPWSTR pPaneText = tchProgressProcessName;
+  LPWSTR pPaneText = tchProgressBarTaskName;
 
 	// Calculate text width
   int nTextMargin = 0;
   SIZE szText = { 0, 0 };
-  if (tchProgressProcessName)
+  if (tchProgressBarTaskName)
   {
     HDC hdc = GetDC(hwnd);
     HFONT hFont = (HFONT)SendMessage(hwndStatusBar, WM_GETFONT, 0, 0);
