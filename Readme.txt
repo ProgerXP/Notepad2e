@@ -157,8 +157,8 @@ Extended Edition Changes
   Case-insensitive Find for Cyrillic characters - previously search was
   always case-sensitive regardless of Match case flag.
 
-  When Find scrolls to a location it makes sure to preserve at least
-  33% of the visible space above and below the match.
+  Scroll margin for Find and other commands to make sure they preserve
+  33% or 50% lines above and below the match (customizable).
 
   Trimming Go To - now in Line and Column first number substring is
   extracted and used to navigate. For example, "abc567.89" will navigate
