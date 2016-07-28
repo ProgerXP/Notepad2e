@@ -8,9 +8,9 @@
 =                                       (c) Florian Balmer 2004-2011  =
 =                                        http://www.flos-freeware.ch  =
 =                                                                     =
-=  Extended edition (c) 2013-2015                                     =
+=  Extended edition (c) 2013-2016                                     =
 =                                                                     =
-=                                            by Proger_XP and haccel  =
+=                                      by Proger_XP and contributors  =
 =                              https://github.com/ProgerXP/Notepad2e  =
 =                                                                     =
 =======================================================================
@@ -79,7 +79,7 @@ Copyright
   http://proger.me
 
 
-Changes of the Extended edition
+Extended Edition Changes
 
   Current Word Highlighting - with customizable formatting (rectangle,
   border, etc.) and colors. 3 modes: one occurrence in document, two
@@ -87,9 +87,45 @@ Changes of the Extended edition
   MaxSearchDistance INI setting controls maximum lookahead/behind
   distance to prevent performance degradation on very large files.
 
+  Edit Selecton page- and line-wise (or current word if there's no
+  selection) - easy renaming of variables, fixing typos, etc. Hotkeys:
+  Ctrl+Tab (page), Ctrl+CapsLock (line)
+
+  Selection evaluation: file size group in the status bar is replaced
+  with the recognized expression's result. Left click toggles the base
+  (bin, oct, dec, hex), double click copies result to the clipboard.
+
+    - Selection must be shorter than 4096 symbols.
+
+    - Special case: expression with only digits, dots and any ignored
+      symbols (below) is treated as a series of whitespace-separated
+      numbers that are summed up. For example: 12,3 45.6 $78 =
+      123+45.6+78 = 246.6.
+
+    - Ignored symbols: , $ whitespace
+
+    - If result has no fractional part - period and zeros are hidden.
+      Fractional part is discarded for all bases but dec.
+
+    - Expression is locale-insensitive and follows English locale so
+      that comma is a thousands separator (thus ignored) and period is
+      a decimal part separator.
+
+    - Syntax:
+
+      - ( ) + - * / ^ (power)
+      - b o d h (base suffixes)
+      - div mod shl shr and or xor not
+
   Vim-like Edit > Find Next/Previous Word (Ctrl+[Shift]+8) for quick
   case-insensitive navigation between highlighted words (independent of
   this mode settings). Seeks to next/previous word if none at cursor.
+  It's independent of normal Find/Replace. Searches for word at cursor
+  if there's no selection, or previously used word if there is.
+
+  Vim-like Edit > Line > New Line Above/Below. If the caret is already
+  at line start/end (whitespace excluded) - indentation of the previous
+  line is used, otherwise - of the current line.
 
   Find (Ctrl+F) now has Grep/Ungrep buttons (working on regexp too).
   In case of active selection these operate on selected lines only.
@@ -140,6 +176,19 @@ Changes of the Extended edition
   Rename To (Alt+F6) - acts as Save As but deletes original file on
   success.
 
+  Disabled triple-click and triple-Ctrl+Space behaviour that previously
+  caused selection of the entire line (now keep word selection).
+
+  Changed default gutter style from size:-2;fore:#ff0000 to size:-1.
+
+  Gutter is now auto resized if it can't fit max line number.
+
+  Upgraded Scintilla library to latest version at this time (3.6.6).
+
+  Replaced incomplete Notepad2 regexp implementation with full-featured
+  Scintilla PCRE with (a|b), backreferences (Replace String included),
+  etc. Old regexp didn't support UTF-8 buffers, only ASCII - new does.
+
   Intelligent Enclose Selection (Alt+Q). When "before" string consists
   of one of { ( [ < then "after" is set to the same number of } ) ] >.
   When "before" consists of one of:
@@ -170,6 +219,13 @@ Changes of the Extended edition
   wheel while holding Ctrl down to scroll through entire pages (similar
   to Page Up/Down).
 
+  Added HighlightLineIfWindowInactive setting to keep current line
+  highlight even if the window is not focused (especially useful for
+  Windows' X-Mouse behaviour).
+
+  The Find icon on the toolbar changes to the stop icon whenever the
+  search hits last result in that direction.
+
   Notepad has a hidden feature of web search: set WebTemplate1-2 keys
   in Notepad2.ini to https://google.com/search?q=%s and then press
   Ctrl+Shift+1-2 with active text selection to navigate to that URL
@@ -180,7 +236,8 @@ Changes of the Extended edition
   File > Line Endings > Unix now has Alt+F8 hotkey assigned.
 
   Edit > Copy Add (Ctrl+E) now uses single line break and when pressed
-  without active selection appends the entire line.
+  without active selection appends the entire line. Also fixed it not
+  working on empty clipboard.
 
   Now Retain caret position and selection when file is re-coded (File >
   Encoding menu items).
@@ -198,7 +255,21 @@ Changes of the Extended edition
   Reload Settings from Disk (Alt+F7) - replace all settings in current
   window with fresh version read from Notepad2.ini.
 
-  Added Ruby syntax scheme highlighting.
+  Added new syntax schemes:
+
+    - ASN1
+    - bash
+    - CoffeeScript
+    - D
+    - Lisp
+    - Lua
+    - Markdown
+    - NSIS Scripts
+    - OCaml
+    - Ruby
+    - Rust
+    - TeX
+    - YAML
 
   CSS syntax scheme improvements:
 
@@ -209,6 +280,87 @@ Changes of the Extended edition
 
     - Fixed brackets of nested rules that were not matching in some
       cases (visually and with Ctrl+B).
+
+
+Extended Edition Configuration
+
+  Notepad 2e-specific settings are grouped under [Notepad2e] section.
+
+  CSSSettings
+    int, bitflag; extend standard CSS highlighting to support:
+    1 - Sassy, 2 - LESS, 4 - HSS; can be combined: 3 = Sassy + LESS
+
+  DebugLog
+    int, bool; enables creation of debug log in the program's folder
+
+  FindWordMatchCase
+  FindWordWrapAround
+    int, bool; control Ctrl[+Shift]+8 search like normal Find flags;
+    Match Whole Word Only is always enabled
+
+  HighlightLineIfWindowInactive
+    int, bool; if unset, current line is not highlight if window is
+    inactive (default Notepad2 behaviour)
+
+  MaxSearchDistance
+    int, KiB; maximum lookahead/behind distance for word highlighting;
+    if too large, navigation in big files will lag since it will search
+    the buffer for twice this length on every position change
+
+  OpenDialogByPrefix
+    int, bool; if set, Open File dialog can be submitted if only a
+    prefix of an existing file name was typed
+
+  ScrollYCaretPolicy
+    int; sets vertical margin (0 - none as in Notepad2, 1 - 33%,
+    2 - 50%) for commands that can scroll the buffer, including:
+
+    - F3  F2    Ctrl+8        and Shift versions
+    - Ctrl+]    Ctrl+[        and Shift versions
+    - Page Up   Page Down     and Shift, Alt+Shift versions
+
+  ShellMenuType
+    int, bitflag; controls behaviour of Shell Menu (Ctrl+Shift+R),
+    see uFlags here:
+    http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097(v=vs.85).aspx
+
+  WheelScrollInterval
+    int, ms; when using Ctrl+Wheel, buffer will be scrolled at most
+    once per this interval
+
+  SelectionType
+  PageSelectionType
+  SingleSelectionType
+  EditSelectionType
+    int; type of decoration for a word that's also present elsewhere
+    in the document (SelectionType), on the visible page (PageXXX),
+    not present at all (SingleXXX) or when it's in Edit Mode (EditXXX)
+    using Ctrl+Tab; for values see:
+    http://www.scintilla.org/ScintillaDoc.html#Indicators
+
+  SelectionColor
+  PageSelectionColor
+  SingleSelectionColor
+  EditSelectionColor
+    str, BGR; foreground highlight color like 0xFF0000 (blue, not RGB!)
+
+  SelectionAlpha
+  PageSelectionAlpha
+  SingleSelectionAlpha
+  EditSelectionAlpha
+    int; opacity value (0-255) for foreground highlight color
+
+  SelectionLineAlpha
+  PageSelectionLineAlpha
+  SingleSelectionLineAlpha
+  EditSelectionLineAlpha
+    int; opacity value (0-255) for highlight outline color
+
+  SelectionUnder
+  PageSelectionUnder
+  SingleSelectionUnder
+  EditSelectionUnder
+    int, bool; correspond to Scintilla's SCI_INDICSETUNDER
 
 
 ###
