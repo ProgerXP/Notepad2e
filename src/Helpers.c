@@ -3210,9 +3210,9 @@ BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
   return TRUE;
 }
 
-BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest)
+BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest, const UINT nCodePage)
 {
-  return MultiByteToWideChar(CP_ACP, 0, lpSrc, -1, lpDest, maxDest);
+  return MultiByteToWideChar(nCodePage, 0, lpSrc, -1, lpDest, maxDest);
 }
 
 ///   End of Helpers.c   \\\

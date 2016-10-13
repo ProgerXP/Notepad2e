@@ -2902,8 +2902,23 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
     const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
     if (bAutoIndent)
     {
-      const BOOL isLineStart = (iCurPos == SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0));
-      if (isLineStart)
+      const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iCurLine, 0);
+      const int iLinePrefixLength = iCurPos - iLineStart;
+      BOOL bIsEmptyPrefix = (iLinePrefixLength == 0);
+      if (!bIsEmptyPrefix)
+      {
+        LPSTR pszText = GlobalAlloc(GPTR, iLinePrefixLength + 1);
+        LPSTR pszTextW = GlobalAlloc(GPTR, (iLinePrefixLength + 1) * sizeof(WCHAR));
+        struct TextRange tr = { { iLineStart, iCurPos }, pszText };
+        SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+        ASCIItoUCS2(pszText, pszTextW, iLinePrefixLength, SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+        StrTab2Space(pszTextW);
+        TrimString(pszTextW);
+        bIsEmptyPrefix = (wcslen(pszTextW) == 0);
+        GlobalFree(pszText);
+        GlobalFree(pszTextW);
+      }
+      if (bIsEmptyPrefix)
       {
         SendMessage(hwndEdit, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
         SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);

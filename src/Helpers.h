@@ -281,6 +281,6 @@ BOOL	hl_isspace(WCHAR ch);
 #endif
 
 BOOL SetClipboardText(const HWND hwnd, const wchar_t* text);
-BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest);
+BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest, const UINT nCodePage);
 
 ///   End of Helpers.h   \\\
