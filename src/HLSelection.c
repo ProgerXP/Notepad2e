@@ -788,7 +788,11 @@ void HLS_on_notification(int code, struct SCNotification *scn)
       }
       break;
     case SCN_MODIFIED:
-      if (b_HL_highlight_selection)
+      if ((scn->modificationType & (SC_MOD_CONTAINER|SC_PERFORMED_UNDO)) == (SC_MOD_CONTAINER|SC_PERFORMED_UNDO))
+      {
+        PostMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)scn->token, 0);
+      }
+      else if (b_HL_highlight_selection)
       {
         //
 #if 1
