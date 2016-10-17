@@ -2757,7 +2757,7 @@ BOOL HL_Is_Empty(LPCWSTR txt)
   }
   return TRUE;
 }
-BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPCWSTR dir, LPWSTR out)
+BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
   WIN32_FIND_DATA	wfd;
   WCHAR	path[MAX_PATH];
@@ -2787,13 +2787,17 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPCWSTR dir, LPWSTR out)
 
   if (!PathIsRelative(in))
   {
-    lstrcpy(out, in);
-    return TRUE;
+    lstrcpy(dir, in);
+    PathRemoveFileSpec(dir);
+    lstrcpy(path, in);
+    PathStripPath(in);
   }
-
-  lstrcpy(path, dir);
-  lstrcat(path, L"\\");
-  lstrcat(path, in);
+  else
+  {
+    lstrcpy(path, dir);
+    lstrcat(path, L"\\");
+    lstrcat(path, in);
+  }
   lstrcat(path, L"*");
   res = FindFirstFile(path, &wfd);
   HL_TRACE("search file by mask '%S'", path);
