@@ -3783,8 +3783,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 	case SCI_LINECOPY: {
 			int lineStart = pdoc->LineFromPosition(SelectionStart().Position());
 			int lineEnd = pdoc->LineFromPosition(SelectionEnd().Position());
-			CopyRangeToClipboard(pdoc->LineStart(lineStart),
-			        pdoc->LineStart(lineEnd + 1));
+			CopyRangeToClipboard(pdoc->LineStart(lineStart), pdoc->LineEnd(lineEnd));
 		}
 		break;
 	case SCI_LINECUT: {
