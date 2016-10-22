@@ -5341,6 +5341,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         case IDC_REPLACETEXT: {
             BOOL bEnable = (GetWindowTextLengthW(GetDlgItem(hwnd, IDC_FINDTEXT)) ||
                             CB_ERR != SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_GETCURSEL, 0, 0));
+            if (bEnable && (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED))
+            {
+              char szFind[512];
+              GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
+              bEnable = isValidRegex(szFind) != 0;
+            }
             EnableWindow(GetDlgItem(hwnd, IDOK), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_FINDPREV), bEnable);
             EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable);
@@ -5361,6 +5367,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           {
             CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
           }
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
           break;
         case IDC_FINDTRANSFORMBS:
           if (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED)
