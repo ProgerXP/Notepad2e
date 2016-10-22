@@ -422,7 +422,7 @@ BOOL EditSetNewEncoding(HWND hwnd, int iCurrentEncoding, int iNewEncoding, BOOL 
 //
 //  EditGetClipboardText()
 //
-char *EditGetClipboardText(HWND hwnd)
+char *EditGetClipboardText(HWND hwnd, BOOL adjustNewLines)
 {
   HANDLE hmem;
   WCHAR *pwch;
@@ -454,7 +454,8 @@ char *EditGetClipboardText(HWND hwnd)
     int i;
     for (i = 0; (i < mlen) && (*s != 0); i++)
     {
-      if (*s == '\n' || *s == '\r')
+      if (adjustNewLines
+          && (*s == '\n' || *s == '\r'))
       {
         if (eolmode == SC_EOL_CR)
         {
@@ -5147,31 +5148,45 @@ void EditGetExcerpt(HWND hwnd, LPWSTR lpszExcerpt, DWORD cchExcerpt)
   }
 }
 
+void remove_char(char* str, char c)
+{
+  char *pr = str, *pw = str;
+  while (*pr)
+  {
+    *pw = *pr++;
+    pw += (*pw != c);
+  }
+  *pw = '\0';
+}
+
 //////////////////////////////////////////////////////////////////////////
 
-//WNDPROC HL_find_DefEditProc;
-//LRESULT HL_find_overrride(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-//	switch (uMsg)
-//	{
-//	case WM_GETDLGCODE:
-//		{
-//		LRESULT result = CallWindowProc(HL_find_DefEditProc, hwnd, uMsg, wParam, lParam);
-//
-//			MSG *m = (LPMSG)lParam;
-//			if (m) {
-//				if (m->wParam == VK_ESCAPE) return result | DLGC_WANTALLKEYS;
-//				else if (m->wParam == VK_RETURN) return result | DLGC_WANTALLKEYS;
-//			}
-//			return result;
-//}
-//		break;
-//	default:
-//		return CallWindowProc(HL_find_DefEditProc, hwnd, uMsg, wParam, lParam);
-//
-//	}
-//
-//	return FALSE;
-//}
+WNDPROC g_DefaultFindEditProc;
+
+LRESULT FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (uMsg)
+  {
+    case WM_PASTE:
+      {
+        const char *pClip = EditGetClipboardText(hwnd, FALSE);
+        if (pClip)
+        {
+          remove_char(pClip, '\r');
+          remove_char(pClip, '\n');
+          SetWindowTextA(hwnd, pClip);
+          const textLength = strlen(pClip);
+          SendMessage(hwnd, EM_SETSEL, textLength, textLength);
+          LocalFree(pClip);
+          return 0;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+  return CallWindowProc(g_DefaultFindEditProc, hwnd, uMsg, wParam, lParam);
+}
 //=============================================================================
 //
 //  EditFindReplaceDlgProcW()
@@ -5330,10 +5345,14 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         InsertMenu(hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch);
         InsertMenu(hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
         ResetFindIcon();
-        //////////////////////////////////////////////////////////////////////////
-        //		HL_find_DefEditProc = (WNDPROC)SetWindowLong(GetDlgItem(hwnd, IDC_FINDTEXT), GWL_WNDPROC, (long)HL_find_overrride);
+        HWND hwndFindCombo = GetDlgItem(hwnd, IDC_FINDTEXT);
+        HWND hwndFindEdit = FindWindowEx(hwndFindCombo, NULL, L"EDIT", NULL);
+        if (hwndFindEdit)
+        {
+          g_DefaultFindEditProc = (WNDPROC)SetWindowLong(hwndFindEdit, GWL_WNDPROC, (long)FindEditWndProc);
+        }
       }
-                        return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -6080,7 +6099,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
+    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
   }
   else
   {
@@ -6203,7 +6222,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
+    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
   }
   else
   {
@@ -6332,7 +6351,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
+    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
   }
   else
   {
