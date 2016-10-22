@@ -663,7 +663,9 @@ int is_digit_or_dot(const unsigned char ch)
           || (ch == 'b')
           || (ch == 'd')
           || (ch == 'o')
-          || (ch == 'h')) ? 1 : 0;
+          || (ch == 'h')
+          || (ch == 'x')
+          || (ch == 'X')) ? 1 : 0;
 }
 
 int is_newline(const unsigned char ch)
@@ -725,10 +727,18 @@ char *te_prepare(unsigned char *pszSrc)
     char prevChar = 0x0;
     while (*res)
     {
-      if (is_space_or_newline(*res) && !is_space_or_newline(prevChar))
+      if (is_space_or_newline(*res))
       {
-        prevChar = *res;
-        *res = '+';
+        if (!is_space_or_newline(prevChar))
+        {
+          prevChar = *res;
+          *res = '+';
+        }
+        else
+        {
+          prevChar = *res;
+          *res = ' ';
+        }
       }
       else
       {
