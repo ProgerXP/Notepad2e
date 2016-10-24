@@ -698,6 +698,11 @@ char *te_trimwhitespace(unsigned char *str)
 
 char *te_prepare(unsigned char *pszSrc)
 {
+  char* pEqualsPos = strchr(pszSrc, '=');
+  if (pEqualsPos)
+  {
+    *pEqualsPos = 0x0;
+  }
   pszSrc = te_trimwhitespace(pszSrc);
   char *pszTemp = malloc(strlen(pszSrc) + 1);
   char *src = pszSrc;
