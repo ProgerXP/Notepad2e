@@ -227,6 +227,154 @@ static const te_operator *find_operator_by_function(const void* address)
   return 0;
 }
 
+int is_operation(const char ch)
+{
+  switch (ch)
+  {
+  case '+':
+  case '-':
+  case '*':
+  case '/':
+  case '^':
+  case '%':
+  case '(':
+  case ')':
+  case ' ':
+  case '\t':
+  case '\n':
+  case '\r':
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int is_hex_prefix(char* pStr)
+{
+  return ((pStr[0] == '0') && (pStr[1] == 'x'));
+}
+
+int is_radix_postfix(const char ch)
+{
+  switch (ch)
+  {
+  case 'b':
+  case 'o':
+  case 'h':
+  case 'd':
+    return 1;
+  default:
+    return 0;
+  }
+}
+
+int is_number_by_radix(char** pStr, const int radixTest, double* pValue, int* radixRes)
+{
+  char* next = *pStr;
+  double resDouble = 0;
+  long int res = 0;
+  if (radixTest == 10)
+  {
+    if (!is_hex_prefix(*pStr))
+    {
+      if ((*pStr[0] >= '0' && *pStr[0] <= '9') || *pStr[0] == '.')
+      {
+        resDouble = strtod(*pStr, &next);
+      }
+    }
+    if ((next == *pStr) || (resDouble == HUGE_VAL))
+    {
+      return 0;
+    }
+  }
+  else
+  {
+    res = strtol(*pStr, &next, radixTest);
+    if ((res == LONG_MIN) || (res == LONG_MAX) || (next[0] == '.'))
+    {
+      return 0;
+    }
+  }
+  *pStr = next;
+  if (pValue)
+  {
+    *pValue = (resDouble != 0) ? resDouble : res;
+  }
+  if (radixRes)
+  {
+    *radixRes = radixTest;
+  }
+  return 1;
+}
+
+int is_number(char** pStr, double* pValue)
+{
+  if (is_operation(*pStr[0]))
+  {
+    return 0;
+  }
+
+  int res = 0;
+  char* start = *pStr;
+  int radix = 0;
+  char radixPrefix = (is_hex_prefix(start) == 1) ? 'h' : 0;
+  if (is_number_by_radix(&start, 16, pValue, &radix)
+      || is_number_by_radix(&start, 10, pValue, &radix))
+  {
+    char radixPostfix = (radix == 16) ? 'h' : 'd';
+    if ((radix == 16) && !is_radix_postfix(start[0]))
+    {
+      if (radixPrefix == 0)
+      {
+        radixPostfix = 'd';
+        --start;
+      }
+    }
+    if (is_radix_postfix(start[0]))
+    {
+      radixPostfix = start[0];
+    }
+    switch (radixPostfix)
+    {
+      case 'b':
+        res = is_number_by_radix(pStr, 2, pValue, NULL);
+        break;
+      case 'o':
+        res = is_number_by_radix(pStr, 8, pValue, NULL);
+        break;
+      case 'h':
+        if (radix == 16)
+        {
+          *pStr = start;
+          res = 1;
+        }
+        else
+        {
+          res = is_number_by_radix(pStr, 16, pValue, NULL);
+        }
+        break;
+      case 'd':
+        if (radix == 10)
+        {
+          *pStr = start;
+          res = 1;
+        }
+        else
+        {
+          res = is_number_by_radix(pStr, 10, pValue, NULL);
+        }
+        break;
+      default:
+        res = is_number_by_radix(pStr, 10, pValue, NULL);
+        break;
+    }
+    if (is_radix_postfix((*pStr)[0]))
+    {
+      ++*pStr;
+    }
+  }
+  return res;
+}
 
 void next_token(state *s) {
     s->type = TOK_NULL;
@@ -239,28 +387,10 @@ void next_token(state *s) {
     do {
 
         /* Try reading a number. */
-        if ((s->next[0] >= '0' && s->next[0] <= '9') || s->next[0] == '.') {
-            const char *start = s->next;
-            s->value = strtod(s->next, (char**)&s->next);
+        double value = 0;
+        if (is_number(&s->next, &value) != 0) {
+            s->value = value;
             s->type = TOK_NUMBER;
-            switch (s->next[0])
-            {
-            case 'b':
-              s->value = strtol(start, NULL, 2);
-              ++s->next;
-              break;
-            case 'o':
-              s->value = strtol(start, NULL, 8);
-              ++s->next;
-              break;
-            case 'd':
-              ++s->next;
-              break;
-            case 'h':
-              s->value = strtol(start, NULL, 16);
-              ++s->next;
-              break;
-            }
         } else {
             /* Look for a variable or builtin function call. */
             if (s->next[0] >= 'a' && s->next[0] <= 'z') {
