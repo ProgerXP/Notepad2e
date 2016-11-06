@@ -5178,6 +5178,17 @@ LRESULT FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
           const textLength = strlen(pClip);
           SendMessage(hwnd, EM_SETSEL, textLength, textLength);
           LocalFree(pClip);
+
+          DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
+          HWND hParent = GetParent(hwnd);
+          WCHAR wchClassName[MAX_PATH];
+          RealGetWindowClass(hParent, wchClassName, _countof(wchClassName));
+          if (_wcsicmp(wchClassName, WC_COMBOBOX) == 0)
+          {
+            dwControlID = GetWindowLong(hParent, GWL_ID);
+            hParent = GetParent(hParent);
+          }
+          PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
           return 0;
         }
       }
