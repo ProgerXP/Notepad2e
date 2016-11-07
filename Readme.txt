@@ -89,7 +89,7 @@ Extended Edition Changes
 
   Edit Selecton page- and line-wise (or current word if there's no
   selection) - easy renaming of variables, fixing typos, etc. Hotkeys:
-  Ctrl+Tab (page), Ctrl+CapsLock (line)
+  Ctrl+Tab (page), Ctrl+CapsLock (line).
 
   Selection evaluation: file size group in the status bar is replaced
   with the recognized expression's result. Left click toggles the base
@@ -102,7 +102,10 @@ Extended Edition Changes
       numbers that are summed up. For example: 12,3 45.6 $78 =
       123+45.6+78 = 246.6.
 
-    - Ignored symbols: , $ whitespace
+    - If expression has commas but no dots and is still valid after
+      making commas dots - converted is used: 12,30 + ,1 = 12.40.
+
+    - Ignored symbols: , $ whitespace, and everything after = sign.
 
     - If result has no fractional part - period and zeros are hidden.
       Fractional part is discarded for all bases but dec.
@@ -114,6 +117,7 @@ Extended Edition Changes
     - Syntax:
 
       - ( ) + - * / ^ (power)
+      - 0x (base prefix)
       - b o d h (base suffixes)
       - div mod shl shr and or xor not
 
@@ -123,12 +127,17 @@ Extended Edition Changes
   It's independent of normal Find/Replace. Searches for word at cursor
   if there's no selection, or previously used word if there is.
 
-  Vim-like Edit > Line > New Line Above/Below. If the caret is already
-  at line start/end (whitespace excluded) - indentation of the previous
-  line is used, otherwise - of the current line.
+  Vim-like Edit > Lines > New Line Above/Below. If Auto Indent is
+  enabled and the caret is already at line start/end (whitespace
+  excluded) - indentation of the previous line is used, otherwise - of
+  the current line.
+
+  Shift+Tab always unindents, even if the caret isn't at line start.
 
   Find (Ctrl+F) now has Grep/Ungrep buttons (working on regexp too).
   In case of active selection these operate on selected lines only.
+  Buttons are disabled in regexp mode if Search String has errors.
+  Line feeds are removed from Search/Replace strings (Paste artifacts).
 
   Open Previous (Alt+G) - lets you toggle between two most recent
   History files with one keystroke.
@@ -171,13 +180,14 @@ Extended Edition Changes
   file is opened.
 
   File Shell Menu (Alt+R) - invokes Explorer's context menu for
-  currently opened file.
+  currently opened file. Current directory is set to file's path.
 
   Rename To (Alt+F6) - acts as Save As but deletes original file on
   success.
 
   Disabled triple-click and triple-Ctrl+Space behaviour that previously
-  caused selection of the entire line (now keep word selection).
+  caused selection of the entire line (now keep word selection). Line
+  can still be selected with standard Ctrl+Shift+Space hotkey.
 
   Changed default gutter style from size:-2;fore:#ff0000 to size:-1.
 
@@ -223,8 +233,11 @@ Extended Edition Changes
   highlight even if the window is not focused (especially useful for
   Windows' X-Mouse behaviour).
 
+  When dropping an object from another application on an empty line
+  line break is added automatically.
+
   The Find icon on the toolbar changes to the stop icon whenever the
-  search hits last result in that direction.
+  search hits last result in that direction, regardless of Wrap Around.
 
   Notepad has a hidden feature of web search: set WebTemplate1-2 keys
   in Notepad2.ini to https://google.com/search?q=%s and then press
@@ -282,7 +295,7 @@ Extended Edition Changes
       cases (visually and with Ctrl+B).
 
 
-Extended Edition Configuration
+Extended Edition INI Configuration
 
   Notepad 2e-specific settings are grouped under [Notepad2e] section.
 
