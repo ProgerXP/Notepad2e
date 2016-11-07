@@ -2034,7 +2034,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   //EnableCmd(hmenu,IDM_VIEW_AUTOCLOSETAGS,(i == SCLEX_HTML || i == SCLEX_XML));
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags /*&& (i == SCLEX_HTML || i == SCLEX_XML)*/);
-  CheckCmd(hmenu, IDM_VIEW_HILITECURRENTLINE, bHiliteCurrentLine);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHiliteCurrentLine);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTWORD, b_HL_highlight_selection);
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
@@ -2090,7 +2091,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   //
-  CheckCmd(hmenu, ID_SETTINGS_HIGHLIGHTCURRENTWORD, b_HL_highlight_selection);
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll);
 }
 
@@ -3681,9 +3681,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_AUTOCLOSETAGS:
       bAutoCloseTags = (bAutoCloseTags) ? FALSE : TRUE;
       break;
-    case IDM_VIEW_HILITECURRENTLINE:
+    case IDM_VIEW_HIGHLIGHTCURRENTLINE:
       bHiliteCurrentLine = (bHiliteCurrentLine) ? FALSE : TRUE;
       Style_SetCurrentLineBackground(hwndEdit);
+      break;
+    case IDM_VIEW_HIGHLIGHTCURRENTWORD:
+      b_HL_highlight_selection = (b_HL_highlight_selection) ? FALSE : TRUE;
+      HLS_Update_selection(SH_INIT);
       break;
     case IDM_VIEW_ZOOMIN:
       SendMessage(hwndEdit, SCI_ZOOMIN, 0, 0);
@@ -3928,10 +3932,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         HL_Reload_Settings();
       }
                                                     break;
-    case ID_SETTINGS_HIGHLIGHTCURRENTWORD:
-      b_HL_highlight_selection = (b_HL_highlight_selection) ? FALSE : TRUE;
-      HLS_Update_selection(SH_INIT);
-      break;
       //
     case ID_SETTINGS_CTRL_WHEEL_SCROLL:
       b_HL_ctrl_wheel_scroll = (b_HL_ctrl_wheel_scroll) ? FALSE : TRUE;

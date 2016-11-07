@@ -3,7 +3,6 @@
 // Used by Notepad2.rc
 //
 #define IDR_RT_MANIFEST                 1
-#define ID_SETTINGS_HIGHLIGHTCURRENTWORD 1
 #define ID_FILE_RENAMETO                2
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
 #define ID_UNGREP                       3
@@ -338,7 +337,6 @@
 #define IDM_VIEW_SHOWEOLS               40408
 #define IDM_VIEW_WORDWRAPSYMBOLS        40409
 #define IDM_VIEW_MATCHBRACES            40410
-#define IDM_VIEW_HILITECURRENTLINE      40411
 #define IDM_VIEW_LINENUMBERS            40412
 #define IDM_VIEW_MARGIN                 40413
 #define IDM_VIEW_ZOOMIN                 40414
@@ -372,6 +370,8 @@
 #define IDM_VIEW_STATUSBAR              40442
 #define IDM_VIEW_SAVESETTINGS           40443
 #define IDM_VIEW_SAVESETTINGSNOW        40444
+#define IDM_VIEW_HIGHLIGHTCURRENTLINE   40445
+#define IDM_VIEW_HIGHLIGHTCURRENTWORD   40446
 #define IDM_HELP_ABOUT                  40500
 #define IDM_TRAY_RESTORE                40600
 #define IDM_TRAY_EXIT                   40601

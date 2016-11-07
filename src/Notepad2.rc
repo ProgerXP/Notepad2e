@@ -81,8 +81,8 @@ BEGIN
             MENUITEM "&Empty Window\tAlt+0",        IDM_FILE_NEWWINDOW2
             MENUITEM SEPARATOR
             MENUITEM "Execute &Document\tCtrl+L",   IDM_FILE_LAUNCH
-            MENUITEM "Shell menu\tCtrl+Shift+R",    ID_FILE_INVOKESHELLMENU
-            MENUITEM "&Open with...\tAlt+L",        IDM_FILE_OPENWITH
+            MENUITEM "Shell Menu\tCtrl+Shift+R",    ID_FILE_INVOKESHELLMENU
+            MENUITEM "&Open With...\tAlt+L",        IDM_FILE_OPENWITH
             MENUITEM "&Command...\tCtrl+R",         IDM_FILE_RUN
         END
         MENUITEM SEPARATOR
@@ -121,7 +121,7 @@ BEGIN
             MENUITEM "&Manage...\tAlt+F9",          IDM_FILE_MANAGEFAV
         END
         MENUITEM "Recent (&History)...\tAlt+H", IDM_FILE_RECENT
-        MENUITEM "Open Previous\tAlt+G",        ID_FILE_OPENPREVIOUS
+        MENUITEM "Recall Previous\tAlt+G",      ID_FILE_OPENPREVIOUS
         MENUITEM SEPARATOR
         MENUITEM "E&xit\tAlt+F4",               IDM_FILE_EXIT
     END
@@ -129,7 +129,7 @@ BEGIN
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
         MENUITEM "&Redo\tCtrl+Y",               IDM_EDIT_REDO
-        MENUITEM "Undo+Redo\tCtrl+Shift+Alt+Z", ID_EDIT_UNDO_REDO
+        MENUITEM "Go To Last Change\tCtrl+Shift+Alt+Z", ID_EDIT_UNDO_REDO
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",                IDM_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY
@@ -145,9 +145,9 @@ BEGIN
         BEGIN
             MENUITEM "Move &Up\tCtrl+Shift+Up",     IDM_EDIT_MOVELINEUP
             MENUITEM "&Move Down\tCtrl+Shift+Down", IDM_EDIT_MOVELINEDOWN
-            MENUITEM SEPARATOR
             MENUITEM "New Line &Above\tCtrl+Alt+Enter", IDM_EDIT_NEWLINEABOVE
             MENUITEM "New Line &Below\tCtrl+Shift+Enter", IDM_EDIT_NEWLINEBELOW
+            MENUITEM SEPARATOR
             MENUITEM "&Duplicate Line\tCtrl+D",     IDM_EDIT_DUPLICATELINE
             MENUITEM "&Cut Line\tCtrl+Shift+X",     IDM_EDIT_CUTLINE
             MENUITEM "C&opy Line\tCtrl+Shift+C",    IDM_EDIT_COPYLINE
@@ -166,7 +166,7 @@ BEGIN
             MENUITEM "&Enclose Selection...\tAlt+Q", IDM_EDIT_ENCLOSESELECTION
             MENUITEM "&Duplicate Selection\tAlt+D", IDM_EDIT_SELECTIONDUPLICATE
             MENUITEM "Wrap Selection\tCtrl+3",      CMD_EMBRACE
-            MENUITEM "Unwrap Brackes At Cursor\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
+            MENUITEM "Unwrap Brackets At Cursor\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
             MENUITEM "Unwrap Quotes At Cursor\tCtrl+Shift+4", ID_BLOCK_UNWRAPQUOTESATCURSOR
             MENUITEM SEPARATOR
             MENUITEM "&Pad With Spaces\tAlt+B",     IDM_EDIT_PADWITHSPACES
@@ -183,8 +183,8 @@ BEGIN
         END
         POPUP "C&onvert"
         BEGIN
-            MENUITEM "&Uppercase\tCtrl+Shift+U",    IDM_EDIT_CONVERTUPPERCASE
-            MENUITEM "&Lowercase\tCtrl+U",          IDM_EDIT_CONVERTLOWERCASE
+            MENUITEM "&Upper Case\tCtrl+Shift+U",    IDM_EDIT_CONVERTUPPERCASE
+            MENUITEM "&Lower Case\tCtrl+U",          IDM_EDIT_CONVERTLOWERCASE
             MENUITEM SEPARATOR
             MENUITEM "&Invert Case\tCtrl+Alt+U",    IDM_EDIT_INVERTCASE
             MENUITEM "Title &Case\tCtrl+Alt+I",     IDM_EDIT_TITLECASE
@@ -239,7 +239,7 @@ BEGIN
         MENUITEM "Replace Ne&xt\tF4",           IDM_EDIT_REPLACENEXT
         MENUITEM "Find Next Word\tCtrl+8",      ID_EDIT_FINDNEXTWORD
         MENUITEM "Find Previous Word\tCtrl+Shift+8", ID_EDIT_FINDPREVIOUSWORD
-        MENUITEM "&Goto...\tCtrl+G",            IDM_EDIT_GOTOLINE
+        MENUITEM "&Go To...\tCtrl+G",            IDM_EDIT_GOTOLINE
         MENUITEM "Edit Selection\tCtrl+Tab",    ID_EDIT_EDITSELECTION
 		MENUITEM "Edit Selection On Line\tCtrl+Caps Lock", ID_EDIT_EDITSELECTION_LINE
     END
@@ -259,7 +259,8 @@ BEGIN
         MENUITEM "Show Wrap S&ymbols\tCtrl+Shift+0", IDM_VIEW_WORDWRAPSYMBOLS
         MENUITEM SEPARATOR
         MENUITEM "Visual &Brace Matching\tCtrl+Shift+V", IDM_VIEW_MATCHBRACES
-        MENUITEM "Highlight C&urrent Line\tCtrl+Shift+I", IDM_VIEW_HILITECURRENTLINE
+        MENUITEM "Highlight C&urrent Line\tCtrl+Shift+I", IDM_VIEW_HIGHLIGHTCURRENTLINE
+        MENUITEM "Highlight Current Word", IDM_VIEW_HIGHLIGHTCURRENTWORD
         MENUITEM SEPARATOR
         MENUITEM "Line &Numbers\tCtrl+Shift+N", IDM_VIEW_LINENUMBERS
         MENUITEM "Selection &Margin\tCtrl+Shift+M", IDM_VIEW_MARGIN
@@ -298,6 +299,7 @@ BEGIN
             MENUITEM "&Minimize Notepad2",          IDM_VIEW_ESCMINIMIZE
             MENUITEM "E&xit Notepad2",              IDM_VIEW_ESCEXIT
         END
+        MENUITEM "Ctrl+Wheel Scroll",           ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
         MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT
         MENUITEM "Remember S&earch Strings",    IDM_VIEW_NOSAVEFINDREPL
@@ -306,13 +308,10 @@ BEGIN
         MENUITEM "C&ustomize Toolbar...",       IDM_VIEW_CUSTOMIZETB
         MENUITEM "Sh&ow Statusbar",             IDM_VIEW_STATUSBAR
         MENUITEM SEPARATOR
-        MENUITEM "Highlight current word",      ID_SETTINGS_HIGHLIGHTCURRENTWORD
-        MENUITEM "Ctrl+Wheel scroll",           3
-        MENUITEM SEPARATOR
         MENUITEM "Save Settings On E&xit",      IDM_VIEW_SAVESETTINGS
         MENUITEM "Save Settings &Now\tF7",      IDM_VIEW_SAVESETTINGSNOW
-        MENUITEM "Reload from disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
-        MENUITEM "Replace settings in all instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
+        MENUITEM "Reload Settings From Disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
+        MENUITEM "Replace Settings In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
     END
     POPUP "&?"
     BEGIN
@@ -397,7 +396,7 @@ BEGIN
     "I",            IDM_EDIT_SPLITLINES,    VIRTKEY, CONTROL, NOINVERT
     "I",            IDM_FILE_OPENFAV,       VIRTKEY, ALT, NOINVERT
     "I",            IDM_EDIT_TITLECASE,     VIRTKEY, CONTROL, ALT, NOINVERT
-    "I",            IDM_VIEW_HILITECURRENTLINE, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "I",            IDM_VIEW_HIGHLIGHTCURRENTLINE, VIRTKEY, SHIFT, CONTROL, NOINVERT
     "J",            IDM_EDIT_JOINLINES,     VIRTKEY, CONTROL, NOINVERT
     "J",            IDM_EDIT_ALIGN,         VIRTKEY, ALT, NOINVERT
     "J",            IDM_EDIT_JOINLINESEX,   VIRTKEY, SHIFT, CONTROL, NOINVERT
@@ -586,7 +585,7 @@ BEGIN
     DEFPUSHBUTTON   "&Find Next",IDOK,215,7,50,14
     PUSHBUTTON      "Find &Previous",IDC_FINDPREV,215,24,50,14
     PUSHBUTTON      "&Grep",ID_GREP,215,41,50,14
-    CONTROL         "<a>Goto Replace (Ctrl+H)</a>",IDC_TOGGLEFINDREPLACE,
+    CONTROL         "<a>Go to Replace (Ctrl+H)</a>",IDC_TOGGLEFINDREPLACE,
                     "SysLink",0x0,125,85,74,10
     PUSHBUTTON      "Ung&rep",ID_UNGREP,215,58,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,74,50,14
@@ -599,7 +598,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "Search Stri&ng:",IDC_STATIC,7,7,46,8
     COMBOBOX        IDC_FINDTEXT,7,17,192,116,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Replace wit&h:",IDC_STATIC,7,35,44,8
+    LTEXT           "Replace Wit&h:",IDC_STATIC,7,35,44,8
     COMBOBOX        IDC_REPLACETEXT,7,46,192,116,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Match &case",IDC_FINDCASE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,66,53,10
     CONTROL         "Match &whole word only",IDC_FINDWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,78,89,10
@@ -614,7 +613,7 @@ BEGIN
     PUSHBUTTON      "Replace &All",IDC_REPLACEALL,215,58,50,14
     PUSHBUTTON      "In &Selection",IDC_REPLACEINSEL,215,75,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,92,50,14
-    CONTROL         "<a>Goto Find (Ctrl+F)</a>",IDC_TOGGLEFINDREPLACE,
+    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFINDREPLACE,
                     "SysLink",0x0,125,114,74,10
 END
 
@@ -678,7 +677,7 @@ END
 
 IDD_LINENUM DIALOGEX 0, 0, 194, 87
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Goto"
+CAPTION "Go to"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Line:",IDC_STATIC,7,7,16,8
