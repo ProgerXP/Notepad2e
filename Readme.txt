@@ -75,7 +75,7 @@ Copyright
   (c) Florian Balmer 2004-2011
   http://www.flos-freeware.ch
 
-  (c) Proger_XP and co. 2013-2015
+  (c) Proger_XP and co. 2013-2016
   http://proger.me
 
 
@@ -277,7 +277,7 @@ Extended Edition Changes
     - Lisp
     - Lua
     - Markdown
-    - NSIS Scripts
+    - NSIS Script
     - OCaml
     - Ruby
     - Rust
