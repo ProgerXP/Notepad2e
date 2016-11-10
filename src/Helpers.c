@@ -41,7 +41,6 @@
 #define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
 UINT_PTR	_hl_sel_edit_timer_id = HL_SEL_EDIT_TIMER_ID;
 UINT	_hl_wheel_timer_to = 100;
-UINT	_hl_sel_edit_timer_to = 2000;
 /*CSS*/
 UINT	_hl_css_property = css_prop_less;
 //
@@ -2480,7 +2479,6 @@ VOID HL_Init(HWND hWnd)
 VOID HL_LoadINI()
 {
   _hl_wheel_timer_to = IniGetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
-  _hl_sel_edit_timer_to = IniGetInt(HL_INI_SECTION, L"SelectionScrollTimeout", _hl_sel_edit_timer_to);
   _hl_css_property = IniGetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
   _hl_ctx_menu_type = IniGetInt(HL_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
   _hl_max_search_range = IniGetInt(HL_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
@@ -2494,7 +2492,6 @@ VOID HL_LoadINI()
 VOID HL_SaveINI()
 {
   IniSetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
-  IniSetInt(HL_INI_SECTION, L"SelectionScrollTimeout", _hl_sel_edit_timer_to);
   IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
   IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
   IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range / 1024);
