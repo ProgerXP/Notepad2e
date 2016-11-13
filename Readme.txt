@@ -244,6 +244,9 @@ Extended Edition Changes
   Ctrl+Shift+1-2 with active text selection to navigate to that URL
   (with %s replaced but not URL-encoded).
 
+  Another hidden feature: if Replace With is ^c - clipboard contents
+  will be used instead.
+
   File > Encoding > UTF-8 now has Shift+F8 hotkey assigned.
 
   File > Line Endings > Unix now has Alt+F8 hotkey assigned.
