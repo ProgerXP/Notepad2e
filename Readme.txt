@@ -378,5 +378,5 @@ Extended Edition INI Configuration
   EditSelectionUnder
     int, bool; correspond to Scintilla's SCI_INDICSETUNDER
 
-
+ 
 ###
