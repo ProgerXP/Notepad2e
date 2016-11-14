@@ -2870,23 +2870,34 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       }
                           break;
     case IDM_EDIT_UNINDENT: {
-        int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                             (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0);
-        int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
-                                           (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
-        SendMessage(hwndEdit, SCI_SETTABINDENTS, TRUE, 0);
-        if (iLineSelStart == iLineSelEnd)
+        const int iSelStart = (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+        const int iLineSelStart = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iSelStart, 0);
+        const int iLineSelEnd = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION,
+                                                 (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
+        const int iLinePosStart = (int)SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iLineSelStart, 0);
+        const int iLinePosEnd = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLineSelStart, 0);
+        const BOOL bSingleLineSelection = (iLineSelStart == iLineSelEnd);
+        const char ch = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iLinePosStart, 0);
+        if ((ch == '\t') || (ch == ' '))
         {
-          SendMessage(hwndEdit, SCI_VCHOME, 0, 0);
+          SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+          SendMessage(hwndEdit, SCI_SETTABINDENTS, TRUE, 0);
+          if (bSingleLineSelection)
+          {
+            SendMessage(hwndEdit, SCI_VCHOME, 0, 0);
+          }
           SendMessage(hwndEdit, SCI_BACKTAB, 0, 0);
+          SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
+          if (bSingleLineSelection)
+          {
+            const int iLinePosEndNew = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLineSelStart, 0);
+            const int iSelPosNew = iSelStart - (iLinePosEnd - iLinePosEndNew);
+            SendMessage(hwndEdit, SCI_SETSEL, iSelPosNew, iSelPosNew);
+          }
+          SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
         }
-        else
-        {
-          SendMessage(hwndEdit, SCI_BACKTAB, 0, 0);
-        }
-        SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
       }
-                            break;
+      break;
     case IDM_EDIT_ENCLOSESELECTION:
       if (EditEncloseSelectionDlg(hwnd, wchPrefixSelection, wchAppendSelection))
       {
