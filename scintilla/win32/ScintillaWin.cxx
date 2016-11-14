@@ -3622,8 +3622,18 @@ STDMETHODIMP ScintillaWin::Drop(LPDATAOBJECT pIDataSource, DWORD grfKeyState,
     POINT rpt = { pt.x, pt.y };
     ::ScreenToClient(MainHWND(), &rpt);
     SelectionPosition movePos = SPositionFromLocation(PointFromPOINT(rpt), false, false, UserVirtualSpace());
-
+    const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
+    const bool bAddNewLine = (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
+    if (bAddNewLine)
+    {
+      data.insert(data.end() - 1, '\r');
+      data.insert(data.end() - 1, '\n');
+    }
     DropAt(movePos, &data[0], data.size() - 1, *pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
+    if (bAddNewLine)
+    {
+      KeyCommand(SCI_CHARRIGHT);
+    }
 
     // Free data
     if (medium.pUnkForRelease != NULL)
