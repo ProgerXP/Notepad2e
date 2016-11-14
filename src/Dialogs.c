@@ -444,7 +444,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_OPENWITHDIR),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_OPENWITHDIR), NULL);
-        DirList_Fill(GetDlgItem(hwnd, IDC_OPENWITHDIR), tchOpenWithDir, DL_ALLOBJECTS, NULL, FALSE, flagNoFadeHidden, DS_NAME, FALSE);
+        DirList_Fill(GetDlgItem(hwnd, IDC_OPENWITHDIR), tchOpenWithDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
         DirList_StartIconThread(GetDlgItem(hwnd, IDC_OPENWITHDIR));
         ListView_SetItemState(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
         MakeBitmapButton(hwnd, IDC_GETOPENWITHDIR, g_hInstance, IDB_OPEN);
@@ -508,7 +508,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         case IDC_GETOPENWITHDIR: {
             if (GetDirectory(hwnd, IDS_OPENWITH, tchOpenWithDir, tchOpenWithDir, TRUE))
             {
-              DirList_Fill(GetDlgItem(hwnd, IDC_OPENWITHDIR), tchOpenWithDir, DL_ALLOBJECTS, NULL, FALSE, flagNoFadeHidden, DS_NAME, FALSE);
+              DirList_Fill(GetDlgItem(hwnd, IDC_OPENWITHDIR), tchOpenWithDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
               DirList_StartIconThread(GetDlgItem(hwnd, IDC_OPENWITHDIR));
               ListView_EnsureVisible(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, FALSE);
               ListView_SetItemState(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
@@ -604,7 +604,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_FAVORITESDIR), NULL);
-        DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, NULL, FALSE, flagNoFadeHidden, DS_NAME, FALSE);
+        DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
         DirList_StartIconThread(GetDlgItem(hwnd, IDC_FAVORITESDIR));
         ListView_SetItemState(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
         MakeBitmapButton(hwnd, IDC_GETFAVORITESDIR, g_hInstance, IDB_OPEN);
@@ -668,7 +668,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         case IDC_GETFAVORITESDIR: {
             if (GetDirectory(hwnd, IDS_FAVORITES, tchFavoritesDir, tchFavoritesDir, TRUE))
             {
-              DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, NULL, FALSE, flagNoFadeHidden, DS_NAME, FALSE);
+              DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
               DirList_StartIconThread(GetDlgItem(hwnd, IDC_FAVORITESDIR));
               ListView_EnsureVisible(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, FALSE);
               ListView_SetItemState(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
