@@ -132,7 +132,8 @@ Extended Edition Changes
   excluded) - indentation of the previous line is used, otherwise - of
   the current line.
 
-  Shift+Tab always unindents, even if the caret isn't at line start.
+  Shift+Tab always unindents, even if the caret isn't at line start
+  (exactly as Edit | Block | Unindent). Tab behaviour not changed.
 
   Find (Ctrl+F) now has Grep/Ungrep buttons (working on regexp too).
   In case of active selection these operate on selected lines only.
@@ -233,7 +234,7 @@ Extended Edition Changes
   highlight even if the window is not focused (especially useful for
   Windows' X-Mouse behaviour).
 
-  When dropping an object from another application on an empty line
+  When dropping an object from another application on an empty line -
   line break is added automatically.
 
   The Find icon on the toolbar changes to the stop icon whenever the
