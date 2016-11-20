@@ -1233,7 +1233,7 @@ KEYWORDLIST KeyWords_D = {
     "", "", "", "", "", ""
 };
 
-EDITLEXER lexD = { SCLEX_D, 63027, L"D Source Code", L"d", L"", &KeyWords_D,{
+EDITLEXER lexD = { SCLEX_D, 63027, L"D", L"d", L"", &KeyWords_D,{
         { SCE_D_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
         { SCE_D_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
         { SCE_D_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
