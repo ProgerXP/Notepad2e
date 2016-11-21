@@ -6062,21 +6062,18 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
       SendMessage(hwnd, SCI_SETCURRENTPOS, cpos, 0);
     }
     //
+    if (ttf.lpstrText)
+    {
+      const char* lpstrText = ttf.lpstrText;
+      HL_Free(szPrevWord);
+      szPrevWord = HL_Alloc(strlen(lpstrText) + 1);
+      lstrcpynA(szPrevWord, lpstrText, strlen(lpstrText) + 1);
+    }
     if (tr.lpstrText)
     {
-      HL_Free(szPrevWord);
-      szPrevWord = HL_Alloc(strlen(tr.lpstrText) + 1);
-      lstrcpynA(szPrevWord, tr.lpstrText, strlen(tr.lpstrText) + 1);
       HL_Free(tr.lpstrText);
       tr.lpstrText = 0;
     }
-#if 0
-    if (ttf.lpstrText)
-    {
-      HL_Free(ttf.lpstrText);
-      ttf.lpstrText = 0;
-    }
-#endif
   }
 }
 
