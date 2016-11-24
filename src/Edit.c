@@ -2889,6 +2889,57 @@ void EditMoveDown(HWND hwnd)
 
 extern BOOL bAutoIndent;
 
+LPSTR GetLinePrefix(int iLine, LPBOOL pbLineEmpty)
+{
+  *pbLineEmpty = TRUE;
+  LPSTR pszPrefix = NULL;
+
+  const int iCurPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+  const int iLineStart = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iLine, 0);
+  const int iLinePrefixLength = iCurPos - iLineStart;
+  pszPrefix = GlobalAlloc(GPTR, iLinePrefixLength + 1);
+  struct TextRange tr = { { iLineStart, iCurPos }, pszPrefix };
+  SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+
+  for (int i = 0; i < strlen(pszPrefix); ++i)
+  {
+    if (!isspace((unsigned char)pszPrefix[i]))
+    {
+      pszPrefix[i] = 0;
+      *pbLineEmpty = (i == 0);
+      break;
+    }
+  }
+
+  return pszPrefix;
+}
+
+void FreeLinePrefix(LPSTR pszPrefix)
+{
+  if (pszPrefix)
+  {
+    GlobalFree(pszPrefix);
+  }
+}
+
+void InsertNewLineWithPrefix(LPSTR pszPrefix, BOOL bInsertAbove)
+{
+  const BOOL bAutoIndentOrigin = bAutoIndent;
+  bAutoIndent = 0;
+  SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+  bAutoIndent = bAutoIndentOrigin;
+  if (bInsertAbove)
+  {
+    SendMessage(hwndEdit, SCI_CHARLEFT, 0, 0);
+  }
+  if (pszPrefix && (strlen(pszPrefix) > 0))
+  {
+    const int iCurrentPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+    SendMessage(hwndEdit, SCI_INSERTTEXT, iCurrentPos, pszPrefix);
+    SendMessage(hwndEdit, SCI_LINEEND, 0, 0);
+  }
+}
+
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
@@ -2897,7 +2948,9 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
   SendMessage(hwndEdit, SCI_ADDUNDOACTION, SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0), 0);
   const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
-  const int iIndentColOriginal = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iCurLine, 0);
+  LPSTR pszPrefixText = NULL;
+  BOOL bIsEmptyPrefix = FALSE;
+
   if (insertAbove)
   {
     const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
@@ -2905,19 +2958,10 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
     {
       const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iCurLine, 0);
       const int iLinePrefixLength = iCurPos - iLineStart;
-      BOOL bIsEmptyPrefix = (iLinePrefixLength == 0);
+      bIsEmptyPrefix = (iLinePrefixLength == 0);
       if (!bIsEmptyPrefix)
       {
-        LPSTR pszText = GlobalAlloc(GPTR, iLinePrefixLength + 1);
-        LPSTR pszTextW = GlobalAlloc(GPTR, (iLinePrefixLength + 1) * sizeof(WCHAR));
-        struct TextRange tr = { { iLineStart, iCurPos }, pszText };
-        SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-        ASCIItoUCS2(pszText, pszTextW, iLinePrefixLength, SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-        StrTab2Space(pszTextW);
-        TrimString(pszTextW);
-        bIsEmptyPrefix = (wcslen(pszTextW) == 0);
-        GlobalFree(pszText);
-        GlobalFree(pszTextW);
+        pszPrefixText = GetLinePrefix(iCurLine, &bIsEmptyPrefix);
       }
       if (bIsEmptyPrefix)
       {
@@ -2932,10 +2976,7 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
       else
       {
         SendMessage(hwndEdit, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
-        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
-        SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColOriginal);
-        const int iNewCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
-        SendMessage(hwndEdit, SCI_SETSEL, iNewCurLineEndPos, iNewCurLineEndPos);
+        InsertNewLineWithPrefix(pszPrefixText, (iPrevLine == iCurLine));
       }
     }
     else
@@ -2947,13 +2988,11 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   else
   {
     const BOOL isLineEnd = (iCurPos == iCurLineEndPos);
-    if (isLineEnd)
+    if (isLineEnd && bAutoIndent)
     {
       SendMessage(hwndEdit, SCI_SETSEL, iCurLineEndPos, iCurLineEndPos);
-      const int iIndentColLinePrev = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iPrevLine, 0);
-      SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColLinePrev);
-      SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
-      SendMessage(hwndEdit, SCI_SETLINEINDENTATION, iCurLine, iIndentColOriginal);
+      pszPrefixText = GetLinePrefix(iCurLine-1, &bIsEmptyPrefix);
+      InsertNewLineWithPrefix(pszPrefixText, FALSE);
     }
     else
     {
@@ -2962,6 +3001,7 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
     }
   }
   SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+  FreeLinePrefix(pszPrefixText);
 }
 
 //=============================================================================
