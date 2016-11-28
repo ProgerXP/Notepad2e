@@ -64,6 +64,7 @@ using namespace Scintilla;
 #endif
 
 ScintillaBase::ScintillaBase() {
+	moveCaretOnRClick = true;
 	displayPopupMenu = true;
 	listType = 0;
 	maxListWidth = 0;
@@ -967,6 +968,10 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 	case SCI_CALLTIPSETPOSITION:
 		ct.SetPosition(wParam != 0);
 		InvalidateStyleRedraw();
+		break;
+
+	case SCI_MOVECARETONRCLICK:
+		moveCaretOnRClick = wParam != 0;
 		break;
 
 	case SCI_USEPOPUP:

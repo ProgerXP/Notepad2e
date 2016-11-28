@@ -299,6 +299,7 @@ BEGIN
             MENUITEM "&Minimize Notepad2",          IDM_VIEW_ESCMINIMIZE
             MENUITEM "E&xit Notepad2",              IDM_VIEW_ESCEXIT
         END
+        MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Ctrl+Wheel Scroll",           ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
         MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT

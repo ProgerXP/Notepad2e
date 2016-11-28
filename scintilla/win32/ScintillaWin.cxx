@@ -1583,7 +1583,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 
       case WM_RBUTTONDOWN:
         ::SetFocus(MainHWND());
-        if (!PointInSelection(Point::FromLong(static_cast<long>(lParam))))
+        if (moveCaretOnRClick && !PointInSelection(Point::FromLong(static_cast<long>(lParam))))
         {
           CancelModes();
           SetEmptySelection(PositionFromLocation(Point::FromLong(static_cast<long>(lParam))));

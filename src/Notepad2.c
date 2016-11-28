@@ -198,6 +198,7 @@ BOOL      bTransparentMode;
 BOOL      bTransparentModeAvailable;
 BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
+BOOL      bMoveCaretOnRightClick = TRUE;
 /* haccel */
 extern	BOOL		b_HL_highlight_selection;
 extern	BOOL		b_HL_highlight_all;
@@ -1165,7 +1166,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         pt.y = (int)(short)HIWORD(lParam);
         switch (nID)
         {
-          case IDC_EDIT: {
+          case IDC_EDIT:
+            if (bMoveCaretOnRightClick)
+            {
               int iSelStart = (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
               int iSelEnd = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
               if (iSelStart == iSelEnd && pt.x != -1 && pt.y != -1)
@@ -2092,6 +2095,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   //
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll);
+  CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
 }
 
 //=============================================================================
@@ -3949,6 +3953,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       HL_Set_wheel_scroll(b_HL_ctrl_wheel_scroll);
       break;
       //
+    case ID_SETTINGS_MOVE_CARET_ON_RCLICK:
+      bMoveCaretOnRightClick = !bMoveCaretOnRightClick;
+      SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+      break;
     case IDM_HELP_ABOUT:
       ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT),
                       hwnd, AboutDlgProc);
@@ -5324,6 +5332,7 @@ void LoadSettings()
   cyFavoritesDlg = max(cyFavoritesDlg, 0);
   xFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosX", 0);
   yFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosY", 0);
+  bMoveCaretOnRightClick = IniSectionGetInt(pIniSection, L"MoveCaretOnRightClick", TRUE);
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
   bStickyWinPos = IniSectionGetInt(pIniSection, L"StickyWindowPosition", 0);
   if (bStickyWinPos)
@@ -5488,6 +5497,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
   IniSectionSetInt(pIniSection, L"FavoritesDlgSizeY", cyFavoritesDlg);
   IniSectionSetInt(pIniSection, L"FindReplaceDlgPosX", xFindReplaceDlg);
   IniSectionSetInt(pIniSection, L"FindReplaceDlgPosY", yFindReplaceDlg);
+  IniSectionSetInt(pIniSection, L"MoveCaretOnRightClick", bMoveCaretOnRightClick);
   SaveIniSection(L"Settings", pIniSection);
   LocalFree(pIniSection);
   /*

@@ -663,6 +663,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_SEARCHANCHOR 2366
 #define SCI_SEARCHNEXT 2367
 #define SCI_SEARCHPREV 2368
+#define SCI_MOVECARETONRCLICK 2369
 #define SCI_LINESONSCREEN 2370
 #define SCI_USEPOPUP 2371
 #define SCI_SELECTIONISRECTANGLE 2372
