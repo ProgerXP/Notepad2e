@@ -1936,8 +1936,11 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   }
   CheckMenuRadioItem(hmenu, IDM_LINEENDINGS_CRLF, IDM_LINEENDINGS_CR, i, MF_BYCOMMAND);
   EnableCmd(hmenu, IDM_FILE_RECENT, (MRU_Enum(pFileMRU, 0, NULL, 0) > 0));
-  EnableCmd(hmenu, IDM_EDIT_UNDO, SendMessage(hwndEdit, SCI_CANUNDO, 0, 0) /*&& !bReadOnly*/);
-  EnableCmd(hmenu, IDM_EDIT_REDO, SendMessage(hwndEdit, SCI_CANREDO, 0, 0) /*&& !bReadOnly*/);
+  const BOOL bCanUndo = SendMessage(hwndEdit, SCI_CANUNDO, 0, 0);
+  const BOOL bCanRedo = SendMessage(hwndEdit, SCI_CANREDO, 0, 0);
+  EnableCmd(hmenu, IDM_EDIT_UNDO, bCanUndo /*&& !bReadOnly*/);
+  EnableCmd(hmenu, IDM_EDIT_REDO, bCanRedo /*&& !bReadOnly*/);
+  EnableCmd(hmenu, ID_EDIT_UNDO_REDO, bCanUndo | bCanRedo);
   i = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
   i2 = (int)SendMessage(hwndEdit, SCI_CANPASTE, 0, 0);
   i3 = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
