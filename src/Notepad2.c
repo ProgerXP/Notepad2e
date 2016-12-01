@@ -6388,9 +6388,8 @@ void UpdateStatusbar()
     SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)pszText);
     if ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue))
     {
-      int error = 0;
-      double exprValue = te_interp(te_prepare(pszText), &error);
-      if ((error == 0) && !isnan(exprValue) && !isinf(exprValue))
+      double exprValue = 0.0;
+      if (is_valid_expression(pszText, 1, &exprValue))
       {
         UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
         switch (modeExpressionValue)

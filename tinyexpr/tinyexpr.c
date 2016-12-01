@@ -838,6 +838,26 @@ char *te_prepare(unsigned char *pszSrc)
   char *src = pszSrc;
   char *res = pszTemp;
 
+  // convert ',' to '.' if possible
+  if (strchr(src, '.') == 0)
+  {
+    const int iSizeInBytes = strlen(src) + 1;
+    char *test = malloc(iSizeInBytes);
+    strcpy_s(test, iSizeInBytes, src);
+    char *next = test;
+    while (next = strchr(next, ','))
+    {
+      *next = '.';
+    }
+    double exprValue = 0.0;
+    if (is_valid_expression(test, 0, &exprValue))
+    {
+      strcpy_s(src, iSizeInBytes, test);
+    }
+    free(test);
+  }
+
+  src = pszSrc;
   int onlyDigitsAndDots = 1;
   // filter characters to temporary string
   while (*src)
@@ -893,4 +913,19 @@ char *te_prepare(unsigned char *pszSrc)
   *src = 0x0;
   free(pszTemp);
   return pszSrc;
+}
+
+int is_valid_expression(unsigned char *pszText, const int bUsePrepare, double *pValue)
+{
+  if (!pValue)
+  {
+    return 0;
+  }
+  int error = 0;
+  if (bUsePrepare)
+  {
+    pszText = te_prepare(pszText);
+  }
+  *pValue = te_interp(pszText, &error);
+  return ((error == 0) && !isnan(*pValue) && !isinf(*pValue)) ? 1 : 0;
 }

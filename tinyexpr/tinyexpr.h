@@ -83,8 +83,8 @@ void te_print(const te_expr *n);
 /* This is safe to call on NULL pointers. */
 void te_free(te_expr *n);
 
-/* Prepare input string */
-char *te_prepare(unsigned char *pszSrc);
+/* Prepare the expression(if required), evaluate it, check result */
+int is_valid_expression(unsigned char *pszText, const int bUsePrepare, double *pValue);
 
 
 #ifdef __cplusplus
