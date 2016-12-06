@@ -198,13 +198,13 @@ BOOL      bTransparentMode;
 BOOL      bTransparentModeAvailable;
 BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
-BOOL      bMoveCaretOnRightClick = TRUE;
 /* haccel */
 extern	BOOL		b_HL_highlight_selection;
 extern	BOOL		b_HL_highlight_all;
 extern	BOOL		b_Hl_use_prefix_in_open_dialog;
 extern	BOOL		b_HL_edit_selection;
 extern	BOOL		b_HL_ctrl_wheel_scroll;
+extern  BOOL    bMoveCaretOnRightClick;
 extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 /**/
 
@@ -443,6 +443,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   Scintilla_RegisterClasses(hInstance);
   // Load Settings
   LoadSettings();
+  HL_LoadINI();
   //
   if (!InitApplication(hInstance))
   {
@@ -453,7 +454,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     return FALSE;
   }
   //
-  HL_LoadINI();
   HL_Init(hwnd);
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
@@ -5335,7 +5335,6 @@ void LoadSettings()
   cyFavoritesDlg = max(cyFavoritesDlg, 0);
   xFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosX", 0);
   yFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosY", 0);
-  bMoveCaretOnRightClick = IniSectionGetInt(pIniSection, L"MoveCaretOnRightClick", TRUE);
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
   bStickyWinPos = IniSectionGetInt(pIniSection, L"StickyWindowPosition", 0);
   if (bStickyWinPos)
@@ -5500,7 +5499,6 @@ void SaveSettings(BOOL bSaveSettingsNow)
   IniSectionSetInt(pIniSection, L"FavoritesDlgSizeY", cyFavoritesDlg);
   IniSectionSetInt(pIniSection, L"FindReplaceDlgPosX", xFindReplaceDlg);
   IniSectionSetInt(pIniSection, L"FindReplaceDlgPosY", yFindReplaceDlg);
-  IniSectionSetInt(pIniSection, L"MoveCaretOnRightClick", bMoveCaretOnRightClick);
   SaveIniSection(L"Settings", pIniSection);
   LocalFree(pIniSection);
   /*
