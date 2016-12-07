@@ -249,6 +249,7 @@ HWND EditCreate(HWND hwndParent)
   SendMessage(hwnd, SCI_SETEOLMODE, SC_EOL_CRLF, 0);
   SendMessage(hwnd, SCI_SETPASTECONVERTENDINGS, 1, 0);
   SendMessage(hwnd, SCI_SETMODEVENTMASK, HLS_Sci_event_mask(TRUE), 0);
+  SendMessage(hwnd, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
   SendMessage(hwnd, SCI_USEPOPUP, FALSE, 0);
   SendMessage(hwnd, SCI_SETSCROLLWIDTH, 2048, 0);
   SendMessage(hwnd, SCI_SETSCROLLWIDTHTRACKING, TRUE, 0);

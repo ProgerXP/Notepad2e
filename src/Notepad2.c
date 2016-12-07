@@ -443,6 +443,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   Scintilla_RegisterClasses(hInstance);
   // Load Settings
   LoadSettings();
+  HL_LoadINI();
   //
   if (!InitApplication(hInstance))
   {
@@ -1479,7 +1480,6 @@ VOID HL_Msg_create()
   // Nonprinting characters
   SendMessage(hwndEdit, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
   SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
-  SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
 
 //=============================================================================
@@ -5401,7 +5401,6 @@ void LoadSettings()
   }
   // Scintilla Styles
   Style_Load();
-  HL_LoadINI();
 }
 //=============================================================================
 //
