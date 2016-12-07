@@ -311,8 +311,8 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Save Settings On E&xit",      IDM_VIEW_SAVESETTINGS
         MENUITEM "Save Settings &Now\tF7",      IDM_VIEW_SAVESETTINGSNOW
-        MENUITEM "Reload Settings From Disk\tAlt+F7", ID_SETTINGS_RELOADFROMDISK
-        MENUITEM "Replace Settings In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
+        MENUITEM "Reload From Disk\tAlt+F7", ID_SETTINGS_RELOADFROMDISK
+        MENUITEM "Replace In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
     END
     POPUP "&?"
     BEGIN
