@@ -341,9 +341,16 @@ Extended Edition INI Configuration
     see uFlags here:
     http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097(v=vs.85).aspx
 
+  WheelScroll
+    int, bool; enables scrolling by Ctrl+Wheel
+
   WheelScrollInterval
     int, ms; when using Ctrl+Wheel, buffer will be scrolled at most
     once per this interval
+
+  MoveCaretOnRightClick
+    int, bool; if disabled caret is not moved/selection changed on RMB
+    (right mouse button) click
 
   SelectionType
   PageSelectionType
