@@ -5062,19 +5062,6 @@ void LoadSettings()
   {
     bSaveSettings = 1;
   }
-  // haccel
-  b_HL_highlight_selection =
-    IniSectionGetInt(pHlIniSection, L"HightLightSelection", 1);
-  if (b_HL_highlight_selection)
-  {
-    b_HL_highlight_selection = 1;
-  }
-  b_HL_ctrl_wheel_scroll =
-    IniSectionGetInt(pIniSection, L"WheelScroll", 1);
-  if (b_HL_ctrl_wheel_scroll)
-  {
-    b_HL_ctrl_wheel_scroll = 1;
-  }
   LocalFree(pHlIniSection);
   pHlIniSection = NULL;
   //
@@ -5425,10 +5412,6 @@ void SaveSettings(BOOL bSaveSettingsNow)
   }
   pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
-  // haccel
-  IniSectionSetInt(pIniSection, L"HightLightSelection", b_HL_highlight_selection);
-  IniSectionSetInt(pIniSection, L"WheelScroll", b_HL_ctrl_wheel_scroll);
-  //
   IniSectionSetInt(pIniSection, L"SaveSettings", bSaveSettings);
   IniSectionSetInt(pIniSection, L"SaveRecentFiles", bSaveRecentFiles);
   IniSectionSetInt(pIniSection, L"SaveFindReplace", bSaveFindReplace);

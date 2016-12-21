@@ -47,6 +47,7 @@ UINT	_hl_css_property = css_prop_less;
 FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
 //
+extern BOOL	b_HL_highlight_selection;
 BOOL	_hl_skip_highlight = FALSE;
 BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
 BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
@@ -2479,6 +2480,8 @@ VOID HL_Init(HWND hWnd)
 
 VOID HL_LoadINI()
 {
+  b_HL_highlight_selection = IniGetInt(HL_INI_SECTION, L"HightlightSelection", b_HL_highlight_selection);
+  b_HL_ctrl_wheel_scroll = IniGetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
   _hl_wheel_timer_to = IniGetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
   _hl_css_property = IniGetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
   _hl_ctx_menu_type = IniGetInt(HL_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
@@ -2493,6 +2496,8 @@ VOID HL_LoadINI()
 
 VOID HL_SaveINI()
 {
+  IniSetInt(HL_INI_SECTION, L"HightlightSelection", b_HL_highlight_selection);
+  IniSetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
   IniSetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
   IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
   IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
