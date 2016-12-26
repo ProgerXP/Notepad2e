@@ -99,151 +99,155 @@ key_action hl_proc_action = 0;
 [/**Implement wheel_action/proc_action**]  
   
   
-[**Enable additional Lexers**]:
-[scintilla/src/Catalogue.cxx]:
-LINK_LEXER(lmAsn1);
-LINK_LEXER(lmBash);
-LINK_LEXER(lmCaml);
-LINK_LEXER(lmCoffeeScript);
-LINK_LEXER(lmD);
-LINK_LEXER(lmLISP);
-LINK_LEXER(lmTeX);
-[/Enable additional Lexers]
-
-
-[13. "No line selection on active selection"-feature]:
-- Removed triple-click handler in Editor::ButtonDown():
-[scintilla/src/Editor.cxx]
-                if ( selectionType == selChar ) {
-                    selectionType = selWord;
-                    doubleClick = true;
-                } else if ( selectionType == selWord ) {
-                    // do nothing on *triple* click
-                } else {
-                    selectionType = selChar;
-                    originalAnchorPos = sel.MainCaret();
-                }
-[/13.]
-
-
-[6. "Scroll margin"-feature]:
-- New notification code added:
-[scintilla/include/Scintilla.h]
-#define SCN_CARETMOVED 2031
-
-- New notification proc added:
-[scintilla/src/Editor.h]
-void NotifyCaretMoved();
-
-[scintilla/src/Editor.cxx]
-void Editor::NotifyCaretMoved()
-{
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_CARETMOVED;
-  NotifyParent(scn);
-}
-
-...
-
-- Corresponding calls added to Editor::KeyCommand():
-
-        case SCI_PARADOWN:
-            ParaUpOrDown ( 1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PARADOWNEXTEND:
-            ParaUpOrDown ( 1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-...
-        case SCI_PARAUP:
-            ParaUpOrDown ( -1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PARAUPEXTEND:
-            ParaUpOrDown ( -1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-...
-        case SCI_PAGEUP:
-            PageMove ( -1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEUPEXTEND:
-            PageMove ( -1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEUPRECTEXTEND:
-            PageMove ( -1, Selection::selRectangle );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWN:
-            PageMove ( 1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWNEXTEND:
-            PageMove ( 1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWNRECTEXTEND:
-            PageMove ( 1, Selection::selRectangle );
-            NotifyCaretMoved();
-            break;
-[/6.]
-
-
-["Update gutter width"-feature]
-- New notification code added:
-[scintilla/include/Scintilla.h]
-#define SCN_LINECOUNTCHANGED 2032
-
-- New notification proc added:
-[scintilla/src/Editor.h]
-void NotifyLineCountChanged();
-
-[scintilla/src/Editor.cxx]
-void Editor::NotifyLineCountChanged()
-{
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
-  NotifyParent(scn);
-}
-
-...
-
-- Corresponding calls added to Editor::KeyCommand():
-
-    case SCI_NEWLINE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_LINEDELETE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_CUT:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_PASTE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_CLEAR:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_UNDO:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_REDO:
-        ...
-        NotifyLineCountChanged();
-        break;
-[/"Update gutter width"-feature]
+[**Enable additional Lexers**]:  
+[scintilla/src/Catalogue.cxx]  
+LINK_LEXER(lmAsn1);  
+LINK_LEXER(lmBash);  
+LINK_LEXER(lmCaml);  
+LINK_LEXER(lmCoffeeScript);  
+LINK_LEXER(lmD);  
+LINK_LEXER(lmLISP);  
+LINK_LEXER(lmTeX);  
+[/**Enable additional Lexers**]  
+  
+  
+[**13. "No line selection on active selection"-feature**]:  
+- Removed triple-click handler in Editor::ButtonDown():  
+[scintilla/src/Editor.cxx]  
+                if ( selectionType == selChar ) {  
+                    selectionType = selWord;  
+                    doubleClick = true;  
+                } else if ( selectionType == selWord ) {  
+                    // do nothing on *triple* click  
+                } else {  
+                    selectionType = selChar;  
+                    originalAnchorPos = sel.MainCaret();  
+                }  
+[/**13.**]  
+  
+  
+[**6. "Scroll margin"-feature**]:  
+- New notification code added:  
+[scintilla/include/Scintilla.h]  
+\#define SCN_CARETMOVED 2031  
+  
+- New notification proc added:  
+[scintilla/src/Editor.h]  
+void NotifyCaretMoved();  
+  
+[scintilla/src/Editor.cxx]  
+void Editor::NotifyCaretMoved()  
+{  
+  // Send notification  
+  SCNotification scn = { 0 };  
+  scn.nmhdr.code = SCN_CARETMOVED;  
+  NotifyParent(scn);  
+}  
+  
+...  
+  
+- Corresponding calls added to Editor::KeyCommand():  
+  
+        case SCI_PARADOWN:  
+            ParaUpOrDown ( 1 );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PARADOWNEXTEND:  
+            ParaUpOrDown ( 1, Selection::selStream );  
+            NotifyCaretMoved();  
+            break;  
+  
+...  
+  
+        case SCI_PARAUP:  
+            ParaUpOrDown ( -1 );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PARAUPEXTEND:  
+            ParaUpOrDown ( -1, Selection::selStream );  
+            NotifyCaretMoved();  
+            break;  
+  
+...  
+  
+        case SCI_PAGEUP:  
+            PageMove ( -1 );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PAGEUPEXTEND:  
+            PageMove ( -1, Selection::selStream );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PAGEUPRECTEXTEND:  
+            PageMove ( -1, Selection::selRectangle );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PAGEDOWN:  
+            PageMove ( 1 );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PAGEDOWNEXTEND:  
+            PageMove ( 1, Selection::selStream );  
+            NotifyCaretMoved();  
+            break;  
+        case SCI_PAGEDOWNRECTEXTEND:  
+            PageMove ( 1, Selection::selRectangle );  
+            NotifyCaretMoved();  
+            break;  
+[/**6.**]  
+  
+  
+[**"Update gutter width"-feature**]:  
+- New notification code added:  
+[scintilla/include/Scintilla.h]  
+\#define SCN_LINECOUNTCHANGED 2032  
+  
+- New notification proc added:  
+[scintilla/src/Editor.h]  
+void NotifyLineCountChanged();  
+  
+[scintilla/src/Editor.cxx]  
+void Editor::NotifyLineCountChanged()  
+{  
+  // Send notification  
+  SCNotification scn = { 0 };  
+  scn.nmhdr.code = SCN_LINECOUNTCHANGED;  
+  NotifyParent(scn);  
+}  
+  
+...  
+  
+- Corresponding calls added to Editor::KeyCommand():  
+  
+    case SCI_NEWLINE:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_LINEDELETE:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_CUT:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_PASTE:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_CLEAR:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_UNDO:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+    case SCI_REDO:  
+        ...  
+        NotifyLineCountChanged();  
+        break;  
+[/**"Update gutter width"-feature**]  
 
 [Drag & drop improvement #63]
 - New code around DropAt()-call:
