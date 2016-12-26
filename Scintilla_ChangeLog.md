@@ -112,7 +112,7 @@ LINK_LEXER(lmTeX);
   
   
 [**13. "No line selection on active selection"-feature**]:  
-- Removed triple-click handler in Editor::ButtonDown():  
+Remove triple-click handler in Editor::ButtonDown():  
 [scintilla/src/Editor.cxx]  
                 if ( selectionType == selChar ) {  
                     selectionType = selWord;  
@@ -127,11 +127,11 @@ LINK_LEXER(lmTeX);
   
   
 [**6. "Scroll margin"-feature**]:  
-- New notification code added:  
+New notification code added:  
 [scintilla/include/Scintilla.h]  
 \#define SCN_CARETMOVED 2031  
   
-- New notification proc added:  
+New notification proc added:  
 [scintilla/src/Editor.h]  
 void NotifyCaretMoved();  
   
@@ -146,7 +146,7 @@ void Editor::NotifyCaretMoved()
   
 ...  
   
-- Corresponding calls added to Editor::KeyCommand():  
+Corresponding calls added to Editor::KeyCommand():  
   
         case SCI_PARADOWN:  
             ParaUpOrDown ( 1 );  
@@ -198,11 +198,11 @@ void Editor::NotifyCaretMoved()
   
   
 [**"Update gutter width"-feature**]:  
-- New notification code added:  
+New notification code added:  
 [scintilla/include/Scintilla.h]  
 \#define SCN_LINECOUNTCHANGED 2032  
   
-- New notification proc added:  
+New notification proc added:  
 [scintilla/src/Editor.h]  
 void NotifyLineCountChanged();  
   
@@ -217,7 +217,7 @@ void Editor::NotifyLineCountChanged()
   
 ...  
   
-- Corresponding calls added to Editor::KeyCommand():  
+Corresponding calls added to Editor::KeyCommand():  
   
     case SCI_NEWLINE:  
         ...  
@@ -248,59 +248,60 @@ void Editor::NotifyLineCountChanged()
         NotifyLineCountChanged();  
         break;  
 [/**"Update gutter width"-feature**]  
-
-[Drag & drop improvement #63]
-- New code around DropAt()-call:
-[scintilla/win32/ScintillaWin.cxx]
+  
+[**Drag & drop improvement #63**]  
+New code around DropAt()-call:  
+[scintilla/win32/ScintillaWin.cxx]  
     const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
-    const bool bAddNewLine = (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
-    if (bAddNewLine)
-    {
-      data.insert(data.end() - 1, '\r');
-      data.insert(data.end() - 1, '\n');
-    }
-    DropAt(movePos, &data[0], data.size() - 1, \*pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
-    if (bAddNewLine)
-    {
-      KeyCommand(SCI_CHARRIGHT);
-    }
-[/Drag & drop improvement #63]
-
-[Implement Notepad's right click behavior #54]
-Add new message SCI_MOVECARETONRCLICK:
-
-[scintilla/include/Scintilla.h]
-#define SCI_MOVECARETONRCLICK 2369
-[/scintilla/include/Scintilla.h]
-
-[scintilla/src/ScintillaBase.h]
- 	enum { maxLenInputIME = 200 };
-
-    *bool moveCaretOnRClick;*
-    bool displayPopupMenu;
-[/scintilla/src/ScintillaBase.h]
-
-[scintilla/src/ScintillaBase.cxx]
-ScintillaBase::ScintillaBase() {
-    *moveCaretOnRClick = true;*
-    displayPopupMenu = true;
-
-...
-
-    case SCI_MOVECARETONRCLICK:
-        moveCaretOnRClick = wParam != 0;
-        break;*
-
-    case SCI_USEPOPUP:
-        displayPopupMenu = wParam != 0;
-        break;
-[/scintilla/src/ScintillaBase.cxx]
-
-[scintilla/win32/ScintillaWin.cxx]
-      case WM_RBUTTONDOWN:
-        ::SetFocus(MainHWND());
-        if ( *moveCaretOnRClick &&* !PointInSelection(Point::FromLong(static_cast<long>(lParam))))
-        {
-[/scintilla/win32/ScintillaWin.cxx]
-
-[/Implement Notepad's right click behavior #54]
+    const bool bAddNewLine = (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));  
+    if (bAddNewLine)  
+    {  
+      data.insert(data.end() - 1, '\r');  
+      data.insert(data.end() - 1, '\n');  
+    }  
+    DropAt(movePos, &data[0], data.size() - 1, \*pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);  
+    if (bAddNewLine)  
+    {  
+      KeyCommand(SCI_CHARRIGHT);  
+    }  
+[/**Drag & drop improvement #63**]  
+  
+[**Implement Notepad's right click behavior #54**]  
+Add new message SCI_MOVECARETONRCLICK:  
+  
+[scintilla/include/Scintilla.h]  
+\#define SCI_MOVECARETONRCLICK 2369  
+[/scintilla/include/Scintilla.h]  
+  
+[scintilla/src/ScintillaBase.h]  
+ 	enum { maxLenInputIME = 200 };  
+  
+    *bool moveCaretOnRClick;*  
+    bool displayPopupMenu;  
+[/scintilla/src/ScintillaBase.h]  
+  
+[scintilla/src/ScintillaBase.cxx]  
+ScintillaBase::ScintillaBase() {  
+    *moveCaretOnRClick = true;*  
+    displayPopupMenu = true;  
+  
+...  
+  
+    case SCI_MOVECARETONRCLICK:  
+        moveCaretOnRClick = wParam != 0;  
+        break;*  
+  
+    case SCI_USEPOPUP:  
+        displayPopupMenu = wParam != 0;  
+        break;  
+[/scintilla/src/ScintillaBase.cxx]  
+  
+[scintilla/win32/ScintillaWin.cxx]  
+      case WM_RBUTTONDOWN:  
+        ::SetFocus(MainHWND());  
+        if ( *moveCaretOnRClick &&* !PointInSelection(Point::FromLong(static_cast<long>(lParam))))  
+        {  
+[/scintilla/win32/ScintillaWin.cxx]  
+  
+[/**Implement Notepad's right click behavior #54**]  
+  
