@@ -1,8 +1,7 @@
 ﻿Changes in Scintilla's source code:
 
 
-[**add AHK lexer**]
-
+[**add AHK lexer**]:  
 [Scintilla/include/SciLexer.h]:  
 \#define SCLEX_AHK 200  
 ...  
@@ -31,76 +30,76 @@
 **Add file:**  
 [Scintilla/lexers/LexAHK.h]  
 [/**add AHK lexer**]
-
-
-[Implement wheel_action/proc_action]:
-[Scintilla/include/Scintilla.h]:
-typedef void ( * wheel_action ) ( int );
-typedef int ( * key_action ) ( int , int );
-extern wheel_action hl_wheel_action ;
-extern key_action hl_proc_action;
-
-[Scintilla/win32/ScintillaWin.cxx]
-wheel_action hl_wheel_action = 0;
-key_action hl_proc_action = 0;
-
-...
-
-          if (wParam & MK_CONTROL)
-          {
-            // Zoom! We play with the font sizes in the styles.
-            // Number of steps/line is ignored, we just care if sizing up or down
-            if ( hl_wheel_action ) {
-                hl_wheel_action ( linesToScroll );
-            } else {
-                if ( linesToScroll < 0 ) {
-                    KeyCommand ( SCI_ZOOMIN );
-                } else {
-                    KeyCommand ( SCI_ZOOMOUT );
-                }
-            }
-	  }
-
-...
-
-      case WM_CHAR:
-        if (hl_proc_action)
-	{
+  
+  
+[**Implement wheel_action/proc_action**]:  
+[Scintilla/include/Scintilla.h]:  
+typedef void ( * wheel_action ) ( int );  
+typedef int ( * key_action ) ( int , int );  
+extern wheel_action hl_wheel_action ;  
+extern key_action hl_proc_action;  
+  
+[Scintilla/win32/ScintillaWin.cxx]  
+wheel_action hl_wheel_action = 0;  
+key_action hl_proc_action = 0;  
+  
+...  
+  
+          if (wParam & MK_CONTROL)  
+          {  
+            // Zoom! We play with the font sizes in the styles.  
+            // Number of steps/line is ignored, we just care if sizing up or down  
+            if ( hl_wheel_action ) {  
+                hl_wheel_action ( linesToScroll );  
+            } else {  
+                if ( linesToScroll < 0 ) {  
+                    KeyCommand ( SCI_ZOOMIN );  
+                } else {  
+                    KeyCommand ( SCI_ZOOMOUT );  
+                }  
+            }  
+	  }  
+  
+...  
+  
+      case WM_CHAR:  
+        if (hl_proc_action)  
+	{  
+	  
+		int ret = hl_proc_action(wParam, WM_CHAR);  
           
-		int ret = hl_proc_action(wParam, WM_CHAR);
-          
-		if (ret >= 0)
-		{
+		if (ret >= 0)  
+		{  
 	
-            return ret;
-		}
+            return ret;  
+		}  
 
-	}
-...
-
-      case WM_SYSKEYDOWN:
-      case WM_KEYDOWN: {
-          if (hl_proc_action)
-
-          {
-
-            int ret = hl_proc_action(wParam, WM_KEYDOWN);
-
-            if (ret >= 0)
-
-            {
-
-              return ret;
-
-            }
+	}  
+...  
+  
+      case WM_SYSKEYDOWN:  
+      case WM_KEYDOWN: {  
+          if (hl_proc_action)  
+  
+          {  
+  
+            int ret = hl_proc_action(wParam, WM_KEYDOWN);  
+  
+            if (ret >= 0)  
+  
+            {  
+  
+              return ret;  
+  
+            }  
           
-          }
-
-
-[/Implement wheel_action/proc_action]
-
-
-[Enable additional Lexers]:
+          }  
+  
+  
+[/**Implement wheel_action/proc_action**]  
+  
+  
+[**Enable additional Lexers**]:
 [scintilla/src/Catalogue.cxx]:
 LINK_LEXER(lmAsn1);
 LINK_LEXER(lmBash);
