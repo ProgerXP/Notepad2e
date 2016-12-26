@@ -2480,7 +2480,7 @@ VOID HL_Init(HWND hWnd)
 
 VOID HL_LoadINI()
 {
-  b_HL_highlight_selection = IniGetInt(HL_INI_SECTION, L"HightlightSelection", b_HL_highlight_selection);
+  b_HL_highlight_selection = IniGetInt(HL_INI_SECTION, L"HighlightSelection", b_HL_highlight_selection);
   b_HL_ctrl_wheel_scroll = IniGetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
   _hl_wheel_timer_to = IniGetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
   _hl_css_property = IniGetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
@@ -2496,7 +2496,7 @@ VOID HL_LoadINI()
 
 VOID HL_SaveINI()
 {
-  IniSetInt(HL_INI_SECTION, L"HightlightSelection", b_HL_highlight_selection);
+  IniSetInt(HL_INI_SECTION, L"HighlightSelection", b_HL_highlight_selection);
   IniSetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
   IniSetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
   IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
