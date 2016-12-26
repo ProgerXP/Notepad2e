@@ -12,68 +12,6 @@ extern "C"
   extern UINT		_hl_ctx_menu_type;
   extern	VOID	HL_Trace(const char *fmt, ...);
 
-#if 0
-  BOOL HL_Explorer_cxt_menu(LPCWSTR path, void *parentWindow)
-  {
-    ITEMIDLIST *id = 0;
-    std::wstring windowsPath = path;
-    std::replace(windowsPath.begin(), windowsPath.end(), '/', '\\');
-    HRESULT result = SHParseDisplayName(windowsPath.c_str(), 0, &id, 0, 0);
-    if (!SUCCEEDED(result) || !id) {
-      return false;
-    }
-    bool out = true;
-    IShellFolder *ifolder = 0;
-    LPCITEMIDLIST idChild = 0;
-    result = SHBindToParent(id, IID_IShellFolder, (void **)&ifolder, &idChild);
-    if (!SUCCEEDED(result) || !ifolder) {
-      out = false;
-    }
-    if (out) {
-      IContextMenu2 *imenu = 0;
-      result = ifolder->GetUIObjectOf((HWND)parentWindow
-                                      , 1
-                                      , (const ITEMIDLIST **)&idChild
-                                      , IID_IContextMenu
-                                      , 0
-                                      , (void **)&imenu);
-      if (!SUCCEEDED(result) || !ifolder) {
-        out = false;
-      }
-      if (out) {
-        HMENU hMenu = CreatePopupMenu();
-        if (!hMenu) {
-          out = false;
-        }
-        if (out && SUCCEEDED(imenu->QueryContextMenu(hMenu, 0, 1, 0x7FFF, _hl_ctx_menu_type))) {
-          POINT pt;
-          GetCursorPos(&pt);
-          int iCmd = TrackPopupMenuEx(hMenu, TPM_RETURNCMD, pt.x, pt.y, (HWND)parentWindow, NULL);
-          if (iCmd > 0) {
-            CMINVOKECOMMANDINFOEX info ={0};
-            info.cbSize = sizeof(info);
-            info.fMask = CMIC_MASK_UNICODE;
-            info.hwnd = (HWND)parentWindow;
-            info.lpVerb  = MAKEINTRESOURCEA(iCmd - 1);
-            info.lpVerbW = MAKEINTRESOURCEW(iCmd - 1);
-            info.nShow = SW_SHOWNORMAL;
-            imenu->InvokeCommand((LPCMINVOKECOMMANDINFO)&info);
-          }
-        }
-        if (hMenu) {
-          DestroyMenu(hMenu);
-        }
-      }
-      if (imenu) {
-        imenu->Release();
-      }
-    }
-    if (ifolder) {
-      ifolder->Release();
-    }
-    return out;
-  }
-#else
   LPCONTEXTMENU2	g_IContext2 = NULL;
   LPCONTEXTMENU3	g_IContext3 = NULL;
   //
@@ -124,14 +62,7 @@ extern "C"
       default:
         break;
     }
-    // call original WndProc of window to prevent undefined bevhaviour
-    //
-    /*of window
-    return ::CallWindowProc ( ( WNDPROC ) GetProp ( hWnd, TEXT ( "OldWndProc" ) ),
-                              hWnd, message, wParam, lParam );
-    */
-    return DefWindowProc(hWnd, message,
-                         wParam, lParam);
+    return DefWindowProc(hWnd, message, wParam, lParam);
   }
   BOOL GetContextMenu(LPCWSTR path, void **ppContextMenu, int &iMenuType)
   {
@@ -180,7 +111,6 @@ extern "C"
     return (TRUE); // success
   }
 
-  //UINT ShowContextMenu(CWnd *pWnd, CPoint pt)
   BOOL HL_Explorer_cxt_menu(LPCWSTR path, void *parentWindow)
   {
     int iMenuType = 0;
@@ -205,7 +135,6 @@ extern "C"
       ((osvi.dwMajorVersion > 5) ||
        ((osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1)));
     HL_Trace("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
-#if 1
     if (iMenuType > 1) { // only version 2 and 3 supports menu messages
       OldWndProc = (WNDPROC)SetWindowLong((HWND)parentWindow,
                                           GWL_WNDPROC, (DWORD)HookWndProc);
@@ -219,7 +148,6 @@ extern "C"
     else {
       OldWndProc = NULL;
     }
-#endif
     POINT pt;
     GetCursorPos(&pt);
     int iCmd = TrackPopupMenuEx(h_menu, TPM_RETURNCMD, pt.x, pt.y, (HWND)parentWindow, NULL);
@@ -230,5 +158,4 @@ extern "C"
     pContextMenu->Release();
     return (TRUE);
   }
-#endif
 }

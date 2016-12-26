@@ -38,8 +38,6 @@ typedef struct _editfindreplace
 #ifdef BOOKMARK_EDITION
   BOOL bWildcardSearch;
 #endif
-  //HANDLE hMRUFind;
-  //HANDLE hMRUReplace;
 } EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;
 
 #define IDMSG_SWITCHTOFIND    300
@@ -183,9 +181,6 @@ BOOL Encoding_GetFromComboboxEx(HWND, int *);
 BOOL IsUnicode(const char*, int, LPBOOL, LPBOOL);
 BOOL IsUTF8(const char*, int);
 BOOL IsUTF7(const char*, int);
-
-//void SciInitThemes(HWND);
-//LRESULT CALLBACK SciThemedWndProc(HWND,UINT,WPARAM,LPARAM);
 
 #define FV_TABWIDTH        1
 #define FV_INDENTWIDTH     2

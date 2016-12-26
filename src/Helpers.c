@@ -35,25 +35,22 @@
 #include "HLSelection.h"
 #include "Edit.h"
 
-// haccel work
-//
 #define HL_WHEEL_TIMER_ID	0xfefe
 #define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
 UINT_PTR	_hl_sel_edit_timer_id = HL_SEL_EDIT_TIMER_ID;
 UINT	_hl_wheel_timer_to = 100;
-/*CSS*/
 UINT	_hl_css_property = css_prop_less;
-//
+
 FILE	*_hL_log = 0;
 HWND	g_hwnd = 0;
-//
+
 extern BOOL	b_HL_highlight_selection;
 BOOL	_hl_skip_highlight = FALSE;
 BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
 BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
-//
-//
+
+
 UINT	_hl_ctx_menu_type = 0;
 extern	LPMRULIST pFileMRU;
 extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
@@ -232,9 +229,9 @@ BOOL IsElevated()
     struct
     {
       DWORD TokenIsElevated;
-    } /*TOKEN_ELEVATION*/te;
+    } te;
     DWORD dwReturnLength = 0;
-    if (GetTokenInformation(hToken,/*TokenElevation*/20, &te, sizeof(te), &dwReturnLength))
+    if (GetTokenInformation(hToken, 20, &te, sizeof(te), &dwReturnLength))
     {
       if (dwReturnLength == sizeof(te))
       {
@@ -245,25 +242,6 @@ BOOL IsElevated()
   }
   return bIsElevated;
 }
-
-//=============================================================================
-//
-//  SetExplorerTheme()
-//
-//BOOL SetExplorerTheme(HWND hwnd)
-//{
-//  FARPROC pfnSetWindowTheme;
-//
-//  if (IsVista()) {
-//    if (hModUxTheme) {
-//      pfnSetWindowTheme = GetProcAddress(hModUxTheme,"SetWindowTheme");
-//
-//      if (pfnSetWindowTheme)
-//        return (S_OK == pfnSetWindowTheme(hwnd,L"Explorer",NULL));
-//    }
-//  }
-//  return FALSE;
-//}
 
 //=============================================================================
 //
@@ -1064,33 +1042,18 @@ void PathAbsoluteFromApp(LPWSTR lpszSrc, LPWSTR lpszDest, int cchDest, BOOL bExp
 //
 //  Name: PathIsLnkFile()
 //
-//  Purpose: Determine wheter pszPath is a Windows Shell Link File by
+//  Purpose: Determine whether pszPath is a Windows Shell Link File by
 //           comparing the filename extension with L".lnk"
 //
 //  Manipulates:
 //
 BOOL PathIsLnkFile(LPCWSTR pszPath)
 {
-  //WCHAR *pszExt;
   WCHAR tchResPath[256];
   if (!pszPath || !*pszPath)
   {
     return FALSE;
   }
-  /*pszExt = StrRChr(pszPath,NULL,L'.');
-
-    if (!pszExt)
-    return FALSE;
-
-    if (!lstrcmpi(pszExt,L".lnk"))
-    return TRUE;
-
-    else
-    return FALSE;*/
-    //if (!lstrcmpi(PathFindExtension(pszPath),L".lnk"))
-    //  return TRUE;
-    //else
-    //  return FALSE;
   if (lstrcmpi(PathFindExtension(pszPath), L".lnk"))
   {
     return FALSE;
@@ -1124,8 +1087,6 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf)))
     {
       WORD wsz[MAX_PATH];
-      /*MultiByteToWideChar(CP_ACP,MB_PRECOMPOSED,
-                          pszLnkFile,-1,wsz,MAX_PATH);*/
       lstrcpy(wsz, pszLnkFile);
       if (SUCCEEDED(ppf->lpVtbl->Load(ppf, wsz, STGM_READ)))
       {
@@ -1156,7 +1117,7 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
 //
 //  Name: PathIsLnkToDirectory()
 //
-//  Purpose: Determine wheter pszPath is a Windows Shell Link File which
+//  Purpose: Determine whether pszPath is a Windows Shell Link File which
 //           refers to a directory
 //
 //  Manipulates: pszResPath
@@ -1234,8 +1195,6 @@ BOOL PathCreateDeskLnk(LPCWSTR pszDocument)
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf)))
     {
       WORD wsz[MAX_PATH];
-      /*MultiByteToWideChar(CP_ACP,MB_PRECOMPOSED,
-                          tchLnkFileName,-1,wsz,MAX_PATH);*/
       lstrcpy(wsz, tchLnkFileName);
       psl->lpVtbl->SetPath(psl, tchExeFile);
       psl->lpVtbl->SetArguments(psl, tchArguments);
@@ -1284,8 +1243,6 @@ BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszDir)
     if (SUCCEEDED(psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile, &ppf)))
     {
       WORD wsz[MAX_PATH];
-      /*MultiByteToWideChar(CP_ACP,MB_PRECOMPOSED,
-                          tchLnkFileName,-1,wsz,MAX_PATH);*/
       lstrcpy(wsz, tchLnkFileName);
       psl->lpVtbl->SetPath(psl, pszTarget);
       if (SUCCEEDED(ppf->lpVtbl->Save(ppf, wsz, TRUE)))
@@ -1807,13 +1764,6 @@ BOOL MRU_Load(LPMRULIST pmru)
     wsprintf(tchName, L"%.2i", i + 1);
     if (IniSectionGetString(pIniSection, tchName, L"", tchItem, COUNTOF(tchItem)))
     {
-      /*if (pmru->iFlags & MRU_UTF8) {
-        WCHAR wchItem[1024];
-        int cbw = MultiByteToWideChar(CP_UTF7,0,tchItem,-1,wchItem,COUNTOF(wchItem));
-        WideCharToMultiByte(CP_UTF8,0,wchItem,cbw,tchItem,COUNTOF(tchItem),NULL,NULL);
-        pmru->pszItems[n++] = StrDup(tchItem);
-        }
-        else*/
       pmru->pszItems[n++] = StrDup(tchItem);
     }
   }
@@ -1826,20 +1776,11 @@ BOOL MRU_Save(LPMRULIST pmru)
   int i;
   WCHAR tchName[32];
   WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
-  //IniDeleteSection(pmru->szRegKey);
   for (i = 0; i < pmru->iSize; i++)
   {
     if (pmru->pszItems[i])
     {
       wsprintf(tchName, L"%.2i", i + 1);
-      /*if (pmru->iFlags & MRU_UTF8) {
-        WCHAR  tchItem[1024];
-        WCHAR wchItem[1024];
-        int cbw = MultiByteToWideChar(CP_UTF8,0,pmru->pszItems[i],-1,wchItem,COUNTOF(wchItem));
-        WideCharToMultiByte(CP_UTF7,0,wchItem,cbw,tchItem,COUNTOF(tchItem),NULL,NULL);
-        IniSectionSetString(pIniSection,tchName,tchItem);
-        }
-        else*/
       IniSectionSetString(pIniSection, tchName, pmru->pszItems[i]);
     }
   }
@@ -1925,18 +1866,6 @@ BOOL GetThemedDialogFont(LPWSTR lpFaceName, WORD *wSize)
       }
     }
   }
-  /*
-  if (!bSucceed) {
-  NONCLIENTMETRICS ncm;
-  ncm.cbSize = sizeof(NONCLIENTMETRICS);
-  SystemParametersInfo(SPI_GETNONCLIENTMETRICS,sizeof(NONCLIENTMETRICS),&ncm,0);
-  if (ncm.lfMessageFont.lfHeight < 0)
-  ncm.lfMessageFont.lfHeight = -ncm.lfMessageFont.lfHeight;
-  *wSize = (WORD)MulDiv(ncm.lfMessageFont.lfHeight,72,iLogPixelsY);
-  if (*wSize == 0)
-  *wSize = 8;
-  StrCpyN(lpFaceName,ncm.lfMessageFont.lfFaceName,LF_FACESIZE);
-  }*/
   return (bSucceed);
 }
 
@@ -2307,7 +2236,6 @@ void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
 //     always appear as the foreground window unless we call SetForegroundWindow
 //
 // Copyright 2000 Matthew Ellis <m.t.ellis@bigfoot.com>
-/*#include "stdafx.h"*/
 
 // Odd. VC++6 winuser.h has IDANI_CAPTION defined (as well as IDANI_OPEN and
 // IDANI_CLOSE), but the Platform SDK only has IDANI_OPEN...
@@ -2417,7 +2345,7 @@ static VOID GetTrayWndRect(LPRECT lpTrayRect)
 }
 
 // Check to see if the animation has been disabled
-/*static */BOOL GetDoAnimateMinimize(VOID)
+BOOL GetDoAnimateMinimize(VOID)
 {
   ANIMATIONINFO ai;
   ai.cbSize = sizeof(ai);
@@ -2529,14 +2457,11 @@ VOID HL_Trace(const char *fmt, ...)
     SYSTEMTIME st;
     char	buff[0xff + 1];
     char* ch = 0;
-    //
     GetLocalTime(&st);
     fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    //
     va_start(vl, fmt);
     vsprintf_s(buff, 0xff, fmt, vl);
     va_end(vl);
-    //
     ch = buff;
     while (*ch)
     {
@@ -2546,7 +2471,6 @@ VOID HL_Trace(const char *fmt, ...)
       }
       ++ch;
     }
-    //
     fprintf(_hL_log, "%s\r\n", buff);
     fflush(_hL_log);
   }
@@ -2558,15 +2482,12 @@ VOID HL_WTrace(const char *fmt, LPCWSTR word)
     int size;
     char *temp = 0;
     SYSTEMTIME st;
-    //
     GetLocalTime(&st);
     fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    //
     temp = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word, -1, NULL, 0, NULL, NULL));
     WideCharToMultiByte(CP_UTF8, 0, word, -1, temp, size, NULL, NULL);
     fprintf(_hL_log, fmt, temp);
     HL_Free(temp);
-    //
     fprintf(_hL_log, "\r\n");
     fflush(_hL_log);
   }
@@ -2578,10 +2499,8 @@ VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
     int size;
     char *temp, *temp2;
     SYSTEMTIME st;
-    //
     GetLocalTime(&st);
     fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    //
     temp = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word1, -1, NULL, 0, NULL, NULL));
     WideCharToMultiByte(CP_UTF8, 0, word1, -1, temp, size, NULL, NULL);
     temp2 = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word2, -1, NULL, 0, NULL, NULL));
@@ -2589,7 +2508,6 @@ VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
     fprintf(_hL_log, fmt, temp, temp2);
     HL_Free(temp);
     HL_Free(temp2);
-    //
     fprintf(_hL_log, "\r\n");
     fflush(_hL_log);
   }
@@ -2612,7 +2530,6 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
   int cou = 0;
   BOOL is_hex = 0;
   WCHAR *ec = 0;
-  //
   while (lstrlen(temp))
   {
     if (hex)
@@ -2679,7 +2596,6 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
 VOID HL_Wheel_scroll_worker(int lines)
 {
   int anch, sel = 0;
-  //
   if (_hl_wheel_timer)
   {
     HL_Trace("wheel timer blocked");
@@ -2687,23 +2603,6 @@ VOID HL_Wheel_scroll_worker(int lines)
   }
   _hl_wheel_timer = TRUE;
   SetTimer(NULL, HL_WHEEL_TIMER_ID, _hl_wheel_timer_to, HL_wheel_timer_proc);
-#if 0
-  //
-  anch = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-  sel = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-  //
-  if (lines > 0)
-  {
-    SendMessage(hwndEdit, SCI_PAGEDOWN, 0, 0);
-  }
-  else if (lines < 0)
-  {
-    SendMessage(hwndEdit, SCI_PAGEUP, 0, 0);
-  }
-  //
-  SendMessage(hwndEdit, SCI_SETSELECTIONSTART, anch, 0);
-  SendMessage(hwndEdit, SCI_SETSELECTIONEND, sel, 0);
-#else
   anch = SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0);
   if (lines > 0)
   {
@@ -2713,7 +2612,6 @@ VOID HL_Wheel_scroll_worker(int lines)
   {
     SendMessage(hwndEdit, SCI_LINESCROLL, 0, -anch);
   }
-#endif
 }
 VOID HL_Set_wheel_scroll(BOOL on)
 {
@@ -2772,7 +2670,6 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   HANDLE res;
   int		len;
   lstrcpy(_in, pref);
-  //
   while ((len = lstrlen(in) - 1) >= 0)
   {
     if (L' ' == in[len])
@@ -2788,7 +2685,6 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
       break;
     }
   }
-  //
 
   if (!PathIsRelative(in))
   {
@@ -2810,21 +2706,17 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   {
     return FALSE;
   }
-  //
   temp[0] = 0;
-  //
   do
   {
     if (0 == (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
       HL_TRACE("file: '%S'", wfd.cFileName);
-      //
       if (wcsnicmp(wfd.cFileName, in, 1))
       {
         HL_TRACE("skip");
         continue;
       }
-      //
       if (0 == temp[0] || HL_Compare_files(temp, wfd.cFileName) > 0)
       {
         lstrcpy(temp, wfd.cFileName);
@@ -2832,7 +2724,6 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
     }
   } while (FindNextFile(res, &wfd) != 0);
   FindClose(res);
-  //
   if (temp[0])
   {
     lstrcpy(out, dir);
@@ -2843,7 +2734,6 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
     lstrcat(out, temp);
     return TRUE;
   }
-  //
   return FALSE;
 }
 
@@ -2863,11 +2753,8 @@ BOOL _HL_fileIsCdUp(LPCWSTR str)
 UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
   static UINT file_ok = 0;
-  // static UINT lbl_ch = 0;
   static WCHAR last_selected[MAX_PATH];
-  // XP spec
   static BOOL take_call = FALSE;
-  //
   HWND hPar = GetParent(hdlg);
   switch (uiMsg)
   {
@@ -2880,12 +2767,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
               WCHAR buf[MAX_PATH];
               WCHAR dir[MAX_PATH];
               //
-#if 0
-              int len = GetDlgItemText(hPar, cmb13, buf, MAX_PATH);
-#else
-
               int len = CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH);
-#endif
               // can return -1 !!!
               *dir = L'\0';
               if (CommDlg_OpenSave_GetFolderPath(hPar, dir, COUNTOF(dir)) < 0)
@@ -2895,7 +2777,6 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
                   PathRemoveFileSpec(dir);
                 }
               }
-              //
               SetWindowLong(hdlg, DWL_MSGRESULT, 1);
               HL_TRACE("OFN OK '%S' ", buf);
               if (len)
@@ -2955,18 +2836,9 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
               take_call = FALSE;
               file_ok = RegisterWindowMessage(FILEOKSTRING);
               *last_selected = 0;
-#if 0
-              SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)folder);
-              lbl_ch = RegisterWindowMessage(LBSELCHSTRING);
-#endif
             }
                              break;
           case CDN_FOLDERCHANGE: {
-#if 0
-              WCHAR dir[MAX_PATH];
-              HL_TRACE("OFN folder change  ");
-              SendMessage(hPar, CDM_GETFOLDERPATH, MAX_PATH, (LPARAM)dir);
-#endif
               *last_selected = 0;
             }
                                  break;
@@ -2978,14 +2850,6 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
       {
         HL_TRACE("custom OK");
         SetWindowLong(hdlg, DWL_MSGRESULT, take_call);
-        //    return	1;
-#if 0
-      }
-      else if (lbl_ch = uiMsg)
-      {
-        HL_Trace("custom LBL from %d (action %d)", wParam, lParam);
-        //  return	1;
-#endif
       }
   }
   return take_call;
@@ -3013,32 +2877,6 @@ VOID HL_Get_last_dir(LPTSTR out)
   else
   {
     lstrcpy(out, g_wchWorkingDirectory);
-  }
-}
-
-VOID HL_Move_Carret_Silently(BOOL up)
-{
-  int cpos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-  int coll = SendMessage(hwndEdit, SCI_GETCOLUMN, cpos, 0);
-  int	line = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, cpos, 0);
-  int tline = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-  tline = SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, tline, 0);
-  if (!up)
-  {
-    int len = max(0, SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0));
-    int wraps = HLS_get_wraps(tline, tline + len);
-    HL_TRACE_I(len);
-    HL_TRACE_I(wraps);
-    tline -= wraps;
-    tline += len;
-    HL_TRACE_I(SendMessage(hwndEdit, SCI_GETLINEVISIBLE, tline, 0));
-  }
-  if (line != tline)
-  {
-    int width = SendMessage(hwndEdit, SCI_LINELENGTH, tline, 0);
-    int tpos = SendMessage(hwndEdit, SCI_FINDCOLUMN, tline, min(coll, width));
-    SendMessage(hwndEdit, SCI_SETCURRENTPOS, tpos, 0);
-    SendMessage(hwndEdit, SCI_SETANCHOR, tpos, 0);
   }
 }
 
@@ -3149,7 +2987,7 @@ void* HL_Alloc(size_t size)
     HL_TRACE(L"WARNING !!! ALLOC mismatch : %d", _hl_alloc_count);
   }
   ++_hl_alloc_count;
-  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1 /*let it be :=)*/));
+  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
 }
 
 void HL_Free(void* ptr)

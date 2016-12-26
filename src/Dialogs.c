@@ -440,7 +440,6 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         ResizeDlg_Init(hwnd, cxOpenWithDlg, cyOpenWithDlg, IDC_RESIZEGRIP3);
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
-        //SetExplorerTheme(GetDlgItem(hwnd,IDC_OPENWITHDIR));
         ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_OPENWITHDIR),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_OPENWITHDIR), NULL);
@@ -600,8 +599,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
         ResizeDlg_Init(hwnd, cxFavoritesDlg, cyFavoritesDlg, IDC_RESIZEGRIP3);
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
-        //SetExplorerTheme(GetDlgItem(hwnd,IDC_FAVORITESDIR));
-        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR), LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_FAVORITESDIR), NULL);
         DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
@@ -955,8 +953,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         ListView_SetImageList(GetDlgItem(hwnd, IDC_FILEMRU),
                               (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
-        //SetExplorerTheme(GetDlgItem(hwnd,IDC_FILEMRU));
-        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU), LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FILEMRU), 0, &lvc);
         // Update view
         SendMessage(hwnd, WM_COMMAND, MAKELONG(0x00A0, 1), 0);
@@ -1634,8 +1631,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
         ImageList_AddMasked(himl, hbmp, CLR_DEFAULT);
         DeleteObject(hbmp);
         ListView_SetImageList(GetDlgItem(hwnd, IDC_ENCODINGLIST), himl, LVSIL_SMALL);
-        //SetExplorerTheme(hwndLV);
-        ListView_SetExtendedListViewStyle(hwndLV,/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(hwndLV, 0, &lvc);
         Encoding_AddToListView(hwndLV, pdd->idEncoding, pdd->bRecodeOnly);
         ListView_SetColumnWidth(hwndLV, 0, LVSCW_AUTOSIZE_USEHEADER);

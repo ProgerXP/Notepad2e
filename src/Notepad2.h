@@ -71,7 +71,6 @@ typedef struct np2params
 //==== Change Notifications ===================================================
 #define ID_WATCHTIMER 0xA000
 #define WM_CHANGENOTIFY WM_USER+1
-//#define WM_CHANGENOTIFYCLEAR WM_USER+2
 
 //==== Callback Message from System Tray ======================================
 #define WM_TRAYMESSAGE WM_USER

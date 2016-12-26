@@ -267,15 +267,10 @@ VOID HLS_Highlight_word(LPCSTR  word)
       strcpy(_hl_se_orig_word, word);
     }
     // 2 first words
-#if 0
-    ttf1.chrg.cpMin = 0;
-    ttf1.chrg.cpMax = len;
-#else
     {
       ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - _hl_max_search_range);
       ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + _hl_max_search_range);
     }
-#endif
     //
   //	HL_TRACE(L"HL WORD RANGES %d-%d %d-%d", ttf.chrg.cpMin, ttf.chrg.cpMax, ttf1.chrg.cpMin, ttf1.chrg.cpMax);
     ttf1.lpstrText = (LPSTR)word;
@@ -794,22 +789,16 @@ void HLS_on_notification(int code, struct SCNotification *scn)
       }
       else if (b_HL_highlight_selection)
       {
-        //
-#if 1
         if (b_HL_edit_selection)
-#endif
         {
           if (scn->modificationType & SC_MOD_INSERTTEXT)
           {
             HL_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-            //
             _hl_se_tr.chrg.cpMax += scn->length;
-            //
           }
           else if (scn->modificationType & SC_MOD_DELETETEXT)
           {
             HL_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-            //
             _hl_se_tr.chrg.cpMax -= scn->length;
           }
           else if (scn->modificationType & SC_PERFORMED_USER)
@@ -841,7 +830,6 @@ void HLS_on_notification(int code, struct SCNotification *scn)
             HL_TRACE("MODIF START ACTION");
           }
         }
-        //           HLS_Update_selection ( SH_MODIF );
       }
       break;
     case SCN_SAVEPOINTREACHED:

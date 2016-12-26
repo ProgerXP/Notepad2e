@@ -143,7 +143,6 @@ EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; a
         { SCE_H_SGML_DEFAULT, 63237, L"SGML", L"fore:#881280", L"" },
         { SCE_H_CDATA, 63147, L"CDATA", L"fore:#646464", L"" },
         { MULTI_STYLE(SCE_H_ASP, SCE_H_ASPAT, 0, 0), 63146, L"ASP Start Tag", L"bold; fore:#000080", L"" },
-        //{ SCE_H_SCRIPT, L"Script", L"", L"" },
         { SCE_H_QUESTION, 63148, L"PHP Start Tag", L"bold; fore:#000080", L"" },
         { SCE_HPHP_DEFAULT, 63149, L"PHP Default", L"", L"" },
         { MULTI_STYLE(SCE_HPHP_COMMENT, SCE_HPHP_COMMENTLINE, 0, 0), 63157, L"PHP Comment", L"fore:#FF8000", L"" },
@@ -183,32 +182,6 @@ EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; a
         { SCE_HBA_IDENTIFIER, 63186, L"ASP VBS Identifier", L"", L"" },
         { MULTI_STYLE(SCE_HBA_STRING, SCE_HBA_STRINGEOL, 0, 0), 63185, L"ASP VBS String", L"fore:#008000", L"" },
         { SCE_HBA_NUMBER, 63183, L"ASP VBS Number", L"fore:#FF0000", L"" },
-        //{ SCE_HP_START, L"Phyton Start", L"", L"" },
-        //{ SCE_HP_DEFAULT, L"Phyton Default", L"", L"" },
-        //{ SCE_HP_COMMENTLINE, L"Phyton Comment Line", L"", L"" },
-        //{ SCE_HP_NUMBER, L"Phyton Number", L"", L"" },
-        //{ SCE_HP_STRING, L"Phyton String", L"", L"" },
-        //{ SCE_HP_CHARACTER, L"Phyton Character", L"", L"" },
-        //{ SCE_HP_WORD, L"Phyton Keyword", L"", L"" },
-        //{ SCE_HP_TRIPLE, L"Phyton Triple", L"", L"" },
-        //{ SCE_HP_TRIPLEDOUBLE, L"Phyton Triple Double", L"", L"" },
-        //{ SCE_HP_CLASSNAME, L"Phyton Class Name", L"", L"" },
-        //{ SCE_HP_DEFNAME, L"Phyton Def Name", L"", L"" },
-        //{ SCE_HP_OPERATOR, L"Phyton Operator", L"", L"" },
-        //{ SCE_HP_IDENTIFIER, L"Phyton Identifier", L"", L"" },
-        //{ SCE_HPA_START, L"ASP Phyton Start", L"", L"" },
-        //{ SCE_HPA_DEFAULT, L"ASP Phyton Default", L"", L"" },
-        //{ SCE_HPA_COMMENTLINE, L"ASP Phyton Comment Line", L"", L"" },
-        //{ SCE_HPA_NUMBER, L"ASP Phyton Number", L"", L"" },
-        //{ SCE_HPA_STRING, L"ASP Phyton String", L"", L"" },
-        //{ SCE_HPA_CHARACTER, L"ASP Phyton Character", L"", L"" },
-        //{ SCE_HPA_WORD, L"ASP Phyton Keyword", L"", L"" },
-        //{ SCE_HPA_TRIPLE, L"ASP Phyton Triple", L"", L"" },
-        //{ SCE_HPA_TRIPLEDOUBLE, L"ASP Phyton Triple Double", L"", L"" },
-        //{ SCE_HPA_CLASSNAME, L"ASP Phyton Class Name", L"", L"" },
-        //{ SCE_HPA_DEFNAME, L"ASP Phyton Def Name", L"", L"" },
-        //{ SCE_HPA_OPERATOR, L"ASP Phyton Operator", L"", L"" },
-        //{ SCE_HPA_IDENTIFIER, L"ASP Phyton Identifier", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -234,7 +207,6 @@ EDITLEXER lexXML = { SCLEX_XML, 63002, L"XML", L"xml; xsl; rss; svg; xul; xsd; x
     }
 };
 
-#if 1
 KEYWORDLIST KeyWords_CSS = {
     "^-moz- ^-ms- ^-o- ^-webkit-"
     " animation animation-name animation-duration animation-timing-function animation-delay animation-iteration-count animation-direction animation-play-state"
@@ -271,11 +243,9 @@ KEYWORDLIST KeyWords_CSS = {
     ,
     "", "", "", "", "", "", ""
 };
-#endif
 
 EDITLEXER lexCSS = { SCLEX_CSS, 63003, L"CSS Style Sheets", L"css", L"", &KeyWords_CSS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_CSS_DEFAULT, L"Default", L"", L"" },
         { SCE_CSS_COMMENT, 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_CSS_TAG, 63136, L"HTML Tag", L"bold; fore:#0A246A", L"" },
         { SCE_CSS_CLASS, 63194, L"Tag-Class", L"fore:#648000", L"" },
@@ -312,7 +282,6 @@ KEYWORDLIST KeyWords_CPP = {
 
 EDITLEXER lexCPP = { SCLEX_CPP, 63004, L"C/C++", L"c; cpp; cxx; cc; h; hpp; hxx; hh; m; mm; idl; inl; odl", L"", &KeyWords_CPP, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_C_DEFAULT, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -320,10 +289,6 @@ EDITLEXER lexCPP = { SCLEX_CPP, 63004, L"C/C++", L"c; cpp; cxx; cc; h; hpp; hxx;
         { SCE_C_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_C_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
         { SCE_C_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#FF8000", L"" },
-        //{ SCE_C_UUID, L"UUID", L"", L"" },
-        //{ SCE_C_REGEX, L"Regex", L"", L"" },
-        //{ SCE_C_WORD2, L"Word 2", L"", L"" },
-        //{ SCE_C_GLOBALCLASS, L"Global Class", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -342,7 +307,6 @@ KEYWORDLIST KeyWords_CS = {
 
 EDITLEXER lexCS = { SCLEX_CPP, 63005, L"C#", L"cs", L"", &KeyWords_CS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_C_DEFAULT, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#804000", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -351,10 +315,6 @@ EDITLEXER lexCS = { SCLEX_CPP, 63005, L"C#", L"cs", L"", &KeyWords_CS, {
         { SCE_C_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_C_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
         { SCE_C_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#FF8000", L"" },
-        //{ SCE_C_UUID, L"UUID", L"", L"" },
-        //{ SCE_C_REGEX, L"Regex", L"", L"" },
-        //{ SCE_C_WORD2, L"Word 2", L"", L"" },
-        //{ SCE_C_GLOBALCLASS, L"Global Class", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -373,7 +333,6 @@ KEYWORDLIST KeyWords_RC = {
 
 EDITLEXER lexRC = { SCLEX_CPP, 63006, L"Resource Script", L"rc; rc2; rct; rh; r; dlg", L"", &KeyWords_RC, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_C_DEFAULT, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -381,10 +340,6 @@ EDITLEXER lexRC = { SCLEX_CPP, 63006, L"Resource Script", L"rc; rc2; rct; rh; r;
         { SCE_C_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_C_OPERATOR, 63132, L"Operator", L"fore:#0A246A", L"" },
         { SCE_C_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#FF8000", L"" },
-        //{ SCE_C_UUID, L"UUID", L"", L"" },
-        //{ SCE_C_REGEX, L"Regex", L"", L"" },
-        //{ SCE_C_WORD2, L"Word 2", L"", L"" },
-        //{ SCE_C_GLOBALCLASS, L"Global Class", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -395,7 +350,6 @@ KEYWORDLIST KeyWords_MAK = {
 
 EDITLEXER lexMAK = { SCLEX_MAKEFILE, 63007, L"Makefile", L"mak; make; mk; dsp", L"", &KeyWords_MAK, {
         { STYLE_DEFAULT, 63126, L"Default", L"fore:#0A246A", L"" },
-        //{ SCE_MAKE_DEFAULT, L"Default", L"", L"" },
         { SCE_MAKE_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { MULTI_STYLE(SCE_MAKE_IDENTIFIER, SCE_MAKE_IDEOL, 0, 0), 63129, L"Identifier", L"fore:#003CE6", L"" },
         { SCE_MAKE_OPERATOR, 63132, L"Operator", L"", L"" },
@@ -417,20 +371,12 @@ KEYWORDLIST KeyWords_VBS = {
 
 EDITLEXER lexVBS = { SCLEX_VBSCRIPT, 63008, L"VBScript", L"vbs; dsm", L"", &KeyWords_VBS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_B_DEFAULT, L"Default", L"", L"" },
         { SCE_B_COMMENT, 63127, L"Comment", L"fore:#808080", L"" },
         { SCE_B_KEYWORD, 63128, L"Keyword", L"bold; fore:#B000B0", L"" },
         { SCE_B_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { MULTI_STYLE(SCE_B_STRING, SCE_B_STRINGEOL, 0, 0), 63131, L"String", L"fore:#008000", L"" },
         { SCE_B_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_B_OPERATOR, 63132, L"Operator", L"", L"" },
-        //{ SCE_B_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#FF9C00", L"" },
-        //{ SCE_B_CONSTANT, L"Constant", L"", L"" },
-        //{ SCE_B_DATE, L"Date", L"", L"" },
-        //{ SCE_B_KEYWORD2, L"Keyword 2", L"", L"" },
-        //{ SCE_B_KEYWORD3, L"Keyword 3", L"", L"" },
-        //{ SCE_B_KEYWORD4, L"Keyword 4", L"", L"" },
-        //{ SCE_B_ASM, L"Inline Asm", L"fore:#FF8000", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -452,7 +398,6 @@ KEYWORDLIST KeyWords_VB = {
 
 EDITLEXER lexVB = { SCLEX_VB, 63009, L"Visual Basic", L"vb; bas; frm; cls; ctl; pag; dsr; dob", L"", &KeyWords_VB, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_B_DEFAULT, L"Default", L"", L"" },
         { SCE_B_COMMENT, 63127, L"Comment", L"fore:#808080", L"" },
         { SCE_B_KEYWORD, 63128, L"Keyword", L"bold; fore:#B000B0", L"" },
         { SCE_B_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -460,11 +405,6 @@ EDITLEXER lexVB = { SCLEX_VB, 63009, L"Visual Basic", L"vb; bas; frm; cls; ctl; 
         { MULTI_STYLE(SCE_B_NUMBER, SCE_B_DATE, 0, 0), 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_B_OPERATOR, 63132, L"Operator", L"", L"" },
         { SCE_B_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#FF9C00", L"" },
-        //{ SCE_B_CONSTANT, L"Constant", L"", L"" },
-        //{ SCE_B_KEYWORD2, L"Keyword 2", L"", L"" },
-        //{ SCE_B_KEYWORD3, L"Keyword 3", L"", L"" },
-        //{ SCE_B_KEYWORD4, L"Keyword 4", L"", L"" },
-        //{ SCE_B_ASM, L"Inline Asm", L"fore:#FF8000", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -480,7 +420,6 @@ KEYWORDLIST KeyWords_JS = {
 
 EDITLEXER lexJS = { SCLEX_CPP, 63010, L"JavaScript", L"js; jse; jsm; json; as", L"", &KeyWords_JS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_C_DEFAULT, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#A46000", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -488,10 +427,6 @@ EDITLEXER lexJS = { SCLEX_CPP, 63010, L"JavaScript", L"js; jse; jsm; json; as", 
         { SCE_C_REGEX, 63135, L"Regex", L"fore:#006633; back:#FFF1A8", L"" },
         { SCE_C_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_C_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
-        //{ SCE_C_UUID, L"UUID", L"", L"" },
-        //{ SCE_C_PREPROCESSOR, L"Preprocessor", L"fore:#FF8000", L"" },
-        //{ SCE_C_WORD2, L"Word 2", L"", L"" },
-        //{ SCE_C_GLOBALCLASS, L"Global Class", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -508,7 +443,6 @@ KEYWORDLIST KeyWords_JAVA = {
 
 EDITLEXER lexJAVA = { SCLEX_CPP, 63011, L"Java", L"java", L"", &KeyWords_JAVA, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_C_DEFAULT, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#A46000", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -516,10 +450,6 @@ EDITLEXER lexJAVA = { SCLEX_CPP, 63011, L"Java", L"java", L"", &KeyWords_JAVA, {
         { SCE_C_REGEX, 63135, L"Regex", L"fore:#006633; back:#FFF1A8", L"" },
         { SCE_C_NUMBER, 63130, L"Number", L"fore:#FF0000", L"" },
         { SCE_C_OPERATOR, 63132, L"Operator", L"fore:#B000B0", L"" },
-        //{ SCE_C_UUID, L"UUID", L"", L"" },
-        //{ SCE_C_PREPROCESSOR, L"Preprocessor", L"fore:#FF8000", L"" },
-        //{ SCE_C_WORD2, L"Word 2", L"", L"" },
-        //{ SCE_C_GLOBALCLASS, L"Global Class", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -536,7 +466,6 @@ KEYWORDLIST KeyWords_PAS = {
 
 EDITLEXER lexPAS = { SCLEX_PASCAL, 63012, L"Pascal/Delphi", L"pas; dpr; dpk; dfm; inc; pp", L"", &KeyWords_PAS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_PAS_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_PAS_COMMENT, SCE_PAS_COMMENT2, SCE_PAS_COMMENTLINE, 0), 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_PAS_WORD, 63128, L"Keyword", L"bold; fore:#800080", L"" },
         { SCE_PAS_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -641,7 +570,6 @@ KEYWORDLIST KeyWords_ASM = {
 
 EDITLEXER lexASM = { SCLEX_ASM, 63013, L"Assembly Script", L"asm", L"", &KeyWords_ASM, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_ASM_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_ASM_COMMENT, SCE_ASM_COMMENTBLOCK, 0, 0), 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_ASM_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { MULTI_STYLE(SCE_ASM_STRING, SCE_ASM_CHARACTER, SCE_ASM_STRINGEOL, 0), 63131, L"String", L"fore:#008000", L"" },
@@ -683,7 +611,6 @@ KEYWORDLIST KeyWords_PL = {
 
 EDITLEXER lexPL = { SCLEX_PERL, 63014, L"Perl", L"pl; pm; cgi; pod", L"", &KeyWords_PL, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_PL_DEFAULT, L"Default", L"", L"" },
         { SCE_PL_COMMENTLINE, 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_PL_WORD, 63128, L"Keyword", L"bold; fore:#804000", L"" },
         { SCE_PL_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -714,9 +641,6 @@ EDITLEXER lexPL = { SCLEX_PERL, 63014, L"Perl", L"pl; pm; cgi; pod", L"", &KeyWo
         { SCE_PL_POD_VERB, 63214, L"POD (verbatim)", L"fore:#A46000; back:#FFFFC0; eolfilled", L"" },
         { SCE_PL_DATASECTION, 63222, L"Data section", L"fore:#A46000; back:#FFFFC0; eolfilled", L"" },
         { SCE_PL_ERROR, 63252, L"Parsing error", L"fore:#C80000; back:#FFFF80", L"" },
-        //{ SCE_PL_PUNCTUATION, L"Symbols / punctuation (not used)", L"", L"" },
-        //{ SCE_PL_PREPROCESSOR, L"Preprocessor (not used)", L"", L"" },
-        //{ SCE_PL_LONGQUOTE, L"Long quote (qq, qr, qw, qx) (not used)", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -727,7 +651,6 @@ KEYWORDLIST KeyWords_INI = {
 
 EDITLEXER lexINI = { SCLEX_PROPERTIES, 63015, L"Configuration Files (INI)", L"ini; inf; reg; cfg; properties; oem; sif; url; sed; theme", L"", &KeyWords_INI, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_PROPS_DEFAULT, L"Default", L"", L"" },
         { SCE_PROPS_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_PROPS_SECTION, 63232, L"Section", L"bold; fore:#000000; back:#FFD24D; eolfilled", L"" },
         { SCE_PROPS_ASSIGNMENT, 63233, L"Assignment", L"fore:#FF0000", L"" },
@@ -747,7 +670,6 @@ KEYWORDLIST KeyWords_BAT = {
 
 EDITLEXER lexBAT = { SCLEX_BATCH, 63016, L"Batch Script", L"bat; cmd", L"", &KeyWords_BAT, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_BAT_DEFAULT, L"Default", L"", L"" },
         { SCE_BAT_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_BAT_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
         { SCE_BAT_IDENTIFIER, 63129, L"Identifier", L"fore:#003CE6; back:#FFF1A8", L"" },
@@ -764,7 +686,6 @@ KEYWORDLIST KeyWords_DIFF = {
 
 EDITLEXER lexDIFF = { SCLEX_DIFF, 63017, L"Diff Files", L"diff; patch", L"", &KeyWords_DIFF, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_DIFF_DEFAULT, L"Default", L"", L"" },
         { SCE_DIFF_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_DIFF_COMMAND, 63236, L"Command", L"bold; fore:#0A246A", L"" },
         { SCE_DIFF_HEADER, 63238, L"Source and Destination", L"fore:#C80000; back:#FFF1A8; eolfilled", L"" },
@@ -804,7 +725,6 @@ KEYWORDLIST KeyWords_SQL = {
 
 EDITLEXER lexSQL = { SCLEX_SQL, 63018, L"SQL Query", L"sql", L"", &KeyWords_SQL, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_SQL_DEFAULT, L"Default", L"", L"" },
         { SCE_SQL_COMMENT, 63127, L"Comment", L"fore:#505050", L"" },
         { SCE_SQL_WORD, 63128, L"Keyword", L"bold; fore:#800080", L"" },
         { MULTI_STYLE(SCE_SQL_STRING, SCE_SQL_CHARACTER, 0, 0), 63131, L"String", L"fore:#008000; back:#FFF1A8", L"" },
@@ -825,7 +745,6 @@ KEYWORDLIST KeyWords_PY = {
 
 EDITLEXER lexPY = { SCLEX_PYTHON, 63019, L"Python", L"py; pyw", L"", &KeyWords_PY, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_P_COMMENTLINE, SCE_P_COMMENTBLOCK, 0, 0), 63127, L"Comment", L"fore:#880000", L"" },
         { SCE_P_WORD, 63128, L"Keyword", L"fore:#000088", L"" },
         { SCE_P_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -888,7 +807,7 @@ KEYWORDLIST KeyWords_CONF = {
     "startthreads suexecusergroup threadlimit threadsperchild threadstacksize timeout transferlog typesconfig unsetenv "
     "usecanonicalname user userdir virtualdocumentroot virtualdocumentrootip virtualhost virtualscriptalias virtualscriptaliasip "
     "win32disableacceptex xbithack",
-    "", //"on off standalone inetd force-response-1.0 downgrade-1.0 nokeepalive indexes includes followsymlinks none x-compress x-gzip",
+    "",
     "", "", "", "", "", "", ""
 };
 
@@ -899,10 +818,6 @@ EDITLEXER lexCONF = { SCLEX_CONF, 63020, L"Apache Config File", L"conf; htaccess
         { SCE_CONF_NUMBER, 63130, L"Number", L"fore:#FF4000", L"" },
         { SCE_CONF_DIRECTIVE, 63203, L"Directive", L"fore:#003CE6", L"" },
         { SCE_CONF_IP, 63248, L"IP Address", L"bold; fore:#FF4000", L"" },
-        // Not used by lexer  { SCE_CONF_IDENTIFIER, L"Identifier", L"", L"" },
-        // Lexer is buggy     { SCE_CONF_OPERATOR, L"Operator", L"", L"" },
-        // Lexer is buggy     { SCE_CONF_PARAMETER, L"Runtime Directive Parameter", L"", L"" },
-        // Lexer is buggy     { SCE_CONF_EXTENSION, L"Extension", L"", L"" },
         { -1, 00000, L"", L"", L"" }
     }
 };
@@ -964,7 +879,6 @@ KEYWORDLIST KeyWords_PS = {
 
 EDITLEXER lexPS = { SCLEX_POWERSHELL, 63021, L"PowerShell Script", L"ps1; psd1; psm1", L"", &KeyWords_PS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_POWERSHELL_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_POWERSHELL_COMMENT, SCE_POWERSHELL_COMMENTSTREAM, 0, 0), 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_POWERSHELL_KEYWORD, 63128, L"Keyword", L"bold; fore:#804000", L"" },
         { SCE_POWERSHELL_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -987,7 +901,6 @@ KEYWORDLIST KeyWords_RUBY = {
 
 EDITLEXER lexRUBY = { SCLEX_RUBY, 63022, L"Ruby", L"rb; ruby; rbw; rake; rjs; Rakefile", L"", &KeyWords_RUBY, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_RB_COMMENTLINE, SCE_P_COMMENTBLOCK, 0, 0), 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_RB_WORD, 63128, L"Keyword", L"bold; fore:#00007F", L"" },
         { SCE_RB_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -1038,7 +951,6 @@ KEYWORDLIST KeyWords_BASH = {
 
 EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; ksh", L"", &KeyWords_BASH, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        //{ SCE_P_DEFAULT, L"Default", L"", L"" },
         { SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
         { SCE_SH_ERROR, 63325, L"Error", L"fore:#FFFF00,back:#FF0000", L"" },
         { SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
@@ -1643,7 +1555,6 @@ EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown", L"markdown;mdown;m
       }
 };
 
-// This array holds all the lexers...
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
     &lexCONF,
@@ -1682,7 +1593,6 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexYaml
 };
 
-// Currently used lexer
 PEDITLEXER pLexCurrent = &lexDefault;
 COLORREF crCustom[16];
 BOOL bUse2ndDefaultStyle;
@@ -1900,8 +1810,8 @@ BOOL Style_Export(HWND hwnd)
   ofn.lpstrFile = szFile;
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
-  ofn.Flags = /*OFN_FILEMUSTEXIST |*/ OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/ | OFN_OVERWRITEPROMPT;
+  ofn.Flags = OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
+    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_OVERWRITEPROMPT;
   if (GetSaveFileName(&ofn))
   {
     int i, iLexer;
@@ -1938,426 +1848,7 @@ BOOL Style_Export(HWND hwnd)
 //
 void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
 {
-#if 0
   int i;
-  //WCHAR *p;
-  int rgb;
-  int iValue;
-  int iIdx;
-  int iStyleBits;
-  WCHAR wchCaretStyle[64] = L"";
-  // Select default if NULL is specified
-  if (!pLexNew)
-  {
-    pLexNew = pLexArray[iDefaultLexer];
-  }
-  // Lexer
-  SendMessage(hwnd, SCI_SETLEXER, pLexNew->iLexer, 0);
-  iStyleBits = (int)SendMessage(hwnd, SCI_GETSTYLEBITSNEEDED, 0, 0);
-  SendMessage(hwnd, SCI_SETSTYLEBITS, (WPARAM)iStyleBits, 0);
-  if (pLexNew->iLexer == SCLEX_XML)
-  {
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.xml.allow.scripts", (LPARAM) "1");
-  }
-  if (pLexNew->iLexer == SCLEX_CPP)
-  {
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "styling.within.preprocessor", (LPARAM) "1");
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.track.preprocessor", (LPARAM) "0");
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.update.preprocessor", (LPARAM) "0");
-  }
-  else if (pLexNew->iLexer == SCLEX_PASCAL)
-  {
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.pascal.smart.highlighting", (LPARAM) "1");
-  }
-  else if (pLexNew->iLexer == SCLEX_SQL)
-  {
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "sql.backslash.escapes", (LPARAM) "1");
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.sql.backticks.identifier", (LPARAM) "1");
-    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.sql.numbersign.comment", (LPARAM) "1");
-  }
-  else if (pLexNew->iLexer == SCLEX_CSS)
-  {
-  }
-  // Add KeyWord Lists
-  for (i = 0; i < 9; i++)
-  {
-    SendMessage(hwnd, SCI_SETKEYWORDS, i, (LPARAM)pLexNew->pKeyWords->pszKeyWords[i]);
-  }
-  // Use 2nd default style
-  iIdx = (bUse2ndDefaultStyle) ? 12 : 0;
-  // Font quality setup, check availability of Consolas
-  Style_SetFontQuality(hwnd, lexDefault.Styles[0 + iIdx].szValue);
-  fIsConsolasAvailable = IsFontAvailable(L"Consolas");
-  // Clear
-  SendMessage(hwnd, SCI_CLEARDOCUMENTSTYLE, 0, 0);
-  // Default Values are always set
-  SendMessage(hwnd, SCI_STYLERESETDEFAULT, 0, 0);
-  SendMessage(hwnd, SCI_STYLESETCHARACTERSET, STYLE_DEFAULT, (LPARAM)DEFAULT_CHARSET);
-  iBaseFontSize = 10;
-  Style_SetStyles(hwnd, lexDefault.Styles[0 + iIdx].iStyle, lexDefault.Styles[0 + iIdx].szValue); // default
-  Style_StrGetSize(lexDefault.Styles[0 + iIdx].szValue, &iBaseFontSize);                  // base size
-  // Auto-select codepage according to charset
-  //Style_SetACPfromCharSet(hwnd);
-  if (!Style_StrGetColor(TRUE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
-  {
-    SendMessage(hwnd, SCI_STYLESETFORE, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOWTEXT));    // default text color
-  }
-  if (!Style_StrGetColor(FALSE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
-  {
-    SendMessage(hwnd, SCI_STYLESETBACK, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOW));    // default window color
-  }
-  if (pLexNew->iLexer != SCLEX_NULL)
-  {
-    Style_SetStyles(hwnd, pLexNew->Styles[0].iStyle, pLexNew->Styles[0].szValue);    // lexer default
-  }
-  SendMessage(hwnd, SCI_STYLECLEARALL, 0, 0);
-  Style_SetStyles(hwnd, lexDefault.Styles[1 + iIdx].iStyle, lexDefault.Styles[1 + iIdx].szValue); // linenumber
-  Style_SetStyles(hwnd, lexDefault.Styles[2 + iIdx].iStyle, lexDefault.Styles[2 + iIdx].szValue); // brace light
-  Style_SetStyles(hwnd, lexDefault.Styles[3 + iIdx].iStyle, lexDefault.Styles[3 + iIdx].szValue); // brace bad
-  Style_SetStyles(hwnd, lexDefault.Styles[4 + iIdx].iStyle, lexDefault.Styles[4 + iIdx].szValue); // control char
-  Style_SetStyles(hwnd, lexDefault.Styles[5 + iIdx].iStyle, lexDefault.Styles[5 + iIdx].szValue); // indent guide
-  // More default values...
-  if (Style_StrGetColor(TRUE, lexDefault.Styles[6 + iIdx].szValue, &rgb))
-  { // selection fore
-    SendMessage(hwnd, SCI_SETSELFORE, TRUE, rgb);
-    SendMessage(hwnd, SCI_SETADDITIONALSELFORE, rgb, 0);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETSELFORE, 0, 0);
-    SendMessage(hwnd, SCI_SETADDITIONALSELFORE, 0, 0);
-  }
-  if (Style_StrGetColor(FALSE, lexDefault.Styles[6 + iIdx].szValue, &iValue))
-  { // selection back
-    SendMessage(hwnd, SCI_SETSELBACK, TRUE, iValue);
-    SendMessage(hwnd, SCI_SETADDITIONALSELBACK, iValue, 0);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETSELBACK, TRUE, RGB(0xC0, 0xC0, 0xC0)); // use a default value...
-    SendMessage(hwnd, SCI_SETADDITIONALSELBACK, RGB(0xC0, 0xC0, 0xC0), 0);
-  }
-  if (Style_StrGetAlpha(lexDefault.Styles[6 + iIdx].szValue, &iValue))
-  { // selection alpha
-    SendMessage(hwnd, SCI_SETSELALPHA, iValue, 0);
-    SendMessage(hwnd, SCI_SETADDITIONALSELALPHA, iValue, 0);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETSELALPHA, SC_ALPHA_NOALPHA, 0);
-    SendMessage(hwnd, SCI_SETADDITIONALSELALPHA, SC_ALPHA_NOALPHA, 0);
-  }
-  if (StrStrI(lexDefault.Styles[6 + iIdx].szValue, L"eolfilled"))
-  { // selection eolfilled
-    SendMessage(hwnd, SCI_SETSELEOLFILLED, 1, 0);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETSELEOLFILLED, 0, 0);
-  }
-  if (Style_StrGetColor(TRUE, lexDefault.Styles[7 + iIdx].szValue, &rgb))
-  { // whitespace fore
-    SendMessage(hwnd, SCI_SETWHITESPACEFORE, TRUE, rgb);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETWHITESPACEFORE, 0, 0);
-  }
-  if (Style_StrGetColor(FALSE, lexDefault.Styles[7 + iIdx].szValue, &rgb))
-  { // whitespace back
-    SendMessage(hwnd, SCI_SETWHITESPACEBACK, TRUE, rgb);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETWHITESPACEBACK, 0, 0);    // use a default value...
-  }
-  // whitespace dot size
-  iValue = 1;
-  if (Style_StrGetSize(lexDefault.Styles[7 + iIdx].szValue, &iValue))
-  {
-    WCHAR tch[32];
-    WCHAR wchStyle[COUNTOF(lexDefault.Styles[0].szValue)];
-    lstrcpyn(wchStyle, lexDefault.Styles[7 + iIdx].szValue, COUNTOF(lexDefault.Styles[0].szValue));
-    iValue = max(min(iValue, 5), 0);
-    wsprintf(lexDefault.Styles[7 + iIdx].szValue, L"size:%i", iValue);
-    if (Style_StrGetColor(TRUE, wchStyle, &rgb))
-    {
-      wsprintf(tch, L"; fore:#%02X%02X%02X",
-               (int)GetRValue(rgb),
-               (int)GetGValue(rgb),
-               (int)GetBValue(rgb));
-      lstrcat(lexDefault.Styles[7 + iIdx].szValue, tch);
-    }
-    if (Style_StrGetColor(FALSE, wchStyle, &rgb))
-    {
-      wsprintf(tch, L"; back:#%02X%02X%02X",
-               (int)GetRValue(rgb),
-               (int)GetGValue(rgb),
-               (int)GetBValue(rgb));
-      lstrcat(lexDefault.Styles[7 + iIdx].szValue, tch);
-    }
-  }
-  SendMessage(hwnd, SCI_SETWHITESPACESIZE, iValue, 0);
-  if (bHiliteCurrentLine)
-  {
-    if (Style_StrGetColor(FALSE, lexDefault.Styles[8 + iIdx].szValue, &rgb))
-    { // caret line back
-      SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, TRUE, 0);
-      SendMessage(hwnd, SCI_SETCARETLINEBACK, rgb, 0);
-      if (Style_StrGetAlpha(lexDefault.Styles[8 + iIdx].szValue, &iValue))
-      {
-        SendMessage(hwnd, SCI_SETCARETLINEBACKALPHA, iValue, 0);
-      }
-      else
-      {
-        SendMessage(hwnd, SCI_SETCARETLINEBACKALPHA, SC_ALPHA_NOALPHA, 0);
-      }
-    }
-    else
-    {
-      SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, FALSE, 0);
-    }
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, FALSE, 0);
-  }
-  // caret style and width
-  if (StrStr(lexDefault.Styles[9 + iIdx].szValue, L"block"))
-  {
-    SendMessage(hwnd, SCI_SETCARETSTYLE, CARETSTYLE_BLOCK, 0);
-    lstrcpy(wchCaretStyle, L"block");
-  }
-  else
-  {
-    WCHAR wch[32];
-    iValue = 1;
-    if (Style_StrGetSize(lexDefault.Styles[9 + iIdx].szValue, &iValue))
-    {
-      iValue = max(min(iValue, 3), 1);
-      wsprintf(wch, L"size:%i", iValue);
-      lstrcat(wchCaretStyle, wch);
-    }
-    SendMessage(hwnd, SCI_SETCARETSTYLE, CARETSTYLE_LINE, 0);
-    SendMessage(hwnd, SCI_SETCARETWIDTH, iValue, 0);
-  }
-  if (StrStr(lexDefault.Styles[9 + iIdx].szValue, L"noblink"))
-  {
-    SendMessage(hwnd, SCI_SETCARETPERIOD, (WPARAM)0, 0);
-    if (lstrlen(wchCaretStyle))
-    {
-      lstrcat(wchCaretStyle, L"; ");
-    }
-    lstrcat(wchCaretStyle, L"noblink");
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETCARETPERIOD, (WPARAM)GetCaretBlinkTime(), 0);
-  }
-  // caret fore
-  if (!Style_StrGetColor(TRUE, lexDefault.Styles[9 + iIdx].szValue, &rgb))
-  {
-    rgb = GetSysColor(COLOR_WINDOWTEXT);
-  }
-  else
-  {
-    WCHAR wch[32];
-    wsprintf(wch, L"fore:#%02X%02X%02X",
-             (int)GetRValue(rgb),
-             (int)GetGValue(rgb),
-             (int)GetBValue(rgb));
-    if (lstrlen(wchCaretStyle))
-    {
-      lstrcat(wchCaretStyle, L"; ");
-    }
-    lstrcat(wchCaretStyle, wch);
-  }
-  if (!VerifyContrast(rgb, (COLORREF)SendMessage(hwnd, SCI_STYLEGETBACK, 0, 0)))
-  {
-    rgb = (int)SendMessage(hwnd, SCI_STYLEGETFORE, 0, 0);
-  }
-  SendMessage(hwnd, SCI_SETCARETFORE, rgb, 0);
-  SendMessage(hwnd, SCI_SETADDITIONALCARETFORE, rgb, 0);
-  lstrcpy(lexDefault.Styles[9 + iIdx].szValue, wchCaretStyle);
-  if (SendMessage(hwnd, SCI_GETEDGEMODE, 0, 0) == EDGE_LINE)
-  {
-    if (Style_StrGetColor(TRUE, lexDefault.Styles[10 + iIdx].szValue, &rgb))
-    { // edge fore
-      SendMessage(hwnd, SCI_SETEDGECOLOUR, rgb, 0);
-    }
-    else
-    {
-      SendMessage(hwnd, SCI_SETEDGECOLOUR, GetSysColor(COLOR_3DLIGHT), 0);
-    }
-  }
-  else
-  {
-    if (Style_StrGetColor(FALSE, lexDefault.Styles[10 + iIdx].szValue, &rgb))
-    { // edge back
-      SendMessage(hwnd, SCI_SETEDGECOLOUR, rgb, 0);
-    }
-    else
-    {
-      SendMessage(hwnd, SCI_SETEDGECOLOUR, GetSysColor(COLOR_3DLIGHT), 0);
-    }
-  }
-  // Extra Line Spacing
-  if (Style_StrGetSize(lexDefault.Styles[11 + iIdx].szValue, &iValue))
-  {
-    int iAscent = 0;
-    int iDescent = 0;
-    iValue = min(max(iValue, 0), 64);
-    wsprintf(lexDefault.Styles[11 + iIdx].szValue, L"size:%i", iValue);
-    if (iValue % 2)
-    {
-      iAscent++;
-      iValue--;
-    }
-    iAscent += iValue / 2;
-    iDescent += iValue / 2;
-    SendMessage(hwnd, SCI_SETEXTRAASCENT, (WPARAM)iAscent, 0);
-    SendMessage(hwnd, SCI_SETEXTRADESCENT, (WPARAM)iDescent, 0);
-  }
-  else
-  {
-    SendMessage(hwnd, SCI_SETEXTRAASCENT, 0, 0);
-    SendMessage(hwnd, SCI_SETEXTRADESCENT, 0, 0);
-    //wsprintf(lexDefault.Styles[11+iIdx].szValue,L"size:0");
-  }
-  if (SendMessage(hwnd, SCI_GETINDENTATIONGUIDES, 0, 0) != SC_IV_NONE)
-  {
-    Style_SetIndentGuides(hwnd, TRUE);
-  }
-  if (pLexNew->iLexer != SCLEX_NULL)
-  {
-    int j;
-    i = 1;
-    while (pLexNew->Styles[i].iStyle != -1)
-    {
-      for (j = 0; j < 4 && (pLexNew->Styles[i].iStyle8[j] != 0 || j == 0); ++j)
-      {
-        Style_SetStyles(hwnd, pLexNew->Styles[i].iStyle8[j], pLexNew->Styles[i].szValue);
-      }
-      if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HPHP_DEFAULT)
-      {
-        int iRelated[] = { SCE_HPHP_COMMENT, SCE_HPHP_COMMENTLINE, SCE_HPHP_WORD, SCE_HPHP_HSTRING, SCE_HPHP_SIMPLESTRING, SCE_HPHP_NUMBER,
-                           SCE_HPHP_OPERATOR, SCE_HPHP_VARIABLE, SCE_HPHP_HSTRING_VARIABLE, SCE_HPHP_COMPLEX_VARIABLE
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HJ_DEFAULT)
-      {
-        int iRelated[] = { SCE_HJ_COMMENT, SCE_HJ_COMMENTLINE, SCE_HJ_COMMENTDOC, SCE_HJ_KEYWORD, SCE_HJ_WORD, SCE_HJ_DOUBLESTRING,
-                           SCE_HJ_SINGLESTRING, SCE_HJ_STRINGEOL, SCE_HJ_REGEX, SCE_HJ_NUMBER, SCE_HJ_SYMBOLS
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HJA_DEFAULT)
-      {
-        int iRelated[] = { SCE_HJA_COMMENT, SCE_HJA_COMMENTLINE, SCE_HJA_COMMENTDOC, SCE_HJA_KEYWORD, SCE_HJA_WORD, SCE_HJA_DOUBLESTRING,
-                           SCE_HJA_SINGLESTRING, SCE_HJA_STRINGEOL, SCE_HJA_REGEX, SCE_HJA_NUMBER, SCE_HJA_SYMBOLS
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HB_DEFAULT)
-      {
-        int iRelated[] = { SCE_HB_COMMENTLINE, SCE_HB_WORD, SCE_HB_IDENTIFIER, SCE_HB_STRING, SCE_HB_STRINGEOL, SCE_HB_NUMBER };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HBA_DEFAULT)
-      {
-        int iRelated[] = { SCE_HBA_COMMENTLINE, SCE_HBA_WORD, SCE_HBA_IDENTIFIER, SCE_HBA_STRING, SCE_HBA_STRINGEOL, SCE_HBA_NUMBER };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if ((pLexNew->iLexer == SCLEX_HTML || pLexNew->iLexer == SCLEX_XML) && pLexNew->Styles[i].iStyle8[0] == SCE_H_SGML_DEFAULT)
-      {
-        int iRelated[] = { SCE_H_SGML_COMMAND, SCE_H_SGML_1ST_PARAM, SCE_H_SGML_DOUBLESTRING, SCE_H_SGML_SIMPLESTRING, SCE_H_SGML_ERROR,
-                           SCE_H_SGML_SPECIAL, SCE_H_SGML_ENTITY, SCE_H_SGML_COMMENT, SCE_H_SGML_1ST_PARAM_COMMENT, SCE_H_SGML_BLOCK_DEFAULT
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if ((pLexNew->iLexer == SCLEX_HTML || pLexNew->iLexer == SCLEX_XML) && pLexNew->Styles[i].iStyle8[0] == SCE_H_CDATA)
-      {
-        int iRelated[] = { SCE_HP_START, SCE_HP_DEFAULT, SCE_HP_COMMENTLINE, SCE_HP_NUMBER, SCE_HP_STRING,
-                           SCE_HP_CHARACTER, SCE_HP_WORD, SCE_HP_TRIPLE, SCE_HP_TRIPLEDOUBLE, SCE_HP_CLASSNAME,
-                           SCE_HP_DEFNAME, SCE_HP_OPERATOR, SCE_HP_IDENTIFIER, SCE_HPA_START, SCE_HPA_DEFAULT,
-                           SCE_HPA_COMMENTLINE, SCE_HPA_NUMBER, SCE_HPA_STRING, SCE_HPA_CHARACTER, SCE_HPA_WORD,
-                           SCE_HPA_TRIPLE, SCE_HPA_TRIPLEDOUBLE, SCE_HPA_CLASSNAME, SCE_HPA_DEFNAME, SCE_HPA_OPERATOR,
-                           SCE_HPA_IDENTIFIER
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_XML && pLexNew->Styles[i].iStyle8[0] == SCE_H_CDATA)
-      {
-        int iRelated[] = { SCE_H_SCRIPT, SCE_H_ASP, SCE_H_ASPAT, SCE_H_QUESTION,
-                           SCE_HPHP_DEFAULT, SCE_HPHP_COMMENT, SCE_HPHP_COMMENTLINE, SCE_HPHP_WORD, SCE_HPHP_HSTRING,
-                           SCE_HPHP_SIMPLESTRING, SCE_HPHP_NUMBER, SCE_HPHP_OPERATOR, SCE_HPHP_VARIABLE,
-                           SCE_HPHP_HSTRING_VARIABLE, SCE_HPHP_COMPLEX_VARIABLE, SCE_HJ_START, SCE_HJ_DEFAULT,
-                           SCE_HJ_COMMENT, SCE_HJ_COMMENTLINE, SCE_HJ_COMMENTDOC, SCE_HJ_KEYWORD, SCE_HJ_WORD,
-                           SCE_HJ_DOUBLESTRING, SCE_HJ_SINGLESTRING, SCE_HJ_STRINGEOL, SCE_HJ_REGEX, SCE_HJ_NUMBER,
-                           SCE_HJ_SYMBOLS, SCE_HJA_START, SCE_HJA_DEFAULT, SCE_HJA_COMMENT, SCE_HJA_COMMENTLINE,
-                           SCE_HJA_COMMENTDOC, SCE_HJA_KEYWORD, SCE_HJA_WORD, SCE_HJA_DOUBLESTRING, SCE_HJA_SINGLESTRING,
-                           SCE_HJA_STRINGEOL, SCE_HJA_REGEX, SCE_HJA_NUMBER, SCE_HJA_SYMBOLS, SCE_HB_START, SCE_HB_DEFAULT,
-                           SCE_HB_COMMENTLINE, SCE_HB_WORD, SCE_HB_IDENTIFIER, SCE_HB_STRING, SCE_HB_STRINGEOL,
-                           SCE_HB_NUMBER, SCE_HBA_START, SCE_HBA_DEFAULT, SCE_HBA_COMMENTLINE, SCE_HBA_WORD,
-                           SCE_HBA_IDENTIFIER, SCE_HBA_STRING, SCE_HBA_STRINGEOL, SCE_HBA_NUMBER, SCE_HP_START,
-                           SCE_HP_DEFAULT, SCE_HP_COMMENTLINE, SCE_HP_NUMBER, SCE_HP_STRING, SCE_HP_CHARACTER, SCE_HP_WORD,
-                           SCE_HP_TRIPLE, SCE_HP_TRIPLEDOUBLE, SCE_HP_CLASSNAME, SCE_HP_DEFNAME, SCE_HP_OPERATOR,
-                           SCE_HP_IDENTIFIER, SCE_HPA_START, SCE_HPA_DEFAULT, SCE_HPA_COMMENTLINE, SCE_HPA_NUMBER,
-                           SCE_HPA_STRING, SCE_HPA_CHARACTER, SCE_HPA_WORD, SCE_HPA_TRIPLE, SCE_HPA_TRIPLEDOUBLE,
-                           SCE_HPA_CLASSNAME, SCE_HPA_DEFNAME, SCE_HPA_OPERATOR, SCE_HPA_IDENTIFIER
-        };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_CPP && pLexNew->Styles[i].iStyle8[0] == SCE_C_COMMENT)
-      {
-        int iRelated[] = { SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, SCE_C_COMMENTLINEDOC, SCE_C_COMMENTDOCKEYWORD, SCE_C_COMMENTDOCKEYWORDERROR };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      if (pLexNew->iLexer == SCLEX_SQL && pLexNew->Styles[i].iStyle8[0] == SCE_SQL_COMMENT)
-      {
-        int iRelated[] = { SCE_SQL_COMMENTLINE, SCE_SQL_COMMENTDOC, SCE_SQL_COMMENTLINEDOC, SCE_SQL_COMMENTDOCKEYWORD, SCE_SQL_COMMENTDOCKEYWORDERROR };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
-      i++;
-    }
-  }
-  SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
-  // Save current lexer
-  pLexCurrent = pLexNew;
-#else
-  int i;
-  //WCHAR *p;
   int rgb;
   int iValue;
   int iIdx;
@@ -2437,7 +1928,6 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   Style_SetStyles(hwnd, lexDefault.Styles[0 + iIdx].iStyle, lexDefault.Styles[0 + iIdx].szValue); // default
   Style_StrGetSize(lexDefault.Styles[0 + iIdx].szValue, &iBaseFontSize);                  // base size
   // Auto-select codepage according to charset
-  //Style_SetACPfromCharSet(hwnd);
   if (!Style_StrGetColor(TRUE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
   {
     SendMessage(hwnd, SCI_STYLESETFORE, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOWTEXT));    // default text color
@@ -2662,7 +2152,6 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   {
     SendMessage(hwnd, SCI_SETEXTRAASCENT, 0, 0);
     SendMessage(hwnd, SCI_SETEXTRADESCENT, 0, 0);
-    //wsprintf(lexDefault.Styles[11+iIdx].szValue,L"size:0");
   }
   {
     // set folding style; braces are for scoping only
@@ -2826,7 +2315,6 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
   // Save current lexer
   pLexCurrent = pLexNew;
-#endif
 }
 
 //=============================================================================
@@ -3039,7 +2527,7 @@ void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile)
     }
   }
   lpszExt = PathFindExtension(lpszFile);
-  if (!bFound && bAutoSelect && /* bAutoSelect == FALSE skips lexer search */
+  if (!bFound && bAutoSelect &&
     (lpszFile && lstrlen(lpszFile) > 0 && *lpszExt))
   {
     if (*lpszExt == L'.')
@@ -3515,11 +3003,10 @@ BOOL Style_SelectFont(HWND hwnd, LPWSTR lpszStyle, int cchStyle, BOOL bDefaultSt
   }
   lf.lfWeight = (StrStrI(lpszStyle, L"bold")) ? FW_BOLD : FW_NORMAL;
   lf.lfItalic = (StrStrI(lpszStyle, L"italic")) ? 1 : 0;
-  // Init cf
   cf.lStructSize = sizeof(CHOOSEFONT);
   cf.hwndOwner = hwnd;
   cf.lpLogFont = &lf;
-  cf.Flags = CF_INITTOLOGFONTSTRUCT /*| CF_NOSCRIPTSEL*/ | CF_SCREENFONTS;
+  cf.Flags = CF_INITTOLOGFONTSTRUCT | CF_SCREENFONTS;
   if (HIBYTE(GetKeyState(VK_SHIFT)))
   {
     cf.Flags |= CF_FIXEDPITCHONLY;
@@ -3953,8 +3440,6 @@ void Style_AddLexerToTreeView(HWND hwnd, PEDITLEXER plex)
   hTreeNode = (HTREEITEM)TreeView_InsertItem(hwnd, &tvis);
   tvis.hParent = hTreeNode;
   tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-  //tvis.item.iImage = -1;
-  //tvis.item.iSelectedImage = -1;
   while (plex->Styles[i].iStyle != -1)
   {
     if (GetString(plex->Styles[i].rid, tch, COUNTOF(tch)))
@@ -4026,8 +3511,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         }
         pCurrentLexer = 0;
         pCurrentStyle = 0;
-        //SetExplorerTheme(hwndTV);
-        //TreeView_Expand(hwndTV,TreeView_GetRoot(hwndTV),TVE_EXPAND);
         TreeView_Select(hwndTV, TreeView_GetRoot(hwndTV), TVGN_CARET);
         SendDlgItemMessage(hwnd, IDC_STYLEEDIT, EM_LIMITTEXT, COUNTOF(lexDefault.Styles[0].szValue) - 1, 0);
         MakeBitmapButton(hwnd, IDC_PREVSTYLE, g_hInstance, IDB_PREV);
@@ -4091,14 +3574,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEFORE), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEBACK), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEDEFAULT), TRUE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEBOLD),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEITALIC),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEUNDERLINE),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEEOLFILLED),FALSE);
-                  //CheckDlgButton(hwnd,IDC_STYLEBOLD,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEITALIC,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,BST_UNCHECKED);
                   SetDlgItemText(hwnd, IDC_STYLEEDIT, pCurrentLexer->szExtensions);
                 }
                 else
@@ -4109,14 +3584,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEFORE), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEBACK), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEDEFAULT), FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEBOLD),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEITALIC),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEUNDERLINE),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEEOLFILLED),FALSE);
-                  //CheckDlgButton(hwnd,IDC_STYLEBOLD,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEITALIC,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,BST_UNCHECKED);
                   SetDlgItemText(hwnd, IDC_STYLEEDIT, L"");
                 }
               }
@@ -4138,14 +3605,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEFORE), TRUE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEBACK), TRUE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEDEFAULT), TRUE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEBOLD),TRUE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEITALIC),TRUE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEUNDERLINE),TRUE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEEOLFILLED),TRUE);
-                  //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(pCurrentStyle->szValue,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-                  //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(pCurrentStyle->szValue,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-                  //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(pCurrentStyle->szValue,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-                  //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(pCurrentStyle->szValue,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
                   SetDlgItemText(hwnd, IDC_STYLEEDIT, pCurrentStyle->szValue);
                 }
                 else
@@ -4156,27 +3615,13 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEFORE), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEBACK), FALSE);
                   EnableWindow(GetDlgItem(hwnd, IDC_STYLEDEFAULT), FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEBOLD),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEITALIC),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEUNDERLINE),FALSE);
-                  //EnableWindow(GetDlgItem(hwnd,IDC_STYLEEOLFILLED),FALSE);
-                  //CheckDlgButton(hwnd,IDC_STYLEBOLD,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEITALIC,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,BST_UNCHECKED);
-                  //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,BST_UNCHECKED);
                   SetDlgItemText(hwnd, IDC_STYLEEDIT, L"");
                 }
               }
             }
                                break;
           case TVN_BEGINDRAG: {
-              //HIMAGELIST himl;
-              //if (pCurrentStyle)
-              //  GetDlgItemText(hwnd,IDC_STYLEEDIT,pCurrentStyle->szValue,COUNTOF(pCurrentStyle->szValue));
               TreeView_Select(hwndTV, lpnmtv->itemNew.hItem, TVGN_CARET);
-              //himl = TreeView_CreateDragImage(hwndTV,lpnmtv->itemNew.hItem);
-              //ImageList_BeginDrag(himl,0,0,0);
-              //ImageList_DragEnter(hwndTV,lpnmtv->ptDrag.x,lpnmtv->ptDrag.y);
               if (pCurrentStyle)
               {
                 DestroyCursor(SetCursor(LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_COPY))));
@@ -4198,25 +3643,19 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         {
           LONG xCur = LOWORD(lParam);
           LONG yCur = HIWORD(lParam);
-          //ImageList_DragMove(xCur,yCur);
-          //ImageList_DragShowNolock(FALSE);
           tvht.pt.x = xCur;
           tvht.pt.y = yCur;
-          //ClientToScreen(hwnd,&tvht.pt);
-          //ScreenToClient(hwndTV,&tvht.pt);
           MapWindowPoints(hwnd, hwndTV, &tvht.pt, 1);
           if ((htiTarget = TreeView_HitTest(hwndTV, &tvht)) != NULL &&
               TreeView_GetParent(hwndTV, htiTarget) != NULL)
           {
             TreeView_SelectDropTarget(hwndTV, htiTarget);
-            //TreeView_Expand(hwndTV,htiTarget,TVE_EXPAND);
             TreeView_EnsureVisible(hwndTV, htiTarget);
           }
           else
           {
             TreeView_SelectDropTarget(hwndTV, NULL);
           }
-          //ImageList_DragShowNolock(TRUE);
         }
       }
                        break;
@@ -4224,7 +3663,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         if (fDragging)
         {
           HTREEITEM htiTarget;
-          //ImageList_EndDrag();
           if (htiTarget = TreeView_GetDropHilight(hwndTV))
           {
             WCHAR tchCopy[256];
@@ -4236,10 +3674,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             {
               lstrcpy(pCurrentStyle->szValue, tchCopy);
               SetDlgItemText(hwnd, IDC_STYLEEDIT, tchCopy);
-              //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(tchCopy,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(tchCopy,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(tchCopy,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(tchCopy,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
             }
           }
           ReleaseCapture();
@@ -4251,7 +3685,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
     case WM_CANCELMODE: {
         if (fDragging)
         {
-          //ImageList_EndDrag();
           TreeView_SelectDropTarget(hwndTV, NULL);
           ReleaseCapture();
           DestroyCursor(SetCursor(LoadCursor(NULL, IDC_ARROW)));
@@ -4284,10 +3717,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                                  lstrcmpi(pCurrentStyle->pszName, L"2nd Default Style") == 0))
             {
               SetDlgItemText(hwnd, IDC_STYLEEDIT, tch);
-              //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(tch,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(tch,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(tch,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(tch,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
             }
           }
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_STYLEEDIT)), 1);
@@ -4300,10 +3729,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             if (Style_SelectColor(hwnd, TRUE, tch, COUNTOF(tch)))
             {
               SetDlgItemText(hwnd, IDC_STYLEEDIT, tch);
-              //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(tch,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(tch,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(tch,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(tch,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
             }
           }
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_STYLEEDIT)), 1);
@@ -4316,10 +3741,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             if (Style_SelectColor(hwnd, FALSE, tch, COUNTOF(tch)))
             {
               SetDlgItemText(hwnd, IDC_STYLEEDIT, tch);
-              //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(tch,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(tch,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(tch,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-              //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(tch,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
             }
           }
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_STYLEEDIT)), 1);
@@ -4329,10 +3750,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
           {
             lstrcpy(pCurrentStyle->szValue, pCurrentStyle->pszDefault);
             SetDlgItemText(hwnd, IDC_STYLEEDIT, pCurrentStyle->szValue);
-            //CheckDlgButton(hwnd,IDC_STYLEBOLD,(Style_StrGetAttribute(pCurrentStyle->szValue,L"bold") ? BST_CHECKED : BST_UNCHECKED));
-            //CheckDlgButton(hwnd,IDC_STYLEITALIC,(Style_StrGetAttribute(pCurrentStyle->szValue,L"italic") ? BST_CHECKED : BST_UNCHECKED));
-            //CheckDlgButton(hwnd,IDC_STYLEUNDERLINE,(Style_StrGetAttribute(pCurrentStyle->szValue,L"underline") ? BST_CHECKED : BST_UNCHECKED));
-            //CheckDlgButton(hwnd,IDC_STYLEEOLFILLED,(Style_StrGetAttribute(pCurrentStyle->szValue,L"eolfilled") ? BST_CHECKED : BST_UNCHECKED));
           }
           else if (pCurrentLexer)
           {
@@ -4341,42 +3758,6 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
           }
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_STYLEEDIT)), 1);
           break;
-          //case IDC_STYLEBOLD:
-          //  if (pCurrentStyle)
-          //  {
-          //    WCHAR tch[256];
-          //    GetDlgItemText(hwnd,IDC_STYLEEDIT,tch,COUNTOF(tch));
-          //    Style_StrSetAttribute(tch,COUNTOF(tch),L"bold",IsDlgButtonChecked(hwnd,IDC_STYLEBOLD));
-          //    SetDlgItemText(hwnd,IDC_STYLEEDIT,tch);
-          //  }
-          //  break;
-          //case IDC_STYLEITALIC:
-          //  if (pCurrentStyle)
-          //  {
-          //    WCHAR tch[256];
-          //    GetDlgItemText(hwnd,IDC_STYLEEDIT,tch,COUNTOF(tch));
-          //    Style_StrSetAttribute(tch,COUNTOF(tch),L"italic",IsDlgButtonChecked(hwnd,IDC_STYLEITALIC));
-          //    SetDlgItemText(hwnd,IDC_STYLEEDIT,tch);
-          //  }
-          //  break;
-          //case IDC_STYLEUNDERLINE:
-          //  if (pCurrentStyle)
-          //  {
-          //    WCHAR tch[256];
-          //    GetDlgItemText(hwnd,IDC_STYLEEDIT,tch,COUNTOF(tch));
-          //    Style_StrSetAttribute(tch,COUNTOF(tch),L"underline",IsDlgButtonChecked(hwnd,IDC_STYLEUNDERLINE));
-          //    SetDlgItemText(hwnd,IDC_STYLEEDIT,tch);
-          //  }
-          //  break;
-          //case IDC_STYLEEOLFILLED:
-          //  if (pCurrentStyle)
-          //  {
-          //    WCHAR tch[256];
-          //    GetDlgItemText(hwnd,IDC_STYLEEDIT,tch,COUNTOF(tch));
-          //    Style_StrSetAttribute(tch,COUNTOF(tch),L"eolfilled",IsDlgButtonChecked(hwnd,IDC_STYLEEOLFILLED));
-          //    SetDlgItemText(hwnd,IDC_STYLEEDIT,tch);
-          //  }
-          //  break;
         case IDC_STYLEEDIT: {
             if (HIWORD(wParam) == EN_CHANGE)
             {
@@ -4594,8 +3975,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         ListView_SetImageList(hwndLV,
                               (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
-        //SetExplorerTheme(hwndLV);
-        ListView_SetExtendedListViewStyle(hwndLV,/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(hwndLV, 0, &lvc);
         // Add lexers
         for (i = 0; i < NUMLEXERS; i++)
@@ -4673,7 +4053,6 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = mmiPtMinX;
         lpmmi->ptMinTrackSize.y = mmiPtMaxY;
-        //lpmmi->ptMaxTrackSize.y = mmiPtMaxY;
       }
                            return TRUE;
     case WM_NOTIFY: {

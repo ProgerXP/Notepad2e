@@ -86,8 +86,6 @@ __inline void EndWaitCursor()
 BOOL PrivateIsAppThemed();
 HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCWSTR);
 BOOL IsElevated();
-//BOOL SetExplorerTheme(HWND);
-
 BOOL BitmapMergeAlpha(HBITMAP, COLORREF);
 BOOL BitmapAlphaBlend(HBITMAP, COLORREF, BYTE);
 BOOL BitmapGrayScale(HBITMAP);
@@ -248,8 +246,6 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(
   WPARAM wParam,
   LPARAM lParam
   );
-
-VOID	HL_Move_Carret_Silently(BOOL up);
 
 VOID	HL_Grep(VOID* lpf, BOOL grep);
 
