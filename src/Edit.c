@@ -1133,8 +1133,6 @@ static INT UTF8_mbslen(LPCSTR source, INT byte_length)
          we only report the number of valid characters we have encountered
          to match the Windows behavior.
       */
-      //WARN("invalid byte 0x%02X in UTF-8 sequence, skipping it!\n",
-      //     byte);
       source++;
       byte_length--;
     }
@@ -1162,7 +1160,6 @@ BOOL EditLoadFile(
   BOOL   bReadSuccess;
   char *lpData;
   DWORD cbData;
-  //char  *cp;
   int _iDefaultEncoding;
   BOOL bBOM;
   BOOL bReverse = FALSE;
@@ -5256,7 +5253,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               SendDlgItemMessage(hwnd, LOWORD(wParam), CB_SETEDITSEL, 0, MAKELPARAM(lSelEnd, lSelEnd));
             }
           }
-                              break;
+          break;
         case IDC_FINDREGEXP:
           if (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED)
           {
@@ -5379,8 +5376,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
           else
           {
-            if (LOWORD(wParam) == IDOK
-                )
+            if (LOWORD(wParam) == IDOK)
             {
               bCloseDlg = FALSE;
             }
@@ -5558,7 +5554,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             }
           }
           break;
-  }
+      }
       return TRUE;
     case WM_SYSCOMMAND:
       if (wParam == SC_SAVEPOS)
@@ -6321,7 +6317,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
         CenterDlgInParent(hwnd);
       }
-                        return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -6390,7 +6386,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
                           (WPARAM)(GetDlgItem(hwnd, IDC_LINENUM)), 1);
             }
           }
-                   break;
+          break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
@@ -6421,15 +6417,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 //
 BOOL EditLinenumDlg(HWND hwnd)
 {
-  if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_LINENUM),
-                                   GetParent(hwnd), EditLinenumDlgProc, (LPARAM)hwnd))
-  {
-    return TRUE;
-  }
-  else
-  {
-    return FALSE;
-  }
+  return (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_LINENUM),
+                                       GetParent(hwnd), EditLinenumDlgProc, (LPARAM)hwnd));
 }
 
 //=============================================================================
@@ -6479,7 +6468,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
         CenterDlgInParent(hwnd);
       }
-                        return TRUE;
+      return TRUE;
     case WM_DESTROY:
       DeleteObject(hFontHover);
       return FALSE;
@@ -6512,7 +6501,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
           return (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE);
         }
       }
-                            break;
+      break;
     case WM_MOUSEMOVE: {
         POINT pt = { LOWORD(lParam), HIWORD(lParam) };
         HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
@@ -6542,7 +6531,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
           SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
         }
       }
-                       break;
+      break;
     case WM_LBUTTONDOWN: {
         POINT pt = { LOWORD(lParam), HIWORD(lParam) };
         HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
@@ -6555,7 +6544,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         }
         SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
       }
-                         break;
+      break;
     case WM_LBUTTONUP: {
         POINT pt = { LOWORD(lParam), HIWORD(lParam) };
         HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
@@ -6579,7 +6568,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         }
         SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
       }
-                       break;
+      break;
     case WM_CANCELMODE:
       if (id_capture != 0)
       {
@@ -6597,7 +6586,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
             GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
             EndDialog(hwnd, IDOK);
           }
-                   break;
+          break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
@@ -6644,7 +6633,7 @@ INT_PTR CALLBACK EditAlignDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         CheckRadioButton(hwnd, 100, 104, *piAlignMode + 100);
         CenterDlgInParent(hwnd);
       }
-                        return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -6727,7 +6716,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         CenterDlgInParent(hwnd);
       }
-                        return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -6775,13 +6764,13 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
               }
             }
           }
-                  break;
+          break;
         case IDOK: {
             GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
             GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
             EndDialog(hwnd, IDOK);
           }
-                   break;
+          break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
@@ -6921,7 +6910,6 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                   // if has closing brace & not short version
                   if (StrChr(_right_braces, *pwCur) && * (pwCur - 1) != L'/')
                   {
-                    //
                     while (open_tag_len--)
                     {
                       wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
@@ -7106,7 +7094,7 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         }
         CenterDlgInParent(hwnd);
       }
-                        return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -7146,7 +7134,7 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
             }
             EndDialog(hwnd, IDOK);
           }
-                   break;
+          break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
@@ -7521,8 +7509,8 @@ BOOL FileVars_ParseStr(char *pszData, char *pszName, char *pszValue, int cchValu
       if (*pvStart == ':' || *pvStart == '=')
       {
         break;
-  }
-}
+      }
+    }
     else
     {
       pvStart += lstrlenA(pszName);
@@ -7630,7 +7618,6 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
   HANDLE	hFind = INVALID_HANDLE_VALUE;
   WIN32_FIND_DATA	ffd;
   INT		cmp_res;
-  //
   *found_path = L'\0';
   filename = PathFindFileName(file);
   StrCpy(dirname, file);
@@ -7644,7 +7631,6 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
   }
   StrCpy(odn, dirname);
   StrCat(dirname, L"*");
-  //
   hFind = FindFirstFile(dirname, &ffd);
   if (INVALID_HANDLE_VALUE == hFind)
   {
@@ -7653,8 +7639,7 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
 #define _HL_COMPARE_FILES( F1 , F2 )  (HL_Compare_files(F1,F2))
   do
   {
-    if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        )
+    if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
       cmp_res = _HL_COMPARE_FILES(filename, ffd.cFileName);
       HL_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);

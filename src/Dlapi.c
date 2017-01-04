@@ -80,15 +80,6 @@ BOOL DirList_Init(HWND hwnd, LPCWSTR pszHeader)
 
   ListView_SetImageList(hwnd, hil, LVSIL_NORMAL);
 
-  // Initialize default icons - done in DirList_Fill()
-  //SHGetFileInfo(L"Icon",FILE_ATTRIBUTE_DIRECTORY,&shfi,sizeof(SHFILEINFO),
-  //  SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
-  //lpdl->iDefIconFolder = shfi.iIcon;
-
-  //SHGetFileInfo(L"Icon",FILE_ATTRIBUTE_NORMAL,&shfi,sizeof(SHFILEINFO),
-  //  SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
-  //lpdl->iDefIconFile = shfi.iIcon;
-
   lpdl->iDefIconFolder = 0;
   lpdl->iDefIconFile = 0;
 
@@ -144,7 +135,6 @@ BOOL DirList_StartIconThread(HWND hwnd)
   DirList_TerminateIconThread(hwnd);
 
   ResetEvent(lpdl->hExitThread);
-  //ResetEvent(lpdl->hTerminatedThread);
 
   CreateThread(NULL, 0, DirList_IconThread, (LPVOID)lpdl, 0, &dwtid);
 
@@ -163,7 +153,6 @@ BOOL DirList_TerminateIconThread(HWND hwnd)
 
   SetEvent(lpdl->hExitThread);
 
-  //WaitForSingleObject(lpdl->hTerminatedThread,INFINITE);
   while (WaitForSingleObject(lpdl->hTerminatedThread, 0) != WAIT_OBJECT_0) {
     MSG msg;
     if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
@@ -241,14 +230,6 @@ int DirList_Fill(HWND hwnd, LPCWSTR lpszDir, DWORD grfFlags, LPCWSTR lpszFileSpe
   lvi.pszText = LPSTR_TEXTCALLBACK;
   lvi.cchTextMax = MAX_PATH;
   lvi.iImage = I_IMAGECALLBACK;
-
-  // Convert Directory to a UNICODE string
-  /*MultiByteToWideChar(CP_ACP,
-                      MB_PRECOMPOSED,
-                      lpszDir,
-                      -1,
-                      wszDir,
-                      MAX_PATH);*/
   lstrcpy(wszDir, lpszDir);
 
   // Get Desktop Folder
@@ -662,16 +643,7 @@ int DirList_GetItem(HWND hwnd, int iItem, LPDLITEM lpdli)
         &fd,
         sizeof(WIN32_FIND_DATA)))
 
-      lpdli->ntype = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ?
-      DLE_DIR : DLE_FILE;
-
-/*lplvid->lpsf->lpVtbl->GetAttributesOf(
-                        lplvid->lpsf,
-                        1,
-                        &lplvid->pidl,
-                        &dwAttributes);
-
-lpdli->ntype = (dwAttributes & SFGAO_FOLDER) ? DLE_DIR : DLE_FILE;*/
+      lpdli->ntype = (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) ? DLE_DIR : DLE_FILE;
   }
 
   return iItem;
@@ -1033,7 +1005,6 @@ int DriveBox_Fill(HWND hwnd)
                   di.dwDescriptionId <= SHDID_COMPUTER_OTHER)) {
                 lpdcid = CoTaskMemAlloc(sizeof(DC_ITEMDATA));
 
-                //lpdcid->pidl = IL_Copy(pidlEntry);
                 lpdcid->pidl = pidlEntry;
                 lpdcid->lpsf = lpsf;
 
@@ -1360,35 +1331,7 @@ BOOL IL_GetDisplayName(LPSHELLFOLDER lpsf,
       pidl,
       dwFlags,
       &str)) {
-// Shlwapi.dll provides new function:
     return StrRetToBuf(&str, pidl, lpszDisplayName, nDisplayName);
-    // ...but I suppose my version is faster ;-)
-    /*switch (str.uType)
-    {
-      case STRRET_WSTR:
-        WideCharToMultiByte(CP_ACP,
-                            0,
-                            str.pOleStr,
-                            -1,
-                            lpszDisplayName,
-                            nDisplayName,
-                            NULL,
-                            NULL);
-        CoTaskMemFree(str.pOleStr);
-        break;
-
-      case STRRET_OFFSET:
-        lstrcpyn(lpszDisplayName,
-                 ((WCHAR *)(pidl)) + str.uOffset,
-                 nDisplayName);
-        break;
-
-      case STRRET_CSTR:
-        lstrcpyn(lpszDisplayName,str.cStr,nDisplayName);
-        break;
-    }
-
-    return TRUE;*/
   }
 
   return FALSE;

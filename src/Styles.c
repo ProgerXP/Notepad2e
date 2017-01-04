@@ -1760,7 +1760,7 @@ BOOL Style_Import(HWND hwnd)
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
   ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE /*| OFN_NODEREFERENCELINKS*/;
+    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE;
   if (GetOpenFileName(&ofn))
   {
     int i, iLexer;
@@ -2313,7 +2313,6 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     }
   }
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
-  // Save current lexer
   pLexCurrent = pLexNew;
 }
 
@@ -2584,7 +2583,6 @@ void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile)
       bFound = TRUE;
     }
   }
-  // Apply the new lexer
   Style_SetLexer(hwnd, pLexNew);
 }
 
@@ -3619,7 +3617,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
                 }
               }
             }
-                               break;
+            break;
           case TVN_BEGINDRAG: {
               TreeView_Select(hwndTV, lpnmtv->itemNew.hItem, TVGN_CARET);
               if (pCurrentStyle)
@@ -3658,7 +3656,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
           }
         }
       }
-                       break;
+      break;
     case WM_LBUTTONUP: {
         if (fDragging)
         {
@@ -3681,7 +3679,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
           fDragging = FALSE;
         }
       }
-                       break;
+      break;
     case WM_CANCELMODE: {
         if (fDragging)
         {
@@ -3691,7 +3689,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
           fDragging = FALSE;
         }
       }
-                        break;
+      break;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -3772,7 +3770,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
               MakeColorPickButton(hwnd, IDC_STYLEBACK, g_hInstance, cr);
             }
           }
-                            break;
+          break;
         case IDC_IMPORT: {
             HWND hwndTV = GetDlgItem(hwnd, IDC_STYLELIST);
             if (pCurrentStyle)
@@ -3799,7 +3797,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
               TreeView_Select(hwndTV, TreeView_GetRoot(hwndTV), TVGN_CARET);
             }
           }
-                         break;
+          break;
         case IDC_EXPORT: {
             if (pCurrentStyle)
             {
@@ -3814,7 +3812,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             }
             Style_Export(hwnd);
           }
-                         break;
+          break;
         case IDC_PREVIEW: {
             // Hack from outside
             extern HWND hwndEdit;
@@ -3833,7 +3831,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             Style_SetLexer(hwndEdit, pLexCurrent);
             UpdateLineNumberWidth();
           }
-                          break;
+          break;
         case IDOK:
           if (pCurrentStyle)
           {
@@ -3916,7 +3914,6 @@ void Style_ConfigDlg(HWND hwnd)
   {
     LocalFree(StyleBackup[c]);
   }
-  // Apply new (or previous) Styles
   Style_SetLexer(hwnd, pLexCurrent);
 }
 
@@ -4048,13 +4045,13 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         SetWindowPos(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, rc.left, rc.top + dyClient, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         InvalidateRect(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, TRUE);
       }
-                  return TRUE;
+      return TRUE;
     case WM_GETMINMAXINFO: {
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = mmiPtMinX;
         lpmmi->ptMinTrackSize.y = mmiPtMaxY;
       }
-                           return TRUE;
+      return TRUE;
     case WM_NOTIFY: {
         if (((LPNMHDR)(lParam))->idFrom == IDC_STYLELIST)
         {
@@ -4077,11 +4074,11 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
                 EnableWindow(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), i != -1);
                 EnableWindow(GetDlgItem(hwnd, IDOK), i != -1);
               }
-                                 break;
+              break;
           }
         }
       }
-                    return TRUE;
+      return TRUE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -4107,7 +4104,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
               EndDialog(hwnd, IDOK);
             }
           }
-                   break;
+          break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;

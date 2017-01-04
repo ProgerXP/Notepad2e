@@ -84,8 +84,6 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
   POINT ptPage;
   POINT ptDpi;
 
-  //RECT rectSetup;
-
   TEXTMETRIC tm;
 
   int headerLineHeight;
@@ -353,7 +351,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
 
       if (iPrintHeader < 3) {
         ExtTextOut(hdc, frPrint.rc.left + 5, frPrint.rc.top - headerLineHeight / 2,
-                   /*ETO_OPAQUE*/0, &rcw, pszDocTitle,
+                   0, &rcw, pszDocTitle,
                    lstrlen(pszDocTitle), NULL);
       }
 
@@ -363,7 +361,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
         SelectObject(hdc, fontFooter);
         GetTextExtentPoint32(hdc, dateString, lstrlen(dateString), &sizeInfo);
         ExtTextOut(hdc, frPrint.rc.right - 5 - sizeInfo.cx, frPrint.rc.top - headerLineHeight / 2,
-                   /*ETO_OPAQUE*/0, &rcw, dateString,
+                   0, &rcw, dateString,
                    lstrlen(dateString), NULL);
       }
 
@@ -395,7 +393,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
         SIZE sizeFooter;
         GetTextExtentPoint32(hdc, pageString, lstrlen(pageString), &sizeFooter);
         ExtTextOut(hdc, frPrint.rc.right - 5 - sizeFooter.cx, frPrint.rc.bottom + footerLineHeight / 2,
-                   /*ETO_OPAQUE*/0, &rcw, pageString,
+                   0, &rcw, pageString,
                    lstrlen(pageString), NULL);
 
         SetTextAlign(hdc, ta);

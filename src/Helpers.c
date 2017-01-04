@@ -2635,11 +2635,6 @@ BOOL CALLBACK HL_Enum_proc(
       && g_hwnd != hwnd
       )
   {
-#ifdef _DEBUG
-    char title[0xff + 1];
-    GetWindowTextA(hwnd, title, 0xff);
-    HL_Trace("found (%s [%d]) ", title, hwnd);
-#endif
     PostMessage(hwnd, HWM_RELOAD_SETTINGS, 0, 0);
   }
   return TRUE;
