@@ -2804,6 +2804,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                                                  (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0);
         const int iLinePosStart = (int)SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iLineSelStart, 0);
         const int iLinePosEnd = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLineSelStart, 0);
+        const BOOL bLineStartSelection = (iLinePosStart == iSelStart);
         const BOOL bSingleLineSelection = (iLineSelStart == iLineSelEnd);
         const char ch = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iLinePosStart, 0);
         if ((ch == '\t') || (ch == ' '))
@@ -2819,7 +2820,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           if (bSingleLineSelection)
           {
             const int iLinePosEndNew = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLineSelStart, 0);
-            const int iSelPosNew = iSelStart - (iLinePosEnd - iLinePosEndNew);
+            const int iSelPosNew = iSelStart - (bLineStartSelection ? 0 : (iLinePosEnd - iLinePosEndNew));
             SendMessage(hwndEdit, SCI_SETSEL, iSelPosNew, iSelPosNew);
           }
           SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
