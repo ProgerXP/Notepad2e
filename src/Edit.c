@@ -2843,7 +2843,6 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
   const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
   SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
-  SendMessage(hwndEdit, SCI_ADDUNDOACTION, SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0), 0);
   const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
   LPSTR pszPrefixText = NULL;
   BOOL bIsEmptyPrefix = FALSE;
