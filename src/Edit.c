@@ -3920,7 +3920,7 @@ void EditStripTrailingBlanks(HWND hwnd, BOOL bIgnoreSelection)
   {
     if (SC_SEL_RECTANGLE != SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
     {
-      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP | SCFIND_CXX11REGEX, 0, 0, 0, 0, 0, hwnd };
+      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, hwnd };
       EditReplaceAllInSelection(hwnd, &efrTrim, FALSE);
     }
     else
@@ -5319,7 +5319,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
           if (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED)
           {
-            lpefr->fuFlags |= SCFIND_REGEXP | SCFIND_CXX11REGEX | SCFIND_POSIX;
+            lpefr->fuFlags |= SCFIND_REGEXP | SCFIND_POSIX;
           }
           lpefr->bTransformBS =
             (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED) ? TRUE : FALSE;
