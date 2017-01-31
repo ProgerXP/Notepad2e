@@ -299,6 +299,12 @@ BEGIN
             MENUITEM "&Minimize Notepad2",          IDM_VIEW_ESCMINIMIZE
             MENUITEM "E&xit Notepad2",              IDM_VIEW_ESCEXIT
         END
+        POPUP "Evaluate Math Expressions"
+        BEGIN
+            MENUITEM "&Disabled",                   ID_SETTINGS_EVAL_DISABLED
+            MENUITEM "Current &Selection",          ID_SETTINGS_EVAL_SELECTION
+            MENUITEM "Current &Line",               ID_SETTINGS_EVAL_LINE
+        END
         MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Ctrl+Wheel Scroll",           ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS

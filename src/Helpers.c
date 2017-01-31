@@ -49,6 +49,7 @@ BOOL	_hl_skip_highlight = FALSE;
 BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
 BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
+int iEvaluateMathExpression = 0;
 
 
 UINT	_hl_ctx_menu_type = 0;
@@ -2420,6 +2421,7 @@ VOID HL_LoadINI()
   iFindWordMatchCase = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   iFindWordWrapAround = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   bMoveCaretOnRightClick = IniGetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
+  iEvaluateMathExpression = IniGetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
 }
 
 VOID HL_SaveINI()
@@ -2436,6 +2438,7 @@ VOID HL_SaveINI()
   IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
   IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   IniSetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
 }
 
 VOID HL_Release()

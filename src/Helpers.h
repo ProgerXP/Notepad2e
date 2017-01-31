@@ -262,6 +262,7 @@ BOOL	hl_isspace(WCHAR ch);
 #define INI_SETTING_FIND_WORD_MATCH_CASE  L"FindWordMatchCase"
 #define INI_SETTING_FIND_WRAP_AROUND  L"FindWordWrapAround"
 #define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
+#define INI_SETTING_MATH_EVAL L"MathEval"
 
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG

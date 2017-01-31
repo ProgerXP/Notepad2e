@@ -37,6 +37,9 @@
 #define ID_SPECIAL_ESCAPEHTML           47
 #define ID_BLOCK_UNWRAPQUOTESATCURSOR   49
 #define QUOTE                           50
+#define ID_SETTINGS_EVAL_DISABLED       51
+#define ID_SETTINGS_EVAL_SELECTION      52
+#define ID_SETTINGS_EVAL_LINE           53
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100

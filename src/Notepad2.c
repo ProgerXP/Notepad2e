@@ -205,6 +205,7 @@ extern	BOOL		b_Hl_use_prefix_in_open_dialog;
 extern	BOOL		b_HL_edit_selection;
 extern	BOOL		b_HL_ctrl_wheel_scroll;
 extern  BOOL    bMoveCaretOnRightClick;
+extern  int     iEvaluateMathExpression;
 extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 typedef struct _wi
@@ -2027,6 +2028,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll);
   CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == 0);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == 1);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == 2);
 }
 
 //=============================================================================
@@ -3852,6 +3856,18 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case ID_SETTINGS_MOVE_CARET_ON_RCLICK:
       bMoveCaretOnRightClick = !bMoveCaretOnRightClick;
       SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+      break;
+    case ID_SETTINGS_EVAL_DISABLED:
+      iEvaluateMathExpression = 0;
+      UpdateStatusbar();
+      break;
+    case ID_SETTINGS_EVAL_SELECTION:
+      iEvaluateMathExpression = 1;
+      UpdateStatusbar();
+      break;
+    case ID_SETTINGS_EVAL_LINE:
+      iEvaluateMathExpression = 2;
+      UpdateStatusbar();
       break;
     case IDM_HELP_ABOUT:
       ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT),
@@ -6154,6 +6170,46 @@ void int2bin(unsigned int val, LPWSTR binString)
 
   binString[bitCount] = 0; //Null terminator
 }
+
+BOOL IsExpressionEvaluationEnabled()
+{
+  switch (iEvaluateMathExpression)
+  {
+    case 0:
+    default:
+      return FALSE;
+    case 1:
+    case 2:
+      return TRUE;
+  }
+}
+
+int GetExpressionTextRange(int* piStart, int* piEnd)
+{
+  int iLength = 0;
+  *piStart = *piEnd = 0;
+  switch (iEvaluateMathExpression)
+  {
+    case 0:
+      break;
+    case 1:
+      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+      break;
+    case 2:
+      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+      if (*piEnd == *piStart)
+      {
+        const int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, *piStart, 0);
+        *piStart = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0);
+        *piEnd = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iCurLine, 0);
+      }
+      break;
+  }
+  iLength = *piEnd - *piStart;
+  return iLength;
+}
 //=============================================================================
 //
 //  UpdateStatusbar()
@@ -6217,14 +6273,16 @@ void UpdateStatusbar()
   }
   
   BOOL docSizeOK = FALSE;
-  const int iSelCount =
-    (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-    (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-
-  if ((iSelCount > 0) && (iSelCount <= MAX_EXPRESSION_LENGTH))
+  int iPosStart = 0;
+  int iPosEnd = 0;
+  int iCount = 0;
+  if (IsExpressionEvaluationEnabled() &&
+      ((iCount = GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
+      (iCount <= MAX_EXPRESSION_LENGTH))
   {
-    char *pszText = LocalAlloc(LPTR, iSelCount + 1);
-    SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)pszText);
+    char *pszText = LocalAlloc(LPTR, iCount + 1);
+    struct TextRange tr = { { iPosStart, iPosEnd }, pszText };
+    SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
     if ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue))
     {
       double exprValue = 0.0;
