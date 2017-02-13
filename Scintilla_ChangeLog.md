@@ -305,23 +305,26 @@ ScintillaBase::ScintillaBase() {
   
 [/**Implement Notepad's right click behavior #54**]  
   
-[**Always treat Shift+Tab as unindent #61**]
+[**Always treat Shift+Tab as unindent #61**]  
 [scintilla/src/Editor.cxx]  
-Change the code in Editor::Indent(bool forwards):  
-
-Replace condition code block:  
-if (pdoc->GetColumn(caretPosition) <= pdoc->GetLineIndentation(lineCurrentPos) &&
-						pdoc->tabIndents) {
-					int indentation = pdoc->GetLineIndentation(lineCurrentPos);
-					int indentationStep = pdoc->IndentSize();
-					const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-					sel.Range(r) = SelectionRange(posSelect);
-				}
-with  
-if (pdoc->tabIndents) {
-					int indentation = pdoc->GetLineIndentation(lineCurrentPos);
-					int indentationStep = pdoc->IndentSize();
-					const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-				}
+Change the code in Editor::Indent(bool forwards): replace condition code block
+    
+    if (pdoc->GetColumn(caretPosition) <= pdoc->GetLineIndentation(lineCurrentPos) &&  
+                                                pdoc->tabIndents) {  
+            int indentation = pdoc->GetLineIndentation(lineCurrentPos);  
+            int indentationStep = pdoc->IndentSize();  
+            const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);  
+            sel.Range(r) = SelectionRange(posSelect);  
+    }    
+    
+with:  
+  
+    if (pdoc->tabIndents) {  
+            int indentation = pdoc->GetLineIndentation(lineCurrentPos);  
+            int indentationStep = pdoc->IndentSize();  
+            const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);  
+    }  
+  
+  
 [scintilla/src/Editor.cxx]  
-[/**Always treat Shift+Tab as unindent #61**]
+[/**Always treat Shift+Tab as unindent #61**]  
