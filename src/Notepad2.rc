@@ -214,7 +214,7 @@ BEGIN
             MENUITEM "Stream &Comment\tCtrl+Shift+Q", IDM_EDIT_STREAMCOMMENT
             MENUITEM SEPARATOR
             MENUITEM "URL &Encode\tCtrl+Shift+E",   IDM_EDIT_URLENCODE
-            MENUITEM "URL &Decode\tCtrl+Shift+R",   IDM_EDIT_URLDECODE
+            MENUITEM "URL &Decode\tCtrl+Shift+Alt+E", IDM_EDIT_URLDECODE
             MENUITEM SEPARATOR
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
@@ -393,6 +393,7 @@ BEGIN
     "E",            IDM_EDIT_COPYADD,       VIRTKEY, CONTROL, NOINVERT
     "E",            IDM_EDIT_ESCAPECCHARS,  VIRTKEY, CONTROL, ALT, NOINVERT
     "E",            IDM_EDIT_URLENCODE,     VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "E",            IDM_EDIT_URLDECODE,     VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     "F",            IDM_EDIT_FIND,          VIRTKEY, CONTROL, NOINVERT
     "F",            CMD_RECODEDEFAULT,      VIRTKEY, SHIFT, CONTROL, NOINVERT
     "G",            IDM_EDIT_GOTOLINE,      VIRTKEY, CONTROL, NOINVERT
