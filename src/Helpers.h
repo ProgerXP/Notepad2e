@@ -263,6 +263,7 @@ BOOL	hl_isspace(WCHAR ch);
 #define INI_SETTING_FIND_WRAP_AROUND  L"FindWordWrapAround"
 #define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
 #define INI_SETTING_MATH_EVAL L"MathEval"
+#define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG
@@ -281,4 +282,12 @@ BOOL	hl_isspace(WCHAR ch);
 BOOL SetClipboardText(const HWND hwnd, const wchar_t* text);
 BOOL ASCIItoUCS2(const char* lpSrc, wchar_t* lpDest, const int maxDest, const UINT nCodePage);
 
+typedef enum
+{
+  ELI_HIDE = 0,
+  ELI_SHOW,
+  ELI_SHOW_NON_US
+} ELanguageIndicatorMode;
+
+void UpdateWindowTitle(HWND hwnd);
 ///   End of Helpers.h   \\\

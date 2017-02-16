@@ -292,6 +292,10 @@ BEGIN
             MENUITEM "Filename and &Directory",     IDM_VIEW_SHOWFILENAMEFIRST
             MENUITEM "Full &Pathname",              IDM_VIEW_SHOWFULLPATH
             MENUITEM "&Text Excerpt\tCtrl+9",       IDM_VIEW_SHOWEXCERPT
+            MENUITEM SEPARATOR
+            MENUITEM "&No Language Indicator",      IDM_VIEW_NOLANGUAGEINDICATOR
+            MENUITEM "&Show Language Indicator",    IDM_VIEW_SHOWLANGUAGEINDICATOR
+            MENUITEM "Show Language Indicator (non-&US)", IDM_VIEW_SHOWLANGUAGEINDICATORNONUS
         END
         POPUP "Esc &Key Function"
         BEGIN

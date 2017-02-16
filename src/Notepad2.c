@@ -60,6 +60,7 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
+HHOOK     hShellHook = NULL;
 
 typedef enum
 {
@@ -206,6 +207,7 @@ extern	BOOL		b_HL_edit_selection;
 extern	BOOL		b_HL_ctrl_wheel_scroll;
 extern  BOOL    bMoveCaretOnRightClick;
 extern  int     iEvaluateMathExpression;
+extern  ELanguageIndicatorMode iShowLanguageInTitle;
 extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 typedef struct _wi
@@ -468,11 +470,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
       DispatchMessage(&msg);
     }
   }
-  // Save Settings is done elsewhere
-  Scintilla_ReleaseResources();
-  //
-  HL_Release();
-  HL_SaveINI();
+  ExitInstance();
   //
   UnregisterClass(wchWndClass, hInstance);
   if (hModUxTheme)
@@ -503,6 +501,19 @@ BOOL InitApplication(HINSTANCE hInstance)
   wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAINWND);
   wc.lpszClassName = wchWndClass;
   return RegisterClass(&wc);
+}
+
+LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+  if (nCode < 0)
+  {
+    return CallNextHookEx(hShellHook, nCode, wParam, lParam);
+  }
+  if (nCode == HSHELL_LANGUAGE)
+  {
+      PostMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
+  }
+  return 0;
 }
 
 //=============================================================================
@@ -626,6 +637,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   }
   memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
   memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
+  hShellHook = SetWindowsHookEx(WH_SHELL, ShellProc, NULL, GetCurrentThreadId());
   hwndMain = CreateWindowEx(
     0,
     wchWndClass,
@@ -842,6 +854,17 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   return (hwndMain);
 }
 
+void ExitInstance()
+{
+  if (hShellHook)
+  {
+    UnhookWindowsHookEx(hShellHook);
+  }
+  Scintilla_ReleaseResources();
+  HL_Release();
+  HL_SaveINI();
+}
+
 void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler)
 {
   if (timerIDPaneSizeClick > 0)
@@ -986,6 +1009,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       // Reinitialize theme-dependent values and resize windows
     case WM_THEMECHANGED:
       MsgThemeChanged(hwnd, wParam, lParam);
+      break;
+    case WM_INPUTLANGCHANGE:
+      UpdateWindowTitle(hwnd);
       break;
       // update Scintilla colors
     case WM_SYSCOLORCHANGE: {
@@ -1837,6 +1863,37 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   }
 }
 
+int GetCurrentShowTitleMenuID()
+{
+  if (lstrlen(szTitleExcerpt))
+  {
+    return IDM_VIEW_SHOWEXCERPT;
+  }
+  else switch (iPathNameFormat)
+  {
+    case 0:
+      return IDM_VIEW_SHOWFILENAMEONLY;
+    case 1:
+      return IDM_VIEW_SHOWFILENAMEFIRST;
+    default:
+      return IDM_VIEW_SHOWFULLPATH;
+  }
+}
+
+int GetCurrentLanguageIndicatorMenuID()
+{
+  switch (iShowLanguageInTitle)
+  {
+    case ELI_HIDE:
+      return IDM_VIEW_NOLANGUAGEINDICATOR;
+    case ELI_SHOW:
+      return IDM_VIEW_SHOWLANGUAGEINDICATOR;
+    case ELI_SHOW_NON_US:
+      return IDM_VIEW_SHOWLANGUAGEINDICATORNONUS;
+    default:
+      return 0;
+  }
+}
 //=============================================================================
 //
 //  MsgInitMenu() - Handles WM_INITMENU
@@ -1986,23 +2043,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, bSaveFindReplace);
   CheckCmd(hmenu, IDM_VIEW_SAVEBEFORERUNNINGTOOLS, bSaveBeforeRunningTools);
   CheckCmd(hmenu, IDM_VIEW_CHANGENOTIFY, iFileWatchingMode);
-  if (lstrlen(szTitleExcerpt))
-  {
-    i = IDM_VIEW_SHOWEXCERPT;
-  }
-  else if (iPathNameFormat == 0)
-  {
-    i = IDM_VIEW_SHOWFILENAMEONLY;
-  }
-  else if (iPathNameFormat == 1)
-  {
-    i = IDM_VIEW_SHOWFILENAMEFIRST;
-  }
-  else
-  {
-    i = IDM_VIEW_SHOWFULLPATH;
-  }
-  CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, i, MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
   if (iEscFunction == 1)
   {
     i = IDM_VIEW_ESCMINIMIZE;
@@ -3759,6 +3801,18 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
                      iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                      IDS_READONLY, bReadOnly, szTitleExcerpt);
+      break;
+    case IDM_VIEW_NOLANGUAGEINDICATOR:
+      iShowLanguageInTitle = ELI_HIDE;
+      UpdateWindowTitle(hwnd);
+      break;
+    case IDM_VIEW_SHOWLANGUAGEINDICATOR:
+      iShowLanguageInTitle = ELI_SHOW;
+      UpdateWindowTitle(hwnd);
+      break;
+    case IDM_VIEW_SHOWLANGUAGEINDICATORNONUS:
+      iShowLanguageInTitle = ELI_SHOW_NON_US;
+      UpdateWindowTitle(hwnd);
       break;
     case IDM_VIEW_NOSAVERECENT:
       bSaveRecentFiles = (bSaveRecentFiles) ? FALSE : TRUE;

@@ -50,6 +50,7 @@ BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
 BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
 int iEvaluateMathExpression = 0;
+ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
 
 
 UINT	_hl_ctx_menu_type = 0;
@@ -373,6 +374,37 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
   return (fFound);
 }
 
+// recent window title params
+UINT _uIDAppName;
+BOOL _bIsElevated;
+UINT _uIDUntitled;
+WCHAR _lpszFile[MAX_PATH * 2];
+int _iFormat;
+BOOL _bModified;
+UINT _uIDReadOnly;
+BOOL _bReadOnly;
+WCHAR _lpszExcerpt[MAX_PATH * 2];
+
+void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+                       LPCWSTR lpszFile, int iFormat, BOOL bModified,
+                       UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
+{
+  _uIDAppName = uIDAppName;
+  _bIsElevated = bIsElevated;
+  _uIDUntitled = uIDUntitled;
+  StrCpyW(_lpszFile, lpszFile);
+  _iFormat = iFormat;
+  _bModified = bModified;
+  _uIDReadOnly = uIDReadOnly;
+  _bReadOnly = bReadOnly;
+  StrCpyW(_lpszExcerpt, lpszExcerpt);
+}
+
+void UpdateWindowTitle(HWND hwnd)
+{
+  SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
+}
+
 //=============================================================================
 //
 //  SetWindowTitle()
@@ -383,6 +415,8 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
                     LPCWSTR lpszFile, int iFormat, BOOL bModified,
                     UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
+  SaveWindowTitleParams(uIDAppName, bIsElevated, uIDUntitled, lpszFile, iFormat, bModified, uIDReadOnly, bReadOnly, lpszExcerpt);
+
   WCHAR szUntitled[128];
   WCHAR szExcrptQuot[256];
   WCHAR szExcrptFmt[32];
@@ -468,6 +502,29 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
   }
   lstrcat(szTitle, pszSep);
   lstrcat(szTitle, szAppName);
+  switch (iShowLanguageInTitle)
+  {
+    case ELI_HIDE:
+      break;
+    case ELI_SHOW:
+    case ELI_SHOW_NON_US:
+      {
+        WCHAR lang[MAX_PATH];
+        const HKL hkl = GetKeyboardLayout(0);
+        const int len = GetLocaleInfo((LCID)LOWORD(hkl), LOCALE_SISO639LANGNAME, lang, _countof(lang)-1);
+        for (int i = 0; i < len-1; ++i)
+        {
+          lang[i] = toupper(lang[i]);
+        }
+        if ((iShowLanguageInTitle == ELI_SHOW) || (lstrcmp(lang, L"EN") != 0))
+        {
+          lstrcat(szTitle, L" [");
+          lstrcat(szTitle, lang);
+          lstrcat(szTitle, L"]");
+        }
+      }
+      break;
+  }
   return SetWindowText(hwnd, szTitle);
 }
 
@@ -2422,6 +2479,7 @@ VOID HL_LoadINI()
   iFindWordWrapAround = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   bMoveCaretOnRightClick = IniGetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   iEvaluateMathExpression = IniGetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
+  iShowLanguageInTitle = IniGetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
 }
 
 VOID HL_SaveINI()
@@ -2439,6 +2497,7 @@ VOID HL_SaveINI()
   IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
   IniSetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   IniSetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
 }
 
 VOID HL_Release()
