@@ -19,7 +19,7 @@ RECT GetStatusBarPaneRect(const HWND hwndStatusBar, const int nPane)
   return rcPane;
 }
 
-HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const int nCurrentValue, const int MaxValue, const BOOL bSmooth, const int nPane)
+HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const long nCurrentValue, const long MaxValue, const BOOL bSmooth, const int nPane)
 {
 	BOOL bSuccess = FALSE;
 
@@ -58,7 +58,7 @@ HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const int nCurrentValue, c
 	return hwnd;
 }
 
-BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const int nLower, const int nUpper, const int nStep)
+BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const long nLower, const long nUpper, const long nStep)
 {	 
 	if (!IsWindow(hwnd))
 		return FALSE;
@@ -69,12 +69,15 @@ BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const int nLower, const int nUppe
 	return TRUE;
 }
 
-int InlineProgressBarCtrl_SetStep(HWND hwnd, const int nStep)
+int InlineProgressBarCtrl_SetStep(HWND hwnd, const long nStep)
 { 
 	if (!IsWindow(hwnd))
 		return 0;
 
-	ModifyStyle(hwnd, 0, WS_VISIBLE);
+  if (!IsWindowVisible(hwnd))
+  {
+    ModifyStyle(hwnd, 0, WS_VISIBLE);
+  }
   return (int)SendMessage(hwnd, PBM_SETSTEP, nStep, 0);
 }
 
@@ -86,7 +89,7 @@ void InlineProgressBarCtrl_StepIt(HWND hwnd)
   SendMessage(hwnd, PBM_STEPIT, 0, 0);
 }
 
-void InlineProgressBarCtrl_SetPos(HWND hwnd, const int nValue)
+void InlineProgressBarCtrl_SetPos(HWND hwnd, const long nValue)
 {
   if (!IsWindow(hwnd))
     return;
