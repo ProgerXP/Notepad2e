@@ -22,6 +22,7 @@
 #include <shlwapi.h>
 #include <commctrl.h>
 #include <commdlg.h>
+#include <cassert>
 #include <stdio.h>
 #include <string.h>
 #include <limits.h>
@@ -34,7 +35,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "HLSelection.h"
-#include <cassert>
+#include "StrToHex.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -2098,47 +2099,54 @@ void HL_Strip_html_tags(HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
+BOOL IsSelectionModeValid(HWND hwnd)
+{
+  if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+  {
+    MsgBox(MBINFO, IDS_SELRECT);
+    return FALSE;
+  }
+  return TRUE;
+}
+
 //=============================================================================
 //
 //  EditChar2Hex()
 //
 void EditChar2Hex(HWND hwnd)
 {
-  if (SC_SEL_RECTANGLE != SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+  if (!IsSelectionModeValid(hwnd))
   {
-    int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-    int iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
-    if (SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0) ==
-        SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelEnd, 0) &&
-        iSelEnd == (int)SendMessage(hwnd, SCI_POSITIONAFTER, (WPARAM)iSelStart, 0))
+    return;
+  }
+  int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  int iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+  if (SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0) ==
+      SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelEnd, 0) &&
+      iSelEnd == (int)SendMessage(hwnd, SCI_POSITIONAFTER, (WPARAM)iSelStart, 0))
+  {
+    char  ch[32];
+    WCHAR wch[32];
+    UINT  cp = (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0);
+    SendMessage(hwnd, SCI_GETSELTEXT, 0, (LPARAM)ch);
+    if (ch[0] == 0)
     {
-      char  ch[32];
-      WCHAR wch[32];
-      UINT  cp = (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0);
-      SendMessage(hwnd, SCI_GETSELTEXT, 0, (LPARAM)ch);
-      if (ch[0] == 0)
+      lstrcpyA(ch, "\\x00");
+    }
+    else
+    {
+      MultiByteToWideChar(cp, 0, ch, -1, wch, COUNTOF(wch));
+      if (wch[0] <= 0xFF)
       {
-        lstrcpyA(ch, "\\x00");
+        wsprintfA(ch, "\\x%02X", wch[0] & 0xFF);
       }
       else
       {
-        MultiByteToWideChar(cp, 0, ch, -1, wch, COUNTOF(wch));
-        if (wch[0] <= 0xFF)
-        {
-          wsprintfA(ch, "\\x%02X", wch[0] & 0xFF);
-        }
-        else
-        {
-          wsprintfA(ch, "\\u%04X", wch[0]);
-        }
+        wsprintfA(ch, "\\u%04X", wch[0]);
       }
-      SendMessage(hwnd, SCI_REPLACESEL, 0, (LPARAM)ch);
-      SendMessage(hwnd, SCI_SETSEL, iSelStart, iSelStart + lstrlenA(ch));
     }
-  }
-  else
-  {
-    MsgBox(MBINFO, IDS_SELRECT);
+    SendMessage(hwnd, SCI_REPLACESEL, 0, (LPARAM)ch);
+    SendMessage(hwnd, SCI_SETSEL, iSelStart, iSelStart + lstrlenA(ch));
   }
 }
 
@@ -2148,63 +2156,78 @@ void EditChar2Hex(HWND hwnd)
 //
 void EditHex2Char(HWND hwnd)
 {
-  if (SC_SEL_RECTANGLE != SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+  if (!IsSelectionModeValid(hwnd))
   {
-    char ch[32];
-    int  i;
-    BOOL bTrySelExpand = FALSE;
-    int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-    int iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
-    if (iSelEnd - iSelStart)
+    return;
+  }
+  char ch[32];
+  int  i;
+  BOOL bTrySelExpand = FALSE;
+  int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  int iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+  if (iSelEnd - iSelStart)
+  {
+    if (SendMessage(hwnd, SCI_GETSELTEXT, 0, 0) <= COUNTOF(ch))
     {
-      if (SendMessage(hwnd, SCI_GETSELTEXT, 0, 0) <= COUNTOF(ch))
+      SendMessage(hwnd, SCI_GETSELTEXT, 0, (LPARAM)ch);
+      if (StrChrIA(ch, ' ') || StrChrIA(ch, '\t') || StrChrIA(ch, '\r') || StrChrIA(ch, '\n') || StrChrIA(ch, '-'))
       {
-        SendMessage(hwnd, SCI_GETSELTEXT, 0, (LPARAM)ch);
-        if (StrChrIA(ch, ' ') || StrChrIA(ch, '\t') || StrChrIA(ch, '\r') || StrChrIA(ch, '\n') || StrChrIA(ch, '-'))
+        return;
+      }
+      if (StrCmpNIA(ch, "\\x", 2) == 0 || StrCmpNIA(ch, "\\u", 2) == 0)
+      {
+        ch[0] = '0';
+        ch[1] = 'x';
+      }
+      else if (StrChrIA("xu", ch[0]))
+      {
+        ch[0] = '0';
+        bTrySelExpand = TRUE;
+      }
+      if (sscanf(ch, "%x", &i) == 1)
+      {
+        int cch;
+        if (i == 0)
         {
-          return;
+          ch[0] = 0;
+          cch = 1;
         }
-        if (StrCmpNIA(ch, "\\x", 2) == 0 || StrCmpNIA(ch, "\\u", 2) == 0)
+        else
         {
-          ch[0] = '0';
-          ch[1] = 'x';
-        }
-        else if (StrChrIA("xu", ch[0]))
-        {
-          ch[0] = '0';
-          bTrySelExpand = TRUE;
-        }
-        if (sscanf(ch, "%x", &i) == 1)
-        {
-          int cch;
-          if (i == 0)
+          UINT  cp = (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0);
+          WCHAR wch[4];
+          wsprintf(wch, L"%lc", (WCHAR)i);
+          cch = WideCharToMultiByte(cp, 0, wch, -1, ch, COUNTOF(ch), NULL, NULL) - 1;
+          if (bTrySelExpand && (char)SendMessage(hwnd, SCI_GETCHARAT, (WPARAM)iSelStart - 1, 0) == '\\')
           {
-            ch[0] = 0;
-            cch = 1;
+            iSelStart--;
           }
-          else
-          {
-            UINT  cp = (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0);
-            WCHAR wch[4];
-            wsprintf(wch, L"%lc", (WCHAR)i);
-            cch = WideCharToMultiByte(cp, 0, wch, -1, ch, COUNTOF(ch), NULL, NULL) - 1;
-            if (bTrySelExpand && (char)SendMessage(hwnd, SCI_GETCHARAT, (WPARAM)iSelStart - 1, 0) == '\\')
-            {
-              iSelStart--;
-            }
-          }
-          SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iSelStart, 0);
-          SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iSelEnd, 0);
-          SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)cch, (LPARAM)ch);
-          SendMessage(hwnd, SCI_SETSEL, iSelStart, iSelStart + cch);
         }
+        SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iSelStart, 0);
+        SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iSelEnd, 0);
+        SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)cch, (LPARAM)ch);
+        SendMessage(hwnd, SCI_SETSEL, iSelStart, iSelStart + cch);
       }
     }
   }
-  else
+}
+
+void EditString2Hex(HWND hwnd)
+{
+  if (!IsSelectionModeValid(hwnd))
   {
-    MsgBox(MBINFO, IDS_SELRECT);
+    return;
   }
+  EncodeStrToHex(hwnd);
+}
+
+void EditHex2String(HWND hwnd)
+{
+  if (!IsSelectionModeValid(hwnd))
+  {
+    return;
+  }
+  DecodeHexToStr(hwnd);
 }
 
 //=============================================================================

@@ -328,6 +328,8 @@
 #define IDM_EDIT_SELTOPREV              40372
 #define IDM_EDIT_NEWLINEABOVE           40373
 #define IDM_EDIT_NEWLINEBELOW           40374
+#define IDM_EDIT_STRING2HEX             40375
+#define IDM_EDIT_HEX2STRING             40376
 #define IDM_VIEW_SCHEME                 40400
 #define IDM_VIEW_USE2NDDEFAULT          40401
 #define IDM_VIEW_SCHEMECONFIG           40402

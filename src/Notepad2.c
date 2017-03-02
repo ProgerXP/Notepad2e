@@ -1991,6 +1991,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_UNESCAPECCHARS, i);
   EnableCmd(hmenu, IDM_EDIT_CHAR2HEX, i);
   EnableCmd(hmenu, IDM_EDIT_HEX2CHAR, i);
+  EnableCmd(hmenu, IDM_EDIT_STRING2HEX, i3);
+  EnableCmd(hmenu, IDM_EDIT_HEX2STRING, i3);
   EnableCmd(hmenu, IDM_VIEW_SHOWEXCERPT, i);
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   EnableCmd(hmenu, IDM_EDIT_LINECOMMENT, !(i == SCLEX_NULL || i == SCLEX_DIFF));
@@ -2045,7 +2047,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_CHANGENOTIFY, iFileWatchingMode);
   CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
-  if (iEscFunction == 1)
+    if (iEscFunction == 1)
   {
     i = IDM_VIEW_ESCMINIMIZE;
   }
@@ -3225,6 +3227,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_HEX2CHAR:
       BeginWaitCursor();
       EditHex2Char(hwndEdit);
+      EndWaitCursor();
+      break;
+    case IDM_EDIT_STRING2HEX:
+      BeginWaitCursor();
+      EditString2Hex(hwndEdit);
+      EndWaitCursor();
+      break;
+    case IDM_EDIT_HEX2STRING:
+      BeginWaitCursor();
+      EditHex2String(hwndEdit);
       EndWaitCursor();
       break;
     case IDM_EDIT_FINDMATCHINGBRACE: {
@@ -6450,7 +6462,7 @@ void DestroyProgressBarInStatusBar()
   hwndStatusProgressBar = NULL;
 }
 
-void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos)
+void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
 {
   if (hwndStatusProgressBar)
   {
@@ -6475,10 +6487,16 @@ void HideProgressBarInStatusBar()
   }
 }
 
-void UpdateProgressBarInStatusBar(const int nCurPos)
+void UpdateProgressBarInStatusBar(const long nCurPos)
 {
   InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
   InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
+}
+
+void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
+{
+  InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, 0, nMaxPos, 1);
+  UpdateProgressBarInStatusBar(nCurPos);
 }
 
 //=============================================================================

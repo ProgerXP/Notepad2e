@@ -111,9 +111,10 @@ int  CreateIniFileEx(LPCWSTR);
 void UpdateStatusbar();
 void CreateProgressBarInStatusBar();
 void DestroyProgressBarInStatusBar();
-void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const int nCurPos, const int nMaxPos);
+void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
 void HideProgressBarInStatusBar();
-void UpdateProgressBarInStatusBar(const int nCurPos);
+void UpdateProgressBarInStatusBar(const long nCurPos);
+void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos);
 void UpdateToolbar();
 void UpdateLineNumberWidth();
 

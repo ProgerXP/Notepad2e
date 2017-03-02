@@ -218,11 +218,13 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
-            MENUITEM "Strip HTML Tags\tShift+Alt+X", 28
+            MENUITEM "Strip HTML Tags\tShift+Alt+X", IDM_EDIT_STRIP_HTML_TAGS
             MENUITEM "Escape HTML\tCtrl+Shift+Alt+X", ID_SPECIAL_ESCAPEHTML
             MENUITEM SEPARATOR
-            MENUITEM "C&har To Hex\tCtrl+Alt+X",    IDM_EDIT_CHAR2HEX
-            MENUITEM "Hex To Cha&r\tCtrl+Alt+C",    IDM_EDIT_HEX2CHAR
+            MENUITEM "C&har To C Hex\tCtrl+Alt+X",  IDM_EDIT_CHAR2HEX
+            MENUITEM "C Hex To Cha&r\tCtrl+Alt+C",  IDM_EDIT_HEX2CHAR
+            MENUITEM "String To Hex\tAlt+Shift+A",  IDM_EDIT_STRING2HEX
+            MENUITEM "Hex To String\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
             MENUITEM SEPARATOR
             MENUITEM "&Find Matching Brace\tCtrl+B", IDM_EDIT_FINDMATCHINGBRACE
             MENUITEM "&Select To Matching Brace\tCtrl+Shift+B", IDM_EDIT_SELTOMATCHINGBRACE
@@ -384,6 +386,8 @@ BEGIN
     "9",            IDM_VIEW_SHOWEOLS,      VIRTKEY, SHIFT, CONTROL, NOINVERT
     "A",            IDM_EDIT_SELECTALL,     VIRTKEY, CONTROL, NOINVERT
     "A",            CMD_RELOADANSI,         VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "A",            IDM_EDIT_STRING2HEX,    VIRTKEY, SHIFT, ALT, NOINVERT
+    "A",            IDM_EDIT_HEX2STRING,    VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     "B",            IDM_EDIT_FINDMATCHINGBRACE, VIRTKEY, CONTROL, NOINVERT
     "B",            IDM_EDIT_PADWITHSPACES, VIRTKEY, ALT, NOINVERT
     "B",            IDM_EDIT_SELTOMATCHINGBRACE, VIRTKEY, SHIFT, CONTROL, NOINVERT

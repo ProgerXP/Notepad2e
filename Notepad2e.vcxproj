@@ -329,6 +329,7 @@
     <ClCompile Include="src\InlineProgressBarCtrl.c" />
     <ClCompile Include="src\Notepad2.c" />
     <ClCompile Include="src\Print.cpp" />
+    <ClCompile Include="src\StrToHex.c" />
     <ClCompile Include="src\Styles.c" />
     <ClCompile Include="scintilla\lexers\LexAsm.cxx" />
     <ClCompile Include="scintilla\lexers\LexCPP.cxx" />
@@ -402,6 +403,7 @@
     <ClInclude Include="src\InlineProgressBarCtrl.h" />
     <ClInclude Include="src\Notepad2.h" />
     <ClInclude Include="src\SciCall.h" />
+    <ClInclude Include="src\StrToHex.h" />
     <ClInclude Include="src\Styles.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\version.h" />

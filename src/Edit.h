@@ -79,6 +79,8 @@ void  EditEscapeCChars(HWND);
 void  EditUnescapeCChars(HWND);
 void  EditChar2Hex(HWND);
 void  EditHex2Char(HWND);
+void  EditString2Hex(HWND);
+void  EditHex2String(HWND);
 void  EditModifyNumber(HWND, BOOL);
 
 void  EditTabsToSpaces(HWND, int, BOOL);
