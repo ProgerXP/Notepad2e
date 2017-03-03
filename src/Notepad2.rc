@@ -1351,6 +1351,7 @@ BEGIN
     IDT_FILE_ADDTOFAV       "Add to Favorites"
     IDT_FILE_OPEN_NEXT      "Open Next"
     IDT_FILE_OPEN_PREV      "Open Previous"
+    IDT_SETTINGS_SAVE_ON_EXIT "Save Settings On Exit"
 END
 
 STRINGTABLE

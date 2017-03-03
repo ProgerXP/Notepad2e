@@ -407,6 +407,7 @@
 #define IDT_FILE_ADDTOFAV               40722
 #define IDT_FILE_OPEN_NEXT              40723
 #define IDT_FILE_OPEN_PREV              40724
+#define IDT_SETTINGS_SAVE_ON_EXIT       40725
 #define SC_SAVEPOS                      40800
 #define SC_RESETPOS                     40801
 #define IDS_ERR_LOADFILE                50000
