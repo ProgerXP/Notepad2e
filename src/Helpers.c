@@ -51,6 +51,7 @@ BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
 int iEvaluateMathExpression = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
+int iWordNavigationMode = 0;
 
 
 UINT	_hl_ctx_menu_type = 0;
@@ -2480,6 +2481,7 @@ VOID HL_LoadINI()
   bMoveCaretOnRightClick = IniGetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   iEvaluateMathExpression = IniGetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   iShowLanguageInTitle = IniGetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
+  iWordNavigationMode = IniGetInt(HL_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
 VOID HL_SaveINI()
@@ -2498,6 +2500,7 @@ VOID HL_SaveINI()
   IniSetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   IniSetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   IniSetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
+  IniSetInt(HL_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
 VOID HL_Release()

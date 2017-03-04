@@ -208,6 +208,7 @@ extern	BOOL		b_HL_edit_selection;
 extern	BOOL		b_HL_ctrl_wheel_scroll;
 extern  BOOL    bMoveCaretOnRightClick;
 extern  int     iEvaluateMathExpression;
+extern  int     iWordNavigationMode;
 extern  ELanguageIndicatorMode iShowLanguageInTitle;
 extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
@@ -2076,6 +2077,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == 0);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == 1);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == 2);
+  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == 0);
+  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == 1);
 }
 
 //=============================================================================
@@ -3936,6 +3939,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case ID_SETTINGS_EVAL_LINE:
       iEvaluateMathExpression = 2;
       UpdateStatusbar();
+      break;
+    case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
+      iWordNavigationMode = 0;
+      SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+      break;
+    case ID_SETTINGS_WORD_NAVIGATION_ACCELERATED:
+      iWordNavigationMode = 1;
+      SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     case IDM_HELP_ABOUT:
       ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT),

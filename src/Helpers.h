@@ -264,6 +264,7 @@ BOOL	hl_isspace(WCHAR ch);
 #define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
 #define INI_SETTING_MATH_EVAL L"MathEval"
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
+#define INI_SETTING_WORD_NAVIGATION_MODE  L"WordNavigationMode"
 
 #define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
 #ifdef _DEBUG

@@ -40,6 +40,8 @@
 #define ID_SETTINGS_EVAL_DISABLED       51
 #define ID_SETTINGS_EVAL_SELECTION      52
 #define ID_SETTINGS_EVAL_LINE           53
+#define ID_SETTINGS_WORD_NAVIGATION_STANDARD  54
+#define ID_SETTINGS_WORD_NAVIGATION_ACCELERATED  55
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100

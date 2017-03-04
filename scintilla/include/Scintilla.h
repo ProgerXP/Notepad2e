@@ -673,6 +673,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_ADDREFDOCUMENT 2376
 #define SCI_RELEASEDOCUMENT 2377
 #define SCI_GETMODEVENTMASK 2378
+#define SCI_SETWORDNAVIGATIONMODE 2379
 #define SCI_SETFOCUS 2380
 #define SCI_GETFOCUS 2381
 #define SC_STATUS_OK 0

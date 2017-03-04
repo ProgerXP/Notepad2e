@@ -32,6 +32,7 @@ BOOL	_hl_se_init = FALSE;
 BOOL	_hl_se_exit = FALSE;
 
 extern int iHighlightLineIfWindowInactive;
+extern int iWordNavigationMode;
 
 typedef struct tagHLSEdata
 {
@@ -112,6 +113,7 @@ int	HLS_key_action(int key, int msg)
 void	HLS_init()
 {
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, iHighlightLineIfWindowInactive, 0);
+  SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
   int indi_style = IniGetInt(HL_INI_SECTION, L"SelectionType", 6);
   if (indi_style >= 0)
   {

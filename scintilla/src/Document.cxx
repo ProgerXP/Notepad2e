@@ -110,6 +110,7 @@ Document::Document() {
 	tabIndents = true;
 	backspaceUnindents = false;
 	durationStyleOneLine = 0.00001;
+	wordNavigationMode = 0;
 
 	matchesValid = false;
 	regex = 0;
@@ -1520,20 +1521,67 @@ int Document::ExtendWordSelect(int pos, int delta, bool onlyWordCharacters) {
  */
 int Document::NextWordStart(int pos, int delta) {
 	if (delta < 0) {
-		while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == CharClassify::ccSpace))
-			pos--;
-		if (pos > 0) {
-			CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos-1));
-			while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == ccStart)) {
+		switch (wordNavigationMode)
+		{
+		case 0:
+			// standard navigation
+			while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == CharClassify::ccSpace))
+				pos--;
+			if (pos > 0)
+			{
+				CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos - 1));
+				while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == ccStart))
+					pos--;
+			}
+			break;
+		case 1:
+			// accelerated navigation
+			if (pos > 0)
+				pos--;
+			while (pos > 0)
+			{
+				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
+				if ((ccPrev == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))
+					break;
 				pos--;
 			}
+			break;
+		default:
+			// not implemented
+			PLATFORM_ASSERT(false);
+			break;
 		}
 	} else {
-		CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos));
-		while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == ccStart))
-			pos++;
-		while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccSpace))
-			pos++;
+		switch (wordNavigationMode)
+		{
+		case 0:
+			// standard navigation
+			{
+				CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos));
+				while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == ccStart))
+					pos++;
+				while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccSpace))
+					pos++;
+			}
+			break;
+		case 1:
+			// accelerated navigation
+			if (pos < Length())
+				++pos;
+			while (pos < Length())
+			{
+				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
+				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
+				if ((ccCurrent == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))
+					break;
+				pos++;
+			}
+			break;
+		default:
+			// not implemented
+			PLATFORM_ASSERT(false);
+			break;
+		}
 	}
 	return pos;
 }
@@ -2238,6 +2286,11 @@ int Document::BraceMatch(int position, int /*maxReStyle*/) {
 			break;
 	}
 	return - 1;
+}
+
+void Document::SetWordNavigationMode(const int iMode)
+{
+	wordNavigationMode = iMode;
 }
 
 /**

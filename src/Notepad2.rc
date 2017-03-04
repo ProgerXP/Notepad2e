@@ -311,8 +311,13 @@ BEGIN
             MENUITEM "Current &Selection",          ID_SETTINGS_EVAL_SELECTION
             MENUITEM "Current &Line",               ID_SETTINGS_EVAL_LINE
         END
-        MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
+        POPUP "Ctrl+&Arrow Navigation"
+        BEGIN
+            MENUITEM "&Standard",               ID_SETTINGS_WORD_NAVIGATION_STANDARD
+            MENUITEM "&Accelerated",            ID_SETTINGS_WORD_NAVIGATION_ACCELERATED
+        END
         MENUITEM "Ctrl+Wheel Scroll",           ID_SETTINGS_CTRL_WHEEL_SCROLL
+        MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
         MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT
         MENUITEM "Remember S&earch Strings",    IDM_VIEW_NOSAVEFINDREPL
