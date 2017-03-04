@@ -5023,16 +5023,11 @@ void LoadSettings()
   WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
   int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   LoadIniSection(L"Settings", pIniSection, cchIniSection);
-  WCHAR *pHlIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
-  int   cchHlIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
-  LoadIniSection(HL_INI_SECTION, pHlIniSection, cchHlIniSection);
-  bSaveSettings = IniSectionGetInt(pHlIniSection, L"SaveSettings", 1);
+  bSaveSettings = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
   if (bSaveSettings)
   {
     bSaveSettings = 1;
   }
-  LocalFree(pHlIniSection);
-  pHlIniSection = NULL;
   bSaveRecentFiles = IniSectionGetInt(pIniSection, L"SaveRecentFiles", 0);
   if (bSaveRecentFiles)
   {
