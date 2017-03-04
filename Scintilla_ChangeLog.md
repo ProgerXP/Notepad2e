@@ -328,3 +328,105 @@ with:
   
 [scintilla/src/Editor.cxx]  
 [/**Always treat Shift+Tab as unindent #61**]  
+  
+[**ctrl+arrow behavior toggle #89**]  
+Add new message SCI_SETWORDNAVIGATIONMODE:  
+[scintilla/include/Scintilla.h]  
+\#define SCI_SETWORDNAVIGATIONMODE 2379  
+[/scintilla/include/Scintilla.h]  
+  
+Add message handler in ScintillaBase::WndProc:  
+[scintilla/src/ScintillaBase.cxx]  
+	case SCI_SETWORDNAVIGATIONMODE:  
+		pdoc->SetWordNavigationMode((int)wParam);  
+		break;  
+[/scintilla/src/ScintillaBase.cxx]  
+  
+Add method declaration/implemention to Document class:
+[scintilla/src/Document.h]  
+	double durationStyleOneLine;  
+	*int wordNavigationMode;*  
+... 
+	int BraceMatch(int position, int maxReStyle);  
+	*void SetWordNavigationMode(const int iMode);*  
+[/scintilla/src/Document.h]  
+  
+[scintilla/src/Document.cxx]  
+	durationStyleOneLine = 0.00001;  
+	*wordNavigationMode = 0;*  
+...  
+
+int Document::NextWordStart(int pos, int delta) {  
+	if (delta < 0) {  
+		switch (wordNavigationMode)  
+		{  
+		case 0:  
+			// standard navigation  
+			while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == CharClassify::ccSpace))  
+				pos--;  
+			if (pos > 0)  
+			{  
+				CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos - 1));  
+				while (pos > 0 && (WordCharClass(cb.CharAt(pos - 1)) == ccStart))  
+					pos--;  
+			}  
+			break;  
+		case 1:  
+			// accelerated navigation  
+			if (pos > 0)  
+				pos--;  
+			while (pos > 0)  
+			{  
+				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));  
+				if ((ccPrev == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))  
+					break;  
+				pos--;  
+			}  
+			break;  
+		default:  
+			// not implemented  
+			PLATFORM_ASSERT(false);  
+			break;  
+		}  
+	} else {  
+		switch (wordNavigationMode)  
+		{  
+		case 0:  
+			// standard navigation  
+			{  
+				CharClassify::cc ccStart = WordCharClass(cb.CharAt(pos));  
+				while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == ccStart))  
+					pos++;  
+				while (pos < (Length()) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccSpace))  
+					pos++;  
+			}  
+			break;  
+		case 1:  
+			// accelerated navigation  
+			if (pos < Length())  
+				++pos;  
+			while (pos < Length())  
+			{  
+				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));  
+				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));  
+				if ((ccCurrent == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))  
+					break;  
+				pos++;  
+			}  
+			break;  
+		default:  
+			// not implemented  
+			PLATFORM_ASSERT(false);  
+			break;  
+		}  
+	}  
+	return pos;  
+}  
+..
+void Document::SetWordNavigationMode(const int iMode)  
+{  
+	wordNavigationMode = iMode;  
+}  
+  
+[/scintilla/src/Document.cxx]  
+[/**ctrl+arrow behavior toggle #89**]  
