@@ -387,7 +387,7 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
     else
     {
       pED->m_tr.m_iPositionCurrent = pED->m_tr.m_iPositionStart;
-      if (bBreakOnError)
+      if (bBreakOnError && !isspace(pED->m_tb.m_ptr[pED->m_tb.m_iPos]))
       {
         bRes = FALSE;
       }
