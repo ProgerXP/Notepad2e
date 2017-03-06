@@ -430,3 +430,8 @@ void Document::SetWordNavigationMode(const int iMode)
   
 [/scintilla/src/Document.cxx]  
 [/**ctrl+arrow behavior toggle #89**]  
+  
+[**Regexp: confine to single line #90**]  
+Move class RESearchRange declaration/implementation from Document.cxx to Document.h  
+  
+[/**Regexp: confine to single line #90**]  
