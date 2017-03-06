@@ -323,6 +323,7 @@ with:
             int indentation = pdoc->GetLineIndentation(lineCurrentPos);  
             int indentationStep = pdoc->IndentSize();  
             const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);  
+            sel.Range(r) = SelectionRange(posSelect);  
     }  
   
   
