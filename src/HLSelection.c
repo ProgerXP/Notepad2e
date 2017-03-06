@@ -36,22 +36,22 @@ extern int iWordNavigationMode;
 
 typedef struct tagHLSEdata
 {
-  UINT	pos;
-  UINT	len;
+  long	pos;
+  long	len;
   char*	original;
 } SE_DATA, *LPSE_DATA;
 
-typedef enum HL_SEOpt
+enum HL_SEOpt
 {
   SEO_ROLLBACK = 1 << 0,
   SEO_MODIFIED = 1 << 1
 };
 
 SE_DATA		_hl_se_array[HL_SELECT_MAX_COUNT];
-UINT		_hl_se_count = 0; // total count   '
+long		_hl_se_count = 0; // total count   '
 struct		Sci_TextRange	_hl_se_tr;
-UINT		_hl_se_old_len = 0;
-UINT		_hl_max_search_range = 2048 * 1024;
+long		_hl_se_old_len = 0;
+long		_hl_max_search_range = 2048 * 1024;
 BOOL		_hl_se_mode_whole_word = TRUE;
 BOOL		_hl_se_strict_mode = TRUE;
 char		*_hl_se_orig_word = 0;

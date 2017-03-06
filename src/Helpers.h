@@ -26,7 +26,7 @@ extern UINT16 g_uWinVer;
 #define STRING2(x) #x
 #define STRING(x) STRING2(x)
 #define CT_WARNING(M) message("\n\t** " M " => [ "__FILE__ ":" STRING(__LINE__) " ]  **\n")
-typedef enum CSS_PROP
+enum CSS_PROP
 {
   css_prop_sassy = 1 << 0,
   css_prop_less = 1 << 1,

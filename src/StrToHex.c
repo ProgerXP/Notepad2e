@@ -3,6 +3,7 @@
 #include "StrToHex.h"
 #include "Edit.h"
 #include "Scintilla.h"
+#include "Notepad2.h"
 
 extern NP2ENCODING mEncoding[];
 extern	int       iEncoding;
@@ -111,18 +112,6 @@ BOOL TextBuffer_Init(struct TTextBuffer* pTB, const int iSize)
   return TRUE;
 }
 
-BOOL TextBuffer_Update(struct TTextBuffer* pTB, LPSTR ptr, const int iSize)
-{
-  if (pTB->m_ptr != ptr)
-  {
-    TextBuffer_Free(pTB);
-    pTB->m_iSize = iSize;
-    pTB->m_ptr = (LPSTR)ptr;
-  }
-  TextBuffer_ResetPos(pTB, iSize-1);
-  return TRUE;
-}
-
 BOOL TextBuffer_Free(struct TTextBuffer* pTB)
 {
   if (pTB->m_ptr)
@@ -132,6 +121,18 @@ BOOL TextBuffer_Free(struct TTextBuffer* pTB)
   pTB->m_iSize = 0;
   pTB->m_ptr = NULL;
   TextBuffer_ResetPos(pTB, 0);
+  return TRUE;
+}
+
+BOOL TextBuffer_Update(struct TTextBuffer* pTB, LPSTR ptr, const int iSize)
+{
+  if (pTB->m_ptr != ptr)
+  {
+    TextBuffer_Free(pTB);
+    pTB->m_iSize = iSize;
+    pTB->m_ptr = (LPSTR)ptr;
+  }
+  TextBuffer_ResetPos(pTB, iSize-1);
   return TRUE;
 }
 
@@ -189,7 +190,7 @@ void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB)
     {
       _swab((char *)lpDataWide, (char *)lpDataWide, cbDataWide);
     }
-    TextBuffer_Update(pTB, lpDataWide, cbDataWide + 1);
+    TextBuffer_Update(pTB, (LPSTR)lpDataWide, cbDataWide + 1);
   }
   else if (mEncoding[iEncoding].uFlags & NCP_UTF8)
   {
@@ -229,7 +230,7 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
   if (IsUnicodeEncodingMode())
   {
     LPSTR lpData = MemAlloc(pTB->m_iPos * 2 + 16);
-	  const int cbData = WideCharToMultiByte(CP_UTF8, 0, pTB->m_ptr, pTB->m_iPos/sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
+	  const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos/sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
     lpData[cbData] = 0;
     TextBuffer_Update(pTB, lpData, cbData);
     pTB->m_iPos = cbData;
@@ -437,7 +438,7 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
 
 void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
 {
-  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)FALSE, NULL);
+  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
   SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
   struct TEncodingData ed;
   if (!EncodingSettings_Init(&ed, hwnd, bChar2Hex))
@@ -465,7 +466,7 @@ void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
   SendMessage(hwnd, SCI_SETSEL, ed.m_tr.m_iSelStart, ed.m_tr.m_iSelEnd);
   EncodingSettings_Free(&ed);
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)TRUE, NULL);
+  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
   InvalidateRect(hwnd, NULL, FALSE);
   UpdateWindow(hwnd);
   HideProgressBarInStatusBar();

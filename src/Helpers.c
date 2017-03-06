@@ -61,7 +61,7 @@ extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 BOOL	_hl_wheel_timer = FALSE;
 WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 INT		_hl_alloc_count = 0;
-extern	UINT	_hl_max_search_range;
+extern	long	_hl_max_search_range;
 
 int iHighlightLineIfWindowInactive = 0;
 int iScrollYCaretPolicy = 0;
@@ -2772,7 +2772,7 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
     if (0 == (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
       HL_TRACE("file: '%S'", wfd.cFileName);
-      if (wcsnicmp(wfd.cFileName, in, 1))
+      if (_wcsnicmp(wfd.cFileName, in, 1))
       {
         HL_TRACE("skip");
         continue;

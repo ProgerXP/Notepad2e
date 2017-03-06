@@ -209,6 +209,8 @@ HWND EditCreate(HWND hwndParent)
   return (hwnd);
 }
 
+int isValidRegex(LPCSTR str);
+
 //=============================================================================
 //
 //  EditSetNewText()

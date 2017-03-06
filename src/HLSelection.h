@@ -1,4 +1,4 @@
-typedef enum SH_PLACE
+enum SH_PLACE
 {
   SH_INIT,
   SH_UPDATE,

@@ -33,7 +33,7 @@
 #define NAN (0.0/0.0)
 #endif
 
-typedef double (*te_fun2)(double, double);
+typedef const double (*te_fun2)(double, double);
 
 enum {
     TOK_NULL = TE_CLOSURE7+1, TOK_ERROR, TOK_END, TOK_SEP,
@@ -249,7 +249,7 @@ int is_operation(const char ch)
   }
 }
 
-int is_hex_prefix(char* pStr)
+int is_hex_prefix(const char* pStr)
 {
   return ((pStr[0] == '0') && (pStr[1] == 'x'));
 }
@@ -268,9 +268,9 @@ int is_radix_postfix(const char ch)
   }
 }
 
-int is_number_by_radix(char** pStr, const int radixTest, double* pValue, int* radixRes)
+int is_number_by_radix(const char** pStr, const int radixTest, double* pValue, int* radixRes)
 {
-  char* next = *pStr;
+  char* next = (char*)*pStr;
   double resDouble = 0;
   long int res = 0;
   if (radixTest == 10)
@@ -307,7 +307,7 @@ int is_number_by_radix(char** pStr, const int radixTest, double* pValue, int* ra
   return 1;
 }
 
-int is_number(char** pStr, double* pValue)
+int is_number(const char** pStr, double* pValue)
 {
   if (is_operation(*pStr[0]))
   {
@@ -315,7 +315,7 @@ int is_number(char** pStr, double* pValue)
   }
 
   int res = 0;
-  char* start = *pStr;
+  const char* start = *pStr;
   int radix = 0;
   char radixPrefix = (is_hex_prefix(start) == 1) ? 'h' : 0;
   if (is_number_by_radix(&start, 16, pValue, &radix)
