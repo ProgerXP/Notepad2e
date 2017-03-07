@@ -2825,7 +2825,8 @@ LPSTR GetLinePrefix(int iLine, LPBOOL pbLineEmpty)
 
   for (size_t i = 0; i < strlen(pszPrefix); ++i)
   {
-    if (!isspace((unsigned char)pszPrefix[i]))
+    const char chCurrent = pszPrefix[i];
+    if (!isspace(chCurrent) || (chCurrent == '\r') || (chCurrent == '\n'))
     {
       pszPrefix[i] = 0;
       *pbLineEmpty = (i == 0);
