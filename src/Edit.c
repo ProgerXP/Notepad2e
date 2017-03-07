@@ -2864,6 +2864,8 @@ void InsertNewLineWithPrefix(LPSTR pszPrefix, BOOL bInsertAbove)
 
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
+  HLS_Edit_selection_stop(HL_SE_APPLY);
+
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
   const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
