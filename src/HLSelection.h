@@ -18,4 +18,4 @@ int		HLS_get_wraps(int beg, int end);
 void	HLS_on_notification(int code, struct SCNotification *scn);
 void	HLS_Update_selection(UINT place);
 void	HLS_Edit_selection_start(const BOOL highlightAll);
-void	HLS_Edit_selection_stop(UINT mode);
+BOOL	HLS_Edit_selection_stop(UINT mode);

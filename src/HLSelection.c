@@ -627,9 +627,9 @@ VOID HLS_Edit_selection_start(const BOOL highlightAll)
   }
 }
 
-VOID HLS_Edit_selection_stop(UINT mode)
+BOOL HLS_Edit_selection_stop(UINT mode)
 {
-  int pos;
+  _hl_se_init = FALSE;
   if (b_HL_edit_selection)
   {
     if (mode & HL_SE_REJECT)
@@ -639,7 +639,7 @@ VOID HLS_Edit_selection_stop(UINT mode)
     /*
      * skip any selection
      */
-    pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+    const int pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
     SendMessage(hwndEdit, SCI_SETANCHOR, pos, 0);
     b_HL_edit_selection = FALSE;
     b_HL_highlight_all = TRUE;
@@ -647,8 +647,9 @@ VOID HLS_Edit_selection_stop(UINT mode)
     //
     HLS_Highlight_turn();
     SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+    return TRUE;
   }
-  _hl_se_init = FALSE;
+  return FALSE;
 }
 
 void HLS_Update_selection(UINT place)
