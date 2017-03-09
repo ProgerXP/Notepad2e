@@ -264,82 +264,64 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 		SearchParameters search;
 		
 		search._document = doc;
-		search._direction = (endPosition <= startPosition) ? 1 : -1;
-		const RESearchRange resr(doc, startPosition, endPosition);
-		const char searchEnd = regexString[*lengthRet - 1];
-		const char searchEndPrev = (*lengthRet > 1) ? regexString[*lengthRet - 2] : '\0';
-		for (int line = resr.lineRangeStart; line != resr.lineRangeBreak; line += resr.increment)
+		
+		if (startPosition > endPosition
+			|| startPosition == endPosition && _lastDirection < 0)  // If we search in an empty region, suppose the direction is the same as last search (this is only important to verify if there can be an empty match in that empty region).
 		{
-			int startOfLine = doc->LineStart(line);
-			int endOfLine = doc->LineEnd(line);
-			if (resr.increment == 1)
-			{
-				if (line == resr.lineRangeStart)
-				{
-					if ((resr.startPos != startOfLine) && (regexString[0] == '^'))
-						continue;	// Can't match start of line if start position after start of line
-					startOfLine = resr.startPos;
-				}
-				if (line == resr.lineRangeEnd)
-				{
-					if ((resr.endPos != endOfLine) && (searchEnd == '$') && (searchEndPrev != '\\'))
-						continue;	// Can't match end of line if end position before end of line
-					endOfLine = resr.endPos;
-				}
-			}
-			else
-			{
-				if (line == resr.lineRangeEnd)
-				{
-					if ((resr.endPos != startOfLine) && (regexString[0] == '^'))
-						continue;	// Can't match start of line if end position after start of line
-					startOfLine = resr.endPos;
-				}
-				if (line == resr.lineRangeStart)
-				{
-					if ((resr.startPos != endOfLine) && (searchEnd == '$') && (searchEndPrev != '\\'))
-						continue;	// Can't match end of line if start position before end of line
-					endOfLine = resr.startPos;
-				}
-			}
+			search._startPosition = endPosition;
+			search._endPosition = startPosition;
+			search._direction = -1;
+		}
+		else
+		{
+			search._startPosition = startPosition;
+			search._endPosition = endPosition;
+			search._direction = 1;
+		}
+		_lastDirection = search._direction;
 
-			search._startPosition = startOfLine;
-			search._endPosition = endOfLine;
-			
-			const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
-			search._compileFlags = 
-				regex_constants::ECMAScript
-				| (caseSensitive ? 0 : regex_constants::icase);
-			search._regexString = regexString;
+		// Range endpoints should not be inside DBCS characters, but just in case, move them.
+		search._startPosition = doc->MovePositionOutsideChar(search._startPosition, 1, false);
+		search._endPosition = doc->MovePositionOutsideChar(search._endPosition, 1, false);
 		
-			const bool starts_at_line_start = search.isLineStart(search._startPosition);
-			const bool ends_at_line_end     = search.isLineEnd(search._endPosition);
-			search._boostRegexFlags = 
-				  (starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
-				| (ends_at_line_end     ? regex_constants::match_default : regex_constants::match_not_eol)
-				| ((sciSearchFlags & SCFIND_REGEXP_DOTMATCHESNL) ? regex_constants::match_default : regex_constants::match_not_dot_newline);
+		const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
+		search._compileFlags = 
+			regex_constants::ECMAScript
+			| (caseSensitive ? 0 : regex_constants::icase);
+		search._regexString = regexString;
 		
-			const int empty_match_style = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_MASK;
-			const int allow_empty_at_start = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
+		const bool starts_at_line_start = search.isLineStart(search._startPosition);
+		const bool ends_at_line_end     = search.isLineEnd(search._endPosition);
+		search._boostRegexFlags = 
+			  (starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
+			| (ends_at_line_end     ? regex_constants::match_default : regex_constants::match_not_eol)
+			| ((sciSearchFlags & SCFIND_REGEXP_DOTMATCHESNL) ? regex_constants::match_default : regex_constants::match_not_dot_newline);
+		
+		const int empty_match_style = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_MASK;
+		const int allow_empty_at_start = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
 
-			search._is_allowed_empty = empty_match_style != SCFIND_REGEXP_EMPTYMATCH_NONE;
-			search._is_allowed_empty_at_start_position = search._is_allowed_empty && 
-				(allow_empty_at_start
-				|| !_lastMatch.isContinuationSearch(doc, startPosition, search._direction)
-				|| empty_match_style == SCFIND_REGEXP_EMPTYMATCH_ALL && !_lastMatch.isEmpty()	// If last match is empty and this is a continuation, then we would have same empty match at start position, if it was allowed.
-				);
-			search._skip_windows_line_end_as_one_character = (sciSearchFlags & SCFIND_REGEXP_SKIPCRLFASONE) != 0;
+		search._is_allowed_empty = empty_match_style != SCFIND_REGEXP_EMPTYMATCH_NONE;
+		search._is_allowed_empty_at_start_position = search._is_allowed_empty && 
+			(allow_empty_at_start
+			|| !_lastMatch.isContinuationSearch(doc, startPosition, search._direction)
+			|| empty_match_style == SCFIND_REGEXP_EMPTYMATCH_ALL && !_lastMatch.isEmpty()	// If last match is empty and this is a continuation, then we would have same empty match at start position, if it was allowed.
+			);
+		search._skip_windows_line_end_as_one_character = (sciSearchFlags & SCFIND_REGEXP_SKIPCRLFASONE) != 0;
 		
-			Match match =
-				isUtf8 ? _utf8.FindText(search)
-					   : _ansi.FindText(search);
+		Match match =
+			isUtf8 ? _utf8.FindText(search)
+			       : _ansi.FindText(search);
 		
-			if (match.found())
-			{
-				*lengthRet = match.length();
-				_lastMatch = match;
-				return match.position();
-			}
+		if (match.found())
+		{
+			*lengthRet = match.length();
+			_lastMatch = match;
+			return match.position();
+		}
+		else
+		{
+			_lastMatch = NULL;
+			return -1;
 		}
 	}
 
@@ -348,8 +330,6 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 		// -1 is normally used for not found, -2 is used here for invalid regex
 		return -2;
 	}
-
-	return -1;
 }
 
 template <class CharT, class CharacterIterator>
