@@ -189,8 +189,7 @@ private:
 		Match FindText(SearchParameters& search);
 		char *SubstituteByPosition(const char *text, int *length);
 	private:
-		Match FindTextForward(SearchParameters& search);
-		Match FindTextBackward(SearchParameters& search);
+		Match FindTextImpl(SearchParameters& search);
 
 	public:
 		typedef CharT Char;
@@ -206,20 +205,15 @@ private:
 	
 	class SearchParameters {
 	public:
-		int nextCharacter(int position);
 		bool isLineStart(int position);
 		bool isLineEnd(int position);
 		
 		Document* _document;
+		RESearchRange _resr;
 		const char *_regexString;
 		int _compileFlags;
-		int _startPosition;
-		int _endPosition;
 		regex_constants::match_flag_type _boostRegexFlags;
-		int _direction;
-		bool _is_allowed_empty;
-		bool _is_allowed_empty_at_start_position;
-		bool _skip_windows_line_end_as_one_character;
+		SearchParameters(Document* doc, int startPosition, int endPosition) : _document(doc), _resr(doc, startPosition, endPosition) {}
 	};
 	
 	static wchar_t *utf8ToWchar(const char *utf8);
@@ -261,52 +255,20 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
                         bool caseSensitive, bool /*word*/, bool /*wordStart*/, int sciSearchFlags, int *lengthRet) 
 {
 	try {
-		SearchParameters search;
-		
-		search._document = doc;
-		
-		if (startPosition > endPosition
-			|| startPosition == endPosition && _lastDirection < 0)  // If we search in an empty region, suppose the direction is the same as last search (this is only important to verify if there can be an empty match in that empty region).
-		{
-			search._startPosition = endPosition;
-			search._endPosition = startPosition;
-			search._direction = -1;
-		}
-		else
-		{
-			search._startPosition = startPosition;
-			search._endPosition = endPosition;
-			search._direction = 1;
-		}
-		_lastDirection = search._direction;
-
-		// Range endpoints should not be inside DBCS characters, but just in case, move them.
-		search._startPosition = doc->MovePositionOutsideChar(search._startPosition, 1, false);
-		search._endPosition = doc->MovePositionOutsideChar(search._endPosition, 1, false);
-		
+		SearchParameters search(doc, startPosition, endPosition);
+	
 		const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
 		search._compileFlags = 
 			regex_constants::ECMAScript
 			| (caseSensitive ? 0 : regex_constants::icase);
 		search._regexString = regexString;
 		
-		const bool starts_at_line_start = search.isLineStart(search._startPosition);
-		const bool ends_at_line_end     = search.isLineEnd(search._endPosition);
+		const bool starts_at_line_start = search.isLineStart(startPosition);
+		const bool ends_at_line_end     = search.isLineEnd(endPosition);
 		search._boostRegexFlags = 
 			  (starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
 			| (ends_at_line_end     ? regex_constants::match_default : regex_constants::match_not_eol)
 			| ((sciSearchFlags & SCFIND_REGEXP_DOTMATCHESNL) ? regex_constants::match_default : regex_constants::match_not_dot_newline);
-		
-		const int empty_match_style = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_MASK;
-		const int allow_empty_at_start = sciSearchFlags & SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
-
-		search._is_allowed_empty = empty_match_style != SCFIND_REGEXP_EMPTYMATCH_NONE;
-		search._is_allowed_empty_at_start_position = search._is_allowed_empty && 
-			(allow_empty_at_start
-			|| !_lastMatch.isContinuationSearch(doc, startPosition, search._direction)
-			|| empty_match_style == SCFIND_REGEXP_EMPTYMATCH_ALL && !_lastMatch.isEmpty()	// If last match is empty and this is a continuation, then we would have same empty match at start position, if it was allowed.
-			);
-		search._skip_windows_line_end_as_one_character = (sciSearchFlags & SCFIND_REGEXP_SKIPCRLFASONE) != 0;
 		
 		Match match =
 			isUtf8 ? _utf8.FindText(search)
@@ -336,68 +298,31 @@ template <class CharT, class CharacterIterator>
 BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::FindText(SearchParameters& search)
 {
 	compileRegex(search._regexString, search._compileFlags);
-	return (search._direction > 0)
-		? FindTextForward(search)
-		: FindTextBackward(search);
+	return FindTextImpl(search);
 }
 
 template <class CharT, class CharacterIterator>
-BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::FindTextForward(SearchParameters& search)
+BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::FindTextImpl(SearchParameters& search)
 {
-	CharacterIterator endIterator(search._document, search._endPosition, search._endPosition);
-	int next_search_from_position = search._startPosition;
 	bool found = false;
-	bool match_is_valid = false;
-	do {
-		search._boostRegexFlags = search.isLineStart(next_search_from_position)
+	// Line by line.
+	for (int line = search._resr.lineRangeStart; line != search._resr.lineRangeBreak; line += search._resr.increment) {
+		const Range lineRange = search._resr.LineRange(line);
+		CharacterIterator itStart(search._document, lineRange.start, lineRange.end);
+		CharacterIterator itEnd(search._document, lineRange.end, lineRange.end);
+		search._boostRegexFlags = search.isLineStart(lineRange.start)
 			? search._boostRegexFlags & ~regex_constants::match_not_bol
 			: search._boostRegexFlags |  regex_constants::match_not_bol;
-		const bool end_reached = next_search_from_position > search._endPosition;
-		found = !end_reached && boost::regex_search(CharacterIterator(search._document, next_search_from_position, search._endPosition), endIterator, _match, _regex, search._boostRegexFlags);
+		found = boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
 		if (found) {
 			const int  position = _match[0].first.pos();
 			const int  length   = _match[0].second.pos() - position;
-			const bool match_is_non_empty    = length != 0;
-			const bool is_allowed_empty_here = search._is_allowed_empty && (search._is_allowed_empty_at_start_position || position > search._startPosition);
-			match_is_valid = match_is_non_empty || is_allowed_empty_here;
-			if (!match_is_valid)
-				next_search_from_position = search.nextCharacter(position);
+			if (length != 0)
+				break;
 		}
-	} while (found && !match_is_valid);
+	}
 	if (found)
 		return Match(search._document, _match[0].first.pos(), _match[0].second.pos());
-	else
-		return Match();
-}
-
-template <class CharT, class CharacterIterator>
-BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::FindTextBackward(SearchParameters& search)
-{
-	// Change backward search into series of forward search. It is slow: search all backward becomes O(n^2) instead of O(n) (if search forward is O(n)).
-	//NOTE: Maybe we should cache results. Maybe we could reverse regex to do a real backward search, for simple regex.
-	search._direction = 1;
-	const bool is_allowed_empty_at_end_position = search._is_allowed_empty_at_start_position;
-	search._is_allowed_empty_at_start_position = search._is_allowed_empty;
-	
-	MatchResults bestMatch;
-	int bestPosition = -1;
-	int bestEnd = -1;
-	for (;;) {
-		Match matchRange = FindText(search);
-		if (!matchRange.found())
-			break;
-		int position = matchRange.position();
-		int endPosition = matchRange.endPosition();
-		if (endPosition > bestEnd && (endPosition < search._endPosition || position != endPosition || is_allowed_empty_at_end_position)) // We are searching for the longest match which has the fathest end (but may not accept empty match at end position).
-		{
-			bestMatch = _match;
-			bestPosition = position;
-			bestEnd = endPosition;
-		}
-		search._startPosition = search.nextCharacter(position);
-	}
-	if (bestPosition >= 0)
-		return Match(search._document, bestPosition, bestEnd);
 	else
 		return Match();
 }
@@ -411,14 +336,6 @@ void BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::compileRegex
 		_lastRegexString = regex;
 		_lastCompileFlags = compileFlags;
 	}
-}
-
-int BoostRegexSearch::SearchParameters::nextCharacter(int position)
-{
-	if (_skip_windows_line_end_as_one_character && _document->CharAt(position) == '\r' && _document->CharAt(position+1) == '\n')
-		return position + 2;
-	else
-		return position + 1;
 }
 
 bool BoostRegexSearch::SearchParameters::isLineStart(int position)
