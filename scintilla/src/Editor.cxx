@@ -3886,10 +3886,16 @@ void Editor::Indent(bool forwards) {
 				}
 			} else {
 				if (pdoc->tabIndents) {
-					int indentation = pdoc->GetLineIndentation(lineCurrentPos);
-					int indentationStep = pdoc->IndentSize();
-					const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-					sel.Range(r) = SelectionRange(posSelect);
+					SelectionPosition posCaret(sel.Range(r).caret.Position());
+					SelectionPosition posAnchor(sel.Range(r).anchor.Position());
+					const int indentation = pdoc->GetLineIndentation(lineCurrentPos);
+					const int indentationStep = pdoc->IndentSize();
+					pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
+					if ((caretPosition - pdoc->LineStart(lineCurrentPos) >= indentationStep) && (indentation >= indentationStep)) {
+						posCaret.SetPosition(posCaret.Position() - indentationStep);
+						posAnchor.SetPosition(posAnchor.Position() - indentationStep);
+						sel.Range(r) = SelectionRange(posCaret, posAnchor);
+					}
 				} else {
 					int newColumn = ((pdoc->GetColumn(caretPosition) - 1) / pdoc->tabInChars) *
 							pdoc->tabInChars;
