@@ -578,7 +578,7 @@
     <None Include="res\Prev.bmp">
       <Filter>scintilla</Filter>
     </None>
-    <None Include="src\printtime.bat">
+    <None Include="src\Extension\printtime.bat">
       <Filter>scintilla</Filter>
     </None>
     <None Include="res\Run.ico">

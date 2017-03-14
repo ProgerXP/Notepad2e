@@ -109,7 +109,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;_DEBUG;WIN32;_WINDOWS;UNICODE;_UNICODE;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -135,7 +135,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;_DEBUG;WIN32;_WINDOWS;UNICODE;_UNICODE;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -161,7 +161,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;NDEBUG;WIN32;_WINDOWS;UNICODE;_UNICODE;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -191,7 +191,7 @@
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <OmitFramePointers>true</OmitFramePointers>
-      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;NDEBUG;WIN32;_WINDOWS;UNICODE;_UNICODE;_M_IX86;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -216,7 +216,6 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="hl_helper.cpp" />
     <ClCompile Include="scintilla\boostregex\BoostRegExSearch.cxx" />
     <ClCompile Include="scintilla\boostregex\UTF8DocumentIterator.cxx" />
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
@@ -323,13 +322,15 @@
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />
-    <ClCompile Include="src\EditHelper.cpp" />
+    <ClCompile Include="src\Extension\EditHelper.cpp" />
+    <ClCompile Include="src\Extension\HLSelection.c" />
+    <ClCompile Include="src\Extension\hl_helper.cpp" />
+    <ClCompile Include="src\Extension\InlineProgressBarCtrl.c" />
+    <ClCompile Include="src\Extension\StrToHex.c" />
+    <ClCompile Include="src\Extension\tinyexpr\tinyexpr.c" />
     <ClCompile Include="src\Helpers.c" />
-    <ClCompile Include="src\HLSelection.c" />
-    <ClCompile Include="src\InlineProgressBarCtrl.c" />
     <ClCompile Include="src\Notepad2.c" />
     <ClCompile Include="src\Print.cpp" />
-    <ClCompile Include="src\StrToHex.c" />
     <ClCompile Include="src\Styles.c" />
     <ClCompile Include="scintilla\lexers\LexAsm.cxx" />
     <ClCompile Include="scintilla\lexers\LexCPP.cxx" />
@@ -375,7 +376,6 @@
     <ClCompile Include="scintilla\src\XPM.cxx" />
     <ClCompile Include="scintilla\win32\PlatWin.cxx" />
     <ClCompile Include="scintilla\win32\ScintillaWin.cxx" />
-    <ClCompile Include="tinyexpr\tinyexpr.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="scintilla\boostregex\AnsiDocumentIterator.h" />
@@ -398,6 +398,11 @@
     <ClInclude Include="src\Dialogs.h" />
     <ClInclude Include="src\Dlapi.h" />
     <ClInclude Include="src\Edit.h" />
+    <ClInclude Include="src\Extension\HLSelection.h" />
+    <ClInclude Include="src\Extension\InlineProgressBarCtrl.h" />
+    <ClInclude Include="src\Extension\SciCall.h" />
+    <ClInclude Include="src\Extension\StrToHex.h" />
+    <ClInclude Include="src\Extension\tinyexpr\tinyexpr.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\HLSelection.h" />
     <ClInclude Include="src\InlineProgressBarCtrl.h" />
@@ -451,10 +456,10 @@
     <ClInclude Include="scintilla\src\XPM.h" />
     <ClInclude Include="tinyexpr\tinyexpr.h" />
     <CustomBuild Include="src\_version.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">print build time</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">print build time</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">111</Outputs>
@@ -474,7 +479,7 @@
     <None Include="res\Run.ico" />
     <None Include="res\Styles.ico" />
     <None Include="res\Toolbar.bmp" />
-    <None Include="src\printtime.bat" />
+    <None Include="src\Extension\printtime.bat" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Notepad2.exe.manifest" />

@@ -112,7 +112,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="hl_helper.cpp" />
+    <ClCompile Include="src\Extension\hl_helper.cpp" />
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
     <ClCompile Include="scintilla\lexers\LexAbaqus.cxx" />
     <ClCompile Include="scintilla\lexers\LexAda.cxx" />
@@ -297,8 +297,8 @@
     <ClInclude Include="scintilla\src\ViewStyle.h" />
     <ClInclude Include="scintilla\src\XPM.h" />
     <CustomBuild Include="src\_version.h">
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">print build time</Outputs>
       <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">111</Outputs>
     </CustomBuild>
@@ -316,7 +316,7 @@
     <None Include="res\Run.ico" />
     <None Include="res\Styles.ico" />
     <None Include="res\Toolbar.bmp" />
-    <None Include="src\printtime.bat" />
+    <None Include="src\Extension\printtime.bat" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Notepad2.exe.manifest" />

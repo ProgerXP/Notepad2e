@@ -37,9 +37,9 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
-#include "SciCall.h"
+#include "SciCall.h"              // TODO: cleanup
 #include "HLSelection.h"
-#include "../tinyexpr/tinyexpr.h"
+#include "tinyexpr/tinyexpr.h"
 #include "InlineProgressBarCtrl.h"
 
 VOID HL_Msg_create();
