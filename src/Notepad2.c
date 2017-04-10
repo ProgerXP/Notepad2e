@@ -6668,6 +6668,14 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
   {
     PathGetLnkPath(szFileName, szFileName, COUNTOF(szFileName));
   }
+
+  // change current directory to prevent directory lock on another path
+  WCHAR szFolder[MAX_PATH];
+  if (lstrcpyn(szFolder, szFileName, _countof(szFolder) - 1) && PathRemoveFileSpec(szFolder))
+  {
+	  SetCurrentDirectory(szFolder);
+  }
+
   // Ask to create a new file...
   if (!bReload && !PathFileExists(szFileName))
   {
