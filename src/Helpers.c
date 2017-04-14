@@ -34,6 +34,7 @@
 #include "Notepad2.h"
 #include "HLSelection.h"
 #include "Edit.h"
+#include "SciCall.h"
 
 #define HL_WHEEL_TIMER_ID	0xfefe
 #define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
@@ -2954,14 +2955,14 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
     return;
   }
 
-  const int selStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-  const int selEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-  line_first = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, selStart, 0);
-  line_last = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, selEnd, 0);
+  const int selStart = SciCall_GetSelStart();
+  const int selEnd = SciCall_GetSelEnd();
+  line_first = SciCall_LineFromPosition(selStart);
+  line_last = SciCall_LineFromPosition(selEnd);
   if (line_last - line_first + 1 <= 2)
   {
     line_first = 0;
-    line_last = SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0) - 1;
+    line_last = SciCall_GetLineCount() - 1;
   }
 
   lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
@@ -2979,18 +2980,17 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
   BeginWaitCursor();
   SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
   ttf.lpstrText = szFind2;
-  ttf.chrg.cpMin = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, line_last, 0);
-  ttf.chrg.cpMax = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, line_first, 0);
+  ttf.chrg.cpMin = SciCall_LineEndPosition(line_last);
+  ttf.chrg.cpMax = SciCall_PositionFromLine(line_first);
   const int maxPos = ttf.chrg.cpMin;
   ShowProgressBarInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
 
   BOOL bIsLastLine = TRUE;
-
-  res = SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
+  res = SciCall_FindText(lpf->fuFlags, &ttf);
   while (ttf.chrg.cpMin > ttf.chrg.cpMax)
   {
-    const int lineIndex = (res >= 0) ? SendMessage(lpf->hwnd, SCI_LINEFROMPOSITION, res, 0) : 0;
-    const int lineStart = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, lineIndex, 0);
+    const int lineIndex = (res >= 0) ? SciCall_LineFromPosition(res) : 0;
+    const int lineStart = SciCall_PositionFromLine(lineIndex);
     int lineEnd = 0;
     if (res >= 0)
     {
@@ -2998,31 +2998,27 @@ VOID	HL_Grep(VOID* _lpf, BOOL grep)
       BOOL bDone = FALSE;
       if (grep && bIsLastLine)
       {
-        if (lineIndex + 2 == SendMessage(lpf->hwnd, SCI_GETLINECOUNT, 0, 0))
+        if (lineIndex + 2 == SciCall_GetLineCount())
         {
-          lineEnd = SendMessage(lpf->hwnd, SCI_GETLINEENDPOSITION, lineIndex, 0);
+          lineEnd = SciCall_LineEndPosition(lineIndex);
           bIsLastLine = FALSE;
           bDone = TRUE;
         }
       }
       if (!bDone)
       {
-        lineEnd = SendMessage(lpf->hwnd, SCI_POSITIONFROMLINE, lineIndex + 1, 0);
+        lineEnd = SciCall_PositionFromLine(lineIndex + 1);
       }
     }
     else
     {
       lineEnd = ttf.chrg.cpMax;
     }
-
-    SendMessage(lpf->hwnd,
-                SCI_SETTARGETRANGE,
-                grep ? lineEnd : lineStart,
-                grep ? ttf.chrg.cpMin : lineEnd);
-    SendMessage(lpf->hwnd, SCI_REPLACETARGET, 0, (LPARAM)"");
+    SciCall_DeleteRange(grep ? lineEnd : lineStart,
+                        grep ? (ttf.chrg.cpMin - lineEnd) : (lineEnd - lineStart));
 
     ttf.chrg.cpMin = lineStart;
-    res = SendMessage(lpf->hwnd, SCI_FINDTEXT, lpf->fuFlags, (LPARAM)&ttf);
+    res = SciCall_FindText(lpf->fuFlags, &ttf);
   }
 
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
