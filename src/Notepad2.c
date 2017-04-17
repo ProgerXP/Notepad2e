@@ -131,7 +131,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
 
 WCHAR      szIniFile[MAX_PATH] = L"";
 WCHAR      szIniFile2[MAX_PATH] = L"";
-BOOL      bSaveSettings;
+enum SAVE_SETTINGS_MODE nSaveSettingsMode = SSM_REGULAR;
 BOOL      bSaveRecentFiles;
 BOOL      bSaveFindReplace;
 WCHAR      tchLastSaveCopyDir[MAX_PATH] = L"";
@@ -2063,13 +2063,17 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   }
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
   i = lstrlen(szIniFile);
-  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS, bSaveSettings && i);
+  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, (nSaveSettingsMode == SSM_REGULAR) && i);
+  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, (nSaveSettingsMode == SSM_RECENT) && i);
+  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, (nSaveSettingsMode == SSM_NO) && i);
   EnableCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   EnableCmd(hmenu, IDM_VIEW_STICKYWINPOS, i);
   EnableCmd(hmenu, IDM_VIEW_SINGLEFILEINSTANCE, i);
   EnableCmd(hmenu, IDM_VIEW_NOSAVERECENT, i);
   EnableCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, i);
-  EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS, i);
+  EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, i);
+  EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, i);
+  EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, i);
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll);
@@ -3854,8 +3858,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_ESCEXIT:
       iEscFunction = 2;
       break;
-    case IDM_VIEW_SAVESETTINGS:
-      bSaveSettings = (bSaveSettings) ? FALSE : TRUE;
+    case IDM_VIEW_SAVESETTINGS_MODE_ALL:
+      nSaveSettingsMode = SSM_REGULAR;
+      UpdateToolbar();
+      break;
+    case IDM_VIEW_SAVESETTINGS_MODE_RECENT:
+      nSaveSettingsMode = SSM_RECENT;
+      UpdateToolbar();
+      break;
+    case IDM_VIEW_SAVESETTINGS_MODE_NO:
+      nSaveSettingsMode = SSM_NO;
       UpdateToolbar();
       break;
     case IDM_VIEW_SAVESETTINGSNOW: {
@@ -4600,9 +4612,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       }
       break;
     case IDT_SETTINGS_SAVE_ON_EXIT:
-      if (IsCmdEnabled(hwnd, IDM_VIEW_SAVESETTINGS))
+      if (IsCmdEnabled(hwnd, IDM_VIEW_SAVESETTINGS_MODE_ALL))
       {
-        SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_SAVESETTINGS, 1), 0);
+        SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_SAVESETTINGS_MODE_ALL, 1), 0);
       }
       else
       {
@@ -5023,10 +5035,17 @@ void LoadSettings()
   WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
   int   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   LoadIniSection(L"Settings", pIniSection, cchIniSection);
-  bSaveSettings = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
-  if (bSaveSettings)
+  const int nSaveSettings = IniSectionGetInt(pIniSection, L"SaveSettings", 1);
+  switch (nSaveSettings)
   {
-    bSaveSettings = 1;
+    case SSM_NO:
+    case SSM_REGULAR:
+    case SSM_RECENT:
+      nSaveSettingsMode = nSaveSettings;
+      break;
+    default:
+      nSaveSettingsMode = SSM_REGULAR;
+      break;
   }
   bSaveRecentFiles = IniSectionGetInt(pIniSection, L"SaveRecentFiles", 0);
   if (bSaveRecentFiles)
@@ -5351,6 +5370,11 @@ void LoadSettings()
   Style_Load();
   HL_LoadINI();
 }
+
+BOOL CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired)
+{
+  return !bCheckSaveSettingsMode || (nSaveSettingsMode == modeRequired);
+}
 //=============================================================================
 //
 //  SaveSettings()
@@ -5366,90 +5390,94 @@ void SaveSettings(BOOL bSaveSettingsNow)
     return;
   }
   CreateIniFile();
-  if (!bSaveSettings && !bSaveSettingsNow)
+  if ((nSaveSettingsMode == SSM_NO) && !bSaveSettingsNow)
   {
-    IniSetInt(L"Settings", L"SaveSettings", bSaveSettings);
+    IniSetInt(L"Settings", L"SaveSettings", nSaveSettingsMode);
     return;
   }
-  pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
-  cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
-  IniSectionSetInt(pIniSection, L"SaveSettings", bSaveSettings);
-  IniSectionSetInt(pIniSection, L"SaveRecentFiles", bSaveRecentFiles);
-  IniSectionSetInt(pIniSection, L"SaveFindReplace", bSaveFindReplace);
-  IniSectionSetInt(pIniSection, L"CloseFind", efrData.bFindClose);
-  IniSectionSetInt(pIniSection, L"CloseReplace", efrData.bReplaceClose);
-  IniSectionSetInt(pIniSection, L"NoFindWrap", efrData.bNoFindWrap);
-  PathRelativeToApp(tchOpenWithDir, wchTmp, COUNTOF(wchTmp), FALSE, TRUE, flagPortableMyDocs);
-  IniSectionSetString(pIniSection, L"OpenWithDir", wchTmp);
-  PathRelativeToApp(tchFavoritesDir, wchTmp, COUNTOF(wchTmp), FALSE, TRUE, flagPortableMyDocs);
-  IniSectionSetString(pIniSection, L"Favorites", wchTmp);
-  IniSectionSetInt(pIniSection, L"PathNameFormat", iPathNameFormat);
-  IniSectionSetInt(pIniSection, L"WordWrap", fWordWrapG);
-  IniSectionSetInt(pIniSection, L"WordWrapMode", iWordWrapMode);
-  IniSectionSetInt(pIniSection, L"WordWrapIndent", iWordWrapIndent);
-  IniSectionSetInt(pIniSection, L"WordWrapSymbols", iWordWrapSymbols);
-  IniSectionSetInt(pIniSection, L"ShowWordWrapSymbols", bShowWordWrapSymbols);
-  IniSectionSetInt(pIniSection, L"MatchBraces", bMatchBraces);
-  IniSectionSetInt(pIniSection, L"AutoCloseTags", bAutoCloseTags);
-  IniSectionSetInt(pIniSection, L"HighlightCurrentLine", bHiliteCurrentLine);
-  IniSectionSetInt(pIniSection, L"AutoIndent", bAutoIndent);
-  IniSectionSetInt(pIniSection, L"ShowIndentGuides", bShowIndentGuides);
-  IniSectionSetInt(pIniSection, L"TabsAsSpaces", bTabsAsSpacesG);
-  IniSectionSetInt(pIniSection, L"TabIndents", bTabIndentsG);
-  IniSectionSetInt(pIniSection, L"BackspaceUnindents", bBackspaceUnindents);
-  IniSectionSetInt(pIniSection, L"TabWidth", iTabWidthG);
-  IniSectionSetInt(pIniSection, L"IndentWidth", iIndentWidthG);
-  IniSectionSetInt(pIniSection, L"MarkLongLines", bMarkLongLines);
-  IniSectionSetInt(pIniSection, L"LongLinesLimit", iLongLinesLimitG);
-  IniSectionSetInt(pIniSection, L"LongLineMode", iLongLineMode);
-  IniSectionSetInt(pIniSection, L"ShowSelectionMargin", bShowSelectionMargin);
-  IniSectionSetInt(pIniSection, L"ShowLineNumbers", bShowLineNumbers);
-  IniSectionSetInt(pIniSection, L"ViewWhiteSpace", bViewWhiteSpace);
-  IniSectionSetInt(pIniSection, L"ViewEOLs", bViewEOLs);
-  IniSectionSetInt(pIniSection, L"DefaultEncoding", Encoding_MapIniSetting(FALSE, iDefaultEncoding));
-  IniSectionSetInt(pIniSection, L"SkipUnicodeDetection", bSkipUnicodeDetection);
-  IniSectionSetInt(pIniSection, L"LoadASCIIasUTF8", bLoadASCIIasUTF8);
-  IniSectionSetInt(pIniSection, L"NoEncodingTags", bNoEncodingTags);
-  IniSectionSetInt(pIniSection, L"DefaultEOLMode", iDefaultEOLMode);
-  IniSectionSetInt(pIniSection, L"FixLineEndings", bFixLineEndings);
-  IniSectionSetInt(pIniSection, L"FixTrailingBlanks", bAutoStripBlanks);
-  IniSectionSetInt(pIniSection, L"PrintHeader", iPrintHeader);
-  IniSectionSetInt(pIniSection, L"PrintFooter", iPrintFooter);
-  IniSectionSetInt(pIniSection, L"PrintColorMode", iPrintColor);
-  IniSectionSetInt(pIniSection, L"PrintZoom", iPrintZoom + 10);
-  IniSectionSetInt(pIniSection, L"PrintMarginLeft", pagesetupMargin.left);
-  IniSectionSetInt(pIniSection, L"PrintMarginTop", pagesetupMargin.top);
-  IniSectionSetInt(pIniSection, L"PrintMarginRight", pagesetupMargin.right);
-  IniSectionSetInt(pIniSection, L"PrintMarginBottom", pagesetupMargin.bottom);
-  IniSectionSetInt(pIniSection, L"SaveBeforeRunningTools", bSaveBeforeRunningTools);
-  IniSectionSetInt(pIniSection, L"FileWatchingMode", iFileWatchingMode);
-  IniSectionSetInt(pIniSection, L"ResetFileWatching", bResetFileWatching);
-  IniSectionSetInt(pIniSection, L"EscFunction", iEscFunction);
-  IniSectionSetInt(pIniSection, L"AlwaysOnTop", bAlwaysOnTop);
-  IniSectionSetInt(pIniSection, L"MinimizeToTray", bMinimizeToTray);
-  IniSectionSetInt(pIniSection, L"TransparentMode", bTransparentMode);
-  Toolbar_GetButtons(hwndToolbar, IDT_FILE_NEW, tchToolbarButtons, COUNTOF(tchToolbarButtons));
-  IniSectionSetString(pIniSection, L"ToolbarButtons", tchToolbarButtons);
-  IniSectionSetInt(pIniSection, L"ShowToolbar", bShowToolbar);
-  IniSectionSetInt(pIniSection, L"ShowStatusbar", bShowStatusbar);
-  IniSectionSetInt(pIniSection, L"EncodingDlgSizeX", cxEncodingDlg);
-  IniSectionSetInt(pIniSection, L"EncodingDlgSizeY", cyEncodingDlg);
-  IniSectionSetInt(pIniSection, L"RecodeDlgSizeX", cxRecodeDlg);
-  IniSectionSetInt(pIniSection, L"RecodeDlgSizeY", cyRecodeDlg);
-  IniSectionSetInt(pIniSection, L"FileMRUDlgSizeX", cxFileMRUDlg);
-  IniSectionSetInt(pIniSection, L"FileMRUDlgSizeY", cyFileMRUDlg);
-  IniSectionSetInt(pIniSection, L"OpenWithDlgSizeX", cxOpenWithDlg);
-  IniSectionSetInt(pIniSection, L"OpenWithDlgSizeY", cyOpenWithDlg);
-  IniSectionSetInt(pIniSection, L"FavoritesDlgSizeX", cxFavoritesDlg);
-  IniSectionSetInt(pIniSection, L"FavoritesDlgSizeY", cyFavoritesDlg);
-  IniSectionSetInt(pIniSection, L"FindReplaceDlgPosX", xFindReplaceDlg);
-  IniSectionSetInt(pIniSection, L"FindReplaceDlgPosY", yFindReplaceDlg);
-  SaveIniSection(L"Settings", pIniSection);
-  LocalFree(pIniSection);
+  const BOOL bCheckSaveSettingsMode = !bSaveSettingsNow;
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR))
+  {
+    pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
+    cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
+    IniSectionSetInt(pIniSection, L"SaveSettings", nSaveSettingsMode);
+    IniSectionSetInt(pIniSection, L"SaveRecentFiles", bSaveRecentFiles);
+    IniSectionSetInt(pIniSection, L"SaveFindReplace", bSaveFindReplace);
+    IniSectionSetInt(pIniSection, L"CloseFind", efrData.bFindClose);
+    IniSectionSetInt(pIniSection, L"CloseReplace", efrData.bReplaceClose);
+    IniSectionSetInt(pIniSection, L"NoFindWrap", efrData.bNoFindWrap);
+    PathRelativeToApp(tchOpenWithDir, wchTmp, COUNTOF(wchTmp), FALSE, TRUE, flagPortableMyDocs);
+    IniSectionSetString(pIniSection, L"OpenWithDir", wchTmp);
+    PathRelativeToApp(tchFavoritesDir, wchTmp, COUNTOF(wchTmp), FALSE, TRUE, flagPortableMyDocs);
+    IniSectionSetString(pIniSection, L"Favorites", wchTmp);
+    IniSectionSetInt(pIniSection, L"PathNameFormat", iPathNameFormat);
+    IniSectionSetInt(pIniSection, L"WordWrap", fWordWrapG);
+    IniSectionSetInt(pIniSection, L"WordWrapMode", iWordWrapMode);
+    IniSectionSetInt(pIniSection, L"WordWrapIndent", iWordWrapIndent);
+    IniSectionSetInt(pIniSection, L"WordWrapSymbols", iWordWrapSymbols);
+    IniSectionSetInt(pIniSection, L"ShowWordWrapSymbols", bShowWordWrapSymbols);
+    IniSectionSetInt(pIniSection, L"MatchBraces", bMatchBraces);
+    IniSectionSetInt(pIniSection, L"AutoCloseTags", bAutoCloseTags);
+    IniSectionSetInt(pIniSection, L"HighlightCurrentLine", bHiliteCurrentLine);
+    IniSectionSetInt(pIniSection, L"AutoIndent", bAutoIndent);
+    IniSectionSetInt(pIniSection, L"ShowIndentGuides", bShowIndentGuides);
+    IniSectionSetInt(pIniSection, L"TabsAsSpaces", bTabsAsSpacesG);
+    IniSectionSetInt(pIniSection, L"TabIndents", bTabIndentsG);
+    IniSectionSetInt(pIniSection, L"BackspaceUnindents", bBackspaceUnindents);
+    IniSectionSetInt(pIniSection, L"TabWidth", iTabWidthG);
+    IniSectionSetInt(pIniSection, L"IndentWidth", iIndentWidthG);
+    IniSectionSetInt(pIniSection, L"MarkLongLines", bMarkLongLines);
+    IniSectionSetInt(pIniSection, L"LongLinesLimit", iLongLinesLimitG);
+    IniSectionSetInt(pIniSection, L"LongLineMode", iLongLineMode);
+    IniSectionSetInt(pIniSection, L"ShowSelectionMargin", bShowSelectionMargin);
+    IniSectionSetInt(pIniSection, L"ShowLineNumbers", bShowLineNumbers);
+    IniSectionSetInt(pIniSection, L"ViewWhiteSpace", bViewWhiteSpace);
+    IniSectionSetInt(pIniSection, L"ViewEOLs", bViewEOLs);
+    IniSectionSetInt(pIniSection, L"DefaultEncoding", Encoding_MapIniSetting(FALSE, iDefaultEncoding));
+    IniSectionSetInt(pIniSection, L"SkipUnicodeDetection", bSkipUnicodeDetection);
+    IniSectionSetInt(pIniSection, L"LoadASCIIasUTF8", bLoadASCIIasUTF8);
+    IniSectionSetInt(pIniSection, L"NoEncodingTags", bNoEncodingTags);
+    IniSectionSetInt(pIniSection, L"DefaultEOLMode", iDefaultEOLMode);
+    IniSectionSetInt(pIniSection, L"FixLineEndings", bFixLineEndings);
+    IniSectionSetInt(pIniSection, L"FixTrailingBlanks", bAutoStripBlanks);
+    IniSectionSetInt(pIniSection, L"PrintHeader", iPrintHeader);
+    IniSectionSetInt(pIniSection, L"PrintFooter", iPrintFooter);
+    IniSectionSetInt(pIniSection, L"PrintColorMode", iPrintColor);
+    IniSectionSetInt(pIniSection, L"PrintZoom", iPrintZoom + 10);
+    IniSectionSetInt(pIniSection, L"PrintMarginLeft", pagesetupMargin.left);
+    IniSectionSetInt(pIniSection, L"PrintMarginTop", pagesetupMargin.top);
+    IniSectionSetInt(pIniSection, L"PrintMarginRight", pagesetupMargin.right);
+    IniSectionSetInt(pIniSection, L"PrintMarginBottom", pagesetupMargin.bottom);
+    IniSectionSetInt(pIniSection, L"SaveBeforeRunningTools", bSaveBeforeRunningTools);
+    IniSectionSetInt(pIniSection, L"FileWatchingMode", iFileWatchingMode);
+    IniSectionSetInt(pIniSection, L"ResetFileWatching", bResetFileWatching);
+    IniSectionSetInt(pIniSection, L"EscFunction", iEscFunction);
+    IniSectionSetInt(pIniSection, L"AlwaysOnTop", bAlwaysOnTop);
+    IniSectionSetInt(pIniSection, L"MinimizeToTray", bMinimizeToTray);
+    IniSectionSetInt(pIniSection, L"TransparentMode", bTransparentMode);
+    Toolbar_GetButtons(hwndToolbar, IDT_FILE_NEW, tchToolbarButtons, COUNTOF(tchToolbarButtons));
+    IniSectionSetString(pIniSection, L"ToolbarButtons", tchToolbarButtons);
+    IniSectionSetInt(pIniSection, L"ShowToolbar", bShowToolbar);
+    IniSectionSetInt(pIniSection, L"ShowStatusbar", bShowStatusbar);
+    IniSectionSetInt(pIniSection, L"EncodingDlgSizeX", cxEncodingDlg);
+    IniSectionSetInt(pIniSection, L"EncodingDlgSizeY", cyEncodingDlg);
+    IniSectionSetInt(pIniSection, L"RecodeDlgSizeX", cxRecodeDlg);
+    IniSectionSetInt(pIniSection, L"RecodeDlgSizeY", cyRecodeDlg);
+    IniSectionSetInt(pIniSection, L"FileMRUDlgSizeX", cxFileMRUDlg);
+    IniSectionSetInt(pIniSection, L"FileMRUDlgSizeY", cyFileMRUDlg);
+    IniSectionSetInt(pIniSection, L"OpenWithDlgSizeX", cxOpenWithDlg);
+    IniSectionSetInt(pIniSection, L"OpenWithDlgSizeY", cyOpenWithDlg);
+    IniSectionSetInt(pIniSection, L"FavoritesDlgSizeX", cxFavoritesDlg);
+    IniSectionSetInt(pIniSection, L"FavoritesDlgSizeY", cyFavoritesDlg);
+    IniSectionSetInt(pIniSection, L"FindReplaceDlgPosX", xFindReplaceDlg);
+    IniSectionSetInt(pIniSection, L"FindReplaceDlgPosY", yFindReplaceDlg);
+    SaveIniSection(L"Settings", pIniSection);
+    LocalFree(pIniSection);
+  }
   /*
     SaveSettingsNow(): query Window Dimensions
   */
-  if (bSaveSettingsNow)
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR) && bSaveSettingsNow)
   {
     WINDOWPLACEMENT wndpl;
     wndpl.length = sizeof(WINDOWPLACEMENT);
@@ -5460,47 +5488,59 @@ void SaveSettings(BOOL bSaveSettingsNow)
     wi.cy = wndpl.rcNormalPosition.bottom - wndpl.rcNormalPosition.top;
     wi.max = (IsZoomed(hwndMain) || (wndpl.flags & WPF_RESTORETOMAXIMIZED));
   }
-  if (!IniGetInt(L"Settings2", L"StickyWindowPosition", 0))
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR))
   {
-    WCHAR tchPosX[32], tchPosY[32], tchSizeX[32], tchSizeY[32], tchMaximized[32];
-    int ResX = GetSystemMetrics(SM_CXSCREEN);
-    int ResY = GetSystemMetrics(SM_CYSCREEN);
-    wsprintf(tchPosX, L"%ix%i PosX", ResX, ResY);
-    wsprintf(tchPosY, L"%ix%i PosY", ResX, ResY);
-    wsprintf(tchSizeX, L"%ix%i SizeX", ResX, ResY);
-    wsprintf(tchSizeY, L"%ix%i SizeY", ResX, ResY);
-    wsprintf(tchMaximized, L"%ix%i Maximized", ResX, ResY);
-    IniSetInt(L"Window", tchPosX, wi.x);
-    IniSetInt(L"Window", tchPosY, wi.y);
-    IniSetInt(L"Window", tchSizeX, wi.cx);
-    IniSetInt(L"Window", tchSizeY, wi.cy);
-    IniSetInt(L"Window", tchMaximized, wi.max);
+    if (!IniGetInt(L"Settings2", L"StickyWindowPosition", 0))
+    {
+      WCHAR tchPosX[32], tchPosY[32], tchSizeX[32], tchSizeY[32], tchMaximized[32];
+      int ResX = GetSystemMetrics(SM_CXSCREEN);
+      int ResY = GetSystemMetrics(SM_CYSCREEN);
+      wsprintf(tchPosX, L"%ix%i PosX", ResX, ResY);
+      wsprintf(tchPosY, L"%ix%i PosY", ResX, ResY);
+      wsprintf(tchSizeX, L"%ix%i SizeX", ResX, ResY);
+      wsprintf(tchSizeY, L"%ix%i SizeY", ResX, ResY);
+      wsprintf(tchMaximized, L"%ix%i Maximized", ResX, ResY);
+      IniSetInt(L"Window", tchPosX, wi.x);
+      IniSetInt(L"Window", tchPosY, wi.y);
+      IniSetInt(L"Window", tchSizeX, wi.cx);
+      IniSetInt(L"Window", tchSizeY, wi.cy);
+      IniSetInt(L"Window", tchMaximized, wi.max);
+    }
+    // Scintilla Styles
+    Style_Save();
+    HL_SaveINI();
   }
-  // Scintilla Styles
-  Style_Save();
-  HL_SaveINI();
+  
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR)
+      || (CanSaveINISection(bCheckSaveSettingsMode, SSM_RECENT) && bSaveRecentFiles))
+  {
+    // Cleanup unwanted MRU's
+    if (!bSaveRecentFiles)
+    {
+      MRU_Empty(pFileMRU);
+      MRU_Save(pFileMRU);
+    }
+    else
+    {
+      MRU_MergeSave(pFileMRU, TRUE, flagRelativeFileMRU, flagPortableMyDocs);
+    }
+  }
 
-  // Cleanup unwanted MRU's
-  if (!bSaveRecentFiles)
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR)
+      || (CanSaveINISection(bCheckSaveSettingsMode, SSM_RECENT) && bSaveFindReplace))
   {
-    MRU_Empty(pFileMRU);
-    MRU_Save(pFileMRU);
-  }
-  else
-  {
-    MRU_MergeSave(pFileMRU, TRUE, flagRelativeFileMRU, flagPortableMyDocs);
-  }
-  if (!bSaveFindReplace)
-  {
-    MRU_Empty(mruFind);
-    MRU_Empty(mruReplace);
-    MRU_Save(mruFind);
-    MRU_Save(mruReplace);
-  }
-  else
-  {
-    MRU_MergeSave(mruFind, FALSE, FALSE, FALSE);
-    MRU_MergeSave(mruReplace, FALSE, FALSE, FALSE);
+    if (!bSaveFindReplace)
+    {
+      MRU_Empty(mruFind);
+      MRU_Empty(mruReplace);
+      MRU_Save(mruFind);
+      MRU_Save(mruReplace);
+    }
+    else
+    {
+      MRU_MergeSave(mruFind, FALSE, FALSE, FALSE);
+      MRU_MergeSave(mruReplace, FALSE, FALSE, FALSE);
+    }
   }
 }
 //=============================================================================
@@ -6234,8 +6274,8 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
-  CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, bSaveSettings);
-  EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS));
+  CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_REGULAR);
+  EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL));
 }
 
 void int2bin(unsigned int val, LPWSTR binString)

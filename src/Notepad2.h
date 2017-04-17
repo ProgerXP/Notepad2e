@@ -97,8 +97,16 @@ void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
 void UpdateFindIcon(const BOOL findOK);
 void ResetFindIcon();
+
+typedef enum
+{
+  SSM_NO          = 0x0,
+  SSM_REGULAR     = 0x1,
+  SSM_RECENT      = 0x2
+} SAVE_SETTINGS_MODE;
+
 void LoadSettings();
-void SaveSettings(BOOL);
+void SaveSettings(BOOL bSaveSettingsNow);
 void ParseCommandLine();
 void LoadFlags();
 int  CheckIniFile(LPWSTR, LPCWSTR);

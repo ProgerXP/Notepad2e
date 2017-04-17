@@ -973,6 +973,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         GlobalFree(lpit);
         bSaveRecentFiles = (IsDlgButtonChecked(hwnd, IDC_SAVEMRU)) ? 1 : 0;
         ResizeDlg_Destroy(hwnd, &cxFileMRUDlg, &cyFileMRUDlg);
+        SaveSettings(FALSE);
       }
       return FALSE;
     case WM_SIZE: {
