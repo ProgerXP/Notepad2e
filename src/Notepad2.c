@@ -1952,7 +1952,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     i = IDM_LINEENDINGS_CR;
   }
   CheckMenuRadioItem(hmenu, IDM_LINEENDINGS_CRLF, IDM_LINEENDINGS_CR, i, MF_BYCOMMAND);
-  EnableCmd(hmenu, IDM_FILE_RECENT, (MRU_Enum(pFileMRU, 0, NULL, 0) > 0));
+  const BOOL bEmptyRecentHistory = (MRU_Enum(pFileMRU, 0, NULL, 0) == 0);
+  EnableCmd(hmenu, IDM_FILE_RECENT, !bEmptyRecentHistory);
+  EnableCmd(hmenu, ID_FILE_OPENPREVIOUS, !bEmptyRecentHistory);
   const BOOL bCanUndo = SendMessage(hwndEdit, SCI_CANUNDO, 0, 0);
   const BOOL bCanRedo = SendMessage(hwndEdit, SCI_CANREDO, 0, 0);
   EnableCmd(hmenu, IDM_EDIT_UNDO, bCanUndo);
