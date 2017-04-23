@@ -1,3 +1,7 @@
+#pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 /******************************************************************************
 *
 *
@@ -291,4 +295,7 @@ typedef enum
 } ELanguageIndicatorMode;
 
 void UpdateWindowTitle(HWND hwnd);
+#ifdef __cplusplus
+}//end extern "C"
+#endif
 ///   End of Helpers.h   \\\

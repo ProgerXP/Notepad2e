@@ -38,7 +38,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "SciCall.h"              // TODO: cleanup
-#include "HLSelection.h"
+#include "EditHelper.h"
 #include "tinyexpr/tinyexpr.h"
 #include "InlineProgressBarCtrl.h"
 
@@ -88,11 +88,6 @@ UINT_PTR      timerIDPaneSizeDblClick = 0;
 
 #define NUMTOOLBITMAPS  27
 #define NUMINITIALTOOLS 25
-
-#define ICON_FIND_OK	 9
-#define ICON_FIND_FAILED 26
-
-#define FIND_INFO_INDEX 12
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -5010,23 +5005,6 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
   return (0);
 }
 
-void UpdateFindIcon(const BOOL findOK)
-{
-  TBBUTTON* pBtn = &tbbMainWnd[FIND_INFO_INDEX];
-  pBtn->iBitmap = findOK ? ICON_FIND_OK : ICON_FIND_FAILED;
-
-  TBBUTTONINFO tbbi = { 0 };
-  tbbi.cbSize = sizeof(tbbi);
-  tbbi.idCommand = pBtn->idCommand;
-  tbbi.iImage = pBtn->iBitmap;
-  tbbi.dwMask = TBIF_IMAGE;
-  SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
-}
-
-void ResetFindIcon()
-{
-  UpdateFindIcon(TRUE);
-}
 //=============================================================================
 //
 //  LoadSettings()

@@ -1,3 +1,7 @@
+#pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 /******************************************************************************
 *
 *
@@ -95,9 +99,6 @@ void InstallFileWatching(LPCWSTR);
 void CALLBACK WatchTimerProc(HWND, UINT, UINT_PTR, DWORD);
 void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
-void UpdateFindIcon(const BOOL findOK);
-void ResetFindIcon();
-
 typedef enum
 {
   SSM_NO          = 0x0,
@@ -142,4 +143,7 @@ void    MsgInitMenu(HWND, WPARAM, LPARAM);
 LRESULT MsgCommand(HWND, WPARAM, LPARAM);
 LRESULT MsgNotify(HWND, WPARAM, LPARAM);
 
+#ifdef __cplusplus
+}//end extern "C"
+#endif
 ///   End of Notepad2.h   \\\

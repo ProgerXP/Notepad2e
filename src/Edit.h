@@ -1,3 +1,7 @@
+#pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 /******************************************************************************
 *
 *
@@ -88,7 +92,6 @@ void  EditSpacesToTabs(HWND, int, BOOL);
 
 void  EditMoveUp(HWND);
 void  EditMoveDown(HWND);
-void  EditInsertNewLine(HWND, BOOL);
 void  EditModifyLines(HWND, LPCWSTR, LPCWSTR);
 void  EditAlignText(HWND, int);
 void  EditEncloseSelection(HWND, LPCWSTR, LPCWSTR);
@@ -102,15 +105,6 @@ void  EditRemoveBlankLines(HWND, BOOL);
 void  EditWrapToColumn(HWND, int);
 void  EditJoinLinesEx(HWND);
 void  EditSortLines(HWND, int);
-
-void  HL_Jump_offset(HWND, int);
-void  HL_Get_offset(HWND, int*);
-void  HL_Find_next_word(HWND, LPCEDITFINDREPLACE, BOOL);
-BOOL  HL_Open_nextFs_file(HWND, LPCWSTR, BOOL);
-void  HL_Strip_html_tags(HWND hwndEdit);
-void  HL_Escape_html(HWND hwnd);
-void  HL_Unwrap_selection(HWND hwnd, BOOL);
-
 void  EditJumpTo(HWND, int, int);
 void  EditSelectEx(HWND, int, int);
 void  EditFixPositions(HWND);
@@ -216,4 +210,7 @@ BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
 int  FileVars_GetEncoding(LPFILEVARS);
 
+#ifdef __cplusplus
+}//end extern "C"
+#endif
 ///   End of Edit.h   \\\
