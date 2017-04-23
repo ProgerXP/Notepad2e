@@ -379,9 +379,6 @@
     <ClCompile Include="src\Helpers.c">
       <Filter>ext</Filter>
     </ClCompile>
-    <ClCompile Include="hl_helper.cpp">
-      <Filter>ext</Filter>
-    </ClCompile>
     <ClCompile Include="src\HLSelection.c">
       <Filter>ext</Filter>
     </ClCompile>

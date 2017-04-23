@@ -25,6 +25,9 @@
 #define MBYESNOCANCEL  4
 #define MBOKCANCEL     8
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 int  MsgBox(int, UINT, ...);
 void DisplayCmdLineHelp();
 BOOL GetDirectory(HWND, int, LPWSTR, LPCWSTR, BOOL);
@@ -46,5 +49,8 @@ BOOL SelectEncodingDlg(HWND, int *);
 BOOL RecodeDlg(HWND, int *);
 BOOL SelectDefLineEndingDlg(HWND, int *);
 INT_PTR InfoBox(int, LPCWSTR, int, ...);
+#ifdef __cplusplus
+}//end extern "C"
+#endif
 
 // End of Dialogs.h

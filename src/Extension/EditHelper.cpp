@@ -1,16 +1,17 @@
-#include <windows.h>
-#include <commctrl.h>
-#include <shlwapi.h>
-#include <commdlg.h>
+#include "EditHelper.h"
+#include "Dialogs.h"
 #include <string>
 #include <Shlobj.h>
-#include <algorithm>
-#include <cassert>
 #include <WTypes.h>
 #include <regex>
+#include "scintilla.h"
+#include "resource.h"
 
 extern "C"
 {
+  WCHAR	hl_last_html_tag[0xff] = L"<tag>";
+  WCHAR	hl_last_html_end_tag[0xff] = L"</tag>";
+
   extern UINT		_hl_ctx_menu_type;
   extern	VOID	HL_Trace(const char *fmt, ...);
 
@@ -159,6 +160,81 @@ extern "C"
     }
     pContextMenu->Release();
     return (TRUE);
+  }
+
+  void HL_Strip_html_tags(HWND hwnd)
+  {
+    struct Sci_TextToFind ttf1, ttf2;
+    int selbeg, selend, res, len;
+
+    //
+    selbeg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+    selend = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+    len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+    SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+    //
+    if (0 == selend - selbeg)
+    {
+      ttf1.chrg.cpMin = selbeg;
+      ttf1.chrg.cpMax = 0;
+      ttf1.lpstrText = "<";
+      res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf1);
+      if (-1 != res)
+      {
+        ttf2.chrg.cpMin = ttf1.chrgText.cpMax;
+        ttf2.chrg.cpMax = len;
+        ttf2.lpstrText = ">";
+        res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf2);
+        if (-1 != res)
+        {
+          SendMessage(hwnd, SCI_DELETERANGE, ttf1.chrgText.cpMin, ttf2.chrgText.cpMax - ttf1.chrgText.cpMin);
+          SendMessage(hwnd, SCI_SETSEL, ttf1.chrgText.cpMin, ttf1.chrgText.cpMin);
+        }
+      }
+    }
+    else
+    {
+      while (1)
+      {
+        ttf1.chrg.cpMin = selbeg;
+        ttf1.chrg.cpMax = selend;
+        ttf1.lpstrText = "<";
+        res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf1);
+        if (-1 != res)
+        {
+          ttf2.chrg.cpMin = ttf1.chrgText.cpMax;
+          ttf2.chrg.cpMax = selend;
+          ttf2.lpstrText = ">";
+          res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf2);
+          if (-1 != res)
+          {
+            int dlen = ttf2.chrgText.cpMax - ttf1.chrgText.cpMin;
+            SendMessage(hwnd, SCI_DELETERANGE, ttf1.chrgText.cpMin, dlen);
+            selend -= dlen;
+          }
+          else
+          {
+            break;
+          }
+        }
+        else
+        {
+          break;
+        }
+      }
+      SendMessage(hwnd, SCI_SETSEL, selbeg, selend);
+    }
+    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+  }
+
+  BOOL IsSelectionModeValid(HWND hwnd)
+  {
+    if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+    {
+      MsgBox(MBINFO, IDS_SELRECT);
+      return FALSE;
+    }
+    return TRUE;
   }
 
   int isValidRegex(LPCSTR str)

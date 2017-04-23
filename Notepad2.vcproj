@@ -204,10 +204,6 @@
 				>
 			</File>
 			<File
-				RelativePath="hl_helper.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\HLSelection.c"
 				>
 			</File>
