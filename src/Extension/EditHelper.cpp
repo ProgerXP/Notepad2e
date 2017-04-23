@@ -6,6 +6,7 @@
 #include <regex>
 #include "scintilla.h"
 #include "resource.h"
+#include "HLSelection.h"
 
 extern "C"
 {
@@ -235,6 +236,128 @@ extern "C"
       return FALSE;
     }
     return TRUE;
+  }
+
+  extern BOOL bAutoIndent;
+
+  LPSTR GetLinePrefix(HWND hwnd, int iLine, LPBOOL pbLineEmpty)
+  {
+    *pbLineEmpty = TRUE;
+    LPSTR pszPrefix = NULL;
+
+    const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+    const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iLine, 0);
+    const int iLinePrefixLength = iCurPos - iLineStart;
+    pszPrefix = (LPSTR)GlobalAlloc(GPTR, iLinePrefixLength + 1);
+    struct TextRange tr = { { iLineStart, iCurPos }, pszPrefix };
+    SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+
+    for (size_t i = 0; i < strlen(pszPrefix); ++i)
+    {
+      const char chCurrent = pszPrefix[i];
+      if (!isspace(chCurrent) || (chCurrent == '\r') || (chCurrent == '\n'))
+      {
+        pszPrefix[i] = 0;
+        *pbLineEmpty = (i == 0);
+        break;
+      }
+    }
+
+    return pszPrefix;
+  }
+
+  void FreeLinePrefix(LPSTR pszPrefix)
+  {
+    if (pszPrefix)
+    {
+      GlobalFree(pszPrefix);
+    }
+  }
+
+  void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
+  {
+    const BOOL bAutoIndentOrigin = bAutoIndent;
+    bAutoIndent = 0;
+    SendMessage(hwnd, SCI_NEWLINE, 0, 0);
+    bAutoIndent = bAutoIndentOrigin;
+    if (bInsertAbove)
+    {
+      SendMessage(hwnd, SCI_CHARLEFT, 0, 0);
+    }
+    if (pszPrefix && (strlen(pszPrefix) > 0))
+    {
+      const int iCurrentPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+      SendMessage(hwnd, SCI_INSERTTEXT, iCurrentPos, (LPARAM)pszPrefix);
+      SendMessage(hwnd, SCI_LINEEND, 0, 0);
+    }
+  }
+
+  void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
+  {
+    if (HLS_Edit_selection_stop(HL_SE_APPLY))
+    {
+      return;
+    }
+
+    const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+    const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
+    const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
+    SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+    const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
+    LPSTR pszPrefixText = NULL;
+    BOOL bIsEmptyPrefix = FALSE;
+
+    if (insertAbove)
+    {
+      const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
+      if (bAutoIndent)
+      {
+        const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iCurLine, 0);
+        const int iLinePrefixLength = iCurPos - iLineStart;
+        bIsEmptyPrefix = (iLinePrefixLength == 0);
+        if (!bIsEmptyPrefix)
+        {
+          pszPrefixText = GetLinePrefix(hwnd, iCurLine, &bIsEmptyPrefix);
+        }
+        if (bIsEmptyPrefix)
+        {
+          SendMessage(hwnd, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
+          SendMessage(hwnd, SCI_NEWLINE, 0, 0);
+          if (iPrevLine == iCurLine)
+          {
+            const int iNewPrevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
+            SendMessage(hwnd, SCI_SETSEL, iNewPrevLineEndPos, iNewPrevLineEndPos);
+          }
+        }
+        else
+        {
+          SendMessage(hwnd, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
+          InsertNewLineWithPrefix(hwnd, pszPrefixText, (iPrevLine == iCurLine));
+        }
+      }
+      else
+      {
+        SendMessage(hwnd, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
+        SendMessage(hwnd, SCI_NEWLINE, 0, 0);
+      }
+    }
+    else
+    {
+      const BOOL isLineEnd = (iCurPos == iCurLineEndPos);
+      if (isLineEnd && bAutoIndent)
+      {
+        SendMessage(hwnd, SCI_SETSEL, iCurLineEndPos, iCurLineEndPos);
+        pszPrefixText = GetLinePrefix(hwnd, iCurLine - 1, &bIsEmptyPrefix);
+        InsertNewLineWithPrefix(hwnd, pszPrefixText, FALSE);
+      }
+      else
+      {
+        SendMessage(hwnd, SCI_SETSEL, iCurLineEndPos, iCurLineEndPos);
+        SendMessage(hwnd, SCI_NEWLINE, 0, 0);
+      }
+    }
+    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+    FreeLinePrefix(pszPrefixText);
   }
 
   int isValidRegex(LPCSTR str)

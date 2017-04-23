@@ -13,6 +13,7 @@ extern "C" {
   extern WCHAR	hl_last_html_end_tag[0xff];
 
   void HL_Strip_html_tags(HWND hwnd);
+  void EditInsertNewLine(HWND hwnd, BOOL insertAbove);
   BOOL IsSelectionModeValid(HWND hwnd);
 #ifdef __cplusplus
 }//end extern "C"

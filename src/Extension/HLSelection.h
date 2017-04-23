@@ -10,6 +10,9 @@ typedef	enum
   HL_SE_REJECT = 1 << 1
 }	HL_SELEDIT_STOP_OPT;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 void	HLS_init();
 void	HLS_release();
 UINT	HLS_Sci_event_mask(BOOL range_not);
@@ -19,3 +22,6 @@ void	HLS_on_notification(int code, struct SCNotification *scn);
 void	HLS_Update_selection(UINT place);
 void	HLS_Edit_selection_start(const BOOL highlightAll);
 BOOL	HLS_Edit_selection_stop(UINT mode);
+#ifdef __cplusplus
+}//end extern "C"
+#endif
