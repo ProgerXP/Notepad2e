@@ -323,6 +323,7 @@
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />
     <ClCompile Include="src\Extension\EditHelper.cpp" />
+    <ClCompile Include="src\Extension\ExtHelpers.c" />
     <ClCompile Include="src\Extension\HLSelection.c" />
     <ClCompile Include="src\Extension\InlineProgressBarCtrl.c" />
     <ClCompile Include="src\Extension\StrToHex.c" />
@@ -398,6 +399,7 @@
     <ClInclude Include="src\Dlapi.h" />
     <ClInclude Include="src\Edit.h" />
     <ClInclude Include="src\Extension\EditHelper.h" />
+    <ClInclude Include="src\Extension\ExtHelpers.h" />
     <ClInclude Include="src\Extension\HLSelection.h" />
     <ClInclude Include="src\Extension\InlineProgressBarCtrl.h" />
     <ClInclude Include="src\Extension\SciCall.h" />
