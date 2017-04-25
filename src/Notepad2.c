@@ -5370,10 +5370,13 @@ void SaveSettings(BOOL bSaveSettingsNow)
     return;
   }
   CreateIniFile();
-  if ((nSaveSettingsMode == SSM_NO) && !bSaveSettingsNow)
+  if ((nSaveSettingsMode != SSM_REGULAR) && !bSaveSettingsNow)
   {
     IniSetInt(L"Settings", L"SaveSettings", nSaveSettingsMode);
-    return;
+    if (nSaveSettingsMode == SSM_NO)
+    {
+      return;
+    }
   }
   const BOOL bCheckSaveSettingsMode = !bSaveSettingsNow;
   if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR))
