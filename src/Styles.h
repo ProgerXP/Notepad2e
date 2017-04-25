@@ -1,3 +1,7 @@
+#pragma once
+#ifdef __cplusplus
+extern "C" {
+#endif
 /******************************************************************************
 *
 *
@@ -88,4 +92,7 @@ void   Style_ConfigDlg(HWND);
 INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND, UINT, WPARAM, LPARAM);
 void   Style_SelectLexerDlg(HWND);
 
+#ifdef __cplusplus
+}//end extern "C"
+#endif
 // End of Style.h

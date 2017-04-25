@@ -6,6 +6,7 @@
 #include <regex>
 #include "scintilla.h"
 #include "resource.h"
+#include "Styles.h"
 
 extern "C"
 {
@@ -396,6 +397,109 @@ extern "C"
   BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos)
   {
     return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
+  }
+
+  void HL_Msg_create()
+  {
+    // Tabs
+    SendMessage(hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0);
+    SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
+    SendMessage(hwndEdit, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
+    SendMessage(hwndEdit, SCI_SETTABWIDTH, iTabWidth, 0);
+    SendMessage(hwndEdit, SCI_SETINDENT, iIndentWidth, 0);
+    // Indent Guides
+    Style_SetIndentGuides(hwndEdit, bShowIndentGuides);
+    // Word wrap
+    if (!fWordWrap)
+    {
+      SendMessage(hwndEdit, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+    }
+    else
+    {
+      SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+    }
+    if (iWordWrapIndent == 5)
+    {
+      SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
+    }
+    else if (iWordWrapIndent == 6)
+    {
+      SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
+    }
+    else
+    {
+      int i = 0;
+      switch (iWordWrapIndent)
+      {
+        case 1:
+          i = 1;
+          break;
+        case 2:
+          i = 2;
+          break;
+        case 3:
+          i = (iIndentWidth) ? 1 * iIndentWidth : 1 * iTabWidth;
+          break;
+        case 4:
+          i = (iIndentWidth) ? 2 * iIndentWidth : 2 * iTabWidth;
+          break;
+      }
+      SendMessage(hwndEdit, SCI_SETWRAPSTARTINDENT, i, 0);
+      SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_FIXED, 0);
+    }
+    if (bShowWordWrapSymbols)
+    {
+      int wrapVisualFlags = 0;
+      int wrapVisualFlagsLocation = 0;
+      if (iWordWrapSymbols == 0)
+      {
+        iWordWrapSymbols = 22;
+      }
+      switch (iWordWrapSymbols % 10)
+      {
+        case 1:
+          wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+          wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
+          break;
+        case 2:
+          wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+          break;
+      }
+      switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
+      {
+        case 1:
+          wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+          wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
+          break;
+        case 2:
+          wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+          break;
+      }
+      SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+      SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+    }
+    else
+    {
+      SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, 0, 0);
+    }
+    // Long Lines
+    if (bMarkLongLines)
+    {
+      SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    }
+    else
+    {
+      SendMessage(hwndEdit, SCI_SETEDGEMODE, EDGE_NONE, 0);
+    }
+    SendMessage(hwndEdit, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
+    // Margins
+    SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 2, 0);
+    SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+    UpdateLineNumberWidth();
+    // Nonprinting characters
+    SendMessage(hwndEdit, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+    SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
+    SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
   }
 
   void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
