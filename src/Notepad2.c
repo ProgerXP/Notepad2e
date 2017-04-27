@@ -38,9 +38,11 @@
 #include "helpers.h"
 #include "resource.h"
 #include "SciCall.h"
-#include "EditHelper.h"
+#include "Extension/EditHelper.h"
+#include "Extension/EditHelperEx.h"
+#include "Extension/InlineProgressBarCtrl.h"
+#include "Extension/Utils.h"
 #include "tinyexpr/tinyexpr.h"
-#include "InlineProgressBarCtrl.h"
 
 /******************************************************************************
 *
@@ -48,9 +50,6 @@
 *
 */
 HWND      hwndStatus;
-HWND      hwndStatusProgressBar = NULL;
-BOOL      bShowProgressBar = FALSE;
-WCHAR     tchProgressBarTaskName[MAX_PATH];
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      hwndEdit;
@@ -6376,54 +6375,6 @@ void UpdateStatusbar()
   StatusSetText(hwndStatus, STATUS_EOLMODE, tchEOLMode);
   StatusSetText(hwndStatus, STATUS_OVRMODE, tchOvrMode);
   StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressBarTaskName : tchLexerName);
-}
-
-void CreateProgressBarInStatusBar()
-{
-  hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, 0, 100, TRUE, STATUS_LEXER);
-}
-
-void DestroyProgressBarInStatusBar()
-{
-  DestroyWindow(hwndStatusProgressBar);
-  hwndStatusProgressBar = NULL;
-}
-
-void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
-{
-  if (hwndStatusProgressBar)
-  {
-    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), pProgressText);
-    bShowProgressBar = TRUE;
-    InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, nCurPos, nMaxPos, 1);
-    InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
-    InlineProgressBarCtrl_Resize(hwndStatusProgressBar);
-    ShowWindow(hwndStatusProgressBar, SW_SHOW);
-    UpdateStatusbar();
-  }
-}
-
-void HideProgressBarInStatusBar()
-{
-  if (hwndStatusProgressBar)
-  {
-    bShowProgressBar = FALSE;
-    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), L"");
-    ShowWindow(hwndStatusProgressBar, SW_HIDE);
-    UpdateStatusbar();
-  }
-}
-
-void UpdateProgressBarInStatusBar(const long nCurPos)
-{
-  InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
-  InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
-}
-
-void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
-{
-  InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, 0, nMaxPos, 1);
-  UpdateProgressBarInStatusBar(nCurPos);
 }
 
 //=============================================================================

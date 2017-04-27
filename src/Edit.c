@@ -34,8 +34,9 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
-#include "EditHelper.h"
-#include "EditHelperEx.h"
+#include "Extension/EditHelper.h"
+#include "Extension/EditHelperEx.h"
+#include "Extension/Utils.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;

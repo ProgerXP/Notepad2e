@@ -34,6 +34,7 @@
 #include "resource.h"
 #include "version.h"
 #include "_version.h"
+#include "Extension/Utils.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -46,7 +47,6 @@ extern BOOL bNoEncodingTags;
 extern BOOL bFixLineEndings;
 extern BOOL bAutoStripBlanks;
 extern WCHAR szCurFile[MAX_PATH + 40];
-extern	WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 //=============================================================================
 //

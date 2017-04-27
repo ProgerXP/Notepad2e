@@ -32,7 +32,8 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
-#include "SciCall.h"
+#include "Extension/SciCall.h"
+#include "Extension/Utils.h"
 
 HANDLE g_hScintilla;
 extern UINT	_hl_css_property;

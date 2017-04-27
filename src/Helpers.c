@@ -331,37 +331,6 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
   return (fFound);
 }
 
-// recent window title params
-UINT _uIDAppName;
-BOOL _bIsElevated;
-UINT _uIDUntitled;
-WCHAR _lpszFile[MAX_PATH * 2];
-int _iFormat;
-BOOL _bModified;
-UINT _uIDReadOnly;
-BOOL _bReadOnly;
-WCHAR _lpszExcerpt[MAX_PATH * 2];
-
-void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
-                       LPCWSTR lpszFile, int iFormat, BOOL bModified,
-                       UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
-{
-  _uIDAppName = uIDAppName;
-  _bIsElevated = bIsElevated;
-  _uIDUntitled = uIDUntitled;
-  StrCpyW(_lpszFile, lpszFile);
-  _iFormat = iFormat;
-  _bModified = bModified;
-  _uIDReadOnly = uIDReadOnly;
-  _bReadOnly = bReadOnly;
-  StrCpyW(_lpszExcerpt, lpszExcerpt);
-}
-
-void UpdateWindowTitle(HWND hwnd)
-{
-  SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
-}
-
 //=============================================================================
 //
 //  SetWindowTitle()

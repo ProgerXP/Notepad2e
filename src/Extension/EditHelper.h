@@ -1,11 +1,6 @@
 #pragma once
+#include "stdafx.h"
 
-#define _WIN32_WINNT 0x501
-#include <windows.h>
-#include <shlobj.h>
-#include <shlwapi.h>
-#include <commctrl.h>
-#include <string.h>
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
@@ -15,9 +10,7 @@
 #include "HLSelection.h"
 #include "Styles.h"
 #include "StrToHex.h"
-
-#define HL_IS_LITERAL(CH) hl_iswordchar(CH)
-#define HL_IS_SPACE(CH) hl_isspace(CH)
+#include "Utils.h"
 
 extern NP2ENCODING mEncoding[];
 extern	int       iEncoding;
@@ -50,8 +43,8 @@ extern  int     iLongLinesLimit;
 extern  BOOL    bShowSelectionMargin;
 extern  BOOL    bViewWhiteSpace;
 extern  BOOL    bViewEOLs;
-extern  ELanguageIndicatorMode iShowLanguageInTitle;
-extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
+//extern  ELanguageIndicatorMode iShowLanguageInTitle;
+//extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 #define ICON_FIND_OK 9
 #define ICON_FIND_FAILED 26

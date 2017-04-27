@@ -1,9 +1,8 @@
-#include <Shlwapi.h>
-
+#include "stdafx.h"
 #include "StrToHex.h"
 #include "Edit.h"
 #include "Scintilla.h"
-#include "Notepad2.h"
+#include "Utils.h"
 
 extern NP2ENCODING mEncoding[];
 extern	int       iEncoding;

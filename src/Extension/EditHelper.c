@@ -523,7 +523,6 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
   {
     return FALSE;
   }
-#define _HL_COMPARE_FILES( F1 , F2 )  (HL_Compare_files(F1,F2))
   do
   {
     if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))

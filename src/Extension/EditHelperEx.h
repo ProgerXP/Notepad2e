@@ -1,11 +1,6 @@
 #pragma once
+#include "stdafx.h"
 
-#define _WIN32_WINNT 0x501
-#include <windows.h>
-#include <shlobj.h>
-#include <shlwapi.h>
-#include <commctrl.h>
-#include <string.h>
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
@@ -14,9 +9,6 @@
 #include "Edit.h"
 #include "HLSelection.h"
 #include "StrToHex.h"
-
-#define HL_IS_LITERAL(CH) hl_iswordchar(CH)
-#define HL_IS_SPACE(CH) hl_isspace(CH)
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,29 +44,12 @@ extern "C" {
   extern  BOOL    bShowSelectionMargin;
   extern  BOOL    bViewWhiteSpace;
   extern  BOOL    bViewEOLs;
-  extern  ELanguageIndicatorMode iShowLanguageInTitle;
-  extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
-
+  
   #define ICON_FIND_OK 9
   #define ICON_FIND_FAILED 26
   #define FIND_INFO_INDEX 12
 
-  extern WCHAR	hl_last_html_tag[0xff];
-  extern WCHAR	hl_last_html_end_tag[0xff];
-
-  void HL_Strip_html_tags(HWND hwnd);
-  void HL_Jump_offset(HWND hwnd, int iNewPos);
-  void EditInsertNewLine(HWND hwnd, BOOL insertAbove);
-  BOOL IsSelectionModeValid(HWND hwnd);
-  void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
-  int FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
-  BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);
-  void HL_Msg_create();
-  BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next);
-  void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode);
-  void HL_Escape_html(HWND hwnd);
-  void UpdateFindIcon(const BOOL findOK);
-  void ResetFindIcon();
+  BOOL HL_Explorer_cxt_menu(LPCWSTR path, void *parentWindow);
   int isValidRegex(LPCSTR str);
 
 #ifdef __cplusplus

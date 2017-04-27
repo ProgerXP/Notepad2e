@@ -1,5 +1,5 @@
 #pragma once
-#include <windows.h>
+#include "stdafx.h"
 
 #define MIN_VALID_HEX_CODE 0x21
 

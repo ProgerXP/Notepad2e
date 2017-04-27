@@ -1,9 +1,9 @@
-#define _WIN32_WINNT 0x501
-#include <windows.h>
+#include "stdafx.h"
+#include <cassert>
 #include "scintilla.h"
 #include "HLSelection.h"
 #include "Helpers.h"
-#include <cassert>
+#include "Utils.h"
 
 /************************************************************************/
 /* when many matches on ALL document  but NOT ALL OF THEM  on screen                                                                   */

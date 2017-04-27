@@ -1,11 +1,4 @@
-#define _WIN32_WINNT 0x501
-#include <windows.h>
-#include <shlobj.h>
-#include <shlwapi.h>
-#include <commctrl.h>
-#include <uxtheme.h>
-#include <stdio.h>
-#include <string.h>
+#include "Utils.h"
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
@@ -14,6 +7,7 @@
 #include "HLSelection.h"
 #include "Edit.h"
 #include "SciCall.h"
+#include "InlineProgressBarCtrl.h"
 
 #define HL_WHEEL_TIMER_ID	0xfefe
 #define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
@@ -30,16 +24,15 @@ BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
 BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
 int iEvaluateMathExpression = 0;
-ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
 int iWordNavigationMode = 0;
-
+ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
 
 UINT	_hl_ctx_menu_type = 0;
 extern	LPMRULIST pFileMRU;
 extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 //
 BOOL	_hl_wheel_timer = FALSE;
-WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
+//WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 INT		_hl_alloc_count = 0;
 extern	long	_hl_max_search_range;
 
@@ -48,12 +41,40 @@ int iScrollYCaretPolicy = 0;
 int iFindWordMatchCase = 0;
 int iFindWordWrapAround = 0;
 
-//
+HWND hwndStatusProgressBar = NULL;
+BOOL bShowProgressBar = FALSE;
+
+void* HL_Alloc(size_t size)
+{
+  if (_hl_alloc_count)
+  {
+    HL_TRACE(L"WARNING !!! ALLOC mismatch : %d", _hl_alloc_count);
+  }
+  ++_hl_alloc_count;
+  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
+}
+
+void HL_Free(void* ptr)
+{
+  if (ptr)
+  {
+    --_hl_alloc_count;
+    GlobalFree(ptr);
+  }
+}
+
+void* HL_Realloc(void* ptr, size_t len)
+{
+  HL_Free(ptr);
+  return HL_Alloc(len);
+}
+
 VOID CALLBACK HL_wheel_timer_proc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
   _hl_wheel_timer = FALSE;
   KillTimer(NULL, idEvent);
 }
+
 VOID CALLBACK HL_sel_edit_timer_proc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
 }
@@ -146,6 +167,7 @@ VOID HL_Trace(const char *fmt, ...)
     fflush(_hL_log);
   }
 }
+
 VOID HL_WTrace(const char *fmt, LPCWSTR word)
 {
   if (_hL_log)
@@ -163,6 +185,7 @@ VOID HL_WTrace(const char *fmt, LPCWSTR word)
     fflush(_hL_log);
   }
 }
+
 VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
 {
   if (_hL_log)
@@ -183,6 +206,7 @@ VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
     fflush(_hL_log);
   }
 }
+
 BOOL HL_Test_offset_tail(WCHAR *wch)
 {
   while (*wch)
@@ -195,6 +219,7 @@ BOOL HL_Test_offset_tail(WCHAR *wch)
   }
   return TRUE;
 }
+
 BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
 {
   BOOL ok = 0;
@@ -264,6 +289,7 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
   }
   return 0;
 }
+
 VOID HL_Wheel_scroll_worker(int lines)
 {
   int anch, sel = 0;
@@ -284,6 +310,7 @@ VOID HL_Wheel_scroll_worker(int lines)
     SendMessage(hwndEdit, SCI_LINESCROLL, 0, -anch);
   }
 }
+
 VOID HL_Set_wheel_scroll(BOOL on)
 {
   if (on)
@@ -295,6 +322,7 @@ VOID HL_Set_wheel_scroll(BOOL on)
     hl_wheel_action = 0;
   }
 }
+
 BOOL CALLBACK HL_Enum_proc(
   HWND hwnd,
   LPARAM lParam
@@ -310,10 +338,12 @@ BOOL CALLBACK HL_Enum_proc(
   }
   return TRUE;
 }
+
 VOID HL_Reload_Settings()
 {
   EnumWindows(HL_Enum_proc, (LPARAM)g_hwnd);
 }
+
 BOOL HL_Is_Empty(LPCWSTR txt)
 {
   int t = lstrlen(txt);
@@ -326,6 +356,27 @@ BOOL HL_Is_Empty(LPCWSTR txt)
   }
   return TRUE;
 }
+
+int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2)
+{
+  int res1, res2;
+  res1 = StrCmp(sz1, sz2);
+  if (res1)
+  {
+    WCHAR b1[MAX_PATH], b2[MAX_PATH];
+    StrCpy(b1, sz1);
+    StrCpy(b2, sz2);
+    PathRemoveExtension(b1);
+    PathRemoveExtension(b2);
+    res2 = StrCmp(b1, b2);
+    if (res2)
+    {
+      return res2;
+    }
+  }
+  return res1;
+}
+
 BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
   WIN32_FIND_DATA	wfd;
@@ -520,6 +571,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
   }
   return take_call;
 }
+
 VOID HL_Get_last_dir(LPTSTR out)
 {
   WCHAR	tch[MAX_PATH];
@@ -546,7 +598,7 @@ VOID HL_Get_last_dir(LPTSTR out)
   }
 }
 
-VOID	HL_Grep(VOID* _lpf, BOOL grep)
+VOID HL_Grep(VOID* _lpf, BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
@@ -641,56 +693,12 @@ void HL_inplace_rev(WCHAR * s)
   }
 }
 
-void* HL_Alloc(size_t size)
-{
-  if (_hl_alloc_count)
-  {
-    HL_TRACE(L"WARNING !!! ALLOC mismatch : %d", _hl_alloc_count);
-  }
-  ++_hl_alloc_count;
-  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
-}
-
-void HL_Free(void* ptr)
-{
-  if (ptr)
-  {
-    --_hl_alloc_count;
-    GlobalFree(ptr);
-  }
-}
-
-void* HL_Realloc(void* ptr, size_t len)
-{
-  HL_Free(ptr);
-  return HL_Alloc(len);
-}
-
-int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2)
-{
-  int res1, res2;
-  res1 = StrCmp(sz1, sz2);
-  if (res1)
-  {
-    WCHAR b1[MAX_PATH], b2[MAX_PATH];
-    StrCpy(b1, sz1);
-    StrCpy(b2, sz2);
-    PathRemoveExtension(b1);
-    PathRemoveExtension(b2);
-    res2 = StrCmp(b1, b2);
-    if (res2)
-    {
-      return res2;
-    }
-  }
-  return res1;
-}
-
-BOOL	hl_iswordchar(WCHAR ch)
+BOOL hl_iswordchar(WCHAR ch)
 {
   return	IsCharAlphaNumericW(ch) || NULL != StrChr(L"_", ch);
 }
-BOOL	hl_isspace(WCHAR ch)
+
+BOOL hl_isspace(WCHAR ch)
 {
   return isspace(ch);
 }
@@ -716,4 +724,83 @@ BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
   CloseClipboard();
 
   return TRUE;
+}
+
+// recent window title params
+UINT _uIDAppName;
+BOOL _bIsElevated;
+UINT _uIDUntitled;
+WCHAR _lpszFile[MAX_PATH * 2];
+int _iFormat;
+BOOL _bModified;
+UINT _uIDReadOnly;
+BOOL _bReadOnly;
+WCHAR _lpszExcerpt[MAX_PATH * 2];
+
+void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+                           LPCWSTR lpszFile, int iFormat, BOOL bModified,
+                           UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
+{
+  _uIDAppName = uIDAppName;
+  _bIsElevated = bIsElevated;
+  _uIDUntitled = uIDUntitled;
+  StrCpyW(_lpszFile, lpszFile);
+  _iFormat = iFormat;
+  _bModified = bModified;
+  _uIDReadOnly = uIDReadOnly;
+  _bReadOnly = bReadOnly;
+  StrCpyW(_lpszExcerpt, lpszExcerpt);
+}
+
+void UpdateWindowTitle(HWND hwnd)
+{
+  SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
+}
+
+void CreateProgressBarInStatusBar()
+{
+  hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, 0, 100, TRUE, STATUS_LEXER);
+}
+
+void DestroyProgressBarInStatusBar()
+{
+  DestroyWindow(hwndStatusProgressBar);
+  hwndStatusProgressBar = NULL;
+}
+
+void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
+{
+  if (hwndStatusProgressBar)
+  {
+    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), pProgressText);
+    bShowProgressBar = TRUE;
+    InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, nCurPos, nMaxPos, 1);
+    InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
+    InlineProgressBarCtrl_Resize(hwndStatusProgressBar);
+    ShowWindow(hwndStatusProgressBar, SW_SHOW);
+    UpdateStatusbar();
+  }
+}
+
+void HideProgressBarInStatusBar()
+{
+  if (hwndStatusProgressBar)
+  {
+    bShowProgressBar = FALSE;
+    wcscpy_s(tchProgressBarTaskName, _countof(tchProgressBarTaskName), L"");
+    ShowWindow(hwndStatusProgressBar, SW_HIDE);
+    UpdateStatusbar();
+  }
+}
+
+void UpdateProgressBarInStatusBar(const long nCurPos)
+{
+  InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
+  InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
+}
+
+void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
+{
+  InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, 0, nMaxPos, 1);
+  UpdateProgressBarInStatusBar(nCurPos);
 }
