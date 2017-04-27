@@ -1,7 +1,4 @@
 #pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
 /******************************************************************************
 *
 *
@@ -22,9 +19,12 @@ extern "C" {
 *
 ******************************************************************************/
 
+
+
 // extern "C" declarations of Scintilla functions
 BOOL Scintilla_RegisterClasses(void*);
 BOOL Scintilla_ReleaseResources();
+
 
 typedef struct _editfindreplace
 {
@@ -39,19 +39,20 @@ typedef struct _editfindreplace
   BOOL bReplaceClose;
   BOOL bNoFindWrap;
   HWND hwnd;
-#ifdef BOOKMARK_EDITION
-  BOOL bWildcardSearch;
-#endif
+
 } EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;
+
 
 #define IDMSG_SWITCHTOFIND    300
 #define IDMSG_SWITCHTOREPLACE 301
+
 
 #define ALIGN_LEFT       0
 #define ALIGN_RIGHT      1
 #define ALIGN_CENTER     2
 #define ALIGN_JUSTIFY    3
 #define ALIGN_JUSTIFY_EX 4
+
 
 #define SORT_ASCENDING  0
 #define SORT_DESCENDING 1
@@ -62,6 +63,7 @@ typedef struct _editfindreplace
 #define SORT_NOCASE    32
 #define SORT_LOGICAL   64
 #define SORT_COLUMN   128
+
 
 HWND  EditCreate(HWND);
 void  EditSetNewText(HWND, char*, DWORD);
@@ -83,8 +85,6 @@ void  EditEscapeCChars(HWND);
 void  EditUnescapeCChars(HWND);
 void  EditChar2Hex(HWND);
 void  EditHex2Char(HWND);
-void  EditString2Hex(HWND);
-void  EditHex2String(HWND);
 void  EditModifyNumber(HWND, BOOL);
 
 void  EditTabsToSpaces(HWND, int, BOOL);
@@ -126,10 +126,6 @@ BOOL  EditAlignDlg(HWND, int*);
 BOOL  EditPrint(HWND, LPCWSTR, LPCWSTR);
 void  EditPrintSetup(HWND);
 void  EditPrintInit();
-void  EditMarkAll(HWND, int, BOOL, BOOL);
-void  CompleteWord(HWND, BOOL);
-
-extern int g_DOSEncoding;
 
 #define NCP_DEFAULT            1
 #define NCP_UTF8               2
@@ -199,6 +195,7 @@ typedef struct _filevars
   char tchEncoding[32];
   int  iEncoding;
   char tchMode[32];
+
 } FILEVARS, *LPFILEVARS;
 
 BOOL FileVars_Init(char*, DWORD, LPFILEVARS);
@@ -210,7 +207,6 @@ BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
 int  FileVars_GetEncoding(LPFILEVARS);
 
-#ifdef __cplusplus
-}//end extern "C"
-#endif
+
+
 ///   End of Edit.h   \\\

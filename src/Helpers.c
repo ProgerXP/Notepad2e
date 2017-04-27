@@ -30,7 +30,7 @@
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
-#include "ExtHelpers.h"
+#include "Extension/Utils.h"
 
 
 //=============================================================================

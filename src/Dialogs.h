@@ -18,6 +18,7 @@
 *
 ******************************************************************************/
 
+
 #define MBINFO         0
 #define MBWARN         1
 #define MBYESNO        2
@@ -25,9 +26,6 @@
 #define MBYESNOCANCEL  4
 #define MBOKCANCEL     8
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 int  MsgBox(int, UINT, ...);
 void DisplayCmdLineHelp();
 BOOL GetDirectory(HWND, int, LPWSTR, LPCWSTR, BOOL);
@@ -38,7 +36,6 @@ BOOL FavoritesDlg(HWND, LPWSTR);
 BOOL AddToFavDlg(HWND, LPCWSTR, LPCWSTR);
 BOOL FileMRUDlg(HWND, LPWSTR);
 BOOL HL_OpenMRU_Last(LPWSTR);
-
 BOOL ChangeNotifyDlg(HWND);
 BOOL ColumnWrapDlg(HWND, UINT, int *);
 BOOL WordWrapSettingsDlg(HWND, UINT, int *);
@@ -49,8 +46,6 @@ BOOL SelectEncodingDlg(HWND, int *);
 BOOL RecodeDlg(HWND, int *);
 BOOL SelectDefLineEndingDlg(HWND, int *);
 INT_PTR InfoBox(int, LPCWSTR, int, ...);
-#ifdef __cplusplus
-}//end extern "C"
-#endif
+
 
 // End of Dialogs.h

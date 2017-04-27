@@ -35,6 +35,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "EditHelper.h"
+#include "EditHelperEx.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -2125,24 +2126,6 @@ void EditHex2Char(HWND hwnd)
       }
     }
   }
-}
-
-void EditString2Hex(HWND hwnd)
-{
-  if (!IsSelectionModeValid(hwnd))
-  {
-    return;
-  }
-  EncodeStrToHex(hwnd);
-}
-
-void EditHex2String(HWND hwnd)
-{
-  if (!IsSelectionModeValid(hwnd))
-  {
-    return;
-  }
-  DecodeHexToStr(hwnd);
 }
 
 //=============================================================================
