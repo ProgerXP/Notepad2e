@@ -9,6 +9,8 @@
 #include "SciCall.h"
 #include "InlineProgressBarCtrl.h"
 
+HANDLE g_hScintilla = NULL;
+
 #define HL_WHEEL_TIMER_ID	0xfefe
 #define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
 UINT_PTR	_hl_sel_edit_timer_id = HL_SEL_EDIT_TIMER_ID;

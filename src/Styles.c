@@ -35,14 +35,14 @@
 #include "Extension/SciCall.h"
 #include "Extension/Utils.h"
 
-HANDLE g_hScintilla;
-extern UINT	_hl_css_property;
 
 #define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
+
 
 KEYWORDLIST KeyWords_NULL = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexDefault = { SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; log; asc; doc; diz; nfo", L"", &KeyWords_NULL, {
   /*  0 */ { STYLE_DEFAULT, 63100, L"Default Style", L"font:Lucida Console; size:10", L"" },
@@ -73,6 +73,7 @@ EDITLEXER lexDefault = { SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; l
   { -1, 00000, L"", L"", L"" }
 }
 };
+
 
 KEYWORDLIST KeyWords_HTML = {
     "!doctype ^aria- ^data- a abbr accept accept-charset accesskey acronym action address align alink "
@@ -127,6 +128,7 @@ KEYWORDLIST KeyWords_HTML = {
     "static stdclass switch this throw true try unset use var virtual while xor",
     "", "", "", ""
 };
+
 
 EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; aspx; shtml; htd; xhtml; php; php3; phtml; htt; cfm; tpl; dtd; hta; htc", L"", &KeyWords_HTML, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -187,9 +189,11 @@ EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; a
     }
 };
 
+
 KEYWORDLIST KeyWords_XML = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexXML = { SCLEX_XML, 63002, L"XML", L"xml; xsl; rss; svg; xul; xsd; xslt; axl; rdf; xaml; vcproj", L"", &KeyWords_XML, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -207,6 +211,7 @@ EDITLEXER lexXML = { SCLEX_XML, 63002, L"XML", L"xml; xsl; rss; svg; xul; xsd; x
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_CSS = {
     "^-moz- ^-ms- ^-o- ^-webkit-"
@@ -245,6 +250,7 @@ KEYWORDLIST KeyWords_CSS = {
     "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexCSS = { SCLEX_CSS, 63003, L"CSS Style Sheets", L"css", L"", &KeyWords_CSS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_CSS_COMMENT, 63127, L"Comment", L"fore:#646464", L"" },
@@ -265,6 +271,7 @@ EDITLEXER lexCSS = { SCLEX_CSS, 63003, L"CSS Style Sheets", L"css", L"", &KeyWor
     }
 };
 
+
 KEYWORDLIST KeyWords_CPP = {
     "__abstract __alignof __asm __assume __based __box __cdecl __declspec __delegate __event "
     "__except __except__try __fastcall __finally __forceinline __gc __hook __identifier "
@@ -281,6 +288,7 @@ KEYWORDLIST KeyWords_CPP = {
     "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexCPP = { SCLEX_CPP, 63004, L"C/C++", L"c; cpp; cxx; cc; h; hpp; hxx; hh; m; mm; idl; inl; odl", L"", &KeyWords_CPP, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
@@ -294,6 +302,7 @@ EDITLEXER lexCPP = { SCLEX_CPP, 63004, L"C/C++", L"c; cpp; cxx; cc; h; hpp; hxx;
     }
 };
 
+
 KEYWORDLIST KeyWords_CS = {
     "abstract as base bool break byte case catch char checked class const "
     "continue decimal default delegate do double else enum event explicit "
@@ -305,6 +314,7 @@ KEYWORDLIST KeyWords_CS = {
     "",
     "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexCS = { SCLEX_CPP, 63005, L"C#", L"cs", L"", &KeyWords_CS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -320,6 +330,7 @@ EDITLEXER lexCS = { SCLEX_CPP, 63005, L"C#", L"cs", L"", &KeyWords_CS, {
     }
 };
 
+
 KEYWORDLIST KeyWords_RC = {
     "ACCELERATORS ALT AUTO3STATE AUTOCHECKBOX AUTORADIOBUTTON "
     "BEGIN BITMAP BLOCK BUTTON CAPTION CHARACTERISTICS CHECKBOX "
@@ -331,6 +342,7 @@ KEYWORDLIST KeyWords_RC = {
     "TEXTINCLUDE VALUE VERSION VERSIONINFO VIRTKEY",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexRC = { SCLEX_CPP, 63006, L"Resource Script", L"rc; rc2; rct; rh; r; dlg", L"", &KeyWords_RC, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -345,9 +357,11 @@ EDITLEXER lexRC = { SCLEX_CPP, 63006, L"Resource Script", L"rc; rc2; rct; rh; r;
     }
 };
 
+
 KEYWORDLIST KeyWords_MAK = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexMAK = { SCLEX_MAKEFILE, 63007, L"Makefile", L"mak; make; mk; dsp", L"", &KeyWords_MAK, {
         { STYLE_DEFAULT, 63126, L"Default", L"fore:#0A246A", L"" },
@@ -360,6 +374,7 @@ EDITLEXER lexMAK = { SCLEX_MAKEFILE, 63007, L"Makefile", L"mak; make; mk; dsp", 
     }
 };
 
+
 KEYWORDLIST KeyWords_VBS = {
     "alias and as attribute begin boolean byref byte byval call case class compare const continue "
     "currency date declare dim do double each else elseif empty end enum eqv erase error event exit "
@@ -369,6 +384,7 @@ KEYWORDLIST KeyWords_VBS = {
     "static stop string sub then to true type unload until variant wend while with withevents xor",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexVBS = { SCLEX_VBSCRIPT, 63008, L"VBScript", L"vbs; dsm", L"", &KeyWords_VBS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -381,6 +397,7 @@ EDITLEXER lexVBS = { SCLEX_VBSCRIPT, 63008, L"VBScript", L"vbs; dsm", L"", &KeyW
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_VB = {
     "addhandler addressof alias and andalso ansi any as assembly auto boolean byref byte byval call "
@@ -397,6 +414,7 @@ KEYWORDLIST KeyWords_VB = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexVB = { SCLEX_VB, 63009, L"Visual Basic", L"vb; bas; frm; cls; ctl; pag; dsr; dob", L"", &KeyWords_VB, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_B_COMMENT, 63127, L"Comment", L"fore:#808080", L"" },
@@ -410,6 +428,7 @@ EDITLEXER lexVB = { SCLEX_VB, 63009, L"Visual Basic", L"vb; bas; frm; cls; ctl; 
     }
 };
 
+
 KEYWORDLIST KeyWords_JS = {
     "abstract boolean break byte case catch char class const continue debugger default delete do "
     "double else enum export extends false final finally float for function goto if implements "
@@ -418,6 +437,7 @@ KEYWORDLIST KeyWords_JS = {
     "void volatile while with",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexJS = { SCLEX_CPP, 63010, L"JavaScript", L"js; jse; jsm; json; as", L"", &KeyWords_JS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -432,6 +452,7 @@ EDITLEXER lexJS = { SCLEX_CPP, 63010, L"JavaScript", L"js; jse; jsm; json; as", 
     }
 };
 
+
 KEYWORDLIST KeyWords_JAVA = {
     "abstract assert boolean break byte case catch char class const "
     "continue default do double else extends final finally float for future "
@@ -441,6 +462,7 @@ KEYWORDLIST KeyWords_JAVA = {
     "var void volatile while",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexJAVA = { SCLEX_CPP, 63011, L"Java", L"java", L"", &KeyWords_JAVA, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -455,6 +477,7 @@ EDITLEXER lexJAVA = { SCLEX_CPP, 63011, L"Java", L"java", L"", &KeyWords_JAVA, {
     }
 };
 
+
 KEYWORDLIST KeyWords_PAS = {
     "absolute abstract alias and array as asm assembler begin break case cdecl class const constructor continue cppdecl default "
     "destructor dispose div do downto else end end. except exit export exports external false far far16 file finalization finally for "
@@ -464,6 +487,7 @@ KEYWORDLIST KeyWords_PAS = {
     "shr softfloat stdcall stored string then threadvar to true try type unit until uses var virtual while with write xor",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexPAS = { SCLEX_PASCAL, 63012, L"Pascal/Delphi", L"pas; dpr; dpk; dfm; inc; pp", L"", &KeyWords_PAS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -478,6 +502,7 @@ EDITLEXER lexPAS = { SCLEX_PASCAL, 63012, L"Pascal/Delphi", L"pas; dpr; dpk; dfm
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_ASM = {
     "aaa aad aam aas adc add and arpl bound bsf bsr bswap bt btc btr bts call cbw cdq cflush clc cld "
@@ -569,6 +594,7 @@ KEYWORDLIST KeyWords_ASM = {
     "", "", ""
 };
 
+
 EDITLEXER lexASM = { SCLEX_ASM, 63013, L"Assembly Script", L"asm", L"", &KeyWords_ASM, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_ASM_COMMENT, SCE_ASM_COMMENTBLOCK, 0, 0), 63127, L"Comment", L"fore:#008000", L"" },
@@ -585,6 +611,7 @@ EDITLEXER lexASM = { SCLEX_ASM, 63013, L"Assembly Script", L"asm", L"", &KeyWord
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_PL = {
     "__DATA__ __END__ __FILE__ __LINE__ __PACKAGE__ abs accept alarm and atan2 AUTOLOAD BEGIN "
@@ -609,6 +636,7 @@ KEYWORDLIST KeyWords_PL = {
     "when while write xor",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexPL = { SCLEX_PERL, 63014, L"Perl", L"pl; pm; cgi; pod", L"", &KeyWords_PL, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -646,9 +674,11 @@ EDITLEXER lexPL = { SCLEX_PERL, 63014, L"Perl", L"pl; pm; cgi; pod", L"", &KeyWo
     }
 };
 
+
 KEYWORDLIST KeyWords_INI = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexINI = { SCLEX_PROPERTIES, 63015, L"Configuration Files (INI)", L"ini; inf; reg; cfg; properties; oem; sif; url; sed; theme", L"", &KeyWords_INI, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -660,6 +690,7 @@ EDITLEXER lexINI = { SCLEX_PROPERTIES, 63015, L"Configuration Files (INI)", L"in
     }
 };
 
+
 KEYWORDLIST KeyWords_BAT = {
     "break call cd chcp chdir choice cls color com con copy country date defined del dir "
     "disabledelayedexpansion disableextensions do doskey echo else enabledelayedexpansion "
@@ -668,6 +699,7 @@ KEYWORDLIST KeyWords_BAT = {
     "prompt pushd rd rem ren rename rmdir set setlocal shift time title tree type ver verify",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexBAT = { SCLEX_BATCH, 63016, L"Batch Script", L"bat; cmd", L"", &KeyWords_BAT, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -681,9 +713,11 @@ EDITLEXER lexBAT = { SCLEX_BATCH, 63016, L"Batch Script", L"bat; cmd", L"", &Key
     }
 };
 
+
 KEYWORDLIST KeyWords_DIFF = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexDIFF = { SCLEX_DIFF, 63017, L"Diff Files", L"diff; patch", L"", &KeyWords_DIFF, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -697,6 +731,7 @@ EDITLEXER lexDIFF = { SCLEX_DIFF, 63017, L"Diff Files", L"diff; patch", L"", &Ke
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_SQL = {
     "abort accessible action add after all alter analyze and as asc asensitive attach autoincrement "
@@ -724,6 +759,7 @@ KEYWORDLIST KeyWords_SQL = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexSQL = { SCLEX_SQL, 63018, L"SQL Query", L"sql", L"", &KeyWords_SQL, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_SQL_COMMENT, 63127, L"Comment", L"fore:#505050", L"" },
@@ -737,12 +773,14 @@ EDITLEXER lexSQL = { SCLEX_SQL, 63018, L"SQL Query", L"sql", L"", &KeyWords_SQL,
     }
 };
 
+
 KEYWORDLIST KeyWords_PY = {
     "and as assert break class continue def del elif else except "
     "exec False finally for from global if import in is lambda None "
     "not or pass print raise return True try with while yield",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexPY = { SCLEX_PYTHON, 63019, L"Python", L"py; pyw", L"", &KeyWords_PY, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -760,6 +798,7 @@ EDITLEXER lexPY = { SCLEX_PYTHON, 63019, L"Python", L"py; pyw", L"", &KeyWords_P
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_CONF = {
     "acceptmutex acceptpathinfo accessconfig accessfilename action addalt addaltbyencoding addaltbytype addcharset adddefaultcharset "
@@ -812,6 +851,7 @@ KEYWORDLIST KeyWords_CONF = {
     "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexCONF = { SCLEX_CONF, 63020, L"Apache Config File", L"conf; htaccess", L"", &KeyWords_CONF, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_CONF_COMMENT, 63127, L"Comment", L"fore:#648000", L"" },
@@ -822,6 +862,7 @@ EDITLEXER lexCONF = { SCLEX_CONF, 63020, L"Apache Config File", L"conf; htaccess
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_PS = {
     "begin break catch continue data do dynamicparam else elseif end exit filter finally for foreach "
@@ -878,6 +919,7 @@ KEYWORDLIST KeyWords_PS = {
     "", "", "", "", ""
 };
 
+
 EDITLEXER lexPS = { SCLEX_POWERSHELL, 63021, L"PowerShell Script", L"ps1; psd1; psm1", L"", &KeyWords_PS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_POWERSHELL_COMMENT, SCE_POWERSHELL_COMMENTSTREAM, 0, 0), 63127, L"Comment", L"fore:#646464", L"" },
@@ -893,12 +935,14 @@ EDITLEXER lexPS = { SCLEX_POWERSHELL, 63021, L"PowerShell Script", L"ps1; psd1; 
     }
 };
 
+
 KEYWORDLIST KeyWords_RUBY = {
     "__FILE__ __LINE__ alias and begin break case class def defined? do else elsif end ensure "
     "false for in if module next nil not or redo rescue retry return self super then true "
     "undef unless until when while yield",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexRUBY = { SCLEX_RUBY, 63022, L"Ruby", L"rb; ruby; rbw; rake; rjs; Rakefile", L"", &KeyWords_RUBY, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
@@ -920,6 +964,7 @@ EDITLEXER lexRUBY = { SCLEX_RUBY, 63022, L"Ruby", L"rb; ruby; rbw; rake; rjs; Ra
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_BASH = {
     "alias "
@@ -950,6 +995,7 @@ KEYWORDLIST KeyWords_BASH = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; ksh", L"", &KeyWords_BASH, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
@@ -969,6 +1015,7 @@ EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; 
         { -1, 00000, L"", L"", L"" }
     }
 };
+
 
 KEYWORDLIST KeyWords_ASN1 = {
     "ACCESS AGENT AUGMENTS "
@@ -1025,6 +1072,7 @@ KEYWORDLIST KeyWords_ASN1 = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexASN1= { SCLEX_ASN1, 63024, L"ASN1", L"mib", L"", &KeyWords_ASN1, {
         { SCE_ASN1_DEFAULT, 63126, L"Default", L"fore:#000000", L"" },
         { SCE_ASN1_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
@@ -1041,6 +1089,7 @@ EDITLEXER lexASN1= { SCLEX_ASN1, 63024, L"ASN1", L"mib", L"", &KeyWords_ASN1, {
     }
 };
 
+
 KEYWORDLIST KeyWords_CAML = {
     "and as assert asr begin class "
     "constraint do done downto else end "
@@ -1056,6 +1105,7 @@ KEYWORDLIST KeyWords_CAML = {
     "array bool char float int list string unit",
     "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexCAML = { SCLEX_CAML, 63025, L"OCaml", L"ml; mli", L"", &KeyWords_CAML,{
         { SCE_CAML_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
@@ -1078,9 +1128,11 @@ EDITLEXER lexCAML = { SCLEX_CAML, 63025, L"OCaml", L"ml; mli", L"", &KeyWords_CA
       }
 };
 
+
 KEYWORDLIST KeyWords_COFFEESCRIPT = {
       "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63026, L"CoffeeScript", L"coffee", L"", &KeyWords_COFFEESCRIPT,{
         { SCE_COFFEESCRIPT_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
@@ -1111,6 +1163,7 @@ EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63026, L"CoffeeScript", L"coff
         { -1, 00000, L"", L"", L"" }
       }
 };
+
 
 KEYWORDLIST KeyWords_D = {
     "abstract alias align asm assert auto "
@@ -1146,6 +1199,7 @@ KEYWORDLIST KeyWords_D = {
     "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexD = { SCLEX_D, 63027, L"D", L"d", L"", &KeyWords_D,{
         { SCE_D_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
         { SCE_D_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
@@ -1174,6 +1228,7 @@ EDITLEXER lexD = { SCLEX_D, 63027, L"D", L"d", L"", &KeyWords_D,{
       }
 };
 
+
 KEYWORDLIST KeyWords_Lisp = {
     "not defun + - * / = < > <= >= princ "
     "eval apply funcall quote identity function complement backquote lambda set setq setf "
@@ -1191,6 +1246,7 @@ KEYWORDLIST KeyWords_Lisp = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexLisp = { SCLEX_LISP, 63028, L"Lisp", L"lsp;lisp", L"", &KeyWords_Lisp,{
         { SCE_LISP_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
         { SCE_LISP_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
@@ -1207,6 +1263,7 @@ EDITLEXER lexLisp = { SCLEX_LISP, 63028, L"Lisp", L"lsp;lisp", L"", &KeyWords_Li
         { -1, 00000, L"", L"", L"" }
       }
 };
+
 
 KEYWORDLIST KeyWords_Lua = {
     "and break do else elseif "
@@ -1257,6 +1314,7 @@ KEYWORDLIST KeyWords_Lua = {
     "", "", "", "", ""
 };
 
+
 EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua", L"lua", L"", &KeyWords_Lua,{
         { SCE_LUA_DEFAULT, 63126, L"Default", L"fore:#FF0000", L"" },
         { SCE_LUA_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia,back:#D0F0F0,eolfilled", L"" },
@@ -1282,6 +1340,7 @@ EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua", L"lua", L"", &KeyWords_Lua,{
         { -1, 00000, L"", L"", L"" }
       }
 };
+
 
 KEYWORDLIST KeyWords_NSIS = {
     "!addincludedir !addplugindir MakeNSIS Portions "
@@ -1346,6 +1405,7 @@ KEYWORDLIST KeyWords_NSIS = {
     "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexNSIS = { SCLEX_NSIS, 63030, L"NSIS Script", L"nsi;nsh", L"", &KeyWords_NSIS,{
         { SCE_NSIS_DEFAULT, 63126, L"Default", L"fore:#000000,font:Verdana", L"" },
         { SCE_NSIS_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
@@ -1369,6 +1429,7 @@ EDITLEXER lexNSIS = { SCLEX_NSIS, 63030, L"NSIS Script", L"nsi;nsh", L"", &KeyWo
         { -1, 00000, L"", L"", L"" }
       }
 };
+
 
 KEYWORDLIST KeyWords_TeX = {
     "above abovedisplayshortskip abovedisplayskip "
@@ -1456,6 +1517,7 @@ KEYWORDLIST KeyWords_TeX = {
     "", "", "", "", "", "", "", ""
 };
 
+
 EDITLEXER lexTeX = { SCLEX_TEX, 63031, L"TeX", L"tex;sty", L"", &KeyWords_TeX,{
         { SCE_TEX_DEFAULT, 63126, L"Default", L"fore:#3F3F3F", L"" },
         { SCE_TEX_SPECIAL, 63295, L"Special", L"fore:#007F7F", L"" },
@@ -1467,10 +1529,12 @@ EDITLEXER lexTeX = { SCLEX_TEX, 63031, L"TeX", L"tex;sty", L"", &KeyWords_TeX,{
       }
 };
 
+
 KEYWORDLIST KeyWords_Yaml = {
     "true false yes no",
     "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexYaml = { SCLEX_YAML, 63032, L"YAML", L"yaml;yml", L"", &KeyWords_Yaml,{
         { SCE_YAML_DEFAULT, 63126, L"Default", L"font:Times New Roman,fore:#000000", L"" },
@@ -1487,6 +1551,7 @@ EDITLEXER lexYaml = { SCLEX_YAML, 63032, L"YAML", L"yaml;yml", L"", &KeyWords_Ya
       }
 };
 
+
 KEYWORDLIST KeyWords_Rust = {
   "alignof as be box break const continue crate do else enum extern false fn "
   "for if impl in let loop match mod mut offsetof once priv proc pub pure ref "
@@ -1495,6 +1560,7 @@ KEYWORDLIST KeyWords_Rust = {
   "Self",
   "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust", L"rs", L"", &KeyWords_Rust,{
         { SCE_RUST_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
@@ -1525,9 +1591,11 @@ EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust", L"rs", L"", &KeyWords_Rust,{
       }
 };
 
+
 KEYWORDLIST KeyWords_Markdown = {
     "", "", "", "", "", "", "", "", ""
 };
+
 
 EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown", L"markdown;mdown;mkdn;md;mkd;mdwn;mdtxt;mdtext", L"", &KeyWords_Markdown,{
         { SCE_MARKDOWN_DEFAULT, 63126, L"Default", L"", L"" },
@@ -1555,6 +1623,7 @@ EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown", L"markdown;mdown;m
         { -1, 00000, L"", L"", L"" }
       }
 };
+
 
 PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexDefault,
@@ -1608,6 +1677,7 @@ int cyStyleSelectDlg;
 extern int  iDefaultCodePage;
 extern int  iDefaultCharSet;
 extern BOOL bHiliteCurrentLine;
+
 
 //=============================================================================
 //
@@ -1688,6 +1758,7 @@ void Style_Load()
   LocalFree(pIniSection);
 }
 
+
 //=============================================================================
 //
 //  Style_Save()
@@ -1712,13 +1783,17 @@ void Style_Save()
 
   // auto select
   IniSectionSetInt(pIniSection, L"Use2ndDefaultStyle", bUse2ndDefaultStyle);
+
   // default scheme
   IniSectionSetInt(pIniSection, L"DefaultScheme", iDefaultLexer);
+
   // auto select
   IniSectionSetInt(pIniSection, L"AutoSelect", bAutoSelect);
+
   // scheme select dlg dimensions
   IniSectionSetInt(pIniSection, L"SelectDlgSizeX", cxStyleSelectDlg);
   IniSectionSetInt(pIniSection, L"SelectDlgSizeY", cyStyleSelectDlg);
+
   SaveIniSection(L"Styles", pIniSection);
 
   if (!fStylesModified)
@@ -1742,6 +1817,7 @@ void Style_Save()
   LocalFree(pIniSection);
 }
 
+
 //=============================================================================
 //
 //  Style_Import()
@@ -1751,9 +1827,11 @@ BOOL Style_Import(HWND hwnd)
   WCHAR szFile[MAX_PATH * 2] = L"";
   WCHAR szFilter[256];
   OPENFILENAME ofn;
+
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
   GetString(IDS_FILTER_INI, szFilter, COUNTOF(szFilter));
   PrepareFilterStr(szFilter);
+
   ofn.lStructSize = sizeof(OPENFILENAME);
   ofn.hwndOwner = hwnd;
   ofn.lpstrFilter = szFilter;
@@ -1761,7 +1839,8 @@ BOOL Style_Import(HWND hwnd)
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
   ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE;
+    		| OFN_PATHMUSTEXIST | OFN_SHAREAWARE;
+
   if (GetOpenFileName(&ofn))
   {
     int i, iLexer;
@@ -1802,9 +1881,11 @@ BOOL Style_Export(HWND hwnd)
   WCHAR szFilter[256];
   OPENFILENAME ofn;
   DWORD dwError = ERROR_SUCCESS;
+
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
   GetString(IDS_FILTER_INI, szFilter, COUNTOF(szFilter));
   PrepareFilterStr(szFilter);
+
   ofn.lStructSize = sizeof(OPENFILENAME);
   ofn.hwndOwner = hwnd;
   ofn.lpstrFilter = szFilter;
@@ -1812,7 +1893,8 @@ BOOL Style_Export(HWND hwnd)
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
   ofn.Flags = OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    | OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_OVERWRITEPROMPT;
+    		| OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_OVERWRITEPROMPT;
+
   if (GetSaveFileName(&ofn))
   {
     int i, iLexer;
@@ -1843,6 +1925,7 @@ BOOL Style_Export(HWND hwnd)
   return (FALSE);
 }
 
+
 //=============================================================================
 //
 //  Style_SetLexer()
@@ -1855,19 +1938,19 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   int iIdx;
   int iStyleBits;
   WCHAR wchCaretStyle[64] = L"";
+
   // Select default if NULL is specified
   if (!pLexNew)
-  {
     pLexNew = pLexArray[iDefaultLexer];
-  }
+
   // Lexer
   SendMessage(hwnd, SCI_SETLEXER, pLexNew->iLexer, 0);
+
   iStyleBits = (int)SendMessage(hwnd, SCI_GETSTYLEBITSNEEDED, 0, 0);
   SendMessage(hwnd, SCI_SETSTYLEBITS, (WPARAM)iStyleBits, 0);
+
   if (pLexNew->iLexer == SCLEX_XML)
-  {
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.xml.allow.scripts", (LPARAM) "1");
-  }
   if (pLexNew->iLexer == SCLEX_CPP)
   {
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "styling.within.preprocessor", (LPARAM) "1");
@@ -1875,9 +1958,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.update.preprocessor", (LPARAM) "0");
   }
   else if (pLexNew->iLexer == SCLEX_PASCAL)
-  {
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.pascal.smart.highlighting", (LPARAM) "1");
-  }
   else if (pLexNew->iLexer == SCLEX_SQL)
   {
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "sql.backslash.escapes", (LPARAM) "1");
@@ -1910,43 +1991,43 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SciCall_SetProperty("fold.html", "1");
   SciCall_SetProperty("fold.preprocessor", "1");
   SciCall_SetProperty("fold.cpp.comment.explicit", "0");
+
   // Add KeyWord Lists
   for (i = 0; i < 9; i++)
-  {
     SendMessage(hwnd, SCI_SETKEYWORDS, i, (LPARAM)pLexNew->pKeyWords->pszKeyWords[i]);
-  }
+
   // Use 2nd default style
   iIdx = (bUse2ndDefaultStyle) ? 12 : 0;
+
   // Font quality setup, check availability of Consolas
   Style_SetFontQuality(hwnd, lexDefault.Styles[0 + iIdx].szValue);
   fIsConsolasAvailable = IsFontAvailable(L"Consolas");
+
   // Clear
   SendMessage(hwnd, SCI_CLEARDOCUMENTSTYLE, 0, 0);
+
   // Default Values are always set
   SendMessage(hwnd, SCI_STYLERESETDEFAULT, 0, 0);
   SendMessage(hwnd, SCI_STYLESETCHARACTERSET, STYLE_DEFAULT, (LPARAM)DEFAULT_CHARSET);
   iBaseFontSize = 10;
   Style_SetStyles(hwnd, lexDefault.Styles[0 + iIdx].iStyle, lexDefault.Styles[0 + iIdx].szValue); // default
   Style_StrGetSize(lexDefault.Styles[0 + iIdx].szValue, &iBaseFontSize);                  // base size
-  // Auto-select codepage according to charset
+
   if (!Style_StrGetColor(TRUE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
-  {
     SendMessage(hwnd, SCI_STYLESETFORE, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOWTEXT));    // default text color
-  }
   if (!Style_StrGetColor(FALSE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
-  {
     SendMessage(hwnd, SCI_STYLESETBACK, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOW));    // default window color
-  }
+
   if (pLexNew->iLexer != SCLEX_NULL)
-  {
     Style_SetStyles(hwnd, pLexNew->Styles[0].iStyle, pLexNew->Styles[0].szValue);    // lexer default
-  }
   SendMessage(hwnd, SCI_STYLECLEARALL, 0, 0);
+
   Style_SetStyles(hwnd, lexDefault.Styles[1 + iIdx].iStyle, lexDefault.Styles[1 + iIdx].szValue); // linenumber
   Style_SetStyles(hwnd, lexDefault.Styles[2 + iIdx].iStyle, lexDefault.Styles[2 + iIdx].szValue); // brace light
   Style_SetStyles(hwnd, lexDefault.Styles[3 + iIdx].iStyle, lexDefault.Styles[3 + iIdx].szValue); // brace bad
   Style_SetStyles(hwnd, lexDefault.Styles[4 + iIdx].iStyle, lexDefault.Styles[4 + iIdx].szValue);    // control char
   Style_SetStyles(hwnd, lexDefault.Styles[5 + iIdx].iStyle, lexDefault.Styles[5 + iIdx].szValue); // indent guide
+
   // More default values...
   if (Style_StrGetColor(TRUE, lexDefault.Styles[6 + iIdx].szValue, &rgb))
   { // selection fore
@@ -2002,6 +2083,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   {
     SendMessage(hwnd, SCI_SETWHITESPACEBACK, 0, 0);    // use a default value...
   }
+
   // whitespace dot size
   iValue = 1;
   if (Style_StrGetSize(lexDefault.Styles[7 + iIdx].szValue, &iValue))
@@ -2029,6 +2111,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     }
   }
   SendMessage(hwnd, SCI_SETWHITESPACESIZE, iValue, 0);
+
   if (bHiliteCurrentLine)
   {
     if (Style_StrGetColor(FALSE, lexDefault.Styles[8 + iIdx].szValue, &rgb))
@@ -2036,23 +2119,16 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
       SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, TRUE, 0);
       SendMessage(hwnd, SCI_SETCARETLINEBACK, rgb, 0);
       if (Style_StrGetAlpha(lexDefault.Styles[8 + iIdx].szValue, &iValue))
-      {
         SendMessage(hwnd, SCI_SETCARETLINEBACKALPHA, iValue, 0);
-      }
       else
-      {
         SendMessage(hwnd, SCI_SETCARETLINEBACKALPHA, SC_ALPHA_NOALPHA, 0);
-      }
     }
     else
-    {
       SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, FALSE, 0);
-    }
   }
   else
-  {
     SendMessage(hwnd, SCI_SETCARETLINEVISIBLE, FALSE, 0);
-  }
+
   // caret style and width
   if (StrStr(lexDefault.Styles[9 + iIdx].szValue, L"block"))
   {
@@ -2076,15 +2152,12 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   {
     SendMessage(hwnd, SCI_SETCARETPERIOD, (WPARAM)0, 0);
     if (lstrlen(wchCaretStyle))
-    {
       lstrcat(wchCaretStyle, L"; ");
-    }
     lstrcat(wchCaretStyle, L"noblink");
   }
   else
-  {
     SendMessage(hwnd, SCI_SETCARETPERIOD, (WPARAM)GetCaretBlinkTime(), 0);
-  }
+
   // caret fore
   if (!Style_StrGetColor(TRUE, lexDefault.Styles[9 + iIdx].szValue, &rgb))
   {
@@ -2098,9 +2171,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
              (int)GetGValue(rgb),
              (int)GetBValue(rgb));
     if (lstrlen(wchCaretStyle))
-    {
       lstrcat(wchCaretStyle, L"; ");
-    }
     lstrcat(wchCaretStyle, wch);
   }
   if (!VerifyContrast(rgb, (COLORREF)SendMessage(hwnd, SCI_STYLEGETBACK, 0, 0)))
@@ -2112,26 +2183,19 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   lstrcpy(lexDefault.Styles[9 + iIdx].szValue, wchCaretStyle);
   if (SendMessage(hwnd, SCI_GETEDGEMODE, 0, 0) == EDGE_LINE)
   {
-    if (Style_StrGetColor(TRUE, lexDefault.Styles[10 + iIdx].szValue, &rgb))
-    { // edge fore
+    if (Style_StrGetColor(TRUE, lexDefault.Styles[10 + iIdx].szValue, &rgb)) // edge fore
       SendMessage(hwnd, SCI_SETEDGECOLOUR, rgb, 0);
-    }
     else
-    {
       SendMessage(hwnd, SCI_SETEDGECOLOUR, GetSysColor(COLOR_3DLIGHT), 0);
-    }
   }
   else
   {
-    if (Style_StrGetColor(FALSE, lexDefault.Styles[10 + iIdx].szValue, &rgb))
-    { // edge back
+    if (Style_StrGetColor(FALSE, lexDefault.Styles[10 + iIdx].szValue, &rgb)) // edge back
       SendMessage(hwnd, SCI_SETEDGECOLOUR, rgb, 0);
-    }
     else
-    {
       SendMessage(hwnd, SCI_SETEDGECOLOUR, GetSysColor(COLOR_3DLIGHT), 0);
-    }
   }
+
   // Extra Line Spacing
   if (Style_StrGetSize(lexDefault.Styles[11 + iIdx].szValue, &iValue))
   {
@@ -2154,41 +2218,39 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_SETEXTRAASCENT, 0, 0);
     SendMessage(hwnd, SCI_SETEXTRADESCENT, 0, 0);
   }
+
+  // set folding style; braces are for scoping only
+  static const int iMarkerIDs[] = {
+      SC_MARKNUM_FOLDEROPEN,
+      SC_MARKNUM_FOLDER,
+      SC_MARKNUM_FOLDERSUB,
+      SC_MARKNUM_FOLDERTAIL,
+      SC_MARKNUM_FOLDEREND,
+      SC_MARKNUM_FOLDEROPENMID,
+      SC_MARKNUM_FOLDERMIDTAIL
+  };
+  COLORREF clrFore = SciCall_StyleGetFore(STYLE_DEFAULT);
+  COLORREF clrBack = SciCall_StyleGetBack(STYLE_DEFAULT);
+  SciCall_SetFoldMarginColour(TRUE, clrBack);
+  SciCall_SetFoldMarginHiColour(TRUE, clrBack);
+  // Set marker color to the average of clrFore and clrBack
+  clrFore = (((clrFore & 0xFF0000) + (clrBack & 0xFF0000)) >> 1 & 0xFF0000) |
+    (((clrFore & 0x00FF00) + (clrBack & 0x00FF00)) >> 1 & 0x00FF00) |
+    (((clrFore & 0x0000FF) + (clrBack & 0x0000FF)) >> 1 & 0x0000FF);
+  // Rounding hack for pure white against pure black
+  if (clrFore == 0x7F7F7F)
   {
-    // set folding style; braces are for scoping only
-    static const int iMarkerIDs[] = {
-        SC_MARKNUM_FOLDEROPEN,
-        SC_MARKNUM_FOLDER,
-        SC_MARKNUM_FOLDERSUB,
-        SC_MARKNUM_FOLDERTAIL,
-        SC_MARKNUM_FOLDEREND,
-        SC_MARKNUM_FOLDEROPENMID,
-        SC_MARKNUM_FOLDERMIDTAIL
-    };
-    int i;
-    COLORREF clrFore = SciCall_StyleGetFore(STYLE_DEFAULT);
-    COLORREF clrBack = SciCall_StyleGetBack(STYLE_DEFAULT);
-    SciCall_SetFoldMarginColour(TRUE, clrBack);
-    SciCall_SetFoldMarginHiColour(TRUE, clrBack);
-    // Set marker color to the average of clrFore and clrBack
-    clrFore = (((clrFore & 0xFF0000) + (clrBack & 0xFF0000)) >> 1 & 0xFF0000) |
-      (((clrFore & 0x00FF00) + (clrBack & 0x00FF00)) >> 1 & 0x00FF00) |
-      (((clrFore & 0x0000FF) + (clrBack & 0x0000FF)) >> 1 & 0x0000FF);
-    // Rounding hack for pure white against pure black
-    if (clrFore == 0x7F7F7F)
-    {
-      clrFore = 0x808080;
-    }
-    for (i = 0; i < COUNTOF(iMarkerIDs); ++i)
-    {
-      SciCall_MarkerSetBack(iMarkerIDs[i], clrFore);
-      SciCall_MarkerSetFore(iMarkerIDs[i], clrBack);
-    }
-  } // end set folding style
-  if (SendMessage(hwnd, SCI_GETINDENTATIONGUIDES, 0, 0) != SC_IV_NONE)
-  {
-    Style_SetIndentGuides(hwnd, TRUE);
+    clrFore = 0x808080;
   }
+  for (i = 0; i < COUNTOF(iMarkerIDs); ++i)
+  {
+    SciCall_MarkerSetBack(iMarkerIDs[i], clrFore);
+    SciCall_MarkerSetFore(iMarkerIDs[i], clrBack);
+  }
+
+  if (SendMessage(hwnd, SCI_GETINDENTATIONGUIDES, 0, 0) != SC_IV_NONE)
+    Style_SetIndentGuides(hwnd, TRUE);
+
   if (pLexNew->iLexer != SCLEX_NULL)
   {
     int j;
@@ -2196,18 +2258,15 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     while (pLexNew->Styles[i].iStyle != -1)
     {
       for (j = 0; j < 4 && (pLexNew->Styles[i].iStyle8[j] != 0 || j == 0); ++j)
-      {
         Style_SetStyles(hwnd, pLexNew->Styles[i].iStyle8[j], pLexNew->Styles[i].szValue);
-      }
+
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HPHP_DEFAULT)
       {
         int iRelated[] = { SCE_HPHP_COMMENT, SCE_HPHP_COMMENTLINE, SCE_HPHP_WORD, SCE_HPHP_HSTRING, SCE_HPHP_SIMPLESTRING, SCE_HPHP_NUMBER,
                            SCE_HPHP_OPERATOR, SCE_HPHP_VARIABLE, SCE_HPHP_HSTRING_VARIABLE, SCE_HPHP_COMPLEX_VARIABLE
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HJ_DEFAULT)
       {
@@ -2215,9 +2274,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
                            SCE_HJ_SINGLESTRING, SCE_HJ_STRINGEOL, SCE_HJ_REGEX, SCE_HJ_NUMBER, SCE_HJ_SYMBOLS
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HJA_DEFAULT)
       {
@@ -2225,25 +2282,19 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
                            SCE_HJA_SINGLESTRING, SCE_HJA_STRINGEOL, SCE_HJA_REGEX, SCE_HJA_NUMBER, SCE_HJA_SYMBOLS
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HB_DEFAULT)
       {
         int iRelated[] = { SCE_HB_COMMENTLINE, SCE_HB_WORD, SCE_HB_IDENTIFIER, SCE_HB_STRING, SCE_HB_STRINGEOL, SCE_HB_NUMBER };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HBA_DEFAULT)
       {
         int iRelated[] = { SCE_HBA_COMMENTLINE, SCE_HBA_WORD, SCE_HBA_IDENTIFIER, SCE_HBA_STRING, SCE_HBA_STRINGEOL, SCE_HBA_NUMBER };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if ((pLexNew->iLexer == SCLEX_HTML || pLexNew->iLexer == SCLEX_XML) && pLexNew->Styles[i].iStyle8[0] == SCE_H_SGML_DEFAULT)
       {
@@ -2251,9 +2302,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
                            SCE_H_SGML_SPECIAL, SCE_H_SGML_ENTITY, SCE_H_SGML_COMMENT, SCE_H_SGML_1ST_PARAM_COMMENT, SCE_H_SGML_BLOCK_DEFAULT
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if ((pLexNew->iLexer == SCLEX_HTML || pLexNew->iLexer == SCLEX_XML) && pLexNew->Styles[i].iStyle8[0] == SCE_H_CDATA)
       {
@@ -2265,9 +2314,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
                            SCE_HPA_IDENTIFIER
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_XML && pLexNew->Styles[i].iStyle8[0] == SCE_H_CDATA)
       {
@@ -2290,30 +2337,26 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
                            SCE_HPA_CLASSNAME, SCE_HPA_DEFNAME, SCE_HPA_OPERATOR, SCE_HPA_IDENTIFIER
         };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
-          Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
-      }
+           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
+       }
       if (pLexNew->iLexer == SCLEX_CPP && pLexNew->Styles[i].iStyle8[0] == SCE_C_COMMENT)
       {
         int iRelated[] = { SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, SCE_C_COMMENTLINEDOC, SCE_C_COMMENTDOCKEYWORD, SCE_C_COMMENTDOCKEYWORDERROR };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       if (pLexNew->iLexer == SCLEX_SQL && pLexNew->Styles[i].iStyle8[0] == SCE_SQL_COMMENT)
       {
         int iRelated[] = { SCE_SQL_COMMENTLINE, SCE_SQL_COMMENTDOC, SCE_SQL_COMMENTLINEDOC, SCE_SQL_COMMENTDOCKEYWORD, SCE_SQL_COMMENTDOCKEYWORDERROR };
         for (j = 0; j < COUNTOF(iRelated); j++)
-        {
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
-        }
       }
       i++;
     }
   }
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
+
+  // Save current lexer
   pLexCurrent = pLexNew;
 }
 

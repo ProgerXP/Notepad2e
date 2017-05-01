@@ -1,7 +1,4 @@
 #pragma once
-#ifdef __cplusplus
-extern "C" {
-#endif
 /******************************************************************************
 *
 *
@@ -22,6 +19,7 @@ extern "C" {
 *
 ******************************************************************************/
 
+
 typedef struct _editstyle
 {
   union
@@ -33,12 +31,16 @@ typedef struct _editstyle
   WCHAR* pszName;
   WCHAR* pszDefault;
   WCHAR  szValue[128];
+
 } EDITSTYLE, *PEDITSTYLE;
+
 
 typedef struct _keywordlist
 {
   char *pszKeyWords[9];
+
 } KEYWORDLIST, *PKEYWORDLIST;
+
 
 typedef struct _editlexer
 {
@@ -49,10 +51,13 @@ typedef struct _editlexer
   WCHAR  szExtensions[128];
   PKEYWORDLIST pKeyWords;
   EDITSTYLE    Styles[];
+
 } EDITLEXER, *PEDITLEXER;
+
 
 // Number of Lexers in pLexArray
 #define NUMLEXERS 35
+
 
 void   Style_Load();
 void   Style_Save();
@@ -92,7 +97,5 @@ void   Style_ConfigDlg(HWND);
 INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND, UINT, WPARAM, LPARAM);
 void   Style_SelectLexerDlg(HWND);
 
-#ifdef __cplusplus
-}//end extern "C"
-#endif
+
 // End of Style.h

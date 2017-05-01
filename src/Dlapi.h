@@ -25,62 +25,75 @@
 extern "C" { // C-Declarations
 #endif //__cplusplus
 
+
+
 //==== DirList ================================================================
 
 //==== LV_ITEMDATA Structure ==================================================
-  typedef struct tagLV_ITEMDATA // lvid
-  {
-    LPITEMIDLIST  pidl; // Item Id
-    LPSHELLFOLDER lpsf; // Parent IShellFolder Interface
-  } LV_ITEMDATA, *LPLV_ITEMDATA;
+typedef struct tagLV_ITEMDATA // lvid
+{
+  LPITEMIDLIST  pidl; // Item Id
+  LPSHELLFOLDER lpsf; // Parent IShellFolder Interface
 
-  //==== DlInit() ===============================================================
+} LV_ITEMDATA, *LPLV_ITEMDATA;
 
-  BOOL DirList_Init(HWND, LPCWSTR);
 
-  //==== DlDestroy() ============================================================
+//==== DlInit() ===============================================================
 
-  BOOL DirList_Destroy(HWND);
+BOOL DirList_Init(HWND,LPCWSTR);
 
-  //==== DlStartIconThread() ====================================================
 
-  BOOL DirList_StartIconThread(HWND);
+//==== DlDestroy() ============================================================
 
-  //==== DlTerminateIconThread() ================================================
+BOOL DirList_Destroy(HWND);
 
-  BOOL DirList_TerminateIconThread(HWND);
 
-  //==== DlFill() ===============================================================
+//==== DlStartIconThread() ====================================================
+
+BOOL DirList_StartIconThread(HWND);
+
+
+//==== DlTerminateIconThread() ================================================
+
+BOOL DirList_TerminateIconThread(HWND);
+
+
+//==== DlFill() ===============================================================
 
 #define DL_FOLDERS      32
 #define DL_NONFOLDERS   64
 #define DL_INCLHIDDEN  128
 #define DL_ALLOBJECTS  (32|64|128)
 
-  int DirList_Fill(HWND, LPCWSTR, DWORD, LPCWSTR, BOOL, BOOL, int, BOOL);
+int DirList_Fill(HWND, LPCWSTR, DWORD, LPCWSTR, BOOL, BOOL, int, BOOL);
 
-  //==== DlIconThread() =========================================================
 
-  DWORD WINAPI DirList_IconThread(LPVOID);
+//==== DlIconThread() =========================================================
 
-  //==== DlGetDispInfo() ========================================================
+DWORD WINAPI DirList_IconThread(LPVOID);
 
-  BOOL DirList_GetDispInfo(HWND, LPARAM, BOOL);
 
-  //==== DlDeleteItem() =========================================================
+//==== DlGetDispInfo() ========================================================
 
-  BOOL DirList_DeleteItem(HWND, LPARAM);
+BOOL DirList_GetDispInfo(HWND, LPARAM, BOOL);
 
-  //==== DlSort() ===============================================================
+
+//==== DlDeleteItem() =========================================================
+
+BOOL DirList_DeleteItem(HWND, LPARAM);
+
+
+//==== DlSort() ===============================================================
 
 #define DS_NAME     0
 #define DS_SIZE     1
 #define DS_TYPE     2
 #define DS_LASTMOD  3
 
-  BOOL DirList_Sort(HWND, int, BOOL);
+BOOL DirList_Sort(HWND, int, BOOL);
 
-  //==== DlGetItem() ============================================================
+
+//==== DlGetItem() ============================================================
 
 #define DLE_NONE 0
 #define DLE_DIR  1
@@ -91,80 +104,93 @@ extern "C" { // C-Declarations
 #define DLI_TYPE     4
 #define DLI_ALL (1|2|4)
 
-  typedef struct tagDLITEM // dli
-  {
-    UINT mask;
-    WCHAR szFileName[MAX_PATH];
-    WCHAR szDisplayName[MAX_PATH];
-    int  ntype;
-  } DLITEM, *LPDLITEM;
+typedef struct tagDLITEM // dli
+{
 
-  int DirList_GetItem(HWND, int, LPDLITEM);
+  UINT mask;
+  WCHAR szFileName[MAX_PATH];
+  WCHAR szDisplayName[MAX_PATH];
+  int  ntype;
 
-  //==== DlGetItemEx() ==========================================================
+} DLITEM, *LPDLITEM;
 
-  int DirList_GetItemEx(HWND, int, LPWIN32_FIND_DATA);
+int DirList_GetItem(HWND,int,LPDLITEM);
 
-  //==== DlPropertyDlg() ========================================================
 
-  BOOL DirList_PropertyDlg(HWND, int);
+//==== DlGetItemEx() ==========================================================
 
-  //==== DlGetLongPathName() ====================================================
+int DirList_GetItemEx(HWND,int,LPWIN32_FIND_DATA);
 
-  BOOL DirList_GetLongPathName(HWND, LPWSTR);
 
-  //==== DlSelectItem() =========================================================
+//==== DlPropertyDlg() ========================================================
 
-  BOOL DirList_SelectItem(HWND, LPCWSTR, LPCWSTR);
+BOOL DirList_PropertyDlg(HWND,int);
 
-  //==== DlCreateFilter() and DlMatchFilter() ===================================
+
+//==== DlGetLongPathName() ====================================================
+
+BOOL DirList_GetLongPathName(HWND,LPWSTR);
+
+//==== DlSelectItem() =========================================================
+
+BOOL DirList_SelectItem(HWND,LPCWSTR,LPCWSTR);
+
+//==== DlCreateFilter() and DlMatchFilter() ===================================
 
 #define DL_FILTER_BUFSIZE 128
 
-  typedef struct tagDL_FILTER
-  { //dlf
-    int   nCount;
-    WCHAR  tFilterBuf[DL_FILTER_BUFSIZE];
-    WCHAR  *pFilter[DL_FILTER_BUFSIZE];
-    BOOL  bExcludeFilter;
-  } DL_FILTER, *PDL_FILTER;
+typedef struct tagDL_FILTER { //dlf
+  int   nCount;
+  WCHAR  tFilterBuf[DL_FILTER_BUFSIZE];
+  WCHAR  *pFilter  [DL_FILTER_BUFSIZE];
+  BOOL  bExcludeFilter;
+} DL_FILTER, *PDL_FILTER;
 
-  void DirList_CreateFilter(PDL_FILTER, LPCWSTR, BOOL);
+void DirList_CreateFilter(PDL_FILTER,LPCWSTR,BOOL);
 
-  BOOL DirList_MatchFilter(LPSHELLFOLDER, LPCITEMIDLIST, PDL_FILTER);
+BOOL DirList_MatchFilter(LPSHELLFOLDER,LPCITEMIDLIST,PDL_FILTER);
 
-  //==== DriveBox ===============================================================
 
-  BOOL DriveBox_Init(HWND);
-  int  DriveBox_Fill(HWND);
-  BOOL DriveBox_GetSelDrive(HWND, LPWSTR, int, BOOL);
-  BOOL DriveBox_SelectDrive(HWND, LPCWSTR);
-  BOOL DriveBox_PropertyDlg(HWND);
 
-  LRESULT DriveBox_DeleteItem(HWND, LPARAM);
-  LRESULT DriveBox_GetDispInfo(HWND, LPARAM);
+//==== DriveBox ===============================================================
 
-  //==== ItemID =================================================================
+BOOL DriveBox_Init(HWND);
+int  DriveBox_Fill(HWND);
+BOOL DriveBox_GetSelDrive(HWND,LPWSTR,int,BOOL);
+BOOL DriveBox_SelectDrive(HWND,LPCWSTR);
+BOOL DriveBox_PropertyDlg(HWND);
 
-  //==== IL_Next() ==============================================================
+LRESULT DriveBox_DeleteItem(HWND,LPARAM);
+LRESULT DriveBox_GetDispInfo(HWND,LPARAM);
+
+
+
+//==== ItemID =================================================================
+
+//==== IL_Next() ==============================================================
 #define _IL_Next(pidl) ((LPITEMIDLIST)(((LPBYTE)(pidl)) + pidl->mkid.cb))
 
 //==== IL_Create() ============================================================
-  LPITEMIDLIST IL_Create(LPCITEMIDLIST, UINT,
-                         LPCITEMIDLIST, UINT);
+LPITEMIDLIST IL_Create(LPCITEMIDLIST,UINT,
+                       LPCITEMIDLIST,UINT);
 
-  //==== IL_GetSize() ===========================================================
-  UINT IL_GetSize(LPCITEMIDLIST);
+//==== IL_GetSize() ===========================================================
+UINT IL_GetSize(LPCITEMIDLIST);
 
-  //==== IL_GetDisplayName() ====================================================
-  BOOL IL_GetDisplayName(LPSHELLFOLDER,
-                         LPCITEMIDLIST,
-                         DWORD, LPWSTR, int);
+//==== IL_GetDisplayName() ====================================================
+BOOL IL_GetDisplayName(LPSHELLFOLDER,
+                       LPCITEMIDLIST,
+                       DWORD,LPWSTR,int);
+
+
+
 
 #ifdef __cplusplus
 }
 #endif //__cplusplus
 
+
 #endif // _DLAPI_H_
+
 
 ///   End of Dlapi.h   \\\
