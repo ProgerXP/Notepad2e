@@ -8,6 +8,7 @@
 #include "Edit.h"
 #include "SciCall.h"
 #include "InlineProgressBarCtrl.h"
+#include "MainWndHelper.h"
 
 HANDLE g_hScintilla = NULL;
 
@@ -34,7 +35,6 @@ extern	LPMRULIST pFileMRU;
 extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 //
 BOOL	_hl_wheel_timer = FALSE;
-//WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 INT		_hl_alloc_count = 0;
 extern	long	_hl_max_search_range;
 
@@ -45,6 +45,25 @@ int iFindWordWrapAround = 0;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
+extern HWND  hwndMain;
+extern HWND  hwndEdit;
+
+void n2e_InitInstance()
+{
+  InitScintillaHandle(hwndEdit);
+  HL_Init(hwndMain);
+  hShellHook = SetWindowsHookEx(WH_SHELL, ShellProc, NULL, GetCurrentThreadId());
+}
+
+void n2e_ExitInstance()
+{
+  if (hShellHook)
+  {
+    UnhookWindowsHookEx(hShellHook);
+  }
+  HL_Release();
+  HL_SaveINI();
+}
 
 void* HL_Alloc(size_t size)
 {

@@ -52,6 +52,9 @@ VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2);
 WCHAR	_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 
+void n2e_InitInstance();
+void n2e_ExitInstance();
+
 void* HL_Alloc(size_t size);
 void HL_Free(void* ptr);
 void* HL_Realloc(void* ptr, size_t len);

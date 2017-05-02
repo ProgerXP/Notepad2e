@@ -24,7 +24,6 @@
 #include <shlwapi.h>
 #include <shellapi.h>
 #include <commdlg.h>
-#include <locale.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -40,9 +39,12 @@
 #include "SciCall.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
+#include "Extension/MainWndHelper.h"
 #include "Extension/InlineProgressBarCtrl.h"
 #include "Extension/Utils.h"
-#include "tinyexpr/tinyexpr.h"
+#include "Extension/tinyexpr/tinyexpr.h"
+
+
 
 /******************************************************************************
 *
@@ -57,31 +59,6 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
-HHOOK     hShellHook = NULL;
-
-typedef enum
-{
-  EVM_DEC,
-  EVM_HEX,
-  EVM_BIN,
-  EVM_OCT,
-  EVM_MAX = EVM_OCT,
-  EVM_MIN = EVM_DEC
-} ExpressionValueMode;
-
-#define MAX_EXPRESSION_LENGTH 4096
-
-ExpressionValueMode modePrevExpressionValue = EVM_DEC;
-char      arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
-
-ExpressionValueMode modeExpressionValue = EVM_DEC;
-WCHAR     arrwchExpressionValue[MAX_PATH];
-
-#define       STATUS_PANE_SIZE_CLICK_TIMER  0x1000
-#define       STATUS_PANE_SIZE_DBLCLICK_TIMER 0x1001
-UINT_PTR      timerIDPaneSizeClick = 0;
-UINT_PTR      timerIDPaneSizeDblClick = 0;
-
 
 #define NUMTOOLBITMAPS  27
 #define NUMINITIALTOOLS 25
@@ -297,6 +274,8 @@ UINT16    g_uWinVer;
 WCHAR     g_wchAppUserModelID[32] = L"";
 WCHAR     g_wchWorkingDirectory[MAX_PATH] = L"";
 
+
+
 //=============================================================================
 //
 // Flags
@@ -339,8 +318,6 @@ int flagDisplayHelp = 0;
 //
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
-  setlocale(LC_ALL, "");
-  setlocale(LC_NUMERIC, "C");
 
   MSG msg;
   HWND hwnd;
@@ -348,6 +325,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   HACCEL hAccFindReplace;
   INITCOMMONCONTROLSEX icex;
   WCHAR wchWorkingDirectory[MAX_PATH];
+
   // Set global variable g_hInstance
   g_hInstance = hInstance;
 
@@ -384,8 +362,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   // Check if running with elevated privileges
   fIsElevated = IsElevated();
+
   // Default Encodings (may already be used for command line parsing)
   Encoding_InitDefaults();
+
   // Command Line, Ini File and Flags
   ParseCommandLine();
   FindIniFile();
@@ -436,17 +416,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   // Load Settings
   LoadSettings();
-  //
+
   if (!InitApplication(hInstance))
     return FALSE;
 
   if (!(hwnd = InitInstance(hInstance, lpCmdLine, nCmdShow)))
     return FALSE;
 
-  //
-  HL_Init(hwnd);
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
+
   while (GetMessage(&msg, NULL, 0, 0))
   {
     if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
@@ -459,9 +438,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
       DispatchMessage(&msg);
     }
   }
-  ExitInstance();
-  //
-  UnregisterClass(wchWndClass, hInstance);
+
+  ExitInstance(hInstance);
+
   if (hModUxTheme)
     FreeLibrary(hModUxTheme);
 
@@ -470,6 +449,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   return (int)(msg.wParam);
 
   hPrevInst;
+
 }
 
 
@@ -483,32 +463,19 @@ BOOL InitApplication(HINSTANCE hInstance)
 
   WNDCLASS   wc;
 
-  wc.style = CS_BYTEALIGNWINDOW | CS_DBLCLKS;
-  wc.lpfnWndProc = (WNDPROC)MainWndProc;
-  wc.cbClsExtra = 0;
-  wc.cbWndExtra = 0;
-  wc.hInstance = hInstance;
-  wc.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
-  wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-  wc.hbrBackground = (HBRUSH)(COLOR_3DFACE + 1);
-  wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAINWND);
+  wc.style         = CS_BYTEALIGNWINDOW | CS_DBLCLKS;
+  wc.lpfnWndProc   = (WNDPROC)MainWndProc;
+  wc.cbClsExtra    = 0;
+  wc.cbWndExtra    = 0;
+  wc.hInstance     = hInstance;
+  wc.hIcon         = LoadIcon(hInstance,MAKEINTRESOURCE(IDR_MAINWND));
+  wc.hCursor       = LoadCursor(NULL,IDC_ARROW);
+  wc.hbrBackground = (HBRUSH)(COLOR_3DFACE+1);
+  wc.lpszMenuName  = MAKEINTRESOURCE(IDR_MAINWND);
   wc.lpszClassName = wchWndClass;
 
   return RegisterClass(&wc);
-}
 
-
-LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
-{
-  if (nCode < 0)
-  {
-    return CallNextHookEx(hShellHook, nCode, wParam, lParam);
-  }
-  if (nCode == HSHELL_LANGUAGE)
-  {
-      PostMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
-  }
-  return 0;
 }
 
 
@@ -609,23 +576,22 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       wi.x = mi.rcWork.right - wi.cx - 16;
     }
   }
-  memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
-  memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
-  hShellHook = SetWindowsHookEx(WH_SHELL, ShellProc, NULL, GetCurrentThreadId());
 
   hwndMain = CreateWindowEx(
-    0,
-    wchWndClass,
-    WC_NOTEPAD2,
-    WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-    wi.x,
-    wi.y,
-    wi.cx,
-    wi.cy,
-    NULL,
-    NULL,
-    hInstance,
-    NULL);
+               0,
+               wchWndClass,
+               WC_NOTEPAD2,
+               WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+               wi.x,
+               wi.y,
+               wi.cx,
+               wi.cy,
+               NULL,
+               NULL,
+               hInstance,
+               NULL);
+
+  n2e_InitInstance();
 
   if (wi.max)
     nCmdShow = SW_SHOWMAXIMIZED;
@@ -635,8 +601,6 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 
   if (bTransparentMode)
     SetWindowTransparentMode(hwndMain, TRUE);
-
-  InitScintillaHandle(hwndEdit);
 
   // Current file information -- moved in front of ShowWindow()
   FileLoad(TRUE, TRUE, FALSE, FALSE, L"");
@@ -654,9 +618,8 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 
   // Source Encoding
   if (lpEncodingArg)
-  {
     iSrcEncoding = Encoding_MatchW(lpEncodingArg);
-  }
+
   // Pathname parameter
   if (lpFileArg)
   {
@@ -667,9 +630,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
     {
       WCHAR tchFile[MAX_PATH];
       if (OpenFileDlg(hwndMain, tchFile, COUNTOF(tchFile), lpFileArg))
-      {
         bOpened = FileLoad(FALSE, FALSE, FALSE, FALSE, tchFile);
-      }
     }
     else
     {
@@ -805,6 +766,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
     dwLastCopyTime = 0;
     SetTimer(hwndMain, ID_PASTEBOARDTIMER, 100, PasteBoardTimer);
   }
+
   // check if a lexer was specified from the command line
   if (flagLexerSpecified)
   {
@@ -817,6 +779,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       Style_SetLexerFromID(hwndEdit, iInitialLexer);
     flagLexerSpecified = 0;
   }
+
   // If start as tray icon, set current filename as tooltip
   if (flagStartAsTrayIcon)
     SetNotifyIconTitle(hwndMain);
@@ -827,60 +790,11 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   return (hwndMain);
 }
 
-void ExitInstance()
+void ExitInstance(HINSTANCE hInstance)
 {
-  if (hShellHook)
-  {
-    UnhookWindowsHookEx(hShellHook);
-  }
+  n2e_ExitInstance();
   Scintilla_ReleaseResources();
-  HL_Release();
-  HL_SaveINI();
-}
-
-void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler)
-{
-  if (timerIDPaneSizeClick > 0)
-  {
-    KillTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER);
-    timerIDPaneSizeClick = 0;
-  }
-  if (timerIDPaneSizeDblClick > 0)
-  {
-    KillTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER);
-    timerIDPaneSizeDblClick = 0;
-    if (singleClick)
-    {
-      return;
-    }
-  }
-
-  if (singleClick)
-  {
-    if (runHandler)
-    {
-      ++modeExpressionValue;
-      if (modeExpressionValue > EVM_MAX)
-      {
-        modeExpressionValue = EVM_MIN;
-      }
-      UpdateStatusbar();
-    }
-    else
-    {
-      // wait for possible double click
-      timerIDPaneSizeClick = SetTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER, GetDoubleClickTime()/2, NULL);
-    }
-  }
-  else
-  {
-    if (wcslen(arrwchExpressionValue) > 0)
-    {
-      SetClipboardText(hwnd, arrwchExpressionValue);
-    }
-    // skip useless single click
-    timerIDPaneSizeDblClick = SetTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER, 100, NULL);
-  }
+  UnregisterClass(wchWndClass, hInstance);
 }
 
 //=============================================================================
@@ -895,8 +809,21 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   static BOOL bShutdownOK;
   switch (umsg)
   {
+
     // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
     // Cool idea, don't know if this has any effect... ;-)
+    case WM_MOVE:
+    case WM_NCHITTEST:
+    case WM_NCCALCSIZE:
+    case WM_NCPAINT:
+    case WM_PAINT:
+    case WM_ERASEBKGND:
+    case WM_NCMOUSEMOVE:
+    case WM_NCLBUTTONDOWN:
+    case WM_WINDOWPOSCHANGING:
+    case WM_WINDOWPOSCHANGED:
+      return DefWindowProc(hwnd, umsg, wParam, lParam);
+
 
     case WM_ACTIVATEAPP:
       {
@@ -912,17 +839,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEACTIVATE:
       HLS_Edit_selection_stop(HL_SE_APPLY);
-    case WM_MOVE:
-    case WM_NCHITTEST:
-    case WM_NCCALCSIZE:
-    case WM_NCPAINT:
-    case WM_PAINT:
-    case WM_ERASEBKGND:
-    case WM_NCMOUSEMOVE:
-    case WM_NCLBUTTONDOWN:
-    case WM_WINDOWPOSCHANGING:
-    case WM_WINDOWPOSCHANGED:
-      return DefWindowProc(hwnd, umsg, wParam, lParam);
+      break;
 
 
     case WM_CREATE:
@@ -934,23 +851,29 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       if (!bShutdownOK)
       {
         WINDOWPLACEMENT wndpl;
+
         // Terminate file watching
         InstallFileWatching(NULL);
+
         // GetWindowPlacement
         wndpl.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hwnd, &wndpl);
+
         wi.x = wndpl.rcNormalPosition.left;
         wi.y = wndpl.rcNormalPosition.top;
         wi.cx = wndpl.rcNormalPosition.right - wndpl.rcNormalPosition.left;
         wi.cy = wndpl.rcNormalPosition.bottom - wndpl.rcNormalPosition.top;
         wi.max = (IsZoomed(hwnd) || (wndpl.flags & WPF_RESTORETOMAXIMIZED));
+
         DragAcceptFiles(hwnd, FALSE);
+
         // Terminate clipboard watching
         if (flagPasteBoard)
         {
           KillTimer(hwnd, ID_PASTEBOARDTIMER);
           ChangeClipboardChain(hwnd, hwndNextCBChain);
         }
+
         // Destroy find / replace dialog
         if (IsWindow(hDlgFindReplace))
         {
@@ -1017,8 +940,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_SETFOCUS:
       SetFocus(hwndEdit);
+
       UpdateToolbar();
       UpdateStatusbar();
+
       break;
 
 
@@ -1026,26 +951,23 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         WCHAR szBuf[MAX_PATH + 40];
         HDROP hDrop = (HDROP)wParam;
         if (IsIconic(hwnd))
-        {
           ShowWindow(hwnd, SW_RESTORE);
-        }
+
         DragQueryFile(hDrop, 0, szBuf, COUNTOF(szBuf));
+
         if (PathIsDirectory(szBuf))
         {
           WCHAR tchFile[MAX_PATH];
           if (OpenFileDlg(hwndMain, tchFile, COUNTOF(tchFile), szBuf))
-          {
             FileLoad(FALSE, FALSE, FALSE, FALSE, tchFile);
-          }
         }
+
         else
-        {
           FileLoad(FALSE, FALSE, FALSE, FALSE, szBuf);
-        }
+
         if (DragQueryFile(hDrop, (UINT)(-1), NULL, 0) > 1)
-        {
           MsgBox(MBINFO, IDS_ERR_DROP);
-        }
+
         DragFinish(hDrop);
       }
       break;
@@ -1053,7 +975,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_COPYDATA: {
         PCOPYDATASTRUCT pcds = (PCOPYDATASTRUCT)lParam;
+
         SetDlgItemInt(hwnd, IDC_REUSELOCK, GetTickCount(), FALSE);
+
         if (pcds->dwData == DATA_NOTEPAD2_PARAMS)
         {
           LPNP2PARAMS params = LocalAlloc(LPTR, pcds->cbData);
@@ -1072,17 +996,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             {
               WCHAR tchFile[MAX_PATH];
               if (OpenFileDlg(hwndMain, tchFile, COUNTOF(tchFile), &params->wchData))
-              {
                 bOpened = FileLoad(FALSE, FALSE, FALSE, FALSE, tchFile);
-              }
             }
 
             else
-            {
               bOpened = FileLoad(FALSE, FALSE, FALSE, FALSE, &params->wchData);
-            }
+
             if (bOpened)
             {
+
               if (params->flagChangeNotify == 1)
               {
                 iFileWatchingMode = 0;
@@ -1139,6 +1061,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             // reset
             iSrcEncoding = -1;
           }
+
           if (params->flagJumpTo)
           {
             if (params->iInitialLine == 0)
@@ -1146,9 +1069,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             EditJumpTo(hwndEdit, params->iInitialLine, params->iInitialColumn);
             EditEnsureSelectionVisible(hwndEdit);
           }
+
           flagLexerSpecified = 0;
           flagQuietCreate = 0;
+
           LocalFree(params);
+
           UpdateStatusbar();
         }
       }
@@ -1203,8 +1129,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             imenu = 1;
             break;
         }
+
         TrackPopupMenuEx(GetSubMenu(hmenu, imenu),
                          TPM_LEFTBUTTON | TPM_RIGHTBUTTON, pt.x + 1, pt.y + 1, hwnd, NULL);
+
         DestroyMenu(hmenu);
       }
       break;
@@ -1212,9 +1140,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_INITMENU:
       MsgInitMenu(hwnd, wParam, lParam);
-
-
       break;
+
+
     case WM_NOTIFY:
       return MsgNotify(hwnd, wParam, lParam);
 
