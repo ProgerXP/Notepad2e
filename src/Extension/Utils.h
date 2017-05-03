@@ -84,6 +84,7 @@ void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
                            UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt);
 void UpdateWindowTitle(HWND hwnd);
 
+extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
