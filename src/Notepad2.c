@@ -788,6 +788,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   UpdateStatusbar();
 
   return (hwndMain);
+
 }
 
 void ExitInstance(HINSTANCE hInstance)
@@ -807,6 +808,7 @@ void ExitInstance(HINSTANCE hInstance)
 LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   static BOOL bShutdownOK;
+
   switch (umsg)
   {
 
@@ -876,11 +878,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
         // Destroy find / replace dialog
         if (IsWindow(hDlgFindReplace))
-        {
           DestroyWindow(hDlgFindReplace);
-        }
+
         // call SaveSettings() when hwndToolbar is still valid
         SaveSettings(FALSE);
+
         MRU_Destroy(pFileMRU);
         MRU_Destroy(mruFind);
         MRU_Destroy(mruReplace);
@@ -1088,9 +1090,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         int nID = GetDlgCtrlID((HWND)wParam);
         if ((nID != IDC_EDIT) && (nID != IDC_STATUSBAR) &&
           (nID != IDC_REBAR) && (nID != IDC_TOOLBAR))
-        {
           return DefWindowProc(hwnd, umsg, wParam, lParam);
-        }
+
         hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
         pt.x = (int)(short)LOWORD(lParam);
         pt.y = (int)(short)HIWORD(lParam);
@@ -1123,9 +1124,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           case IDC_STATUSBAR:
           case IDC_REBAR:
             if (pt.x == -1 && pt.y == -1)
-            {
               GetCursorPos(&pt);
-            }
             imenu = 1;
             break;
         }
@@ -1164,9 +1163,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             return (0);
           }
           else
-          {
             return DefWindowProc(hwnd, umsg, wParam, lParam);
-          }
+
         case SC_RESTORE: {
             LRESULT lrv = DefWindowProc(hwnd, umsg, wParam, lParam);
             ShowOwnedPopups(hwnd, TRUE);
@@ -1178,9 +1176,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_CHANGENOTIFY:
       if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
-      {
         SetForegroundWindow(hwnd);
-      }
+
       if (PathFileExists(szCurFile))
       {
         if ((iFileWatchingMode == 2 && !bModified && iEncoding == iOriginalEncoding) ||
@@ -1220,31 +1217,23 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       else
       {
         if (MsgBox(MBYESNO, IDS_FILECHANGENOTIFY2) == IDYES)
-        {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
-        }
       }
       if (!bRunningWatch)
-      {
         InstallFileWatching(szCurFile);
-      }
       break;
 
 
     case WM_DRAWCLIPBOARD:
       if (!bLastCopyFromMe)
-      {
         dwLastCopyTime = GetTickCount();
-      }
       else
-      {
         bLastCopyFromMe = FALSE;
-      }
       if (hwndNextCBChain)
-      {
         SendMessage(hwndNextCBChain, WM_DRAWCLIPBOARD, wParam, lParam);
-      }
       break;
+
+
     case WM_CHANGECBCHAIN:
       if ((HWND)wParam == hwndNextCBChain)
         hwndNextCBChain = (HWND)lParam;
@@ -1303,9 +1292,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       if (umsg == msgTaskbarCreated)
       {
         if (!IsWindowVisible(hwnd))
-        {
           ShowNotifyIcon(hwnd, TRUE);
-        }
+
         SetNotifyIconTitle(hwnd);
         return (0);
       }
@@ -1327,7 +1315,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   // Setup edit control
   hwndEdit = EditCreate(hwnd);
   HL_Msg_create();
-  //
+
   hwndEditFrame = CreateWindowEx(
     WS_EX_CLIENTEDGE,
     WC_LISTVIEW,
@@ -1341,9 +1329,12 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   if (PrivateIsAppThemed())
   {
     RECT rc, rc2;
+
     bIsAppThemed = TRUE;
+
     SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
     SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+
     if (IsVista())
     {
       cxEditFrame = 0;
@@ -1360,13 +1351,16 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   else
   {
     bIsAppThemed = FALSE;
+
     cxEditFrame = 0;
     cyEditFrame = 0;
   }
 
   // Create Toolbar and Statusbar
   CreateBars(hwnd, hInstance);
+
   // Window Initialization
+
   CreateWindow(
     WC_STATIC,
     NULL,
@@ -1420,13 +1414,16 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
 void CreateBars(HWND hwnd, HINSTANCE hInstance)
 {
   RECT rc;
+
   REBARINFO rbi;
   REBARBANDINFO rbBand;
+
   BITMAP bmp;
   HBITMAP hbmp, hbmpCopy = NULL;
   HIMAGELIST himl;
   WCHAR szTmp[MAX_PATH];
   BOOL bExternalBitmap = FALSE;
+
   DWORD dwToolbarStyle = WS_TOOLBAR;
   DWORD dwStatusbarStyle = WS_CHILD | WS_CLIPSIBLINGS;
   DWORD dwReBarStyle = WS_REBAR;
@@ -1467,21 +1464,18 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
   }
   GetObject(hbmp, sizeof(BITMAP), &bmp);
   if (!IsXP())
-  {
     BitmapMergeAlpha(hbmp, GetSysColor(COLOR_3DFACE));
-  }
   himl = ImageList_Create(bmp.bmWidth / NUMTOOLBITMAPS, bmp.bmHeight, ILC_COLOR32 | ILC_MASK, 0, 0);
   ImageList_AddMasked(himl, hbmp, CLR_DEFAULT);
   DeleteObject(hbmp);
   SendMessage(hwndToolbar, TB_SETIMAGELIST, 0, (LPARAM)himl);
+
   // Optionally add hot Toolbar Bitmap
   hbmp = NULL;
   if (lstrlen(tchToolbarBitmapHot))
   {
     if (!SearchPath(NULL, tchToolbarBitmapHot, NULL, COUNTOF(szTmp), szTmp, NULL))
-    {
       lstrcpy(szTmp, tchToolbarBitmapHot);
-    }
     if (hbmp = LoadImage(NULL, szTmp, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE))
     {
       GetObject(hbmp, sizeof(BITMAP), &bmp);
@@ -1497,9 +1491,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
   if (lstrlen(tchToolbarBitmapDisabled))
   {
     if (!SearchPath(NULL, tchToolbarBitmapDisabled, NULL, COUNTOF(szTmp), szTmp, NULL))
-    {
       lstrcpy(szTmp, tchToolbarBitmapDisabled);
-    }
     if (hbmp = LoadImage(NULL, szTmp, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION | LR_LOADFROMFILE))
     {
       GetObject(hbmp, sizeof(BITMAP), &bmp);
@@ -1552,14 +1544,15 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
       tbbMainWnd[i].fsStyle &= ~(BTNS_AUTOSIZE | BTNS_SHOWTEXT);
   }
   LocalFree(pIniSection);
+
   SendMessage(hwndToolbar, TB_SETEXTENDEDSTYLE, 0,
               SendMessage(hwndToolbar, TB_GETEXTENDEDSTYLE, 0, 0) | TBSTYLE_EX_MIXEDBUTTONS);
+
   SendMessage(hwndToolbar, TB_ADDBUTTONS, NUMINITIALTOOLS, (LPARAM)tbbMainWnd);
   if (Toolbar_SetButtons(hwndToolbar, IDT_FILE_NEW, tchToolbarButtons, tbbMainWnd, COUNTOF(tbbMainWnd)) == 0)
-  {
     SendMessage(hwndToolbar, TB_ADDBUTTONS, NUMINITIALTOOLS, (LPARAM)tbbMainWnd);
-  }
   SendMessage(hwndToolbar, TB_GETITEMRECT, 0, (LPARAM)&rc);
+
   if (bShowStatusbar)
     dwStatusbarStyle |= WS_VISIBLE;
 
@@ -1628,8 +1621,10 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   else
   {
     bIsAppThemed = FALSE;
+
     SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, WS_EX_CLIENTEDGE | GetWindowLongPtr(hwndEdit, GWL_EXSTYLE));
     SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+
     cxEditFrame = 0;
     cyEditFrame = 0;
   }
@@ -1661,6 +1656,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   RECT rc;
   int x, y, cx, cy;
   HDWP hdwp;
+
   // Statusbar
   int aWidth[6];
 
@@ -1709,6 +1705,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
   aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
   aWidth[5] = -1;
+
   SendMessage(hwndStatus, SB_SETPARTS, COUNTOF(aWidth), (LPARAM)aWidth);
   if (bShowProgressBar && hwndStatusProgressBar)
   {
@@ -1805,9 +1802,11 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_PASTE, i2);
   EnableCmd(hmenu, IDM_EDIT_SWAP, i || i2);
   EnableCmd(hmenu, IDM_EDIT_CLEAR, i);
+
   OpenClipboard(hwnd);
   EnableCmd(hmenu, IDM_EDIT_CLEARCLIPBOARD, CountClipboardFormats());
   CloseClipboard();
+
   EnableCmd(hmenu, IDM_EDIT_SORTLINES,
             SendMessage(hwndEdit, SCI_LINEFROMPOSITION, (WPARAM)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0) -
             SendMessage(hwndEdit, SCI_LINEFROMPOSITION, (WPARAM)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0) >= 1);
@@ -1929,6 +1928,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
   switch (LOWORD(wParam))
   {
+
     case IDM_FILE_NEW:
       FileLoad(FALSE, TRUE, FALSE, FALSE, L"");
       break;
@@ -1955,11 +1955,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (lstrlen(szCurFile))
         {
           WCHAR tchCurFile2[MAX_PATH];
+
           int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
           int iAnchorPos = (int)SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
           int iVisTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
           int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
           int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
+
           if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBOKCANCEL, IDS_ASK_REVERT) != IDOK)
             return (0);
 
@@ -2100,6 +2102,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         WCHAR szModuleName[MAX_PATH];
         WCHAR szFileName[MAX_PATH];
         WCHAR szParameters[2 * MAX_PATH + 64];
+
         MONITORINFO mi;
         HMONITOR hMonitor;
         WINDOWPLACEMENT wndpl;
@@ -2110,10 +2113,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           break;
 
         GetModuleFileName(NULL, szModuleName, COUNTOF(szModuleName));
+
         wsprintf(tch, L"\"-appid=%s\"", g_wchAppUserModelID);
         lstrcpy(szParameters, tch);
+
         wsprintf(tch, L" \"-sysmru=%i\"", (flagUseSystemMRU == 2) ? 1 : 0);
         lstrcat(szParameters, tch);
+
         lstrcat(szParameters, L" -f");
         if (lstrlen(szIniFile))
         {
@@ -2403,9 +2409,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         fw = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
         fw = SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, fw, 0);
         if (LOWORD(wParam) == IDM_ENCODING_SELECT && !SelectEncodingDlg(hwnd, &iNewEncoding))
-        {
           break;
-        }
         else
         {
           switch (LOWORD(wParam))
@@ -2440,9 +2444,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else
           {
             if (iEncoding == CPI_DEFAULT || iNewEncoding == CPI_DEFAULT)
-            {
               iOriginalEncoding = -1;
-            }
             iEncoding = iNewEncoding;
           }
 
@@ -2464,6 +2466,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (lstrlen(szCurFile))
         {
           WCHAR tchCurFile2[MAX_PATH];
+
           int iNewEncoding = -1;
           if (iEncoding != CPI_DEFAULT)
             iNewEncoding = iEncoding;
@@ -2675,6 +2678,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SendMessage(hwndEdit, SCI_SETSEL, iLineStart, iLineEnd);
         }
       }
+
       break;
 
 
@@ -2721,6 +2725,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         bLastCopyFromMe = TRUE;
       SendMessage(hwndEdit, SCI_LINECUT, 0, 0);
       break;
+
 
     case IDM_EDIT_COPYLINE:
       if (flagPasteBoard)
@@ -2779,9 +2784,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
           SendMessage(hwndEdit, SCI_SETTABINDENTS, TRUE, 0);
           if (bSingleLineSelection)
-          {
             SendMessage(hwndEdit, SCI_VCHOME, 0, 0);
-          }
+
           SendMessage(hwndEdit, SCI_BACKTAB, 0, 0);
           SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
           if (bSingleLineSelection)
@@ -3032,6 +3036,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         char  mszBuf[MAX_PATH * 3];
         UINT  uCP;
         GetLocalTime(&st);
+
         if (IniGetString(L"Settings2",
           (LOWORD(wParam) == IDM_EDIT_INSERT_SHORTDATE) ? L"DateTimeShort" : L"DateTimeLong",
                          L"", tchTemplate, COUNTOF(tchTemplate)))
@@ -3070,6 +3075,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         WCHAR tchUntitled[32];
         char  mszBuf[MAX_PATH * 3];
         UINT  uCP;
+
         if (lstrlen(szCurFile))
         {
           if (LOWORD(wParam) == IDM_EDIT_INSERT_FILENAME)
@@ -3312,9 +3318,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case ID_EDIT_FINDNEXTWORD:
     case ID_EDIT_FINDPREVIOUSWORD:
-      {
-        HL_Find_next_word(hwndEdit, &efrData, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
-      }
+      HL_Find_next_word(hwndEdit, &efrData, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
       break;
 
 
@@ -3323,10 +3327,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_REPLACENEXT:
     case IDM_EDIT_SELTONEXT:
     case IDM_EDIT_SELTOPREV:
+
       if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) == 0)
-      {
         break;
-      }
+
       if (!lstrlenA(efrData.szFind))
       {
         if (LOWORD(wParam) != IDM_EDIT_REPLACENEXT)
@@ -3359,18 +3363,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           case IDM_EDIT_FINDNEXT:
             EditFindNext(hwndEdit, &efrData, FALSE);
             break;
+
           case IDM_EDIT_FINDPREV:
             EditFindPrev(hwndEdit, &efrData, FALSE);
             break;
+
           case IDM_EDIT_REPLACENEXT:
             if (bReplaceInitialized)
               EditReplace(hwndEdit, &efrData);
             else
               SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
             break;
+
           case IDM_EDIT_SELTONEXT:
             EditFindNext(hwndEdit, &efrData, TRUE);
             break;
+
           case IDM_EDIT_SELTOPREV:
             EditFindPrev(hwndEdit, &efrData, TRUE);
             break;
@@ -3399,6 +3407,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
+
+
     case IDM_EDIT_GOTOLINE:
       EditLinenumDlg(hwndEdit);
       break;
@@ -3447,17 +3457,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       if (WordWrapSettingsDlg(hwnd, IDD_WORDWRAP, &iWordWrapIndent))
       {
         if (fWordWrap)
-        {
           SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
-        }
         if (iWordWrapIndent == 5)
-        {
           SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
-        }
         else if (iWordWrapIndent == 6)
-        {
           SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
-        }
         else
         {
           int i = 0;
@@ -3484,9 +3488,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           int wrapVisualFlags = 0;
           int wrapVisualFlagsLocation = 0;
           if (iWordWrapSymbols == 0)
-          {
             iWordWrapSymbols = 22;
-          }
           switch (iWordWrapSymbols % 10)
           {
             case 1:
@@ -3516,6 +3518,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
+
+
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
       if (bMarkLongLines)
@@ -3621,9 +3625,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int wrapVisualFlags = 0;
         int wrapVisualFlagsLocation = 0;
         if (iWordWrapSymbols == 0)
-        {
           iWordWrapSymbols = 22;
-        }
         switch (iWordWrapSymbols % 10)
         {
           case 1:
@@ -3753,13 +3755,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         wndpl.length = sizeof(WINDOWPLACEMENT);
         GetWindowPlacement(hwndMain, &wndpl);
  
-       wi.x = wndpl.rcNormalPosition.left;
+        wi.x = wndpl.rcNormalPosition.left;
         wi.y = wndpl.rcNormalPosition.top;
         wi.cx = wndpl.rcNormalPosition.right - wndpl.rcNormalPosition.left;
         wi.cy = wndpl.rcNormalPosition.bottom - wndpl.rcNormalPosition.top;
         wi.max = (IsZoomed(hwndMain) || (wndpl.flags & WPF_RESTORETOMAXIMIZED));
  
-       wsprintf(tchPosX, L"%ix%i PosX", ResX, ResY);
+        wsprintf(tchPosX, L"%ix%i PosX", ResX, ResY);
         wsprintf(tchPosY, L"%ix%i PosY", ResX, ResY);
         wsprintf(tchSizeX, L"%ix%i SizeX", ResX, ResY);
         wsprintf(tchSizeY, L"%ix%i SizeY", ResX, ResY);
@@ -3767,11 +3769,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         bStickyWinPos = 1;
         IniSetInt(L"Settings2", L"StickyWindowPosition", 1);
+
         IniSetInt(L"Window", tchPosX, wi.x);
         IniSetInt(L"Window", tchPosY, wi.y);
         IniSetInt(L"Window", tchSizeX, wi.cx);
         IniSetInt(L"Window", tchSizeY, wi.cy);
         IniSetInt(L"Window", tchMaximized, wi.max);
+
         InfoBox(0, L"MsgStickyWinPos", IDS_STICKYWINPOS);
       }
       else
@@ -3780,6 +3784,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         IniSetInt(L"Settings2", L"StickyWindowPosition", 0);
       }
       break;
+
+
     case IDM_VIEW_REUSEWINDOW:
       if (IniGetInt(L"Settings2", L"ReuseWindow", 0))
         IniSetInt(L"Settings2", L"ReuseWindow", 0);
