@@ -1,10 +1,10 @@
 #include "EditHelper.h"
 #include <cassert>
 
-WCHAR	hl_last_html_tag[0xff] = L"<tag>";
-WCHAR	hl_last_html_end_tag[0xff] = L"</tag>";
+WCHAR	n2e_last_html_tag[0xff] = L"<tag>";
+WCHAR	n2e_last_html_end_tag[0xff] = L"</tag>";
 
-void HL_Strip_html_tags(HWND hwnd)
+void n2e_StripHTMLTags(HWND hwnd)
 {
   struct Sci_TextToFind ttf1, ttf2;
   int selbeg, selend, res, len;
@@ -135,7 +135,7 @@ void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
 
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
-  if (HLS_Edit_selection_stop(HL_SE_APPLY))
+  if (HLS_Edit_selection_stop(N2E_SE_APPLY))
   {
     return;
   }
@@ -201,26 +201,26 @@ void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   FreeLinePrefix(pszPrefixText);
 }
 
-VOID	HL_Adjust_offset(int *pos, BOOL in)
+VOID	n2e_AdjustOffset(int *pos, BOOL in)
 {
 #ifdef _DEBUG
-  HL_Trace("UTF8 %d", mEncoding[iEncoding].uFlags & NCP_UTF8);
-  HL_Trace("8Bit %d", mEncoding[iEncoding].uFlags & NCP_8BIT);
-  HL_Trace("UNicode %d", mEncoding[iEncoding].uFlags & NCP_UNICODE);
-  HL_Trace("offset is %d", *pos);
+  N2E_Trace("UTF8 %d", mEncoding[iEncoding].uFlags & NCP_UTF8);
+  N2E_Trace("8Bit %d", mEncoding[iEncoding].uFlags & NCP_8BIT);
+  N2E_Trace("UNicode %d", mEncoding[iEncoding].uFlags & NCP_UNICODE);
+  N2E_Trace("offset is %d", *pos);
 #endif
 }
 
-void HL_Jump_offset(HWND hwnd, int iNewPos)
+void n2e_JumpToOffset(HWND hwnd, int iNewPos)
 {
-  HL_Adjust_offset(&iNewPos, TRUE);
+  n2e_AdjustOffset(&iNewPos, TRUE);
   SendMessage(hwnd, SCI_GOTOPOS, (WPARAM)iNewPos, 0);
 }
 
-void HL_Get_offset(HWND hwnd, int *out)
+void n2e_GetOffset(HWND hwnd, int *out)
 {
   *out = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  HL_Adjust_offset(out, FALSE);
+  n2e_AdjustOffset(out, FALSE);
 }
 
 int FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf)
@@ -240,7 +240,7 @@ BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextTo
   return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
 }
 
-void HL_Msg_create()
+void n2e_MsgCreate()
 {
   // Tabs
   SendMessage(hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0);
@@ -343,15 +343,15 @@ void HL_Msg_create()
   SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
 
-void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
+void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
 {
   struct Sci_TextRange	tr;
   struct Sci_TextToFind	ttf;
   static char* szPrevWord = NULL;
   int cpos, wlen, doclen, res, searchflags;
   BOOL has;
-#define _HL_SEARCH_FOR_WORD_LIMIT 0x100
-  HL_TRACE(L"look for next(%d) word", next);
+#define _N2E_SEARCH_FOR_WORD_LIMIT 0x100
+  N2E_TRACE(L"look for next(%d) word", next);
   ZeroMemory(&ttf, sizeof(ttf));
   ttf.lpstrText = 0;
   cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
@@ -361,20 +361,20 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
   wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   res = 0;
 
-  tr.lpstrText = (char*)HL_Alloc(wlen + 1);
+  tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
   SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
   const int iSelCount = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) -
     (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
 
-  HL_Free(tr.lpstrText);
+  n2e_Free(tr.lpstrText);
 
   if (iSelCount > 0)
   {
     const size_t prevWordLength = szPrevWord ? strlen(szPrevWord) + 1 : 0;
     if (szPrevWord && (prevWordLength > 0))
     {
-      tr.lpstrText = (char*)HL_Alloc(prevWordLength);
+      tr.lpstrText = (char*)n2e_Alloc(prevWordLength);
       lstrcpynA(tr.lpstrText, szPrevWord, prevWordLength);
       ttf.lpstrText = tr.lpstrText;
       res = 1;
@@ -387,22 +387,22 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     // look up for new word for search
     if (!has)
     {
-      tr.chrg.cpMin = next ? cpos : max(cpos - _HL_SEARCH_FOR_WORD_LIMIT, 0);
-      tr.chrg.cpMax = next ? min(cpos + _HL_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
+      tr.chrg.cpMin = next ? cpos : max(cpos - _N2E_SEARCH_FOR_WORD_LIMIT, 0);
+      tr.chrg.cpMax = next ? min(cpos + _N2E_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
       wlen = tr.chrg.cpMax - tr.chrg.cpMin;
       if (wlen > 0)
       {
         int counter;
         char symb;
         //
-        tr.lpstrText = (char*)HL_Alloc(wlen + 1);
+        tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
         SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
         counter = 0;
         while (counter <= wlen)
         {
           ++counter;
           symb = next ? tr.lpstrText[counter] : tr.lpstrText[wlen - counter];
-          if (HL_IS_LITERAL(symb))
+          if (N2E_IS_LITERAL(symb))
           {
             if (!res)
             {
@@ -433,7 +433,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     }
     else
     {
-      tr.lpstrText = (char*)HL_Alloc(wlen + 1);
+      tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
       SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
       ttf.lpstrText = tr.lpstrText;
       res = 1;
@@ -442,7 +442,7 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
   //
   if (res)
   {
-    HL_TRACE("search for '%s' ", ttf.lpstrText);
+    N2E_TRACE("search for '%s' ", ttf.lpstrText);
     if (next)
     {
       ttf.chrg.cpMin = tr.chrg.cpMax;
@@ -487,19 +487,19 @@ void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     if (ttf.lpstrText)
     {
       const char* lpstrText = ttf.lpstrText;
-      HL_Free(szPrevWord);
-      szPrevWord = (char*)HL_Alloc(strlen(lpstrText) + 1);
+      n2e_Free(szPrevWord);
+      szPrevWord = (char*)n2e_Alloc(strlen(lpstrText) + 1);
       lstrcpynA(szPrevWord, lpstrText, strlen(lpstrText) + 1);
     }
     if (tr.lpstrText)
     {
-      HL_Free(tr.lpstrText);
+      n2e_Free(tr.lpstrText);
       tr.lpstrText = 0;
     }
   }
 }
 
-BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
+BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next)
 {
   WCHAR	dirname[MAX_PATH], odn[MAX_PATH], found_path[MAX_PATH], *filename;
   HANDLE	hFind = INVALID_HANDLE_VALUE;
@@ -527,25 +527,25 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
   {
     if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-      cmp_res = _HL_COMPARE_FILES(filename, ffd.cFileName);
-      HL_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);
+      cmp_res = _N2E_COMPARE_FILES(filename, ffd.cFileName);
+      N2E_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);
       if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0))
       {
         continue;
       }
       if (*found_path)
       {
-        cmp_res = _HL_COMPARE_FILES(found_path, ffd.cFileName);
+        cmp_res = _N2E_COMPARE_FILES(found_path, ffd.cFileName);
       }
       else
       {
         cmp_res = 0;
       }
-      HL_TRACE(L"%S vs %S = %d", ffd.cFileName, found_path, cmp_res);
+      N2E_TRACE(L"%S vs %S = %d", ffd.cFileName, found_path, cmp_res);
       if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0))
       {
         StrCpy(found_path, ffd.cFileName);
-        HL_TRACE(L"saved %S", found_path);
+        N2E_TRACE(L"saved %S", found_path);
       }
     }
   } while (FindNextFile(hFind, &ffd));
@@ -553,13 +553,13 @@ BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next)
   if (*found_path)
   {
     StrCat(odn, found_path);
-    HL_TRACE(L"file to open %S", odn);
+    N2E_TRACE(L"file to open %S", odn);
     FileLoad(FALSE, FALSE, FALSE, FALSE, odn);
   }
   return TRUE;
 }
 
-void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
+void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
 {
   int cpos, len, temp, pos_left, pos_right;
   struct Sci_TextRange tr_1, tr_2;
@@ -577,13 +577,13 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
   {
     temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
     if (!temp) goto OUT_OF_UNWRAP;
-    tr_1.lpstrText = (char*)HL_Alloc(temp + 1);
+    tr_1.lpstrText = (char*)n2e_Alloc(temp + 1);
     SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
   }
   {
     temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
     if (!temp) goto OUT_OF_UNWRAP;
-    tr_2.lpstrText = (char*)HL_Alloc(temp + 1);
+    tr_2.lpstrText = (char*)n2e_Alloc(temp + 1);
     SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
   }
   pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
@@ -600,7 +600,7 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
       {
         if (qchl = (char*)strchr(_quotes, lch))
         {
-          HL_TRACE("Left quote found '%c'", lch);
+          N2E_TRACE("Left quote found '%c'", lch);
           break;
         }
       }
@@ -619,7 +619,7 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
       {
         if (rch == *qchl)
         {
-          HL_TRACE("Right quote found '%c'", rch);
+          N2E_TRACE("Right quote found '%c'", rch);
           break;
         }
       }
@@ -637,7 +637,7 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
     const char* _right_braces = ">})]";
     char* tchl = NULL, *tchr = NULL, *qchl = NULL;
     int	  skipcl = 0, skipcr = 0;
-    int*  skipl = (int*)HL_Alloc(max_brackets_to_skip * sizeof(int));
+    int*  skipl = (int*)n2e_Alloc(max_brackets_to_skip * sizeof(int));
 
     // search left
   RESUME_SEARCH:
@@ -655,14 +655,14 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
             {
               if (tchl - _left_braces == skipl[ti])
               {
-                HL_TRACE("Skipped braces pair found '%c'", *tchl);
+                N2E_TRACE("Skipped braces pair found '%c'", *tchl);
                 skipl[ti] = -1;
                 goto NEXT;
               }
             }
           }
           {
-            HL_TRACE("Left bracket found '%c'", lch);
+            N2E_TRACE("Left bracket found '%c'", lch);
             break;
           }
         }
@@ -690,19 +690,19 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
           {
             if (skipcr)
             {
-              HL_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipcr);
+              N2E_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipcr);
               --skipcr;
             }
             else
             {
-              HL_TRACE("Right bracket found '%c'", rch);
+              N2E_TRACE("Right bracket found '%c'", rch);
               break;
             }
           }
           else
           {
             tchr = NULL;
-            HL_TRACE("Bad right bracket found '%c'", rch);
+            N2E_TRACE("Bad right bracket found '%c'", rch);
           }
         }
         if (tchr = (char*)strchr(_left_braces, rch))
@@ -727,13 +727,13 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
       pos_right = tr_2.chrg.cpMin;
       goto RESUME_SEARCH;
     }
-    HL_Free(skipl);
+    n2e_Free(skipl);
     found = tchr && tchl;
   }
   // remove
   if (found)
   {
-    HL_TRACE("removing braces OR quotes at %d and %d", pos_left - 1, pos_right);
+    N2E_TRACE("removing braces OR quotes at %d and %d", pos_left - 1, pos_right);
     SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
     SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
     SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
@@ -741,11 +741,11 @@ void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   }
 OUT_OF_UNWRAP:
-  HL_Free(tr_1.lpstrText);
-  HL_Free(tr_2.lpstrText);
+  n2e_Free(tr_1.lpstrText);
+  n2e_Free(tr_2.lpstrText);
 }
 
-void HL_Escape_html(HWND hwnd)
+void n2e_EscapeHTML(HWND hwnd)
 {
   int beg, end, res;
   size_t symb;
@@ -762,7 +762,7 @@ void HL_Escape_html(HWND hwnd)
     beg = 0;
     end = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
   }
-  ttf.lpstrText = (char*)HL_Alloc(2);
+  ttf.lpstrText = (char*)n2e_Alloc(2);
   ttf.lpstrText[1] = '\0';
   changed = FALSE;
   for (symb = 0; symb < strlen(_source); ++symb)
@@ -792,7 +792,7 @@ void HL_Escape_html(HWND hwnd)
   {
     SendMessage(hwnd, SCI_SETSEL, beg, beg);
   }
-  HL_Free(ttf.lpstrText);
+  n2e_Free(ttf.lpstrText);
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 

@@ -5368,11 +5368,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               break;
 
             case ID_GREP:
-              HL_Grep(lpefr, TRUE);
+              n2e_Grep(lpefr, TRUE);
               break;
 
             case ID_UNGREP:
-              HL_Grep(lpefr, FALSE);
+              n2e_Grep(lpefr, FALSE);
               break;
           }
           break;
@@ -5435,19 +5435,19 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             car = LOWORD(SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_GETEDITSEL, 0, 0));
             len = min(lstrlen(buf) - 1, car - 1);
             cou = len;
-            HL_TRACE("starting from %d", cou);
+            N2E_TRACE("starting from %d", cou);
             got = FALSE;
             curr = 0;
             prev = 0;
             while (cou >= 0)
             {
               WCHAR ch = buf[cou];
-              HL_TRACE("test '%c'", ch);
-              if (HL_IS_SPACE(ch))
+              N2E_TRACE("test '%c'", ch);
+              if (N2E_IS_SPACE(ch))
               {
                 curr = 0;
               }
-              else if (HL_IS_LITERAL(ch))
+              else if (N2E_IS_LITERAL(ch))
               {
                 curr = 1;
               }
@@ -5476,7 +5476,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             if (cou != len)
             {
               WCHAR tail[_MAX_SIZE];
-              HL_TRACE("%d %d %d", cou, lstrlen(buf), len);
+              N2E_TRACE("%d %d %d", cou, lstrlen(buf), len);
               *tail = 0;
               if (car < lstrlen(buf))
               {
@@ -6154,13 +6154,13 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
             GetDlgItemText(hwnd, IDC_POSNUM, wsPos, 0xff);
             iMaxLine = SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0);
             iMaxPos = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
-            if (!HL_Is_Empty(wsPos))
+            if (!n2e_Is_Empty(wsPos))
             {
-              if (HL_Get_goto_number(wsPos, &iNewPos, TRUE) &&
+              if (n2e_GetGotoNumber(wsPos, &iNewPos, TRUE) &&
                   iNewPos >= 0 &&
                   iNewPos < iMaxPos)
               {
-                HL_Jump_offset(hwndEdit, iNewPos);
+                n2e_JumpToOffset(hwndEdit, iNewPos);
                 EndDialog(hwnd, IDOK);
               }
               else
@@ -6170,12 +6170,12 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
               }
             }
             else if (
-              HL_Get_goto_number(wsLine, &iNewLine, FALSE)
+              n2e_GetGotoNumber(wsLine, &iNewLine, FALSE)
               )
             {
-              if (!HL_Is_Empty(wsCol))
+              if (!n2e_Is_Empty(wsCol))
               {
-                if (!HL_Get_goto_number(wsCol, &iNewCol, FALSE) || iNewCol <= 0)
+                if (!n2e_GetGotoNumber(wsCol, &iNewCol, FALSE) || iNewCol <= 0)
                 {
                   PostMessage(hwnd, WM_NEXTDLGCTL,
                               (WPARAM)(GetDlgItem(hwnd, IDC_COLNUM)), 1);
@@ -6595,7 +6595,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
               {
                 if (brackets)
                 {
-                  HL_inplace_rev(wcIns);
+                  n2e_InplaceRev(wcIns);
                 }
                 SetDlgItemTextW(hwnd, 101, wcIns);
               }
@@ -6663,20 +6663,20 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
   {
     case WM_INITDIALOG: {
         WCHAR end[0xff] = L"</";
-        INT len = lstrlen(hl_last_html_tag);
+        INT len = lstrlen(n2e_last_html_tag);
         pdata = (PTAGSDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
-        SetDlgItemTextW(hwnd, 100, hl_last_html_tag);
+        SetDlgItemTextW(hwnd, 100, n2e_last_html_tag);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
-        SetDlgItemTextW(hwnd, 101, hl_last_html_end_tag);
+        SetDlgItemTextW(hwnd, 101, n2e_last_html_end_tag);
         SetFocus(GetDlgItem(hwnd, 100));
         {
           int k = 0;
           while (1)
           {
             if (len > k * 2 + 1 &&
-                StrChr(_left_braces, hl_last_html_tag[k]) &&
-                StrChr(_right_braces, hl_last_html_tag[len - k - 1]))
+                StrChr(_left_braces, n2e_last_html_tag[k]) &&
+                StrChr(_right_braces, n2e_last_html_tag[len - k - 1]))
             {
               ++k;
             }
@@ -6731,7 +6731,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                   // trim left
                   while (
                     *pwCur &&
-                    !HL_IS_LITERAL(*pwCur)
+                    !N2E_IS_LITERAL(*pwCur)
                     )
                   {
                     *pwCur++;
@@ -6740,7 +6740,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                     *pwCur &&
                     !StrChr(_left_braces, *pwCur) &&
                     !StrChr(_right_braces, *pwCur) &&
-                    HL_IS_LITERAL(*pwCur))
+                    N2E_IS_LITERAL(*pwCur))
                   {
                     wchIns[cchIns++] = *pwCur++;
                   }
@@ -6783,8 +6783,8 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                   {
                     bCopy = TRUE;
                   }
-                  HL_WTrace("wchIns %s", wchIns);
-                  HL_WTrace("pwCur %s", pwCur);
+                  N2E_WTrace("wchIns %s", wchIns);
+                  N2E_WTrace("pwCur %s", pwCur);
                 }
                 else
                 {
@@ -6830,12 +6830,12 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                   pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k];
                 }
                 pdata->pwsz1[len] = _right_braces[br - _left_braces];
-                HL_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
+                N2E_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
               }
             }
             EndDialog(hwnd, IDOK);
-            lstrcpy(hl_last_html_tag, pdata->pwsz1);
-            lstrcpy(hl_last_html_end_tag, pdata->pwsz2);
+            lstrcpy(n2e_last_html_tag, pdata->pwsz1);
+            lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
           }
           break;
         case IDCANCEL:

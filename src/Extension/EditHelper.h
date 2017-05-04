@@ -18,11 +18,11 @@ extern int iFindWordMatchCase;
 extern int iFindWordWrapAround;
 extern TBBUTTON  tbbMainWnd[];
 extern  HWND      hwndToolbar;
-extern	BOOL		b_HL_highlight_selection;
-extern	BOOL		b_HL_highlight_all;
-extern	BOOL		b_Hl_use_prefix_in_open_dialog;
-extern	BOOL		b_HL_edit_selection;
-extern	BOOL		b_HL_ctrl_wheel_scroll;
+extern	BOOL		bHighlightSelection;
+extern	BOOL		_n2e_highlight_all;
+extern	BOOL		bUsePrefixInOpenDialog;
+extern	BOOL		_n2e_edit_selection;
+extern	BOOL		bCtrlWheelScroll;
 extern  BOOL    bMoveCaretOnRightClick;
 extern  int     iEvaluateMathExpression;
 extern  int     iWordNavigationMode;
@@ -50,20 +50,20 @@ extern  BOOL    bViewEOLs;
 #define ICON_FIND_FAILED 26
 #define FIND_INFO_INDEX 12
 
-extern WCHAR	hl_last_html_tag[0xff];
-extern WCHAR	hl_last_html_end_tag[0xff];
+extern WCHAR	n2e_last_html_tag[0xff];
+extern WCHAR	n2e_last_html_end_tag[0xff];
 
-void HL_Strip_html_tags(HWND hwnd);
-void HL_Jump_offset(HWND hwnd, int iNewPos);
+void n2e_StripHTMLTags(HWND hwnd);
+void n2e_JumpToOffset(HWND hwnd, int iNewPos);
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove);
 BOOL IsSelectionModeValid(HWND hwnd);
-void HL_Find_next_word(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
+void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
 int FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
 BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);
-void HL_Msg_create();
-BOOL HL_Open_nextFs_file(HWND hwnd, LPCWSTR file, BOOL next);
-void HL_Unwrap_selection(HWND hwnd, BOOL quote_mode);
-void HL_Escape_html(HWND hwnd);
+void n2e_MsgCreate();
+BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next);
+void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode);
+void n2e_EscapeHTML(HWND hwnd);
 void UpdateFindIcon(const BOOL findOK);
 void ResetFindIcon();
 void  EditString2Hex(HWND);

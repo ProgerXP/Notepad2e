@@ -3,8 +3,8 @@
 
 extern "C"
 {
-  extern UINT		_hl_ctx_menu_type;
-  VOID	HL_Trace(const char *fmt, ...);
+  extern UINT		_n2e_ctx_menu_type;
+  VOID	N2E_Trace(const char *fmt, ...);
   
   LPCONTEXTMENU2	g_IContext2 = NULL;
   LPCONTEXTMENU3	g_IContext3 = NULL;
@@ -105,7 +105,7 @@ extern "C"
     return (TRUE); // success
   }
 
-  BOOL HL_Explorer_cxt_menu(LPCWSTR path, void *parentWindow)
+  BOOL n2e_ExplorerCxtMenu(LPCWSTR path, void *parentWindow)
   {
     int iMenuType = 0;
     // to know which version of IContextMenu is supported
@@ -118,7 +118,7 @@ extern "C"
     HMENU	h_menu = CreatePopupMenu();
     // lets fill the our popupmenu
     pContextMenu->QueryContextMenu(h_menu,
-                                   0, 1, 0x7FFF, _hl_ctx_menu_type);
+                                   0, 1, 0x7FFF, _n2e_ctx_menu_type);
     WNDPROC OldWndProc = NULL;
     //
     OSVERSIONINFOEX osvi;
@@ -128,7 +128,7 @@ extern "C"
     BOOL	bIsWindowsXPorLater =
       ((osvi.dwMajorVersion > 5) ||
        ((osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1)));
-    HL_Trace("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
+    N2E_Trace("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
     if (iMenuType > 1) { // only version 2 and 3 supports menu messages
       OldWndProc = (WNDPROC)SetWindowLong((HWND)parentWindow,
                                           GWL_WNDPROC, (DWORD)HookWndProc);

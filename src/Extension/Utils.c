@@ -12,31 +12,31 @@
 
 HANDLE g_hScintilla = NULL;
 
-#define HL_WHEEL_TIMER_ID	0xfefe
-#define HL_SEL_EDIT_TIMER_ID	(HL_WHEEL_TIMER_ID + 1)
-UINT_PTR	_hl_sel_edit_timer_id = HL_SEL_EDIT_TIMER_ID;
-UINT	_hl_wheel_timer_to = 100;
-UINT	_hl_css_property = css_prop_less;
+#define N2E_WHEEL_TIMER_ID	0xfefe
+#define N2E_SEL_EDIT_TIMER_ID	(N2E_WHEEL_TIMER_ID + 1)
+UINT_PTR	_n2e_sel_edit_timer_id = N2E_SEL_EDIT_TIMER_ID;
+UINT	_n2e_wheel_timer_to = 100;
+UINT	_n2e_css_property = css_prop_less;
 
-FILE	*_hL_log = 0;
+FILE	*_n2e_log = 0;
 HWND	g_hwnd = 0;
 
-extern BOOL	b_HL_highlight_selection;
-BOOL	_hl_skip_highlight = FALSE;
-BOOL	b_Hl_use_prefix_in_open_dialog = TRUE;
-BOOL	  b_HL_ctrl_wheel_scroll = TRUE;
+extern BOOL	bHighlightSelection;
+BOOL	_n2e_skip_highlight = FALSE;
+BOOL	bUsePrefixInOpenDialog = TRUE;
+BOOL	bCtrlWheelScroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
 int iEvaluateMathExpression = 0;
 int iWordNavigationMode = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
 
-UINT	_hl_ctx_menu_type = 0;
+UINT	_n2e_ctx_menu_type = 0;
 extern	LPMRULIST pFileMRU;
 extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
 //
-BOOL	_hl_wheel_timer = FALSE;
-INT		_hl_alloc_count = 0;
-extern	long	_hl_max_search_range;
+BOOL	_n2e_wheel_timer = FALSE;
+INT		_n2e_alloc_count = 0;
+extern	long	_n2e_max_search_range;
 
 int iHighlightLineIfWindowInactive = 0;
 int iScrollYCaretPolicy = 0;
@@ -51,7 +51,7 @@ extern HWND  hwndEdit;
 void n2e_InitInstance()
 {
   InitScintillaHandle(hwndEdit);
-  HL_Init(hwndMain);
+  n2e_Init(hwndMain);
   hShellHook = SetWindowsHookEx(WH_SHELL, ShellProc, NULL, GetCurrentThreadId());
 }
 
@@ -61,117 +61,117 @@ void n2e_ExitInstance()
   {
     UnhookWindowsHookEx(hShellHook);
   }
-  HL_Release();
-  HL_SaveINI();
+  n2e_Release();
+  n2e_SaveINI();
 }
 
-void* HL_Alloc(size_t size)
+void* n2e_Alloc(size_t size)
 {
-  if (_hl_alloc_count)
+  if (_n2e_alloc_count)
   {
-    HL_TRACE(L"WARNING !!! ALLOC mismatch : %d", _hl_alloc_count);
+    N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", _n2e_alloc_count);
   }
-  ++_hl_alloc_count;
+  ++_n2e_alloc_count;
   return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
 }
 
-void HL_Free(void* ptr)
+void n2e_Free(void* ptr)
 {
   if (ptr)
   {
-    --_hl_alloc_count;
+    --_n2e_alloc_count;
     GlobalFree(ptr);
   }
 }
 
-void* HL_Realloc(void* ptr, size_t len)
+void* n2e_Realloc(void* ptr, size_t len)
 {
-  HL_Free(ptr);
-  return HL_Alloc(len);
+  n2e_Free(ptr);
+  return n2e_Alloc(len);
 }
 
-VOID CALLBACK HL_wheel_timer_proc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
+VOID CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
-  _hl_wheel_timer = FALSE;
+  _n2e_wheel_timer = FALSE;
   KillTimer(NULL, idEvent);
 }
 
-VOID CALLBACK HL_sel_edit_timer_proc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
+VOID CALLBACK n2e_SelEditTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
 }
 
-VOID HL_Init(HWND hWnd)
+VOID n2e_Init(HWND hWnd)
 {
   g_hwnd = hWnd;
-  if (IniGetInt(HL_INI_SECTION, L"DebugLog", 0))
+  if (IniGetInt(N2E_INI_SECTION, L"DebugLog", 0))
   {
-    _hL_log = fopen("hl_log.log", "w");
+    _n2e_log = fopen("n2e_log.log", "w");
   }
-  HL_Set_wheel_scroll(b_HL_ctrl_wheel_scroll);
-  *_hl_last_run = 0;
+  n2e_SetWheelScroll(bCtrlWheelScroll);
+  *_n2e_last_run = 0;
 
   HLS_init();
 }
 
-VOID HL_LoadINI()
+VOID n2e_LoadINI()
 {
-  b_HL_highlight_selection = IniGetInt(HL_INI_SECTION, L"HighlightSelection", b_HL_highlight_selection);
-  b_HL_ctrl_wheel_scroll = IniGetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
-  _hl_wheel_timer_to = IniGetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
-  _hl_css_property = IniGetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
-  _hl_ctx_menu_type = IniGetInt(HL_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
-  _hl_max_search_range = IniGetInt(HL_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
-  b_Hl_use_prefix_in_open_dialog = IniGetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
-  iHighlightLineIfWindowInactive = IniGetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
-  iScrollYCaretPolicy = IniGetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  iFindWordMatchCase = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  iFindWordWrapAround = IniGetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
-  bMoveCaretOnRightClick = IniGetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
-  iEvaluateMathExpression = IniGetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
-  iShowLanguageInTitle = IniGetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
-  iWordNavigationMode = IniGetInt(HL_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
+  bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
+  _n2e_wheel_timer_to = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", _n2e_wheel_timer_to);
+  _n2e_css_property = IniGetInt(N2E_INI_SECTION, L"CSSSettings", _n2e_css_property);
+  _n2e_ctx_menu_type = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
+  _n2e_max_search_range = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
+  bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
+  iHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
+  iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  iFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  iFindWordWrapAround = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+  bMoveCaretOnRightClick = IniGetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
+  iEvaluateMathExpression = IniGetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
+  iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
+  iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
-VOID HL_SaveINI()
+VOID n2e_SaveINI()
 {
-  IniSetInt(HL_INI_SECTION, L"HighlightSelection", b_HL_highlight_selection);
-  IniSetInt(HL_INI_SECTION, L"WheelScroll", b_HL_ctrl_wheel_scroll);
-  IniSetInt(HL_INI_SECTION, L"WheelScrollInterval", _hl_wheel_timer_to);
-  IniSetInt(HL_INI_SECTION, L"CSSSettings", _hl_css_property);
-  IniSetInt(HL_INI_SECTION, L"ShellMenuType", _hl_ctx_menu_type);
-  IniSetInt(HL_INI_SECTION, L"MaxSearchDistance", _hl_max_search_range / 1024);
-  IniSetInt(HL_INI_SECTION, L"OpenDialogByPrefix", b_Hl_use_prefix_in_open_dialog);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
-  IniSetInt(HL_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  IniSetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
+  IniSetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
+  IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", _n2e_wheel_timer_to);
+  IniSetInt(N2E_INI_SECTION, L"CSSSettings", _n2e_css_property);
+  IniSetInt(N2E_INI_SECTION, L"ShellMenuType", _n2e_ctx_menu_type);
+  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", _n2e_max_search_range / 1024);
+  IniSetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
-VOID HL_Release()
+VOID n2e_Release()
 {
   HLS_release();
-  if (_hL_log)
+  if (_n2e_log)
   {
-    fclose(_hL_log);
+    fclose(_n2e_log);
   }
-  _hL_log = 0;
+  _n2e_log = 0;
   g_hwnd = 0;
 }
 
-VOID HL_Trace(const char *fmt, ...)
+VOID N2E_Trace(const char *fmt, ...)
 {
-  if (_hL_log)
+  if (_n2e_log)
   {
     va_list vl;
     SYSTEMTIME st;
     char	buff[0xff + 1];
     char* ch = 0;
     GetLocalTime(&st);
-    fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
+    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
     va_start(vl, fmt);
     vsprintf_s(buff, 0xff, fmt, vl);
     va_end(vl);
@@ -184,51 +184,51 @@ VOID HL_Trace(const char *fmt, ...)
       }
       ++ch;
     }
-    fprintf(_hL_log, "%s\r\n", buff);
-    fflush(_hL_log);
+    fprintf(_n2e_log, "%s\r\n", buff);
+    fflush(_n2e_log);
   }
 }
 
-VOID HL_WTrace(const char *fmt, LPCWSTR word)
+VOID N2E_WTrace(const char *fmt, LPCWSTR word)
 {
-  if (_hL_log)
+  if (_n2e_log)
   {
     int size;
     char *temp = 0;
     SYSTEMTIME st;
     GetLocalTime(&st);
-    fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    temp = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word, -1, NULL, 0, NULL, NULL));
+    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
+    temp = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word, -1, NULL, 0, NULL, NULL));
     WideCharToMultiByte(CP_UTF8, 0, word, -1, temp, size, NULL, NULL);
-    fprintf(_hL_log, fmt, temp);
-    HL_Free(temp);
-    fprintf(_hL_log, "\r\n");
-    fflush(_hL_log);
+    fprintf(_n2e_log, fmt, temp);
+    n2e_Free(temp);
+    fprintf(_n2e_log, "\r\n");
+    fflush(_n2e_log);
   }
 }
 
-VOID HL_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
+VOID N2E_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
 {
-  if (_hL_log)
+  if (_n2e_log)
   {
     int size;
     char *temp, *temp2;
     SYSTEMTIME st;
     GetLocalTime(&st);
-    fprintf(_hL_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    temp = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word1, -1, NULL, 0, NULL, NULL));
+    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
+    temp = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word1, -1, NULL, 0, NULL, NULL));
     WideCharToMultiByte(CP_UTF8, 0, word1, -1, temp, size, NULL, NULL);
-    temp2 = HL_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word2, -1, NULL, 0, NULL, NULL));
+    temp2 = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word2, -1, NULL, 0, NULL, NULL));
     WideCharToMultiByte(CP_UTF8, 0, word2, -1, temp2, size, NULL, NULL);
-    fprintf(_hL_log, fmt, temp, temp2);
-    HL_Free(temp);
-    HL_Free(temp2);
-    fprintf(_hL_log, "\r\n");
-    fflush(_hL_log);
+    fprintf(_n2e_log, fmt, temp, temp2);
+    n2e_Free(temp);
+    n2e_Free(temp2);
+    fprintf(_n2e_log, "\r\n");
+    fflush(_n2e_log);
   }
 }
 
-BOOL HL_Test_offset_tail(WCHAR *wch)
+BOOL n2e_TestOffsetTail(WCHAR *wch)
 {
   while (*wch)
   {
@@ -241,7 +241,7 @@ BOOL HL_Test_offset_tail(WCHAR *wch)
   return TRUE;
 }
 
-BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
+BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
 {
   BOOL ok = 0;
   int cou = 0;
@@ -262,8 +262,8 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
             return 0;
           }
         }
-        ok = HL_Test_offset_tail(ec);
-        HL_Trace("Result is  %d (%d)", *out, ok);
+        ok = n2e_TestOffsetTail(ec);
+        N2E_Trace("Result is  %d (%d)", *out, ok);
         return ok;
       }
       else if (StrChr(L"abcdefABCDEF", temp[0]))
@@ -290,8 +290,8 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
           return 0;
         }
         *out = wcstol(temp, &ec, 16);
-        ok = HL_Test_offset_tail(ec);
-        HL_Trace("Result is (hex) %d (ok %d)", *out, ok);
+        ok = n2e_TestOffsetTail(ec);
+        N2E_Trace("Result is (hex) %d (ok %d)", *out, ok);
         return ok;
       }
     }
@@ -311,16 +311,16 @@ BOOL HL_Get_goto_number(LPTSTR temp, int *out, BOOL hex)
   return 0;
 }
 
-VOID HL_Wheel_scroll_worker(int lines)
+VOID n2e_WheelScrollWorker(int lines)
 {
   int anch, sel = 0;
-  if (_hl_wheel_timer)
+  if (_n2e_wheel_timer)
   {
-    HL_Trace("wheel timer blocked");
+    N2E_Trace("wheel timer blocked");
     return;
   }
-  _hl_wheel_timer = TRUE;
-  SetTimer(NULL, HL_WHEEL_TIMER_ID, _hl_wheel_timer_to, HL_wheel_timer_proc);
+  _n2e_wheel_timer = TRUE;
+  SetTimer(NULL, N2E_WHEEL_TIMER_ID, _n2e_wheel_timer_to, n2e_WheelTimerProc);
   anch = SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0);
   if (lines > 0)
   {
@@ -332,19 +332,19 @@ VOID HL_Wheel_scroll_worker(int lines)
   }
 }
 
-VOID HL_Set_wheel_scroll(BOOL on)
+VOID n2e_SetWheelScroll(BOOL on)
 {
   if (on)
   {
-    hl_wheel_action = HL_Wheel_scroll_worker;
+    n2e_wheel_action = n2e_WheelScrollWorker;
   }
   else
   {
-    hl_wheel_action = 0;
+    n2e_wheel_action = 0;
   }
 }
 
-BOOL CALLBACK HL_Enum_proc(
+BOOL CALLBACK n2e_EnumProc(
   HWND hwnd,
   LPARAM lParam
 )
@@ -360,12 +360,12 @@ BOOL CALLBACK HL_Enum_proc(
   return TRUE;
 }
 
-VOID HL_Reload_Settings()
+VOID n2e_Reload_Settings()
 {
-  EnumWindows(HL_Enum_proc, (LPARAM)g_hwnd);
+  EnumWindows(n2e_EnumProc, (LPARAM)g_hwnd);
 }
 
-BOOL HL_Is_Empty(LPCWSTR txt)
+BOOL n2e_Is_Empty(LPCWSTR txt)
 {
   int t = lstrlen(txt);
   while (--t >= 0)
@@ -378,7 +378,7 @@ BOOL HL_Is_Empty(LPCWSTR txt)
   return TRUE;
 }
 
-int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2)
+int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2)
 {
   int res1, res2;
   res1 = StrCmp(sz1, sz2);
@@ -398,7 +398,7 @@ int HL_Compare_files(LPCWSTR sz1, LPCWSTR sz2)
   return res1;
 }
 
-BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
+BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
   WIN32_FIND_DATA	wfd;
   WCHAR	path[MAX_PATH];
@@ -439,7 +439,7 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   }
   lstrcat(path, L"*");
   res = FindFirstFile(path, &wfd);
-  HL_TRACE("search file by mask '%S'", path);
+  N2E_TRACE("search file by mask '%S'", path);
   if (INVALID_HANDLE_VALUE == res)
   {
     return FALSE;
@@ -449,13 +449,13 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   {
     if (0 == (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-      HL_TRACE("file: '%S'", wfd.cFileName);
+      N2E_TRACE("file: '%S'", wfd.cFileName);
       if (_wcsnicmp(wfd.cFileName, in, 1))
       {
-        HL_TRACE("skip");
+        N2E_TRACE("skip");
         continue;
       }
-      if (0 == temp[0] || HL_Compare_files(temp, wfd.cFileName) > 0)
+      if (0 == temp[0] || n2e_CompareFiles(temp, wfd.cFileName) > 0)
       {
         lstrcpy(temp, wfd.cFileName);
       }
@@ -475,7 +475,7 @@ BOOL	HL_Open_File_by_prefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   return FALSE;
 }
 
-BOOL _HL_fileIsCdUp(LPCWSTR str)
+BOOL n2e_FileIsCdUp(LPCWSTR str)
 {
   int k;
   for (k = 0; k < lstrlen(str); ++k)
@@ -488,7 +488,7 @@ BOOL _HL_fileIsCdUp(LPCWSTR str)
   return TRUE;
 }
 
-UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
   static UINT file_ok = 0;
   static WCHAR last_selected[MAX_PATH];
@@ -516,7 +516,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
                 }
               }
               SetWindowLong(hdlg, DWL_MSGRESULT, 1);
-              HL_TRACE("OFN OK '%S' ", buf);
+              N2E_TRACE("OFN OK '%S' ", buf);
               if (len)
               {
                 WCHAR	out[MAX_PATH];
@@ -524,10 +524,10 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
                 if (wcsstr(last_selected, buf))
                 {
                   final_str = last_selected;
-                  HL_TRACE("OFN drop window text %S ", buf);
+                  N2E_TRACE("OFN drop window text %S ", buf);
                 }
-                HL_TRACE("OFN input (%S) ", final_str);
-                if (!HL_Open_File_by_prefix(final_str, dir, out))
+                N2E_TRACE("OFN input (%S) ", final_str);
+                if (!n2e_OpenFileByPrefix(final_str, dir, out))
                 {
                   WCHAR mess[1024];
                   wsprintf(mess,
@@ -543,7 +543,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
                 {
                   CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)out);
                   lstrcpy(ofn->lpOFN->lpstrFile, out);
-                  HL_TRACE("OFN final result (%S) ", out);
+                  N2E_TRACE("OFN final result (%S) ", out);
                   SetWindowLong(hdlg, DWL_MSGRESULT, 0);
                   take_call = FALSE;
                 }
@@ -552,16 +552,16 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
                            return 1;
           case CDN_SELCHANGE: {
               WCHAR buf[MAX_PATH];
-              HL_TRACE("OFN sel change  ");
+              N2E_TRACE("OFN sel change  ");
               if ((CommDlg_OpenSave_GetFilePath(hPar, buf, MAX_PATH) > 0) && !PathIsDirectory(buf))
               {
                 if (CommDlg_OpenSave_GetSpec(hPar, buf, MAX_PATH) > 0)
                 {
-                  if (_HL_fileIsCdUp(buf))
+                  if (n2e_FileIsCdUp(buf))
                   {
                     *buf = 0;
                   }
-                  HL_TRACE("Set OFN input %S", buf);
+                  N2E_TRACE("Set OFN input %S", buf);
                   CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)buf);
                   lstrcpy(last_selected, buf);
                   return 1;
@@ -570,7 +570,7 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
             }
                               break;
           case CDN_INITDONE: {
-              HL_TRACE("OFN init  ");
+              N2E_TRACE("OFN init  ");
               take_call = FALSE;
               file_ok = RegisterWindowMessage(FILEOKSTRING);
               *last_selected = 0;
@@ -586,21 +586,21 @@ UINT_PTR CALLBACK HL_OFN__hook_proc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM
     default:
       if (file_ok == uiMsg)
       {
-        HL_TRACE("custom OK");
+        N2E_TRACE("custom OK");
         SetWindowLong(hdlg, DWL_MSGRESULT, take_call);
       }
   }
   return take_call;
 }
 
-VOID HL_Get_last_dir(LPTSTR out)
+VOID n2e_GetLastDir(LPTSTR out)
 {
   WCHAR	tch[MAX_PATH];
   INT count = MRU_Enum(pFileMRU, 0, NULL, 0);
   if (count)
   {
     MRU_Enum(pFileMRU, 0, tch, COUNTOF(tch));
-    HL_WTrace("OFN mru '%s'", tch);
+    N2E_WTrace("OFN mru '%s'", tch);
     lstrcpy(out, tch);
     PathRemoveFileSpec(out);
     if (PathIsRelative(out))
@@ -611,7 +611,7 @@ VOID HL_Get_last_dir(LPTSTR out)
       PathAppend(tchModule, out);
       PathCanonicalize(out, tchModule);
     }
-    HL_WTrace("OFN mru final '%s'", out);
+    N2E_WTrace("OFN mru final '%s'", out);
   }
   else
   {
@@ -619,7 +619,7 @@ VOID HL_Get_last_dir(LPTSTR out)
   }
 }
 
-VOID HL_Grep(VOID* _lpf, BOOL grep)
+VOID n2e_Grep(VOID* _lpf, BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
@@ -705,7 +705,7 @@ VOID HL_Grep(VOID* _lpf, BOOL grep)
   EndWaitCursor();
 }
 
-void HL_inplace_rev(WCHAR * s)
+void n2e_InplaceRev(WCHAR * s)
 {
   WCHAR t, *e = s + lstrlen(s);
   while (--e > s)
@@ -714,12 +714,12 @@ void HL_inplace_rev(WCHAR * s)
   }
 }
 
-BOOL hl_iswordchar(WCHAR ch)
+BOOL n2e_IsWordChar(WCHAR ch)
 {
   return	IsCharAlphaNumericW(ch) || NULL != StrChr(L"_", ch);
 }
 
-BOOL hl_isspace(WCHAR ch)
+BOOL n2e_IsSpace(WCHAR ch)
 {
   return isspace(ch);
 }

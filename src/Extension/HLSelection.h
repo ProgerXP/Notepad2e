@@ -8,9 +8,9 @@ enum SH_PLACE
 };
 typedef	enum
 {
-  HL_SE_APPLY = 1 << 0,
-  HL_SE_REJECT = 1 << 1
-}	HL_SELEDIT_STOP_OPT;
+  N2E_SE_APPLY = 1 << 0,
+  N2E_SE_REJECT = 1 << 1
+}	N2E_SELEDIT_STOP_OPT;
 
 void	HLS_init();
 void	HLS_release();

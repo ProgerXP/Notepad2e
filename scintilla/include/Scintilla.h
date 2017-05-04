@@ -25,8 +25,8 @@ int Scintilla_RegisterClasses(void *hInstance);
 int Scintilla_ReleaseResources(void);
 #endif
 int Scintilla_LinkLexers(void);
-extern wheel_action hl_wheel_action;
-extern key_action hl_proc_action;
+extern wheel_action n2e_wheel_action;
+extern key_action n2e_proc_action;
 
 #ifdef __cplusplus
 }

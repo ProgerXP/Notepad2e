@@ -376,7 +376,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             if (GetDlgItemText(hwnd, IDC_COMMANDLINE, arg1, MAX_PATH))
             {
               BOOL bQuickExit = FALSE;
-              lstrcpy(_hl_last_run, arg1);
+              lstrcpy(_n2e_last_run, arg1);
               ExpandEnvironmentStringsEx(arg1, COUNTOF(arg1));
               ExtractFirstArgument(arg1, arg1, arg2);
               if (lstrcmpi(arg1, L"notepad2") == 0 ||
@@ -439,7 +439,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 //
 void RunDlg(HWND hwnd, LPCWSTR lpstrDefault)
 {
-  LPWSTR def = _hl_last_run;
+  LPWSTR def = _n2e_last_run;
   if (lstrlen(def) == 0)
     def = (LPWSTR)lpstrDefault;
 
@@ -1008,7 +1008,7 @@ DWORD WINAPI FileMRUIconThread(LPVOID lpParam)
   return (0);
 }
 
-BOOL HL_OpenMRU_Last(LPWSTR fn)
+BOOL n2e_OpenMRULast(LPWSTR fn)
 {
   int i;
   int count;
@@ -1021,9 +1021,9 @@ BOOL HL_OpenMRU_Last(LPWSTR fn)
   for (i = 0; i < count && i < 2; i++)
   {
     MRU_Enum(pFileMRU, i, tch, COUNTOF(tch));
-    HL_WTrace("mru '%s'", tch);
+    N2E_WTrace("mru '%s'", tch);
     PathAbsoluteFromApp(tch, NULL, 0, TRUE);
-    HL_WTrace("mru full '%s'", tch);
+    N2E_WTrace("mru full '%s'", tch);
     if (0 == i || open)
     {
       lstrcpy(fn, tch);
@@ -1037,10 +1037,10 @@ BOOL HL_OpenMRU_Last(LPWSTR fn)
       open = TRUE;
     }
   }
-  HL_WTrace("check for path '%s'", fn);
+  N2E_WTrace("check for path '%s'", fn);
   if (!PathFileExists(fn))
   {
-    HL_WTrace("no path '%s'", fn);
+    N2E_WTrace("no path '%s'", fn);
     if (IDYES == MsgBox(MBYESNO, IDS_ERR_MRUDLG))
     {
       MRU_DeleteFileFromStore(pFileMRU, fn);

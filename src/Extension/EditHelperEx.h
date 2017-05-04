@@ -19,11 +19,11 @@ extern "C" {
   extern int iFindWordWrapAround;
   extern TBBUTTON  tbbMainWnd[];
   extern  HWND      hwndToolbar;
-  extern	BOOL		b_HL_highlight_selection;
-  extern	BOOL		b_HL_highlight_all;
-  extern	BOOL		b_Hl_use_prefix_in_open_dialog;
-  extern	BOOL		b_HL_edit_selection;
-  extern	BOOL		b_HL_ctrl_wheel_scroll;
+  extern	BOOL		bHighlightSelection;
+  extern	BOOL		_n2e_highlight_all;
+  extern	BOOL		bUsePrefixInOpenDialog;
+  extern	BOOL		_n2e_edit_selection;
+  extern	BOOL		bCtrlWheelScroll;
   extern  BOOL    bMoveCaretOnRightClick;
   extern  int     iEvaluateMathExpression;
   extern  int     iWordNavigationMode;
@@ -49,7 +49,7 @@ extern "C" {
   #define ICON_FIND_FAILED 26
   #define FIND_INFO_INDEX 12
 
-  BOOL HL_Explorer_cxt_menu(LPCWSTR path, void *parentWindow);
+  BOOL n2e_ExplorerCxtMenu(LPCWSTR path, void *parentWindow);
   int isValidRegex(LPCSTR str);
 
 #ifdef __cplusplus

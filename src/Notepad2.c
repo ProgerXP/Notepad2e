@@ -830,7 +830,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       {
         if (!wParam)
-          HLS_Edit_selection_stop(HL_SE_APPLY);
+          HLS_Edit_selection_stop(N2E_SE_APPLY);
       }
       break;
 
@@ -840,7 +840,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_MOUSEACTIVATE:
-      HLS_Edit_selection_stop(HL_SE_APPLY);
+      HLS_Edit_selection_stop(N2E_SE_APPLY);
       break;
 
 
@@ -1283,7 +1283,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case HWM_RELOAD_SETTINGS: {
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
-        HL_Msg_create();
+        n2e_MsgCreate();
       }
       break;
 
@@ -1314,7 +1314,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   hInstance = ((LPCREATESTRUCT)lParam)->hInstance;
   // Setup edit control
   hwndEdit = EditCreate(hwnd);
-  HL_Msg_create();
+  n2e_MsgCreate();
 
   hwndEditFrame = CreateWindowEx(
     WS_EX_CLIENTEDGE,
@@ -1868,7 +1868,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHiliteCurrentLine);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTWORD, b_HL_highlight_selection);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTWORD, bHighlightSelection);
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
@@ -1909,7 +1909,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
-  CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, b_HL_ctrl_wheel_scroll);
+  CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, bCtrlWheelScroll);
   CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == 0);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == 1);
@@ -1941,13 +1941,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case ID_FILE_OPEN__NEXT:
     case IDT_FILE_OPEN_NEXT:
-      HL_Open_nextFs_file(hwnd, szCurFile, TRUE);
+      n2e_OpenNextFile(hwnd, szCurFile, TRUE);
       break;
 
 
     case ID_FILE_OPEN__PREVIOUS:
     case IDT_FILE_OPEN_PREV:
-      HL_Open_nextFs_file(hwnd, szCurFile, FALSE);
+      n2e_OpenNextFile(hwnd, szCurFile, FALSE);
       break;
 
 
@@ -2226,12 +2226,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case ID_FILE_INVOKESHELLMENU: {
-        HL_Trace("Modified %d", bModified);
+        N2E_Trace("Modified %d", bModified);
         if (lstrlen(szCurFile) > 0 &&
             PathFileExists(szCurFile)
             )
         {
-          HL_Explorer_cxt_menu(szCurFile, hwnd);
+          n2e_ExplorerCxtMenu(szCurFile, hwnd);
         }
       }
       break;
@@ -2382,7 +2382,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
         {
           WCHAR tchFile[MAX_PATH];
-          if (HL_OpenMRU_Last(tchFile))
+          if (n2e_OpenMRULast(tchFile))
           {
             _FileLoad(TRUE, FALSE, FALSE, FALSE, tchFile, TRUE);
           }
@@ -2527,8 +2527,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_UNDO:
-      if (b_HL_edit_selection)
-        HLS_Edit_selection_stop(HL_SE_REJECT);
+      if (_n2e_edit_selection)
+        HLS_Edit_selection_stop(N2E_SE_REJECT);
       else
         SendMessage(hwndEdit, SCI_UNDO, 0, 0);
       break;
@@ -3207,14 +3207,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_STRIP_HTML_TAGS:
       BeginWaitCursor();
-      HL_Strip_html_tags(hwndEdit);
+      n2e_StripHTMLTags(hwndEdit);
       EndWaitCursor();
       break;
 
 
     case ID_SPECIAL_ESCAPEHTML:
       BeginWaitCursor();
-      HL_Escape_html(hwndEdit);
+      n2e_EscapeHTML(hwndEdit);
       EndWaitCursor();
       break;
 
@@ -3318,7 +3318,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case ID_EDIT_FINDNEXTWORD:
     case ID_EDIT_FINDPREVIOUSWORD:
-      HL_Find_next_word(hwndEdit, &efrData, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
+      n2e_FindNextWord(hwndEdit, &efrData, ID_EDIT_FINDNEXTWORD == LOWORD(wParam));
       break;
 
 
@@ -3684,7 +3684,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_HIGHLIGHTCURRENTWORD:
-      b_HL_highlight_selection = (b_HL_highlight_selection) ? FALSE : TRUE;
+      bHighlightSelection = (bHighlightSelection) ? FALSE : TRUE;
       HLS_Update_selection(SH_INIT);
       break;
 
@@ -3996,14 +3996,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case ID_SETTINGS_REPLACESETTINGSINALLINSTANCES: {
         MsgCommand(hwnd, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
-        HL_Reload_Settings();
+        n2e_Reload_Settings();
       }
       break;
 
 
     case ID_SETTINGS_CTRL_WHEEL_SCROLL:
-      b_HL_ctrl_wheel_scroll = (b_HL_ctrl_wheel_scroll) ? FALSE : TRUE;
-      HL_Set_wheel_scroll(b_HL_ctrl_wheel_scroll);
+      bCtrlWheelScroll = (bCtrlWheelScroll) ? FALSE : TRUE;
+      n2e_SetWheelScroll(bCtrlWheelScroll);
       break;
 
 
@@ -4048,8 +4048,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                       hwnd, AboutDlgProc);
       break;
     case CMD_ESCAPE:
-      if (b_HL_edit_selection)
-        HLS_Edit_selection_stop(HL_SE_REJECT);
+      if (_n2e_edit_selection)
+        HLS_Edit_selection_stop(N2E_SE_REJECT);
       else if (iEscFunction == 1)
         SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
       else if (iEscFunction == 2)
@@ -4435,12 +4435,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case ID_BLOCK_UNWRAPSELECTION:
-      HL_Unwrap_selection(hwndEdit, FALSE);
+      n2e_UnwrapSelection(hwndEdit, FALSE);
       break;
 
 
     case ID_BLOCK_UNWRAPQUOTESATCURSOR:
-      HL_Unwrap_selection(hwndEdit, TRUE);
+      n2e_UnwrapSelection(hwndEdit, TRUE);
       break;
 
 
@@ -5411,7 +5411,7 @@ void LoadSettings()
 
   // Scintilla Styles
   Style_Load();
-  HL_LoadINI();
+  n2e_LoadINI();
 }
 
 BOOL CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired)
@@ -5554,7 +5554,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     }
     // Scintilla Styles
     Style_Save();
-    HL_SaveINI();
+    n2e_SaveINI();
   }
   
   if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR)
@@ -6671,7 +6671,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       iFileWatchingMode = 0;
     InstallFileWatching(NULL);
     ResetFindIcon();
-    *_hl_last_run = 0;
+    *_n2e_last_run = 0;
 
     return TRUE;
   }
@@ -6811,7 +6811,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
   if (fSuccess)
   {
     ResetFindIcon();
-    *_hl_last_run = 0;
+    *_n2e_last_run = 0;
   }
 
   return (fSuccess);
@@ -6901,7 +6901,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
     {
       if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
       {
-        *_hl_last_run = 0;
+        *_n2e_last_run = 0;
         //
         if (bDeleteOld
             && lstrlen(szCurFile)
@@ -7005,7 +7005,7 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
       }
     }
     else
-      HL_Get_last_dir(tchInitialDir);
+      n2e_GetLastDir(tchInitialDir);
   }
 
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -7015,12 +7015,12 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   ofn.lpstrFile = szFile;
   ofn.lpstrInitialDir = (lpstrInitialDir) ? lpstrInitialDir : tchInitialDir;
   ofn.nMaxFile = COUNTOF(szFile);
-  ofn.lpfnHook = HL_OFN__hook_proc;
+  ofn.lpfnHook = n2e_OFNHookProc;
   ofn.Flags =
     OFN_HIDEREADONLY |
     OFN_DONTADDTORECENT |
     OFN_SHAREAWARE;
-  if (b_Hl_use_prefix_in_open_dialog)
+  if (bUsePrefixInOpenDialog)
     ofn.Flags |= (OFN_ENABLEHOOK | OFN_EXPLORER);
   else
     ofn.Flags |= OFN_FILEMUSTEXIST;
@@ -7073,7 +7073,7 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
     }
   }
   else
-    HL_Get_last_dir(tchInitialDir);
+    n2e_GetLastDir(tchInitialDir);
 
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
   ofn.lStructSize = sizeof(OPENFILENAME);

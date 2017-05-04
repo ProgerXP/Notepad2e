@@ -126,8 +126,8 @@
 #endif
 
 typedef BOOL(WINAPI *TrackMouseEventSig)(LPTRACKMOUSEEVENT);
-wheel_action hl_wheel_action = 0;
-key_action hl_proc_action = 0;
+wheel_action n2e_wheel_action = 0;
+key_action n2e_proc_action = 0;
 typedef UINT_PTR(WINAPI *SetCoalescableTimerSig)(HWND hwnd, UINT_PTR nIDEvent,
                                                  UINT uElapse, TIMERPROC lpTimerFunc, ULONG uToleranceDelay);
 
@@ -1475,8 +1475,8 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
           {
             // Zoom! We play with the font sizes in the styles.
             // Number of steps/line is ignored, we just care if sizing up or down
-            if ( hl_wheel_action ) {
-                hl_wheel_action ( linesToScroll );
+            if ( n2e_wheel_action ) {
+                n2e_wheel_action ( linesToScroll );
             } else {
                 if ( linesToScroll < 0 ) {
                     KeyCommand ( SCI_ZOOMIN );
@@ -1630,9 +1630,9 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
         }
 
       case WM_CHAR:
-        if (hl_proc_action)
+        if (n2e_proc_action)
         {
-          int ret = hl_proc_action(wParam, WM_CHAR);
+          int ret = n2e_proc_action(wParam, WM_CHAR);
           if (ret >= 0)
           {
             return ret;
@@ -1679,9 +1679,9 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
       case WM_SYSKEYDOWN:
       case WM_KEYDOWN: {
           //Platform::DebugPrintf("S keydown %d %x %x %x %x\n",iMessage, wParam, lParam, ::IsKeyDown(VK_SHIFT), ::IsKeyDown(VK_CONTROL));
-          if (hl_proc_action)
+          if (n2e_proc_action)
           {
-            int ret = hl_proc_action(wParam, WM_KEYDOWN);
+            int ret = n2e_proc_action(wParam, WM_KEYDOWN);
             if (ret >= 0)
             {
               return ret;
