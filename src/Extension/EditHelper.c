@@ -135,7 +135,7 @@ void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
 
 void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
-  if (HLS_Edit_selection_stop(N2E_SE_APPLY))
+  if (n2e_SelectionEditStop(N2E_SE_APPLY))
   {
     return;
   }

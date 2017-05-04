@@ -830,7 +830,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       {
         if (!wParam)
-          HLS_Edit_selection_stop(N2E_SE_APPLY);
+          n2e_SelectionEditStop(N2E_SE_APPLY);
       }
       break;
 
@@ -840,7 +840,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_MOUSEACTIVATE:
-      HLS_Edit_selection_stop(N2E_SE_APPLY);
+      n2e_SelectionEditStop(N2E_SE_APPLY);
       break;
 
 
@@ -2528,7 +2528,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_UNDO:
       if (_n2e_edit_selection)
-        HLS_Edit_selection_stop(N2E_SE_REJECT);
+        n2e_SelectionEditStop(N2E_SE_REJECT);
       else
         SendMessage(hwndEdit, SCI_UNDO, 0, 0);
       break;
@@ -3685,7 +3685,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_HIGHLIGHTCURRENTWORD:
       bHighlightSelection = (bHighlightSelection) ? FALSE : TRUE;
-      HLS_Update_selection(SH_INIT);
+      n2e_SelectionUpdate(SH_INIT);
       break;
 
 
@@ -3980,12 +3980,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case ID_EDIT_EDITSELECTION:
-      HLS_Edit_selection_start(TRUE);
+      n2e_SelectionEditStart(TRUE);
       return 1;
 
 
     case ID_EDIT_EDITSELECTION_LINE:
-      HLS_Edit_selection_start(FALSE);
+      n2e_SelectionEditStart(FALSE);
       return 1;
 
 
@@ -4049,7 +4049,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
     case CMD_ESCAPE:
       if (_n2e_edit_selection)
-        HLS_Edit_selection_stop(N2E_SE_REJECT);
+        n2e_SelectionEditStop(N2E_SE_REJECT);
       else if (iEscFunction == 1)
         SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
       else if (iEscFunction == 2)
@@ -4988,7 +4988,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           UpdateLineNumberWidth();
           break;
       }
-      HLS_on_notification(pnmh->code, scn);
+      nn2e_SelectionNotificationHandler(pnmh->code, scn);
       break;
 
 

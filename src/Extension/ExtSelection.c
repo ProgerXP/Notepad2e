@@ -94,7 +94,7 @@ BOOL icase_compare(const char* a, const char* b)
   return *a == *b;
 }
 
-int	HLS_key_action(int key, int msg)
+int	n2e_SelectionKeyAction(int key, int msg)
 {
   if (_n2e_edit_selection)
   {
@@ -102,7 +102,7 @@ int	HLS_key_action(int key, int msg)
     {
       if (WM_CHAR == msg)
       {
-        HLS_Edit_selection_stop(N2E_SE_APPLY);
+        n2e_SelectionEditStop(N2E_SE_APPLY);
       }
       return 0;
     }
@@ -110,7 +110,7 @@ int	HLS_key_action(int key, int msg)
   return -1;
 }
 
-void	HLS_init()
+void	n2e_SelectionInit()
 {
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, iHighlightLineIfWindowInactive, 0);
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
@@ -155,11 +155,11 @@ void	HLS_init()
                                                                                                                            0x00)));
     SendMessage(hwndEdit, SCI_INDICSETUNDER, N2E_SELECT_INDICATOR_EDIT, IniGetInt(N2E_INI_SECTION, L"EditSelectionUnder", 0));
   }
-  n2e_proc_action = HLS_key_action;
+  n2e_proc_action = n2e_SelectionKeyAction;
   _n2e_se_tr.lpstrText = 0;
 }
 
-void HLS_release()
+void n2e_SelectionRelease()
 {
   int k = 0;
   if (_n2e_se_tr.lpstrText)
@@ -183,7 +183,7 @@ void HLS_release()
   }
 }
 
-int HLS_get_wraps(int beg, int end)
+int n2e_SelectionGetWraps(int beg, int end)
 {
   int k = 0;
   int out = 0;
@@ -195,7 +195,7 @@ int HLS_get_wraps(int beg, int end)
   return out;
 }
 
-VOID HLS_Highlight_word(LPCSTR  word)
+VOID n2e_HighlightWord(LPCSTR  word)
 {
   int res = 0;
   int cnt = 0;
@@ -327,7 +327,7 @@ VOID HLS_Highlight_word(LPCSTR  word)
     lwrap = 0;
     if (_n2e_se_init)
     {
-      lwrap = HLS_get_wraps(lstart, lstart + lrange);
+      lwrap = n2e_SelectionGetWraps(lstart, lstart + lrange);
     }
     ttf.lpstrText = (LPSTR)word;
     while (1)
@@ -382,7 +382,7 @@ VOID HLS_Highlight_word(LPCSTR  word)
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, old, 0);
 }
 
-VOID	HLS_Get_word()
+VOID	n2e_SelectionGetWord()
 {
   int sel_len = 0, cpos = 0;
   if (_n2e_se_tr.lpstrText)
@@ -421,12 +421,12 @@ VOID	HLS_Get_word()
   }
 }
 
-VOID HLS_Highlight_turn()
+VOID n2e_SelectionHighlightTurn()
 {
   if (bHighlightSelection)
   {
-    HLS_Get_word();
-    HLS_Highlight_word(_n2e_se_tr.lpstrText);
+    n2e_SelectionGetWord();
+    n2e_HighlightWord(_n2e_se_tr.lpstrText);
   }
   else
   {
@@ -445,7 +445,7 @@ VOID HLS_Highlight_turn()
   }
 }
 
-BOOL HLS_process_changes(UINT opt)
+BOOL n2e_SelectionProcessChanges(UINT opt)
 {
   int		old_ind;
   int		new_len = 0;
@@ -509,7 +509,7 @@ BOOL HLS_process_changes(UINT opt)
   /*
   clear cur edit
   */
-  SendMessage(hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask(FALSE), 0);
+  SendMessage(hwndEdit, SCI_SETMODEVENTMASK, n2e_SelectionGetSciEventMask(FALSE), 0);
   for (k = 0; k < _n2e_se_count; ++k)
   {
     LPSE_DATA se = &_n2e_se_array[k];
@@ -602,22 +602,22 @@ _EXIT:
     tr.lpstrText = 0;
   }
   N2E_TRACE("new range is %d : %d . curpos is %d", _n2e_se_tr.chrg.cpMin, _n2e_se_tr.chrg.cpMax, cur_pos);
-  SendMessage(hwndEdit, SCI_SETMODEVENTMASK, HLS_Sci_event_mask(TRUE), 0);
+  SendMessage(hwndEdit, SCI_SETMODEVENTMASK, n2e_SelectionGetSciEventMask(TRUE), 0);
   return out;
 }
 
-VOID HLS_Edit_selection_start(const BOOL highlightAll)
+VOID n2e_SelectionEditStart(const BOOL highlightAll)
 {
   _n2e_highlight_all = highlightAll;
   // if mode already ON - then turn it OFF
   if (_n2e_edit_selection)
   {
-    HLS_Edit_selection_stop(N2E_SE_APPLY);
+    n2e_SelectionEditStop(N2E_SE_APPLY);
     return;
   }
   _n2e_se_init = TRUE;
   _n2e_se_count = 0;
-  HLS_Highlight_turn();
+  n2e_SelectionHighlightTurn();
   _n2e_se_init = FALSE;
   if (_n2e_edit_selection)
   {
@@ -627,14 +627,14 @@ VOID HLS_Edit_selection_start(const BOOL highlightAll)
   }
 }
 
-BOOL HLS_Edit_selection_stop(UINT mode)
+BOOL n2e_SelectionEditStop(UINT mode)
 {
   _n2e_se_init = FALSE;
   if (_n2e_edit_selection)
   {
     if (mode & N2E_SE_REJECT)
     {
-      HLS_process_changes(SEO_ROLLBACK);
+      n2e_SelectionProcessChanges(SEO_ROLLBACK);
     }
     /*
      * skip any selection
@@ -645,21 +645,21 @@ BOOL HLS_Edit_selection_stop(UINT mode)
     _n2e_highlight_all = TRUE;
 
     //
-    HLS_Highlight_turn();
+    n2e_SelectionHighlightTurn();
     SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;
   }
   return FALSE;
 }
 
-void HLS_Update_selection(UINT place)
+void n2e_SelectionUpdate(UINT place)
 {
   if (_n2e_edit_selection)
   {
     UINT opt = 0;
     if (_n2e_se_exit)
     {
-      HLS_Edit_selection_stop(N2E_SE_APPLY);
+      n2e_SelectionEditStop(N2E_SE_APPLY);
       return;
     }
     if (SH_MODIF == place)
@@ -668,15 +668,15 @@ void HLS_Update_selection(UINT place)
     }
     else
     {
-      if (!HLS_process_changes(opt))
+      if (!n2e_SelectionProcessChanges(opt))
       {
-        HLS_Edit_selection_stop(N2E_SE_APPLY);
+        n2e_SelectionEditStop(N2E_SE_APPLY);
       }
     }
   }
   else
   {
-    HLS_Highlight_turn();
+    n2e_SelectionHighlightTurn();
   }
 }
 
@@ -690,14 +690,14 @@ BOOL _check_se_mode(struct SCNotification *scn)
   return FALSE;
 }
 
-void HLS_on_notification(int code, struct SCNotification *scn)
+void nn2e_SelectionNotificationHandler(int code, struct SCNotification *scn)
 {
   switch (code)
   {
     case SCN_UPDATEUI:
       if (bHighlightSelection)
       {
-        HLS_Update_selection(SH_UPDATE);
+        n2e_SelectionUpdate(SH_UPDATE);
       }
       break;
     case SCN_MODIFIED:
@@ -752,12 +752,12 @@ void HLS_on_notification(int code, struct SCNotification *scn)
       break;
     case SCN_SAVEPOINTREACHED:
     case SCEN_KILLFOCUS:
-      HLS_Edit_selection_stop(N2E_SE_APPLY);
+      n2e_SelectionEditStop(N2E_SE_APPLY);
       break;
   }
 }
 
-UINT HLS_Sci_event_mask(BOOL range_not)
+UINT n2e_SelectionGetSciEventMask(BOOL range_not)
 {
   UINT out = SC_PERFORMED_UNDO | SC_PERFORMED_REDO;
   if (range_not)

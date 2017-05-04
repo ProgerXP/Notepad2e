@@ -43,8 +43,6 @@ extern  int     iLongLinesLimit;
 extern  BOOL    bShowSelectionMargin;
 extern  BOOL    bViewWhiteSpace;
 extern  BOOL    bViewEOLs;
-//extern  ELanguageIndicatorMode iShowLanguageInTitle;
-//extern	WCHAR		_hl_last_run[HL_MAX_PATH_N_CMD_LINE];
 
 #define ICON_FIND_OK 9
 #define ICON_FIND_FAILED 26

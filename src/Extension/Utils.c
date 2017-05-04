@@ -110,7 +110,7 @@ VOID n2e_Init(HWND hWnd)
   n2e_SetWheelScroll(bCtrlWheelScroll);
   *_n2e_last_run = 0;
 
-  HLS_init();
+  n2e_SelectionInit();
 }
 
 VOID n2e_LoadINI()
@@ -153,7 +153,7 @@ VOID n2e_SaveINI()
 
 VOID n2e_Release()
 {
-  HLS_release();
+  n2e_SelectionRelease();
   if (_n2e_log)
   {
     fclose(_n2e_log);

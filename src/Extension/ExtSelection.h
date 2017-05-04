@@ -12,12 +12,12 @@ typedef	enum
   N2E_SE_REJECT = 1 << 1
 }	N2E_SELEDIT_STOP_OPT;
 
-void	HLS_init();
-void	HLS_release();
-UINT	HLS_Sci_event_mask(BOOL range_not);
-int		HLS_get_wraps(int beg, int end);
+void	n2e_SelectionInit();
+void	n2e_SelectionRelease();
+UINT	n2e_SelectionGetSciEventMask(BOOL range_not);
+int		n2e_SelectionGetWraps(int beg, int end);
 
-void	HLS_on_notification(int code, struct SCNotification *scn);
-void	HLS_Update_selection(UINT place);
-void	HLS_Edit_selection_start(const BOOL highlightAll);
-BOOL	HLS_Edit_selection_stop(UINT mode);
+void	nn2e_SelectionNotificationHandler(int code, struct SCNotification *scn);
+void	n2e_SelectionUpdate(UINT place);
+void	n2e_SelectionEditStart(const BOOL highlightAll);
+BOOL	n2e_SelectionEditStop(UINT mode);
