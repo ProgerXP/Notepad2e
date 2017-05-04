@@ -4,7 +4,7 @@
 #include "resource.h"
 #include <cassert>
 #include "Notepad2.h"
-#include "HLSelection.h"
+#include "ExtSelection.h"
 #include "Edit.h"
 #include "SciCall.h"
 #include "InlineProgressBarCtrl.h"

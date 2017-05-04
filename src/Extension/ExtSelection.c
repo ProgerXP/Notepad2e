@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include <cassert>
 #include "scintilla.h"
-#include "HLSelection.h"
+#include "ExtSelection.h"
 #include "Helpers.h"
 #include "Utils.h"
 

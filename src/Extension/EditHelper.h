@@ -7,7 +7,7 @@
 #include "Notepad2.h"
 #include "Dialogs.h"
 #include "Edit.h"
-#include "HLSelection.h"
+#include "ExtSelection.h"
 #include "Styles.h"
 #include "StrToHex.h"
 #include "Utils.h"

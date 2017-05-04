@@ -7,7 +7,7 @@
 #include <cassert>
 #include "Notepad2.h"
 #include "Edit.h"
-#include "HLSelection.h"
+#include "ExtSelection.h"
 #include "StrToHex.h"
 
 #ifdef __cplusplus
