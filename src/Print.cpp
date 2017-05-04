@@ -33,7 +33,9 @@ extern "C" {
 }
 #include "resource.h"
 
+
 extern "C" HINSTANCE g_hInstance;
+
 
 // Global settings...
 extern "C" int iPrintHeader;
@@ -42,9 +44,11 @@ extern "C" int iPrintColor;
 extern "C" int iPrintZoom;
 extern "C" RECT pagesetupMargin;
 
+
 // Stored objects...
 HGLOBAL hDevMode = NULL;
 HGLOBAL hDevNames = NULL;
+
 
 //=============================================================================
 //
@@ -67,6 +71,7 @@ void StatusUpdatePrintPage(int iPageNum)
 
 extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
 {
+
   // Don't print empty documents
   if (SendMessage(hwnd, SCI_GETLENGTH, 0, 0) == 0) {
     MsgBox(MBINFO, IDS_PRINT_EMPTY);
@@ -333,6 +338,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
     wsprintf(pageString, pszPageFormat, pageNum);
 
     if (printPage) {
+
       // Show wait cursor...
       BeginWaitCursor();
 
@@ -432,6 +438,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
   return TRUE;
 }
 
+
 //=============================================================================
 //
 //  EditPrintSetup() - Code from SciTE
@@ -520,6 +527,7 @@ extern "C" UINT_PTR CALLBACK PageSetupHook(HWND hwnd, UINT uiMsg, WPARAM wParam,
   return(0);
 }
 
+
 extern "C" void EditPrintSetup(HWND hwnd)
 {
   DLGTEMPLATE* pDlgTemplate =
@@ -548,6 +556,7 @@ extern "C" void EditPrintSetup(HWND hwnd)
   pdlg.hDevNames = hDevNames;
 
   if (PageSetupDlg(&pdlg)) {
+
     pagesetupMargin.left = pdlg.rtMargin.left;
     pagesetupMargin.top = pdlg.rtMargin.top;
     pagesetupMargin.right = pdlg.rtMargin.right;
@@ -559,6 +568,7 @@ extern "C" void EditPrintSetup(HWND hwnd)
 
   LocalFree(pDlgTemplate);
 }
+
 
 //=============================================================================
 //
