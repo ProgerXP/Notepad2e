@@ -402,7 +402,7 @@ BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
   WIN32_FIND_DATA	wfd;
   WCHAR	path[MAX_PATH];
-  WCHAR	temp[MAX_PATH];
+  WCHAR	temp[MAX_PATH], filter[MAX_PATH];
   WCHAR	_in[MAX_PATH];
   WCHAR*	in = _in;
   HANDLE res;
@@ -424,20 +424,24 @@ BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
     }
   }
 
+  lstrcpy(filter, in);
+  lstrcat(filter, L"*");
+  PathStripPath(filter);
+
   if (!PathIsRelative(in))
   {
     lstrcpy(dir, in);
-    PathRemoveFileSpec(dir);
-    lstrcpy(path, in);
-    PathStripPath(in);
   }
   else
   {
-    lstrcpy(path, dir);
-    lstrcat(path, L"\\");
-    lstrcat(path, in);
+    PathAddBackslash(dir);
+    lstrcat(dir, in);
   }
-  lstrcat(path, L"*");
+  PathCanonicalize(path, dir);
+  PathRemoveFileSpec(path);
+  PathAddBackslash(path);
+  lstrcat(path, filter);
+
   res = FindFirstFile(path, &wfd);
   N2E_TRACE("search file by mask '%S'", path);
   if (INVALID_HANDLE_VALUE == res)
@@ -449,13 +453,8 @@ BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   {
     if (0 == (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-      N2E_TRACE("file: '%S'", wfd.cFileName);
-      if (_wcsnicmp(wfd.cFileName, in, 1))
-      {
-        N2E_TRACE("skip");
-        continue;
-      }
-      if (0 == temp[0] || n2e_CompareFiles(temp, wfd.cFileName) > 0)
+      if (0 == temp[0]
+          || (PathMatchSpec(wfd.cFileName, filter) && n2e_CompareFiles(temp, wfd.cFileName) > 0))
       {
         lstrcpy(temp, wfd.cFileName);
       }
@@ -464,11 +463,9 @@ BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
   FindClose(res);
   if (temp[0])
   {
-    lstrcpy(out, dir);
-    if (L'\\' != out[lstrlen(out) - 1])
-    {
-      lstrcat(out, L"\\");
-    }
+    PathCanonicalize(out, path);
+    PathRemoveFileSpec(out);
+    PathAddBackslash(out);
     lstrcat(out, temp);
     return TRUE;
   }
