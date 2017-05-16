@@ -310,6 +310,11 @@ VOID n2e_HighlightWord(LPCSTR  word)
         }
         if (ttf1.chrgText.cpMin >= ttf.chrg.cpMax && N2E_SELECT_INDICATOR == curr_indi)
         {
+          if (_n2e_se_init)
+          {
+            _n2e_edit_selection = TRUE;
+            _n2e_se_old_len = wlen;
+          }
           break;
         }
         ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
