@@ -2716,6 +2716,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_DUPLICATELINE:
+      n2e_SelectionEditStop(N2E_SE_APPLY);
       SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
       break;
 
