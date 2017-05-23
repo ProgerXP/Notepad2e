@@ -3136,6 +3136,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           EndWaitCursor();
           break;
         case SCLEX_SQL:
+        case SCLEX_LUA:
           BeginWaitCursor();
           EditToggleLineComments(hwndEdit, L"--", TRUE);
           EndWaitCursor();
@@ -3174,6 +3175,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           break;
         case SCLEX_PASCAL:
           EditEncloseSelection(hwndEdit, L"{", L"}");
+          break;
+        case SCLEX_LUA:
+          EditEncloseSelection(hwndEdit, L"--[[", L"]]");
+          break;
       }
       break;
 
