@@ -64,5 +64,10 @@ void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode);
 void n2e_EscapeHTML(HWND hwnd);
 void UpdateFindIcon(const BOOL findOK);
 void ResetFindIcon();
-void  EditString2Hex(HWND);
-void  EditHex2String(HWND);
+void EditString2Hex(HWND);
+void EditHex2String(HWND);
+
+void n2e_SaveCheckboxes(HWND hwnd);
+BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID);
+void n2e_EditFindReplaceUpdateCheckboxes(HWND hwnd, const UINT nCtrlID);
+void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd);

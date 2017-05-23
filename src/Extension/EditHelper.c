@@ -831,3 +831,95 @@ void EditHex2String(HWND hwnd)
   }
   DecodeHexToStr(hwnd);
 }
+
+LPCWSTR GetControlIDAsString(const UINT nCtrlID)
+{
+  static WCHAR wchBuffer[20];
+  return _itow(nCtrlID, wchBuffer, 16);
+}
+
+UINT GetCheckboxState(HWND hwnd, const UINT nCtrlID)
+{
+  return IsDlgButtonChecked(hwnd, nCtrlID);
+}
+
+void SaveCheckboxState(HWND hwnd, const UINT nCtrlID)
+{
+  SetProp(hwnd, GetControlIDAsString(nCtrlID), (HANDLE)GetCheckboxState(hwnd, nCtrlID));
+}
+
+UINT RestoreCheckboxState(HWND hwnd, const UINT nCtrlID)
+{
+  return GetProp(hwnd, GetControlIDAsString(nCtrlID)) ? BST_CHECKED : BST_UNCHECKED;
+}
+
+BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID)
+{
+  return (GetCheckboxState(hwnd, nCtrlID) == BST_CHECKED)
+    || (RestoreCheckboxState(hwnd, nCtrlID) == BST_CHECKED);
+}
+
+void UpdateCheckboxState(HWND hwnd, const UINT nCtrlID, const BOOL bRestoreState, const BOOL bEnabled)
+{
+  CheckDlgButton(hwnd, nCtrlID, bRestoreState ? RestoreCheckboxState(hwnd, nCtrlID) : BST_UNCHECKED);
+  EnableWindow(GetDlgItem(hwnd, nCtrlID), bEnabled);
+}
+
+void n2e_SaveCheckboxes(HWND hwnd)
+{
+  SaveCheckboxState(hwnd, IDC_FINDWORD);
+  SaveCheckboxState(hwnd, IDC_FINDSTART);
+  SaveCheckboxState(hwnd, IDC_FINDTRANSFORMBS);
+}
+
+void UpdateCheckboxesImpl(HWND hwnd, const UINT nCtrlID, const BOOL bInitialUpdate)
+{
+  const BOOL bRegexModeChanged = (nCtrlID == IDC_FINDREGEXP)
+    || ((nCtrlID == IDC_FINDTRANSFORMBS) && (GetCheckboxState(hwnd, nCtrlID) == BST_CHECKED) && (GetCheckboxState(hwnd, IDC_FINDREGEXP) == BST_CHECKED));
+
+  switch (nCtrlID)
+  {
+    case IDC_FINDREGEXP:
+      CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
+      break;
+    case IDC_FINDTRANSFORMBS:
+      CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
+      break;
+    default:
+      if (bInitialUpdate)
+        break;
+      return;
+  }
+
+  const BOOL bIsRegexMode = (GetCheckboxState(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
+  if (bInitialUpdate || (bRegexModeChanged && bIsRegexMode))
+  {
+    SaveCheckboxState(hwnd, IDC_FINDTRANSFORMBS);
+    SaveCheckboxState(hwnd, IDC_FINDWORD);
+    SaveCheckboxState(hwnd, IDC_FINDSTART);
+  }
+  if (bRegexModeChanged || bIsRegexMode)
+  {
+    UpdateCheckboxState(hwnd, IDC_FINDWORD, !bIsRegexMode, !bIsRegexMode);
+    UpdateCheckboxState(hwnd, IDC_FINDSTART, !bIsRegexMode, !bIsRegexMode);
+    if (nCtrlID != IDC_FINDTRANSFORMBS)
+    {
+      UpdateCheckboxState(hwnd, IDC_FINDTRANSFORMBS, !bIsRegexMode, TRUE);
+    }
+  }
+  else
+  {
+    SaveCheckboxState(hwnd, IDC_FINDREGEXP);
+    UpdateCheckboxState(hwnd, IDC_FINDREGEXP, bIsRegexMode, TRUE);
+  }
+}
+
+void n2e_EditFindReplaceUpdateCheckboxes(HWND hwnd, const UINT nCtrlID)
+{
+  UpdateCheckboxesImpl(hwnd, nCtrlID, FALSE);
+}
+
+void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd)
+{
+  UpdateCheckboxesImpl(hwnd, 0, TRUE);
+}

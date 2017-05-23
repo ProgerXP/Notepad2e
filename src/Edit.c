@@ -5132,6 +5132,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           CopyMemory(lpefr, &efrSave, sizeof(EDITFINDREPLACE));
         }
 
+        n2e_SaveCheckboxes(hwnd);
+        n2e_EditFindReplaceInitialUpdateCheckboxes(hwnd);
+
         hmenu = GetSystemMenu(hwnd, FALSE);
         GetString(SC_SAVEPOS, tch, COUNTOF(tch));
         InsertMenu(hmenu, 0, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_SAVEPOS, tch);
@@ -5181,14 +5184,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           break;
 
         case IDC_FINDREGEXP:
-          if (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED)
-            CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
+          n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDREGEXP);
           PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
           break;
 
         case IDC_FINDTRANSFORMBS:
-          if (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED)
-            CheckDlgButton(hwnd, IDC_FINDREGEXP, BST_UNCHECKED);
+          n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDTRANSFORMBS);
           break;
 
         case IDOK:
@@ -5240,10 +5241,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           if (IsDlgButtonChecked(hwnd, IDC_FINDCASE) == BST_CHECKED)
             lpefr->fuFlags |= SCFIND_MATCHCASE;
 
-          if (IsDlgButtonChecked(hwnd, IDC_FINDWORD) == BST_CHECKED)
+          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDWORD))
             lpefr->fuFlags |= SCFIND_WHOLEWORD;
 
-          if (IsDlgButtonChecked(hwnd, IDC_FINDSTART) == BST_CHECKED)
+          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDSTART))
             lpefr->fuFlags |= SCFIND_WORDSTART;
 
           if (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED)
