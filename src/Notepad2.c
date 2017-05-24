@@ -4917,6 +4917,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             char tchIns[516] = "</";
             int  cchIns = 2;
             int  iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+            const BOOL bIsUTF8 = (SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8);
             int  iHelper = iCurPos - (COUNTOF(tchBuf) - 1);
             int  iStartPos = max(0, iHelper);
             int  iSize = iCurPos - iStartPos;
@@ -4935,7 +4936,8 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 if (*pCur == '<')
                 {
                   pCur++;
-                  while (StrChrA(":_-.", *pCur) || IsCharAlphaNumericA(*pCur))
+                  while (!bIsUTF8 && (StrChrA(":_-.", *pCur) || IsCharAlphaNumericA(*pCur))
+                         || (bIsUTF8 && (pCur && *pCur != '>')))
                   {
                     tchIns[cchIns++] = *pCur;
                     pCur++;
