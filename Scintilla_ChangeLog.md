@@ -253,7 +253,7 @@ Corresponding calls added to Editor::KeyCommand():
 New code around DropAt()-call:  
 [scintilla/win32/ScintillaWin.cxx]  
     const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
-    const bool bAddNewLine = (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));  
+    const bool bAddNewLine = (inDragDrop != ddDragging) && (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));  
     if (bAddNewLine)  
     {  
       data.insert(data.end() - 1, '\r');  
