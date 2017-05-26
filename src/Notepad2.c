@@ -841,7 +841,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEACTIVATE:
       n2e_SelectionEditStop(N2E_SE_APPLY);
-      break;
+      return DefWindowProc(hwnd, umsg, wParam, lParam);
 
 
     case WM_CREATE:
