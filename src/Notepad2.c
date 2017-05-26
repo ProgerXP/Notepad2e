@@ -4914,10 +4914,10 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else if (bAutoCloseTags && scn->ch == '>')
           {
             char tchBuf[512];
+            wchar_t wchBuf[512];
             char tchIns[516] = "</";
             int  cchIns = 2;
             int  iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-            const BOOL bIsUTF8 = (SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8);
             int  iHelper = iCurPos - (COUNTOF(tchBuf) - 1);
             int  iStartPos = max(0, iHelper);
             int  iSize = iCurPos - iStartPos;
@@ -4936,11 +4936,18 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 if (*pCur == '<')
                 {
                   pCur++;
-                  while (!bIsUTF8 && (StrChrA(":_-.", *pCur) || IsCharAlphaNumericA(*pCur))
-                         || (bIsUTF8 && (pCur && *pCur != '>')))
+                  MultiByteToWideChar(CP_UTF8, 0, pCur, strlen(pCur), wchBuf, _countof(wchBuf));
+                  const wchar_t *pCurW = &wchBuf[0];
+                  while (StrChrA(":_-.", *pCur) || 
+                         ((GetUTF8CharLength(*pCur) == 1) ? IsCharAlphaNumericA(*pCur) : IsCharAlphaNumericW(*pCurW)))
                   {
-                    tchIns[cchIns++] = *pCur;
-                    pCur++;
+                    const int iCharLength = GetUTF8CharLength(*pCur);
+                    for (int i = 0; i < iCharLength; ++i)
+                    {
+                      tchIns[cchIns++] = *pCur;
+                      pCur++;
+                    }
+                    pCurW++;
                   }
                 }
                 tchIns[cchIns++] = '>';

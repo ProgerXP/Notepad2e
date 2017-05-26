@@ -1,5 +1,6 @@
 #include "EditHelperEx.h"
 #include <regex>
+#include "../scintilla/src/UniConversion.h"
 
 extern "C"
 {
@@ -164,5 +165,10 @@ extern "C"
     {
       return 0;
     }
+  }
+
+  int GetUTF8CharLength(unsigned char ch)
+  {
+    return (int)UTF8CharLength(ch);
   }
 }
