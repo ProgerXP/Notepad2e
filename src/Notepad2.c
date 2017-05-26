@@ -4936,12 +4936,13 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 if (*pCur == '<')
                 {
                   pCur++;
-                  MultiByteToWideChar(CP_UTF8, 0, pCur, strlen(pCur), wchBuf, _countof(wchBuf));
+                  const BOOL bIsUTF8 = (SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8);
+                  MultiByteToWideChar(bIsUTF8 ? CP_UTF8 : CP_ACP, 0, pCur, strlen(pCur), wchBuf, _countof(wchBuf));
                   const wchar_t *pCurW = &wchBuf[0];
                   while (StrChrA(":_-.", *pCur) || 
-                         ((GetUTF8CharLength(*pCur) == 1) ? IsCharAlphaNumericA(*pCur) : IsCharAlphaNumericW(*pCurW)))
+                         ((!bIsUTF8 || (GetUTF8CharLength(*pCur) == 1)) ? IsCharAlphaNumericA(*pCur) : IsCharAlphaNumericW(*pCurW)))
                   {
-                    const int iCharLength = GetUTF8CharLength(*pCur);
+                    const int iCharLength = bIsUTF8 ? GetUTF8CharLength(*pCur) : 1;
                     for (int i = 0; i < iCharLength; ++i)
                     {
                       tchIns[cchIns++] = *pCur;
