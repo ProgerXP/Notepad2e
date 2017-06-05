@@ -673,16 +673,31 @@ VOID n2e_Grep(VOID* _lpf, BOOL grep)
       BOOL bDone = FALSE;
       if (grep && bIsLastLine)
       {
-        if (lineIndex + 2 == SciCall_GetLineCount())
+        const int lineCount = SciCall_GetLineCount();
+        if (lineIndex + 2 == lineCount)
         {
           lineEnd = SciCall_LineEndPosition(lineIndex);
+          bIsLastLine = FALSE;
+          bDone = TRUE;
+        }
+        else if (lineIndex + 1 == lineCount)
+        {
+          lineEnd = grep ? ttf.chrg.cpMin : lineStart;
           bIsLastLine = FALSE;
           bDone = TRUE;
         }
       }
       if (!bDone)
       {
-        lineEnd = SciCall_PositionFromLine(lineIndex + 1);
+        if (bIsLastLine)
+        {
+          bIsLastLine = FALSE;
+          lineEnd = SciCall_LineEndPosition(lineIndex);
+        }
+        else
+        {
+          lineEnd = SciCall_PositionFromLine(lineIndex + 1);
+        }
       }
     }
     else

@@ -266,8 +266,10 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 		const bool starts_at_line_start = search.isLineStart(startPosition);
 		const bool ends_at_line_end     = search.isLineEnd(endPosition);
 		search._boostRegexFlags = 
-			  (starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
-			| (ends_at_line_end     ? regex_constants::match_default : regex_constants::match_not_eol)
+        ((startPosition < endPosition)
+			    ? ((starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
+			      | (ends_at_line_end    ? regex_constants::match_default : regex_constants::match_not_eol))
+          : regex_constants::match_default)
 			| ((sciSearchFlags & SCFIND_REGEXP_DOTMATCHESNL) ? regex_constants::match_default : regex_constants::match_not_dot_newline);
 		
 		Match match =
