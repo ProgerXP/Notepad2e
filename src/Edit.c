@@ -5238,17 +5238,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           lpefr->fuFlags = 0;
 
+          const BOOL bIsRegexMode = (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
+          if (bIsRegexMode)
+            lpefr->fuFlags |= SCFIND_REGEXP | SCFIND_POSIX;
+
           if (IsDlgButtonChecked(hwnd, IDC_FINDCASE) == BST_CHECKED)
             lpefr->fuFlags |= SCFIND_MATCHCASE;
 
-          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDWORD))
+          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDWORD, bIsRegexMode))
             lpefr->fuFlags |= SCFIND_WHOLEWORD;
 
-          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDSTART))
+          if (n2e_IsCheckboxChecked(hwnd, IDC_FINDSTART, bIsRegexMode))
             lpefr->fuFlags |= SCFIND_WORDSTART;
-
-          if (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED)
-            lpefr->fuFlags |= SCFIND_REGEXP | SCFIND_POSIX;
 
           lpefr->bTransformBS =
             (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED) ? TRUE : FALSE;

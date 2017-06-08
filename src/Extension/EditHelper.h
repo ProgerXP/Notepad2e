@@ -68,6 +68,6 @@ void EditString2Hex(HWND);
 void EditHex2String(HWND);
 
 void n2e_SaveCheckboxes(HWND hwnd);
-BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID);
+BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);
 void n2e_EditFindReplaceUpdateCheckboxes(HWND hwnd, const UINT nCtrlID);
 void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd);

@@ -853,10 +853,10 @@ UINT RestoreCheckboxState(HWND hwnd, const UINT nCtrlID)
   return GetProp(hwnd, GetControlIDAsString(nCtrlID)) ? BST_CHECKED : BST_UNCHECKED;
 }
 
-BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID)
+BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState)
 {
   return (GetCheckboxState(hwnd, nCtrlID) == BST_CHECKED)
-    || (RestoreCheckboxState(hwnd, nCtrlID) == BST_CHECKED);
+    || (bCheckRestoredState && (RestoreCheckboxState(hwnd, nCtrlID) == BST_CHECKED));
 }
 
 void UpdateCheckboxState(HWND hwnd, const UINT nCtrlID, const BOOL bRestoreState, const BOOL bEnabled)
