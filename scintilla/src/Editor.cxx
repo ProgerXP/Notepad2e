@@ -814,8 +814,11 @@ void Editor::MovedCaret(SelectionPosition newPos, SelectionPosition previousPos,
 	const int currentLine = pdoc->LineFromPosition(newPos.Position());
 	if (ensureVisible) {
 		// In case in need of wrapping to ensure DisplayFromDoc works.
-		if (currentLine >= wrapPending.start)
-			WrapLines(wsAll);
+		if (currentLine >= wrapPending.start) {
+      if (WrapLines(wsAll)) {
+        Redraw();
+      }      
+    }
 		XYScrollPosition newXY = XYScrollToMakeVisible(
 			SelectionRange(posDrag.IsValid() ? posDrag : newPos), xysDefault);
 		if (previousPos.IsValid() && (newXY.xOffset == xOffset)) {
