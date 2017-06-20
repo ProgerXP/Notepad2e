@@ -733,7 +733,7 @@ BOOL n2e_IsWordChar(WCHAR ch)
 
 BOOL n2e_IsSpace(WCHAR ch)
 {
-  return isspace(ch);
+  return iswspace(ch);
 }
 
 BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
