@@ -262,15 +262,7 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 			regex_constants::ECMAScript
 			| (caseSensitive ? 0 : regex_constants::icase);
 		search._regexString = regexString;
-		
-		const bool starts_at_line_start = search.isLineStart(startPosition);
-		const bool ends_at_line_end     = search.isLineEnd(endPosition);
-		search._boostRegexFlags = 
-        ((startPosition < endPosition)
-			    ? ((starts_at_line_start ? regex_constants::match_default : regex_constants::match_not_bol)
-			      | (ends_at_line_end    ? regex_constants::match_default : regex_constants::match_not_eol))
-          : regex_constants::match_default)
-			| ((sciSearchFlags & SCFIND_REGEXP_DOTMATCHESNL) ? regex_constants::match_default : regex_constants::match_not_dot_newline);
+    search._boostRegexFlags = regex_constants::match_default;
 		
 		Match match =
 			isUtf8 ? _utf8.FindText(search)
@@ -319,8 +311,7 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 		if (found) {
 			const int  position = _match[0].first.pos();
 			const int  length   = _match[0].second.pos() - position;
-			if (length != 0)
-				break;
+			break;
 		}
 	}
 	if (found)
