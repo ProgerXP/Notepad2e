@@ -6714,7 +6714,13 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
               GetDlgItemTextW(hwnd, 100, wchBuf, 256);
               if (lstrlen(wchBuf) >= 3)
               {
-                if (StrChr(_left_braces, *wchBuf))
+                if (((StrCmpNI(wchBuf, L"<!--", 4) == 0) && (StrStrI(wchBuf + 4, L"-->") != NULL))
+                    || ((StrCmpNI(wchBuf, L"<!DOCTYPE", 9) == 0) && (StrStrI(wchBuf + 9, L">") != NULL)))
+                {
+                  bClear = TRUE;
+                  bCopy = FALSE;
+                }
+                else if (StrChr(_left_braces, *wchBuf))
                 {
                   int open_tag_len = 0;
                   wchIns[0] = *wchBuf;
@@ -6753,8 +6759,8 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                   {
                     pwCur++;
                   }
-                  // if has closing brace & not short version
-                  if (StrChr(_right_braces, *pwCur) && * (pwCur - 1) != L'/')
+                  // if not short version
+                  if (* (pwCur - 1) != L'/')
                   {
                     while (open_tag_len--)
                     {
@@ -6763,22 +6769,26 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
                     wchIns[cchIns] = L'\0';
                     if (cchIns > 3
                         && // tags hasn't to be closed
+                        lstrcmpi(wchIns, L"</area>") &&
                         lstrcmpi(wchIns, L"</base>") &&
+                        lstrcmpi(wchIns, L"</basefont>") &&
                         lstrcmpi(wchIns, L"</bgsound>") &&
                         lstrcmpi(wchIns, L"</br>") &&
+                        lstrcmpi(wchIns, L"</col>") &&
                         lstrcmpi(wchIns, L"</embed>") &&
+                        lstrcmpi(wchIns, L"</frame>") &&
                         lstrcmpi(wchIns, L"</hr>") &&
                         lstrcmpi(wchIns, L"</img>") &&
                         lstrcmpi(wchIns, L"</input>") &&
+                        lstrcmpi(wchIns, L"</keygen>") &&
                         lstrcmpi(wchIns, L"</link>") &&
-                        lstrcmpi(wchIns, L"</meta>"))
+                        lstrcmpi(wchIns, L"</meta>") &&
+                        lstrcmpi(wchIns, L"</param>") &&
+                        lstrcmpi(wchIns, L"</source>") &&
+                        lstrcmpi(wchIns, L"</track>"))
                     {
                       SetDlgItemTextW(hwnd, 101, wchIns);
                       bClear = FALSE;
-                    }
-                    else
-                    {
-                      bCopy = TRUE;
                     }
                   }
                   else
