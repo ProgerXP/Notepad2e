@@ -135,14 +135,24 @@ BOOL TextBuffer_Update(struct TTextBuffer* pTB, LPSTR ptr, const int iSize)
   return TRUE;
 }
 
+BOOL TextBuffer_IsPosOKImpl(struct TTextBuffer* pTB, const int requiredChars)
+{
+  return pTB->m_iPos < pTB->m_iSize - 1 - requiredChars;
+}
+
 BOOL TextBuffer_IsPosOK(struct TTextBuffer* pTB)
 {
-  return pTB->m_iPos < pTB->m_iSize - 1 - RequiredCharsForCode();
+  return TextBuffer_IsPosOKImpl(pTB, RequiredCharsForCode());
 }
 
 void TextBuffer_IncPos(struct TTextBuffer* pTB)
 {
   ++pTB->m_iPos;
+}
+
+void TextBuffer_DecPos(struct TTextBuffer* pTB)
+{
+  --pTB->m_iPos;
 }
 
 char TextBuffer_GetChar(struct TTextBuffer* pTB)
@@ -162,6 +172,26 @@ BOOL TextBuffer_PushChar(struct TTextBuffer* pTB, const char ch)
   pTB->m_ptr[pTB->m_iPos] = ch;
   TextBuffer_IncPos(pTB);
   return TRUE;
+}
+
+BOOL TextBuffer_GetHexChar(struct TTextBuffer* pTB, char* pCh)
+{
+  *pCh = MIN_VALID_CHAR_CODE - 1;
+  int charsProcessed = 0;
+  while ((*pCh < MIN_VALID_CHAR_CODE) && TextBuffer_IsPosOKImpl(pTB, 1))
+  {
+    *pCh = TextBuffer_PopChar(pTB);
+    ++charsProcessed;
+  }
+  const BOOL res = (*pCh >= MIN_VALID_CHAR_CODE);
+  if (!res)
+  {
+    while (charsProcessed--)
+    {
+      TextBuffer_DecPos(pTB);
+    }
+  }
+  return res;
 }
 
 BOOL TextBuffer_IsDataPortionAvailable(struct TTextBuffer* pTB, const long iRequiredChars, const BOOL bHexDigitsRequired)
@@ -307,47 +337,51 @@ void EncodingSettings_Free(struct TEncodingData* pED)
   TextBuffer_Free(&pED->m_tbTmp);
 }
 
-void CodeStrHex_Char2Hex(struct TEncodingData* pED)
+BOOL CodeStrHex_Char2Hex(struct TEncodingData* pED)
 {
   const char ch = TextBuffer_PopChar(&pED->m_tb);
   TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[(ch >> 4) & 0xF]);
   TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[ch & 0xF]);
+  return TRUE;
 }
 
 BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED)
 {
   if (IsUnicodeEncodingMode())
   {
-    const char chDecoded1 = IntByHexDigit(TextBuffer_PopChar(&pED->m_tb)) * 16 + IntByHexDigit(TextBuffer_PopChar(&pED->m_tb));
-    const char chDecoded2 = IntByHexDigit(TextBuffer_PopChar(&pED->m_tb)) * 16 + IntByHexDigit(TextBuffer_PopChar(&pED->m_tb));
-    if (IsReverseUnicodeEncodingMode())
+    char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
+    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded3)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded4))
     {
-      TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
-      TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
+      const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
+      const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
+      if (IsReverseUnicodeEncodingMode())
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
+        TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
+      }
+      else
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
+        TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
+      }
+      return TRUE;
     }
-    else
-    {
-      TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
-      TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
-    }
-    return TRUE;
+    return FALSE;
   }
   else
   {
-    const char ch1 = TextBuffer_PopChar(&pED->m_tb);
-    const char ch2 = TextBuffer_PopChar(&pED->m_tb);
-    const unsigned char chDecoded = IntByHexDigit(ch1) * 16 + IntByHexDigit(ch2);
-    if (chDecoded >= MIN_VALID_HEX_CODE)
+    char chEncoded1, chEncoded2;
+    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2))
     {
+      const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
       return TRUE;
     }
-    else
-    {
-      TextBuffer_PushChar(&pED->m_tbRes, ch1);
-      TextBuffer_PushChar(&pED->m_tbRes, ch2);
-      return TRUE;
-    }
+    return FALSE;
   }
   return FALSE;
 }
@@ -356,13 +390,14 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
 {
   BOOL bRes = TRUE;
   long iCursorOffset = 0;
+  BOOL charsProcessed = FALSE;
   if (pED->m_bChar2Hex)
   {
     TextBuffer_NormalizeBeforeEncode(&pED->m_tb);
     while (TextBuffer_IsDataPortionAvailable(&pED->m_tb, 1, FALSE)
            && TextBuffer_IsPosOK(&pED->m_tbRes))
     {
-      CodeStrHex_Char2Hex(pED);
+      charsProcessed |= CodeStrHex_Char2Hex(pED);
     }
     iCursorOffset = pED->m_tbRes.m_iPos - (pED->m_tr.m_iPositionCurrent - pED->m_tr.m_iPositionStart);
     if (!TextBuffer_IsPosOK(&pED->m_tbRes))
@@ -374,11 +409,11 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
   }
   else
   {
-    while (TextBuffer_IsDataPortionAvailable(&pED->m_tb, RequiredCharsForCode(), TRUE))
+    while (TextBuffer_IsDataPortionAvailable(&pED->m_tb, RequiredCharsForCode(), FALSE))
     {
-      CodeStrHex_Hex2Char(pED);
+      charsProcessed |= CodeStrHex_Hex2Char(pED);
     }
-    if (pED->m_tbRes.m_iPos > 0)
+    if (charsProcessed)
     {
       pED->m_tr.m_iPositionCurrent += pED->m_tb.m_iPos - pED->m_tb.m_iMaxPos;
       TextBuffer_NormalizeAfterDecode(&pED->m_tbRes);
@@ -418,7 +453,7 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
     }
   }
 
-  if (pED->m_tbRes.m_iPos > 0)
+  if (charsProcessed)
   {
     SendMessage(pED->m_tr.m_hwnd, SCI_SETSEL, pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
     pED->m_tbRes.m_ptr[pED->m_tbRes.m_iPos] = 0;
