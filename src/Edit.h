@@ -206,7 +206,3 @@ BOOL FileVars_IsUTF8(LPFILEVARS);
 BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
 int  FileVars_GetEncoding(LPFILEVARS);
-
-
-
-///   End of Edit.h   \\\

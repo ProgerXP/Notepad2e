@@ -191,6 +191,3 @@ BOOL IL_GetDisplayName(LPSHELLFOLDER,
 
 
 #endif // _DLAPI_H_
-
-
-///   End of Dlapi.h   \\\

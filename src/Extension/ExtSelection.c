@@ -6,19 +6,19 @@
 #include "Utils.h"
 
 /************************************************************************/
-/* when many matches on ALL document  but NOT ALL OF THEM  on screen                                                                   */
+/* when many matches on ALL document  but NOT ALL OF THEM  on screen    */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR 9
 /************************************************************************/
-/* when one match one document                                                                     */
+/* when one match one document                                          */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_SINGLE 10
 /************************************************************************/
-/* when many matches on screen                                                                     */
+/* when many matches on screen                                          */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_PAGE 11
 /************************************************************************/
-/* SE mode                                                                     */
+/* SE mode                                                              */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_EDIT 12
 
@@ -695,7 +695,7 @@ BOOL _check_se_mode(struct SCNotification *scn)
   return FALSE;
 }
 
-void nn2e_SelectionNotificationHandler(int code, struct SCNotification *scn)
+void n2e_SelectionNotificationHandler(int code, struct SCNotification *scn)
 {
   switch (code)
   {

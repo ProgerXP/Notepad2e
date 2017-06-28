@@ -238,7 +238,3 @@ void TransformBackslashes(char *, BOOL, UINT);
 BOOL GetDoAnimateMinimize(VOID);
 VOID MinimizeWndToTray(HWND hWnd);
 VOID RestoreWndFromTray(HWND hWnd);
-
-
-
-///   End of Helpers.h   \\\

@@ -7434,5 +7434,3 @@ int FileVars_GetEncoding(LPFILEVARS lpfv)
   else
     return (-1);
 }
-
-///   End of Edit.c   \\\

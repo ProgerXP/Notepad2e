@@ -1502,5 +1502,3 @@ BOOL IL_GetDisplayName(LPSHELLFOLDER lpsf,
 
   return FALSE;
 }
-
-///   End of Dlapi.c   \\\

@@ -2249,5 +2249,3 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
     InfoBoxDlgProc,
     (LPARAM)&ib);
 }
-
-//  End of Dialogs.c

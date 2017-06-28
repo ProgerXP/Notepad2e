@@ -4188,5 +4188,3 @@ void Style_SelectLexerDlg(HWND hwnd)
                                    GetParent(hwnd), Style_SelectLexerDlgProc, 0))
     Style_SetLexer(hwnd, pLexCurrent);
 }
-
-// End of Styles.c

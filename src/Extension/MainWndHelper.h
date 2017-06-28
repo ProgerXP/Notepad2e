@@ -19,6 +19,5 @@ extern ExpressionValueMode modePrevExpressionValue;
 extern char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
 extern ExpressionValueMode modeExpressionValue;
 extern WCHAR arrwchExpressionValue[MAX_PATH];
-
 LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam);
 void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler);

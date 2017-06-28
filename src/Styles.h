@@ -96,6 +96,3 @@ INT_PTR CALLBACK Styles_ConfigDlgProc(HWND, UINT, WPARAM, LPARAM);
 void   Style_ConfigDlg(HWND);
 INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND, UINT, WPARAM, LPARAM);
 void   Style_SelectLexerDlg(HWND);
-
-
-// End of Style.h

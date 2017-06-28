@@ -148,7 +148,3 @@ void    MsgSize(HWND, WPARAM, LPARAM);
 void    MsgInitMenu(HWND, WPARAM, LPARAM);
 LRESULT MsgCommand(HWND, WPARAM, LPARAM);
 LRESULT MsgNotify(HWND, WPARAM, LPARAM);
-
-
-
-///   End of Notepad2.h   \\\

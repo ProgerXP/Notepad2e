@@ -73,4 +73,3 @@ LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
   }
   return 0;
 }
-

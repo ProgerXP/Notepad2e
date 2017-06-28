@@ -46,6 +46,3 @@ BOOL SelectEncodingDlg(HWND, int *);
 BOOL RecodeDlg(HWND, int *);
 BOOL SelectDefLineEndingDlg(HWND, int *);
 INT_PTR InfoBox(int, LPCWSTR, int, ...);
-
-
-// End of Dialogs.h

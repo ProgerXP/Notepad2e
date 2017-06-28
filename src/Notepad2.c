@@ -5017,7 +5017,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           UpdateLineNumberWidth();
           break;
       }
-      nn2e_SelectionNotificationHandler(pnmh->code, scn);
+      n2e_SelectionNotificationHandler(pnmh->code, scn);
       break;
 
 
@@ -7797,7 +7797,3 @@ void CALLBACK PasteBoardTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
     dwLastCopyTime = 0;
   }
 }
-
-
-
-///  End of Notepad2.c  \\\
