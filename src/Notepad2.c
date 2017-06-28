@@ -4715,7 +4715,20 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDT_SETTINGS_SAVE_ON_EXIT:
       if (IsCmdEnabled(hwnd, IDM_VIEW_SAVESETTINGS_MODE_ALL))
-        SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_SAVESETTINGS_MODE_ALL, 1), 0);
+      {
+        UINT nNewSaveSettingsModeID = IDM_VIEW_SAVESETTINGS_MODE_ALL;
+        switch (nSaveSettingsMode)
+        {
+        case SSM_NO:
+        case SSM_RECENT:
+          nNewSaveSettingsModeID = IDM_VIEW_SAVESETTINGS_MODE_ALL;
+          break;
+        case SSM_REGULAR:
+          nNewSaveSettingsModeID = IDM_VIEW_SAVESETTINGS_MODE_RECENT;
+          break;
+        }
+        SendMessage(hwnd, WM_COMMAND, MAKELONG(nNewSaveSettingsModeID, 1), 0);
+      }
       else
         MessageBeep(0);
       break;
