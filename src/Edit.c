@@ -1215,6 +1215,15 @@ BOOL EditLoadFile(
   }
 
   lpData = GlobalAlloc(GPTR, dwBufSize);
+  dwLastIOError = GetLastError();
+  if (!lpData)
+  {
+    CloseHandle(hFile);
+    *pbFileTooBig = FALSE;
+    iSrcEncoding = -1;
+    iWeakSrcEncoding = -1;
+    return FALSE;
+  }
   bReadSuccess = ReadFile(hFile, lpData, (DWORD)GlobalSize(lpData) - 2, &cbData, NULL);
   dwLastIOError = GetLastError();
   CloseHandle(hFile);
