@@ -35,6 +35,7 @@
 #include "resource.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
+#include "Extension/SciCall.h"
 #include "Extension/Utils.h"
 
 
@@ -2847,8 +2848,13 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
   char *pszAppendNumPad = "";
   int   mbcp;
 
-  int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  int iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+  int iSelStart = SciCall_GetSelStart();
+  int iSelEnd = SciCall_GetSelEnd();
+  if (iSelStart == iSelEnd)
+  {
+    iSelStart = 0;
+    iSelEnd = SciCall_GetLength();
+  }
 
   if (SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8)
     mbcp = CP_UTF8;
@@ -2867,10 +2873,10 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
     int iLine;
 
-    int iLineStart = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0);
-    int iLineEnd = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelEnd, 0);
+    int iLineStart = SciCall_LineFromPosition(iSelStart);
+    int iLineEnd = SciCall_LineFromPosition(iSelEnd);
 
-    if (iSelEnd <= SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineEnd, 0))
+    if (iSelEnd <= SciCall_PositionFromLine(iLineEnd))
     {
       if (iLineEnd - iLineStart >= 1)
         iLineEnd--;
@@ -3044,7 +3050,7 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
           lstrcatA(mszInsert, mszPrefix2);
           iPrefixNum++;
         }
-        iPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
+        iPos = SciCall_PositionFromLine(iLine);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
@@ -3065,7 +3071,7 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
           lstrcatA(mszInsert, mszAppend2);
           iAppendNum++;
         }
-        iPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
+        iPos = SciCall_LineEndPosition(iLine);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
@@ -3075,19 +3081,19 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
     if (iSelStart != iSelEnd)
     {
-      int iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-      int iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
+      int iCurPos = SciCall_GetCurrentPos();
+      int iAnchorPos = SciCall_GetAnchor();
       if (iCurPos < iAnchorPos)
       {
-        iCurPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineStart, 0);
-        iAnchorPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineEnd + 1, 0);
+        iCurPos = SciCall_PositionFromLine(iLineStart);
+        iAnchorPos = SciCall_PositionFromLine(iLineEnd + 1);
       }
       else
       {
-        iAnchorPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineStart, 0);
-        iCurPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineEnd + 1, 0);
+        iAnchorPos = SciCall_PositionFromLine(iLineStart);
+        iCurPos = SciCall_PositionFromLine(iLineEnd + 1);
       }
-      SendMessage(hwnd, SCI_SETSEL, (WPARAM)iAnchorPos, (LPARAM)iCurPos);
+      SciCall_SetSel(iAnchorPos, iCurPos);
     }
 
   }
@@ -6403,7 +6409,6 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
             {
               WCHAR wch[8];
               GetDlgItemText(hwnd, id_capture, wch, COUNTOF(wch));
-              SendDlgItemMessage(hwnd, id_focus, EM_SETSEL, (WPARAM)0, (LPARAM)-1);
               SendDlgItemMessage(hwnd, id_focus, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
               PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetFocus()), 1);
             }
