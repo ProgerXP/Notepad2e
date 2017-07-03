@@ -6410,7 +6410,6 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
               WCHAR wch[8];
               GetDlgItemText(hwnd, id_capture, wch, COUNTOF(wch));
               SendDlgItemMessage(hwnd, id_focus, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
-              PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetFocus()), 1);
             }
           }
           id_capture = 0;
