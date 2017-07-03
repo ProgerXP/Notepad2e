@@ -71,3 +71,6 @@ void n2e_SaveCheckboxes(HWND hwnd);
 BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);
 void n2e_EditFindReplaceUpdateCheckboxes(HWND hwnd, const UINT nCtrlID);
 void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd);
+
+BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd);
+BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo);

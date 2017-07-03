@@ -4955,54 +4955,6 @@ void EditGetExcerpt(HWND hwnd, LPWSTR lpszExcerpt, DWORD cchExcerpt)
     LocalFree(pszTextW);
 }
 
-void remove_char(char* str, char c)
-{
-  char *pr = str, *pw = str;
-  while (*pr)
-  {
-    *pw = *pr++;
-    pw += (*pw != c);
-  }
-  *pw = '\0';
-}
-
-WNDPROC g_DefaultFindEditProc;
-
-LRESULT FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-  switch (uMsg)
-  {
-    case WM_PASTE:
-      {
-        char *pClip = EditGetClipboardText(hwnd, FALSE);
-        if (pClip)
-        {
-          remove_char(pClip, '\r');
-          remove_char(pClip, '\n');
-          SetWindowTextA(hwnd, pClip);
-          const textLength = strlen(pClip);
-          SendMessage(hwnd, EM_SETSEL, textLength, textLength);
-          LocalFree(pClip);
-
-          DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
-          HWND hParent = GetParent(hwnd);
-          WCHAR wchClassName[MAX_PATH];
-          RealGetWindowClass(hParent, wchClassName, _countof(wchClassName));
-          if (_wcsicmp(wchClassName, WC_COMBOBOX) == 0)
-          {
-            dwControlID = GetWindowLong(hParent, GWL_ID);
-            hParent = GetParent(hParent);
-          }
-          PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
-          return 0;
-        }
-      }
-      break;
-    default:
-      break;
-  }
-  return CallWindowProc(g_DefaultFindEditProc, hwnd, uMsg, wParam, lParam);
-}
 //=============================================================================
 //
 //  EditFindReplaceDlgProcW()
@@ -5157,10 +5109,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         InsertMenu(hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch);
         InsertMenu(hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
         ResetFindIcon();
-        HWND hwndFindCombo = GetDlgItem(hwnd, IDC_FINDTEXT);
-        HWND hwndFindEdit = FindWindowEx(hwndFindCombo, NULL, L"EDIT", NULL);
-        if (hwndFindEdit)
-          g_DefaultFindEditProc = (WNDPROC)SetWindowLong(hwndFindEdit, GWL_WNDPROC, (long)FindEditWndProc);
+        n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
+        n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
       }
       return TRUE;
 
@@ -5440,77 +5390,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
           break;
-
-        case IDACC_BACK:
-          {
-#define				_MAX_SIZE 1024
-            WCHAR buf[_MAX_SIZE];
-            BOOL got;
-            int prev, curr;
-            int  cou, car, len;
-            GetDlgItemText(hwnd, IDC_FINDTEXT, buf, _MAX_SIZE);
-            car = LOWORD(SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_GETEDITSEL, 0, 0));
-            len = min(lstrlen(buf) - 1, car - 1);
-            cou = len;
-            N2E_TRACE("starting from %d", cou);
-            got = FALSE;
-            curr = 0;
-            prev = 0;
-            while (cou >= 0)
-            {
-              WCHAR ch = buf[cou];
-              N2E_TRACE("test '%c'", ch);
-              if (N2E_IS_SPACE(ch))
-              {
-                curr = 0;
-              }
-              else if (N2E_IS_LITERAL(ch))
-              {
-                curr = 1;
-              }
-              else
-              {
-                curr = -1;
-              }
-              if (got)
-              {
-                if (!curr)
-                {
-                  break;
-                }
-                else if (curr != prev)
-                {
-                  break;
-                }
-              }
-              else
-              {
-                got = curr;
-              }
-              prev = curr;
-              --cou;
-            }
-            if (cou != len)
-            {
-              WCHAR tail[_MAX_SIZE];
-              N2E_TRACE("%d %d %d", cou, lstrlen(buf), len);
-              *tail = 0;
-              if (car < lstrlen(buf))
-              {
-                lstrcpy(tail, buf + car);
-              }
-              buf[cou + 1] = L'\0';
-              if (*tail)
-              {
-                lstrcat(buf, tail);
-              }
-              SetDlgItemText(hwnd, IDC_FINDTEXT, buf);
-              SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
-              PostMessage((hwnd), WM_COMMAND, MAKELONG(IDC_FINDTEXT, 1), 0);
-            }
-          }
-          break;
-
       }
 
       return TRUE;

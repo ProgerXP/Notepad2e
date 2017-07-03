@@ -425,12 +425,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
+  const HACCEL hAccFindReplaceInline = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE_INLINE));
 
   while (GetMessage(&msg, NULL, 0, 0))
   {
     if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
+    {
+      if (n2e_IsSubclassedEditInCombo(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
+        continue;
       if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
         continue;
+    }
 
     if (!TranslateAccelerator(hwnd, hAccMain, &msg))
     {

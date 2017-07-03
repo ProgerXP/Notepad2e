@@ -923,3 +923,149 @@ void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd)
 {
   UpdateCheckboxesImpl(hwnd, 0, TRUE);
 }
+
+void remove_char(char* str, char c)
+{
+  char *pr = str, *pw = str;
+  while (*pr)
+  {
+    *pw = *pr++;
+    pw += (*pw != c);
+  }
+  *pw = '\0';
+}
+
+#define WINDOW_PROPERTY_SUBCLASSED_EDIT_IN_COMBO L"SubclassedEditInCombo"
+#define WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC L"OriginalWindowProc"
+
+LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (uMsg)
+  {
+    case WM_PASTE:
+      {
+        char *pClip = EditGetClipboardText(hwnd, FALSE);
+        if (pClip)
+        {
+          remove_char(pClip, '\r');
+          remove_char(pClip, '\n');
+          SetWindowTextA(hwnd, pClip);
+          const textLength = strlen(pClip);
+          SendMessage(hwnd, EM_SETSEL, textLength, textLength);
+          LocalFree(pClip);
+
+          DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
+          HWND hParent = GetParent(hwnd);
+          WCHAR wchClassName[MAX_PATH];
+          RealGetWindowClass(hParent, wchClassName, _countof(wchClassName));
+          if (_wcsicmp(wchClassName, WC_COMBOBOX) == 0)
+          {
+            dwControlID = GetWindowLong(hParent, GWL_ID);
+            hParent = GetParent(hParent);
+          }
+          PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
+          return 0;
+        }
+      }
+      break;
+    case WM_COMMAND:
+      switch (LOWORD(wParam))
+      {
+        case IDACC_BACK:
+          {
+#define				_MAX_SIZE 1024
+            WCHAR buf[_MAX_SIZE];
+            BOOL got;
+            int prev, curr;
+            int  cou, car, len;
+            const HWND hwndCombo = GetParent(hwnd);
+            const UINT idControl = GetWindowLong(hwndCombo, GWL_ID);
+            GetWindowText(hwndCombo, buf, _MAX_SIZE);
+            car = LOWORD(SendMessage(hwndCombo, CB_GETEDITSEL, 0, 0));
+            len = min(lstrlen(buf) - 1, car - 1);
+            cou = len;
+            N2E_TRACE("starting from %d", cou);
+            got = FALSE;
+            curr = 0;
+            prev = 0;
+            while (cou >= 0)
+            {
+              WCHAR ch = buf[cou];
+              N2E_TRACE("test '%c'", ch);
+              if (N2E_IS_SPACE(ch))
+              {
+                curr = 0;
+              }
+              else if (N2E_IS_LITERAL(ch))
+              {
+                curr = 1;
+              }
+              else
+              {
+                curr = -1;
+              }
+              if (got)
+              {
+                if (!curr)
+                {
+                  break;
+                }
+                else if (curr != prev)
+                {
+                  break;
+                }
+              }
+              else
+              {
+                got = curr;
+              }
+              prev = curr;
+              --cou;
+            }
+            if (cou != len)
+            {
+              WCHAR tail[_MAX_SIZE];
+              N2E_TRACE("%d %d %d", cou, lstrlen(buf), len);
+              *tail = 0;
+              if (car < lstrlen(buf))
+              {
+                lstrcpy(tail, buf + car);
+              }
+              buf[cou + 1] = L'\0';
+              if (*tail)
+              {
+                lstrcat(buf, tail);
+              }
+              SetWindowText(hwndCombo, buf);
+              SendMessage(hwndCombo, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
+              PostMessage(GetParent(hwndCombo), WM_COMMAND, MAKELONG(idControl, 1), 0);
+            }
+          }
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+  return CallWindowProc((WNDPROC)GetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+}
+
+BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd)
+{
+  return GetProp(hwnd, WINDOW_PROPERTY_SUBCLASSED_EDIT_IN_COMBO) != 0;
+}
+
+BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
+{
+  HWND hwndCombo = GetDlgItem(hwnd, idCombo);
+  HWND hwndEdit = FindWindowEx(hwndCombo, NULL, WC_EDIT, NULL);
+  if (hwndEdit)
+  {
+    SetProp(hwndEdit, WINDOW_PROPERTY_SUBCLASSED_EDIT_IN_COMBO, (HANDLE)1);
+    SetProp(hwndEdit, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwndEdit, GWL_WNDPROC, (long)n2e_FindEditWndProc));
+    return TRUE;
+  }
+  return FALSE;
+}

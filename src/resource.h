@@ -73,6 +73,7 @@
 #define IDC_RESIZEGRIP4                 101
 #define IDC_NOUNICODEDETECTION          101
 #define IDC_COPYRIGHT                   101
+#define IDR_ACCFINDREPLACE_INLINE       102
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102
