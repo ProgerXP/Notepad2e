@@ -465,7 +465,7 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
   TextBuffer_Clear(&pED->m_tb);
   TextBuffer_Clear(&pED->m_tbRes);
   TextBuffer_Clear(&pED->m_tbTmp);
-  AdjustProgressBarInStatusBar(pED->m_tr.m_iPositionCurrent, pED->m_tr.m_iSelEnd);
+  n2e_AdjustProgressBarInStatusBar(pED->m_tr.m_iPositionCurrent, pED->m_tr.m_iSelEnd);
 
   return bRes;
 }
@@ -479,7 +479,7 @@ void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
   {
     return;
   }
-  ShowProgressBarInStatusBar(bChar2Hex ? L"String to Hex..." : L"Hex to String...", 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
+  n2e_ShowProgressBarInStatusBar(bChar2Hex ? L"String to Hex..." : L"Hex to String...", 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
   BOOL bProcessFailed = FALSE;
   while (TextRange_IsDataPortionAvailable(&ed.m_tr))
   {
@@ -503,7 +503,7 @@ void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
   SendMessage(hwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
   InvalidateRect(hwnd, NULL, FALSE);
   UpdateWindow(hwnd);
-  HideProgressBarInStatusBar();
+  n2e_HideProgressBarInStatusBar();
 }
 
 void EncodeStrToHex(const HWND hwnd)

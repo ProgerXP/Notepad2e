@@ -79,11 +79,11 @@ BOOL n2e_IsKeyDown(int key);
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
 #define N2E_IS_SPACE(CH) n2e_IsSpace(CH)
 
-BOOL SetClipboardText(const HWND hwnd, const wchar_t* text);
-void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);
+void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
                            LPCWSTR lpszFile, int iFormat, BOOL bModified,
                            UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt);
-void UpdateWindowTitle(HWND hwnd);
+void n2e_UpdateWindowTitle(HWND hwnd);
 
 extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;
@@ -91,9 +91,9 @@ extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
 WCHAR tchProgressBarTaskName[MAX_PATH];
 
-void CreateProgressBarInStatusBar();
-void DestroyProgressBarInStatusBar();
-void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
-void HideProgressBarInStatusBar();
-void UpdateProgressBarInStatusBar(const long nCurPos);
-void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos);
+void n2e_CreateProgressBarInStatusBar();
+void n2e_DestroyProgressBarInStatusBar();
+void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
+void n2e_HideProgressBarInStatusBar();
+void n2e_UpdateProgressBarInStatusBar(const long nCurPos);
+void n2e_AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos);

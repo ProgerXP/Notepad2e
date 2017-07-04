@@ -922,7 +922,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_INPUTLANGCHANGE:
-      UpdateWindowTitle(hwnd);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
@@ -1562,7 +1562,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
     dwStatusbarStyle |= WS_VISIBLE;
 
   hwndStatus = CreateStatusWindow(dwStatusbarStyle, NULL, hwnd, IDC_STATUSBAR);
-  CreateProgressBarInStatusBar();
+  n2e_CreateProgressBarInStatusBar();
 
   // Create ReBar and add Toolbar
   hwndReBar = CreateWindowEx(WS_EX_TOOLWINDOW, REBARCLASSNAME, NULL, dwReBarStyle,
@@ -1640,7 +1640,7 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   DestroyWindow(hwndToolbar);
   DestroyWindow(hwndReBar);
   DestroyWindow(hwndStatus);
-  DestroyProgressBarInStatusBar();
+  n2e_DestroyProgressBarInStatusBar();
   CreateBars(hwnd, hInstance);
   UpdateToolbar();
 
@@ -1989,7 +1989,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
             }
           }
-          ResetFindIcon();
+          n2e_ResetFindIcon();
         }
       }
       break;
@@ -2711,12 +2711,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_NEWLINEABOVE:
-      EditInsertNewLine(hwndEdit, TRUE);
+      n2e_EditInsertNewLine(hwndEdit, TRUE);
       break;
 
 
     case IDM_EDIT_NEWLINEBELOW:
-      EditInsertNewLine(hwndEdit, FALSE);
+      n2e_EditInsertNewLine(hwndEdit, FALSE);
       break;
 
 
@@ -3246,14 +3246,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_STRING2HEX:
       BeginWaitCursor();
-      EditString2Hex(hwndEdit);
+      n2e_EditString2Hex(hwndEdit);
       EndWaitCursor();
       break;
 
 
     case IDM_EDIT_HEX2STRING:
       BeginWaitCursor();
-      EditHex2String(hwndEdit);
+      n2e_EditHex2String(hwndEdit);
       EndWaitCursor();
       break;
 
@@ -3877,19 +3877,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_NOLANGUAGEINDICATOR:
       iShowLanguageInTitle = ELI_HIDE;
-      UpdateWindowTitle(hwnd);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWLANGUAGEINDICATOR:
       iShowLanguageInTitle = ELI_SHOW;
-      UpdateWindowTitle(hwnd);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWLANGUAGEINDICATORNONUS:
       iShowLanguageInTitle = ELI_SHOW_NON_US;
-      UpdateWindowTitle(hwnd);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
@@ -4965,9 +4965,9 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                   MultiByteToWideChar(bIsUTF8 ? CP_UTF8 : CP_ACP, 0, pCur, strlen(pCur), wchBuf, _countof(wchBuf));
                   const wchar_t *pCurW = &wchBuf[0];
                   while (StrChrA(":_-.", *pCur) || 
-                         ((!bIsUTF8 || (GetUTF8CharLength(*pCur) == 1)) ? IsCharAlphaNumericA(*pCur) : IsCharAlphaNumericW(*pCurW)))
+                         ((!bIsUTF8 || (n2e_GetUTF8CharLength(*pCur) == 1)) ? IsCharAlphaNumericA(*pCur) : IsCharAlphaNumericW(*pCurW)))
                   {
-                    const int iCharLength = bIsUTF8 ? GetUTF8CharLength(*pCur) : 1;
+                    const int iCharLength = bIsUTF8 ? n2e_GetUTF8CharLength(*pCur) : 1;
                     for (int i = 0; i < iCharLength; ++i)
                     {
                       tchIns[cchIns++] = *pCur;
@@ -6711,7 +6711,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     if (bResetFileWatching)
       iFileWatchingMode = 0;
     InstallFileWatching(NULL);
-    ResetFindIcon();
+    n2e_ResetFindIcon();
     *_n2e_last_run = 0;
 
     return TRUE;
@@ -6851,7 +6851,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
   if (fSuccess)
   {
-    ResetFindIcon();
+    n2e_ResetFindIcon();
     *_n2e_last_run = 0;
   }
 

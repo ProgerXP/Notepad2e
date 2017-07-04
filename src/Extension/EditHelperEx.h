@@ -50,8 +50,8 @@ extern "C" {
   #define FIND_INFO_INDEX 12
 
   BOOL n2e_ExplorerCxtMenu(LPCWSTR path, void *parentWindow);
-  int isValidRegex(LPCSTR str);
-  int GetUTF8CharLength(unsigned char ch);
+  int n2e_isValidRegex(LPCSTR str);
+  int n2e_GetUTF8CharLength(unsigned char ch);
 
 #ifdef __cplusplus
 }//end extern "C"

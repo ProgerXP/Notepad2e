@@ -69,7 +69,7 @@ void n2e_StripHTMLTags(HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-BOOL IsSelectionModeValid(HWND hwnd)
+BOOL n2e_IsSelectionModeValid(HWND hwnd)
 {
   if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
   {
@@ -133,7 +133,7 @@ void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
   }
 }
 
-void EditInsertNewLine(HWND hwnd, BOOL insertAbove)
+void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
   if (n2e_SelectionEditStop(N2E_SE_APPLY))
   {
@@ -223,7 +223,7 @@ void n2e_GetOffset(HWND hwnd, int *out)
   n2e_AdjustOffset(out, FALSE);
 }
 
-int FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf)
+int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf)
 {
   return (int)SendMessage(hwnd, SCI_FINDTEXT, searchFlags, (LPARAM)pttf);
 }
@@ -232,10 +232,10 @@ int FindTextTest(const HWND hwnd, const int searchFlags, const struct TextToFind
 {
   struct TextToFind ttf = *pttf;
   ttf.chrg.cpMin = cpMin;
-  return FindTextImpl(hwnd, searchFlags, &ttf);
+  return n2e_FindTextImpl(hwnd, searchFlags, &ttf);
 }
 
-BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos)
+BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos)
 {
   return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
 }
@@ -457,9 +457,9 @@ void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
     if (iFindWordMatchCase != 0)
       searchflags |= SCFIND_MATCHCASE;
 
-    res = FindTextImpl(hwnd, searchflags, &ttf);
+    res = n2e_FindTextImpl(hwnd, searchflags, &ttf);
     const BOOL bTextFound = (res >= 0);
-    UpdateFindIcon(bTextFound && (FindTextTest(hwnd, searchflags, &ttf, res + 1) >= 0));
+    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, searchflags, &ttf, res + 1) >= 0));
 
     if ((-1 == res) && (iFindWordWrapAround != 0))
     {
@@ -473,8 +473,8 @@ void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
         ttf.chrg.cpMin = doclen;
         ttf.chrg.cpMax = tr.chrg.cpMax;
       }
-      res = FindTextImpl(hwnd, searchflags, &ttf);
-      UpdateFindIcon(res >= 0);
+      res = n2e_FindTextImpl(hwnd, searchflags, &ttf);
+      n2e_UpdateFindIcon(res >= 0);
     }
     if (res >= 0)
     {
@@ -796,7 +796,7 @@ void n2e_EscapeHTML(HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-void UpdateFindIcon(const BOOL findOK)
+void n2e_UpdateFindIcon(const BOOL findOK)
 {
   TBBUTTON* pBtn = &tbbMainWnd[FIND_INFO_INDEX];
   pBtn->iBitmap = findOK ? ICON_FIND_OK : ICON_FIND_FAILED;
@@ -809,23 +809,23 @@ void UpdateFindIcon(const BOOL findOK)
   SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
 }
 
-void ResetFindIcon()
+void n2e_ResetFindIcon()
 {
-  UpdateFindIcon(TRUE);
+  n2e_UpdateFindIcon(TRUE);
 }
 
-void EditString2Hex(HWND hwnd)
+void n2e_EditString2Hex(HWND hwnd)
 {
-  if (!IsSelectionModeValid(hwnd))
+  if (!n2e_IsSelectionModeValid(hwnd))
   {
     return;
   }
   EncodeStrToHex(hwnd);
 }
 
-void EditHex2String(HWND hwnd)
+void n2e_EditHex2String(HWND hwnd)
 {
-  if (!IsSelectionModeValid(hwnd))
+  if (!n2e_IsSelectionModeValid(hwnd))
   {
     return;
   }

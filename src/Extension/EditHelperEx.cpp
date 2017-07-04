@@ -154,7 +154,7 @@ extern "C"
     return (TRUE);
   }
 
-  int isValidRegex(LPCSTR str)
+  int n2e_isValidRegex(LPCSTR str)
   {
     try
     {
@@ -167,7 +167,7 @@ extern "C"
     }
   }
 
-  int GetUTF8CharLength(unsigned char ch)
+  int n2e_GetUTF8CharLength(unsigned char ch)
   {
     return (int)UTF8CharLength(ch);
   }

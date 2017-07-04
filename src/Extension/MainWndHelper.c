@@ -54,7 +54,7 @@ void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHand
   {
     if (wcslen(arrwchExpressionValue) > 0)
     {
-      SetClipboardText(hwnd, arrwchExpressionValue);
+      n2e_SetClipboardText(hwnd, arrwchExpressionValue);
     }
     // skip useless single click
     timerIDPaneSizeDblClick = SetTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER, 100, NULL);

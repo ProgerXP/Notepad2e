@@ -345,7 +345,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
                     LPCWSTR lpszFile, int iFormat, BOOL bModified,
                     UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
-  SaveWindowTitleParams(uIDAppName, bIsElevated, uIDUntitled, lpszFile, iFormat, bModified, uIDReadOnly, bReadOnly, lpszExcerpt);
+  n2e_SaveWindowTitleParams(uIDAppName, bIsElevated, uIDUntitled, lpszFile, iFormat, bModified, uIDReadOnly, bReadOnly, lpszExcerpt);
 
   WCHAR szUntitled[128];
   WCHAR szExcrptQuot[256];

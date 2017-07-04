@@ -53,19 +53,19 @@ extern WCHAR	n2e_last_html_end_tag[0xff];
 
 void n2e_StripHTMLTags(HWND hwnd);
 void n2e_JumpToOffset(HWND hwnd, int iNewPos);
-void EditInsertNewLine(HWND hwnd, BOOL insertAbove);
-BOOL IsSelectionModeValid(HWND hwnd);
+void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove);
+BOOL n2e_IsSelectionModeValid(HWND hwnd);
 void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
-int FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
-BOOL CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);
+int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
+BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);
 void n2e_MsgCreate();
 BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next);
 void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode);
 void n2e_EscapeHTML(HWND hwnd);
-void UpdateFindIcon(const BOOL findOK);
-void ResetFindIcon();
-void EditString2Hex(HWND);
-void EditHex2String(HWND);
+void n2e_UpdateFindIcon(const BOOL findOK);
+void n2e_ResetFindIcon();
+void n2e_EditString2Hex(HWND);
+void n2e_EditHex2String(HWND);
 
 void n2e_SaveCheckboxes(HWND hwnd);
 BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);

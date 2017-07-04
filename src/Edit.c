@@ -2126,7 +2126,7 @@ void EditUnescapeCChars(HWND hwnd)
 //
 void EditChar2Hex(HWND hwnd)
 {
-  if (!IsSelectionModeValid(hwnd))
+  if (!n2e_IsSelectionModeValid(hwnd))
   {
     return;
   }
@@ -2168,7 +2168,7 @@ void EditChar2Hex(HWND hwnd)
 //
 void EditHex2Char(HWND hwnd)
 {
-  if (!IsSelectionModeValid(hwnd))
+  if (!n2e_IsSelectionModeValid(hwnd))
   {
     return;
   }
@@ -5108,7 +5108,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         GetString(SC_RESETPOS, tch, COUNTOF(tch));
         InsertMenu(hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch);
         InsertMenu(hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-        ResetFindIcon();
+        n2e_ResetFindIcon();
         n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
       }
@@ -5128,7 +5128,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             {
               char szFind[512];
               GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
-              bEnable = isValidRegex(szFind) != 0;
+              bEnable = n2e_isValidRegex(szFind) != 0;
             }
 
             EnableWindow(GetDlgItem(hwnd, IDOK), bEnable);
@@ -5178,7 +5178,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           {
             GetDlgPos(hwnd, &xFindReplaceDlgSave, &yFindReplaceDlgSave);
             bSwitchedFindReplace = TRUE;
-            ResetFindIcon();
+            n2e_ResetFindIcon();
             CopyMemory(&efrSave, lpefr, sizeof(EDITFINDREPLACE));
           }
 
@@ -5298,7 +5298,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           if (bCloseDlg)
           {
-            ResetFindIcon();
+            n2e_ResetFindIcon();
             DestroyWindow(hwnd);
             hDlgFindReplace = NULL;
           }
@@ -5346,7 +5346,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
 
         case IDCANCEL:
-          ResetFindIcon();
+          n2e_ResetFindIcon();
           DestroyWindow(hwnd);
           break;
 
@@ -5497,23 +5497,23 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
-  iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
+  iPos = n2e_FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  UpdateFindIcon(bTextFound && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
+  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
     {
       ttf.chrg.cpMin = 0;
-      iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
-      UpdateFindIcon((iPos >= 0) && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
+      iPos = n2e_FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
+      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
     }
     else
     {
       bSuppressNotFound = TRUE;
       if (!IsWindowVisible(hDlgFindReplace))
-        ResetFindIcon();
+        n2e_ResetFindIcon();
     }
   }
 
@@ -5572,24 +5572,24 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.chrg.cpMax = 0;
   ttf.lpstrText = szFind2;
 
-  iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
+  iPos = n2e_FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  UpdateFindIcon(bTextFound && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
+  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap2", IDS_FIND_WRAPRE))
     {
       ttf.chrg.cpMin = iLength;
-      iPos = FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
-      UpdateFindIcon((iPos >= 0) && CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
+      iPos = n2e_FindTextImpl(hwnd, lpefr->fuFlags, &ttf);
+      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
     }
     else
     {
       bSuppressNotFound = TRUE;
       if (!IsWindowVisible(hDlgFindReplace))
-        ResetFindIcon();
+        n2e_ResetFindIcon();
     }
   }
 

@@ -658,7 +658,7 @@ VOID n2e_Grep(VOID* _lpf, BOOL grep)
   ttf.chrg.cpMin = SciCall_LineEndPosition(line_last);
   ttf.chrg.cpMax = SciCall_PositionFromLine(line_first);
   const int maxPos = ttf.chrg.cpMin;
-  ShowProgressBarInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
+  n2e_ShowProgressBarInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
 
   BOOL bIsLastLine = TRUE;
   res = SciCall_FindText(lpf->fuFlags, &ttf);
@@ -669,7 +669,7 @@ VOID n2e_Grep(VOID* _lpf, BOOL grep)
     int lineEnd = 0;
     if (res >= 0)
     {
-      UpdateProgressBarInStatusBar(maxPos - res);
+      n2e_UpdateProgressBarInStatusBar(maxPos - res);
       BOOL bDone = FALSE;
       if (grep && bIsLastLine)
       {
@@ -713,7 +713,7 @@ VOID n2e_Grep(VOID* _lpf, BOOL grep)
 
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
   UpdateLineNumberWidth();
-  HideProgressBarInStatusBar();
+  n2e_HideProgressBarInStatusBar();
   EndWaitCursor();
 }
 
@@ -741,7 +741,7 @@ BOOL n2e_IsKeyDown(int key)
   return (GetKeyState(key) & 0x80000000) != 0;
 }
 
-BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
+BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
 {
   if ((wcslen(text) <= 0) || !OpenClipboard(hwnd))
   {
@@ -775,7 +775,7 @@ UINT _uIDReadOnly;
 BOOL _bReadOnly;
 WCHAR _lpszExcerpt[MAX_PATH * 2];
 
-void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
                            LPCWSTR lpszFile, int iFormat, BOOL bModified,
                            UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
@@ -790,23 +790,23 @@ void SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
   StrCpyW(_lpszExcerpt, lpszExcerpt);
 }
 
-void UpdateWindowTitle(HWND hwnd)
+void n2e_UpdateWindowTitle(HWND hwnd)
 {
   SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
 }
 
-void CreateProgressBarInStatusBar()
+void n2e_CreateProgressBarInStatusBar()
 {
   hwndStatusProgressBar = InlineProgressBarCtrl_Create(hwndStatus, 0, 100, TRUE, STATUS_LEXER);
 }
 
-void DestroyProgressBarInStatusBar()
+void n2e_DestroyProgressBarInStatusBar()
 {
   DestroyWindow(hwndStatusProgressBar);
   hwndStatusProgressBar = NULL;
 }
 
-void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
+void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
 {
   if (hwndStatusProgressBar)
   {
@@ -820,7 +820,7 @@ void ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const
   }
 }
 
-void HideProgressBarInStatusBar()
+void n2e_HideProgressBarInStatusBar()
 {
   if (hwndStatusProgressBar)
   {
@@ -831,14 +831,14 @@ void HideProgressBarInStatusBar()
   }
 }
 
-void UpdateProgressBarInStatusBar(const long nCurPos)
+void n2e_UpdateProgressBarInStatusBar(const long nCurPos)
 {
   InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
   InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
 }
 
-void AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
+void n2e_AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
 {
   InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, 0, nMaxPos, 1);
-  UpdateProgressBarInStatusBar(nCurPos);
+  n2e_UpdateProgressBarInStatusBar(nCurPos);
 }
