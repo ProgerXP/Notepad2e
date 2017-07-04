@@ -234,7 +234,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         wsprintf(wch, L"<A>%s</A>", VERSION_WEBPAGEDISPLAY);
         SetDlgItemText(hwnd, IDC_WEBPAGE, wch);
         wsprintf(wch, L"<A>%s</A>", VERSION_EMAILDISPLAY);
-        SetDlgItemText(hwnd, IDC_MAIL, wch);
+        SetDlgItemText(hwnd, IDC_EMAIL, wch);
         SetDlgItemText(hwnd, IDC_EXT, VERSION_EXT_VERSION);
         SetDlgItemText(hwnd, IDC_BY, VERSION_EXT_BY);
         wsprintf(wch, L"<A>%s</A>", VERSION_EXT_PAGE);
@@ -263,7 +263,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
           case NM_RETURN: {
               if (pnmhdr->idFrom == IDC_WEBPAGE)
                 ShellExecute(hwnd, L"open", L"http://www.flos-freeware.ch", NULL, NULL, SW_SHOWNORMAL);
-              else if (pnmhdr->idFrom == IDC_MAIL)
+              else if (pnmhdr->idFrom == IDC_EMAIL)
                 ShellExecute(hwnd, L"open", L"mailto:florian.balmer@gmail.com", NULL, NULL, SW_SHOWNORMAL);
               else if (pnmhdr->idFrom == IDC_WEB)
                 ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e", NULL, NULL, SW_SHOWNORMAL);

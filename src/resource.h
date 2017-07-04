@@ -126,7 +126,6 @@
 #define IDC_WEB                         109
 #define IDD_CHANGENOTIFY                110
 #define IDC_IMPORT                      110
-#define IDC_MAIL                        110
 #define IDD_MODIFYLINES                 111
 #define IDC_EXPORT                      111
 #define IDC_REPLACE                     112

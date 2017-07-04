@@ -595,7 +595,7 @@ BEGIN
     LTEXT           "qqqqqqqqqqqqqqqqqqq",IDC_BY,42,78,174,8
     LTEXT           "compile time",IDC_TIME,42,107,126,8
     CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_WEB,"SysLink",WS_TABSTOP,42,91,174,8
-    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_MAIL,"SysLink",WS_TABSTOP,42,54,174,8
+    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_EMAIL,"SysLink",WS_TABSTOP,42,54,174,8
     CONTROL         "qqqqqqqqqqqqqqqq",IDC_WEBPAGE,"SysLink",WS_TABSTOP,42,30,174,8
 END
 
