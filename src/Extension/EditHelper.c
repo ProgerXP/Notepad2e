@@ -973,25 +973,18 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
       {
         case IDACC_BACK:
           {
-#define				_MAX_SIZE 1024
-            WCHAR buf[_MAX_SIZE];
-            BOOL got;
-            int prev, curr;
-            int  cou, car, len;
             const HWND hwndCombo = GetParent(hwnd);
             const UINT idControl = GetWindowLong(hwndCombo, GWL_ID);
-            GetWindowText(hwndCombo, buf, _MAX_SIZE);
-            car = LOWORD(SendMessage(hwndCombo, CB_GETEDITSEL, 0, 0));
-            len = min(lstrlen(buf) - 1, car - 1);
-            cou = len;
-            N2E_TRACE("starting from %d", cou);
-            got = FALSE;
-            curr = 0;
-            prev = 0;
+            WCHAR buf[1024];
+            GetWindowText(hwnd, buf, COUNTOF(buf)-1);
+            const int car = LOWORD(SendMessage(hwnd, EM_GETSEL, 0, 0));
+            const int len = min(lstrlen(buf) - 1, car - 1);
+            int cou = len;
+            BOOL got = FALSE;
+            int curr = 0, prev = 0;
             while (cou >= 0)
             {
               WCHAR ch = buf[cou];
-              N2E_TRACE("test '%c'", ch);
               if (N2E_IS_SPACE(ch))
               {
                 curr = 0;
@@ -1024,20 +1017,8 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             }
             if (cou != len)
             {
-              WCHAR tail[_MAX_SIZE];
-              N2E_TRACE("%d %d %d", cou, lstrlen(buf), len);
-              *tail = 0;
-              if (car < lstrlen(buf))
-              {
-                lstrcpy(tail, buf + car);
-              }
-              buf[cou + 1] = L'\0';
-              if (*tail)
-              {
-                lstrcat(buf, tail);
-              }
-              SetWindowText(hwndCombo, buf);
-              SendMessage(hwndCombo, CB_SETEDITSEL, 0, MAKELPARAM(cou + 1, cou + 1));
+              SendMessage(hwnd, EM_SETSEL, cou+1, car);
+              SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)NULL);
               PostMessage(GetParent(hwndCombo), WM_COMMAND, MAKELONG(idControl, 1), 0);
             }
           }
