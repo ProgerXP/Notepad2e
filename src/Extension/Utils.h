@@ -73,6 +73,7 @@ VOID	n2e_Grep(VOID* lpf, BOOL grep);
 VOID n2e_SetWheelScroll(BOOL on);
 BOOL n2e_IsWordChar(WCHAR ch);
 BOOL n2e_IsSpace(WCHAR ch);
+BOOL n2e_IsKeyDown(int key);
 
 #define _N2E_COMPARE_FILES( F1 , F2 )  (n2e_CompareFiles(F1,F2))
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)

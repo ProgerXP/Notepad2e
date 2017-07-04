@@ -736,6 +736,11 @@ BOOL n2e_IsSpace(WCHAR ch)
   return iswspace(ch);
 }
 
+BOOL n2e_IsKeyDown(int key)
+{
+  return (GetKeyState(key) & 0x80000000) != 0;
+}
+
 BOOL SetClipboardText(const HWND hwnd, const wchar_t* text)
 {
   if ((wcslen(text) <= 0) || !OpenClipboard(hwnd))

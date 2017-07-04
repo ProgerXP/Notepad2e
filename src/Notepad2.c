@@ -2532,7 +2532,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_UNDO:
-      if (_n2e_edit_selection)
+      if (n2e_IsSelectionEditModeOn())
         n2e_SelectionEditStop(N2E_SE_REJECT);
       else
         SendMessage(hwndEdit, SCI_UNDO, 0, 0);
@@ -4059,7 +4059,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                       hwnd, AboutDlgProc);
       break;
     case CMD_ESCAPE:
-      if (_n2e_edit_selection)
+      if (n2e_IsSelectionEditModeOn())
         n2e_SelectionEditStop(N2E_SE_REJECT);
       else if (iEscFunction == 1)
         SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
@@ -4076,9 +4076,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
       // Newline with toggled auto indent setting
     case CMD_CTRLENTER:
-      bAutoIndent = (bAutoIndent) ? 0 : 1;
-      SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
-      bAutoIndent = (bAutoIndent) ? 0 : 1;
+      if (n2e_IsSelectionEditModeOn())
+      {
+        n2e_SelectionEditStop(N2E_SE_APPLY);
+      }
+      else
+      {
+        bAutoIndent = (bAutoIndent) ? 0 : 1;
+        SendMessage(hwndEdit, SCI_NEWLINE, 0, 0);
+        bAutoIndent = (bAutoIndent) ? 0 : 1;
+      }
       break;
 
 

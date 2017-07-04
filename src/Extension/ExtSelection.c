@@ -96,9 +96,9 @@ BOOL icase_compare(const char* a, const char* b)
 
 int	n2e_SelectionKeyAction(int key, int msg)
 {
-  if (_n2e_edit_selection)
+  if (n2e_IsSelectionEditModeOn())
   {
-    if (VK_RETURN == key && GetKeyState(VK_SHIFT) >= 0)
+    if ((VK_RETURN == key) && n2e_IsKeyDown(VK_SHIFT))
     {
       if (WM_CHAR == msg)
       {
@@ -325,7 +325,7 @@ VOID n2e_HighlightWord(LPCSTR  word)
       }
     }
     SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
-    if (_n2e_se_init && !_n2e_edit_selection)
+    if (_n2e_se_init && !n2e_IsSelectionEditModeOn())
     {
       _n2e_se_init = FALSE;
     }
@@ -611,11 +611,16 @@ _EXIT:
   return out;
 }
 
+BOOL n2e_IsSelectionEditModeOn()
+{
+  return _n2e_edit_selection;
+}
+
 VOID n2e_SelectionEditStart(const BOOL highlightAll)
 {
   _n2e_highlight_all = highlightAll;
   // if mode already ON - then turn it OFF
-  if (_n2e_edit_selection)
+  if (n2e_IsSelectionEditModeOn())
   {
     n2e_SelectionEditStop(N2E_SE_APPLY);
     return;
@@ -624,7 +629,7 @@ VOID n2e_SelectionEditStart(const BOOL highlightAll)
   _n2e_se_count = 0;
   n2e_SelectionHighlightTurn();
   _n2e_se_init = FALSE;
-  if (_n2e_edit_selection)
+  if (n2e_IsSelectionEditModeOn())
   {
     SendMessage(hwndEdit, SCI_SETSEL, _n2e_se_tr.chrg.cpMin, _n2e_se_tr.chrg.cpMax);
     SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
@@ -635,7 +640,7 @@ VOID n2e_SelectionEditStart(const BOOL highlightAll)
 BOOL n2e_SelectionEditStop(UINT mode)
 {
   _n2e_se_init = FALSE;
-  if (_n2e_edit_selection)
+  if (n2e_IsSelectionEditModeOn())
   {
     if (mode & N2E_SE_REJECT)
     {
@@ -659,7 +664,7 @@ BOOL n2e_SelectionEditStop(UINT mode)
 
 void n2e_SelectionUpdate(UINT place)
 {
-  if (_n2e_edit_selection)
+  if (n2e_IsSelectionEditModeOn())
   {
     UINT opt = 0;
     if (_n2e_se_exit)
@@ -712,7 +717,7 @@ void n2e_SelectionNotificationHandler(int code, struct SCNotification *scn)
       }
       else if (bHighlightSelection)
       {
-        if (_n2e_edit_selection)
+        if (n2e_IsSelectionEditModeOn())
         {
           if (scn->modificationType & SC_MOD_INSERTTEXT)
           {
