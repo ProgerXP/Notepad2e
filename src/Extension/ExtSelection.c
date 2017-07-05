@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <cassert>
+#include "resource.h"
 #include "scintilla.h"
 #include "ExtSelection.h"
 #include "Helpers.h"
@@ -33,6 +34,7 @@ BOOL	_n2e_se_exit = FALSE;
 
 extern int iHighlightLineIfWindowInactive;
 extern int iWordNavigationMode;
+extern HWND hwndMain;
 
 typedef struct tagHLSEdata
 {
@@ -106,6 +108,14 @@ int	n2e_SelectionKeyAction(int key, int msg)
       }
       return 0;
     }
+  }
+  else if ((VK_TAB == key) && n2e_IsKeyDown(VK_SHIFT))
+  {
+    if (WM_CHAR == msg)
+    {
+      SendMessage(hwndMain, WM_COMMAND, MAKEWPARAM(IDM_EDIT_UNINDENT, 0), 0);
+    }
+    return 0;
   }
   return -1;
 }
