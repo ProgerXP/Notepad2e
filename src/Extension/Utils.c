@@ -660,54 +660,38 @@ VOID n2e_Grep(VOID* _lpf, BOOL grep)
   const int maxPos = ttf.chrg.cpMin;
   n2e_ShowProgressBarInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
 
-  BOOL bIsLastLine = TRUE;
   res = SciCall_FindText(lpf->fuFlags, &ttf);
   while (ttf.chrg.cpMin > ttf.chrg.cpMax)
   {
-    const int lineIndex = (res >= 0) ? SciCall_LineFromPosition(res) : 0;
-    const int lineStart = SciCall_PositionFromLine(lineIndex);
-    int lineEnd = 0;
+    int posFrom = ttf.chrg.cpMax;
+    int posTo = ttf.chrg.cpMin;
     if (res >= 0)
     {
+      const int lineIndex = SciCall_LineFromPosition(res);
+      const int posStart = SciCall_PositionFromLine(lineIndex);
       n2e_UpdateProgressBarInStatusBar(maxPos - res);
-      BOOL bDone = FALSE;
-      if (grep && bIsLastLine)
+      if (grep)
       {
-        const int lineCount = SciCall_GetLineCount();
-        if (lineIndex + 2 == lineCount)
-        {
-          lineEnd = SciCall_LineEndPosition(lineIndex);
-          bIsLastLine = FALSE;
-          bDone = TRUE;
-        }
-        else if (lineIndex + 1 == lineCount)
-        {
-          lineEnd = grep ? ttf.chrg.cpMin : lineStart;
-          bIsLastLine = FALSE;
-          bDone = TRUE;
-        }
+        posFrom = SciCall_LineEndPosition(lineIndex);
+        posTo = ttf.chrg.cpMin;
+        ttf.chrg.cpMin = (lineIndex > 0) ? SciCall_LineEndPosition(lineIndex-1) : SciCall_PositionFromLine(lineIndex);
       }
-      if (!bDone)
+      else
       {
-        if (bIsLastLine)
-        {
-          bIsLastLine = FALSE;
-          lineEnd = SciCall_LineEndPosition(lineIndex);
-        }
-        else
-        {
-          lineEnd = SciCall_PositionFromLine(lineIndex + 1);
-        }
+        posFrom = (lineIndex > 0) ? SciCall_LineEndPosition(lineIndex-1) : posStart;
+        posTo = (lineIndex > 0) ? SciCall_LineEndPosition(lineIndex) : SciCall_PositionFromLine(lineIndex+1);
+        ttf.chrg.cpMin = posStart;
       }
     }
     else
     {
-      lineEnd = ttf.chrg.cpMax;
+      posTo = grep ? SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin) + 1) : posFrom;
+      ttf.chrg.cpMin = ttf.chrg.cpMax;
     }
-    SciCall_DeleteRange(grep ? lineEnd : lineStart,
-                        grep ? (ttf.chrg.cpMin - lineEnd) : (lineEnd - lineStart));
-
-    ttf.chrg.cpMin = lineStart;
+    if (posTo != posFrom)
+    {
+      SciCall_DeleteRange(posFrom, posTo - posFrom);
+    }
     res = SciCall_FindText(lpf->fuFlags, &ttf);
   }
 
