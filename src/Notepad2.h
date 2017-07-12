@@ -1,3 +1,4 @@
+#pragma once
 /******************************************************************************
 *
 *
@@ -80,7 +81,6 @@ typedef struct np2params {
 //==== Change Notifications ===================================================
 #define ID_WATCHTIMER 0xA000
 #define WM_CHANGENOTIFY WM_USER+1
-//#define WM_CHANGENOTIFYCLEAR WM_USER+2
 
 
 //==== Callback Message from System Tray ======================================
@@ -97,24 +97,31 @@ typedef struct np2params {
 
 //==== Function Declarations ==================================================
 BOOL InitApplication(HINSTANCE);
-HWND InitInstance(HINSTANCE,LPSTR,int);
+HWND InitInstance(HINSTANCE, LPSTR, int);
+void ExitInstance(HINSTANCE);
 BOOL ActivatePrevInst();
 BOOL RelaunchMultiInst();
 BOOL RelaunchElevated();
 void SnapToDefaultPos(HWND);
-void ShowNotifyIcon(HWND,BOOL);
+void ShowNotifyIcon(HWND, BOOL);
 void SetNotifyIconTitle(HWND);
 void InstallFileWatching(LPCWSTR);
-void CALLBACK WatchTimerProc(HWND,UINT,UINT_PTR,DWORD);
-void CALLBACK PasteBoardTimer(HWND,UINT,UINT_PTR,DWORD);
+void CALLBACK WatchTimerProc(HWND, UINT, UINT_PTR, DWORD);
+void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
+typedef enum
+{
+  SSM_NO          = 0x0,
+  SSM_REGULAR     = 0x1,
+  SSM_RECENT      = 0x2
+} SAVE_SETTINGS_MODE;
 
 void LoadSettings();
-void SaveSettings(BOOL);
+void SaveSettings(BOOL bSaveSettingsNow);
 void ParseCommandLine();
 void LoadFlags();
-int  CheckIniFile(LPWSTR,LPCWSTR);
-int  CheckIniFileRedirect(LPWSTR,LPCWSTR);
+int  CheckIniFile(LPWSTR, LPCWSTR);
+int  CheckIniFileRedirect(LPWSTR, LPCWSTR);
 int  FindIniFile();
 int  TestIniFile();
 int  CreateIniFile();
@@ -125,24 +132,19 @@ void UpdateStatusbar();
 void UpdateToolbar();
 void UpdateLineNumberWidth();
 
-
-BOOL FileIO(BOOL,LPCWSTR,BOOL,int*,int*,BOOL*,BOOL*,BOOL*,BOOL);
-BOOL FileLoad(BOOL,BOOL,BOOL,BOOL,LPCWSTR);
-BOOL _FileLoad(BOOL,BOOL,BOOL,BOOL,LPCWSTR,BOOL);
-BOOL FileSave(BOOL,BOOL,BOOL,BOOL,BOOL);
-BOOL OpenFileDlg(HWND,LPWSTR,int,LPCWSTR);
-BOOL SaveFileDlg(HWND,LPWSTR,int,LPCWSTR);
-
-
-LRESULT CALLBACK MainWndProc(HWND,UINT,WPARAM,LPARAM);
-LRESULT MsgCreate(HWND,WPARAM,LPARAM);
-void    CreateBars(HWND,HINSTANCE);
-void    MsgThemeChanged(HWND,WPARAM,LPARAM);
-void    MsgSize(HWND,WPARAM,LPARAM);
-void    MsgInitMenu(HWND,WPARAM,LPARAM);
-LRESULT MsgCommand(HWND,WPARAM,LPARAM);
-LRESULT MsgNotify(HWND,WPARAM,LPARAM);
+BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
+BOOL FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR);
+BOOL _FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR, BOOL);
+BOOL FileSave(BOOL, BOOL, BOOL, BOOL, BOOL);
+BOOL OpenFileDlg(HWND, LPWSTR, int, LPCWSTR);
+BOOL SaveFileDlg(HWND, LPWSTR, int, LPCWSTR);
 
 
-
-///   End of Notepad2.h   \\\
+LRESULT CALLBACK MainWndProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT MsgCreate(HWND, WPARAM, LPARAM);
+void    CreateBars(HWND, HINSTANCE);
+void    MsgThemeChanged(HWND, WPARAM, LPARAM);
+void    MsgSize(HWND, WPARAM, LPARAM);
+void    MsgInitMenu(HWND, WPARAM, LPARAM);
+LRESULT MsgCommand(HWND, WPARAM, LPARAM);
+LRESULT MsgNotify(HWND, WPARAM, LPARAM);

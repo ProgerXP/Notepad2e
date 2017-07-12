@@ -220,9 +220,6 @@
     <ClCompile Include="scintilla\lexers\LexOScript.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
-    <ClCompile Include="scintilla\lexers\LexOthers.cxx">
-      <Filter>scintilla</Filter>
-    </ClCompile>
     <ClCompile Include="scintilla\lexers\LexPascal.cxx">
       <Filter>scintilla</Filter>
     </ClCompile>
@@ -380,9 +377,6 @@
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="src\Helpers.c">
-      <Filter>ext</Filter>
-    </ClCompile>
-    <ClCompile Include="hl_helper.cpp">
       <Filter>ext</Filter>
     </ClCompile>
     <ClCompile Include="src\HLSelection.c">
@@ -581,7 +575,7 @@
     <None Include="res\Prev.bmp">
       <Filter>scintilla</Filter>
     </None>
-    <None Include="src\printtime.bat">
+    <None Include="src\Extension\printtime.bat">
       <Filter>scintilla</Filter>
     </None>
     <None Include="res\Run.ico">

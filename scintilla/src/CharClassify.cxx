@@ -8,15 +8,12 @@
 #include <stdlib.h>
 #include <ctype.h>
 
+#include <stdexcept>
+
 #include "CharClassify.h"
 
 #ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
-
-// Shut up annoying Visual C++ warnings:
-#ifdef _MSC_VER
-#pragma warning(disable: 4514)
 #endif
 
 CharClassify::CharClassify() {

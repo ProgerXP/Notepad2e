@@ -65,7 +65,7 @@ BOOL DirList_TerminateIconThread(HWND);
 #define DL_INCLHIDDEN  128
 #define DL_ALLOBJECTS  (32|64|128)
 
-int DirList_Fill(HWND,LPCWSTR,DWORD,LPCWSTR,BOOL,BOOL,int,BOOL);
+int DirList_Fill(HWND, LPCWSTR, DWORD, LPCWSTR, BOOL, BOOL, int, BOOL);
 
 
 //==== DlIconThread() =========================================================
@@ -75,12 +75,12 @@ DWORD WINAPI DirList_IconThread(LPVOID);
 
 //==== DlGetDispInfo() ========================================================
 
-BOOL DirList_GetDispInfo(HWND,LPARAM,BOOL);
+BOOL DirList_GetDispInfo(HWND, LPARAM, BOOL);
 
 
 //==== DlDeleteItem() =========================================================
 
-BOOL DirList_DeleteItem(HWND,LPARAM);
+BOOL DirList_DeleteItem(HWND, LPARAM);
 
 
 //==== DlSort() ===============================================================
@@ -90,7 +90,7 @@ BOOL DirList_DeleteItem(HWND,LPARAM);
 #define DS_TYPE     2
 #define DS_LASTMOD  3
 
-BOOL DirList_Sort(HWND,int,BOOL);
+BOOL DirList_Sort(HWND, int, BOOL);
 
 
 //==== DlGetItem() ============================================================
@@ -191,6 +191,3 @@ BOOL IL_GetDisplayName(LPSHELLFOLDER,
 
 
 #endif // _DLAPI_H_
-
-
-///   End of Dlapi.h   \\\

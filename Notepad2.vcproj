@@ -204,10 +204,6 @@
 				>
 			</File>
 			<File
-				RelativePath="hl_helper.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\src\HLSelection.c"
 				>
 			</File>
@@ -578,10 +574,6 @@
 				</File>
 				<File
 					RelativePath="scintilla\lexers\LexOScript.cxx"
-					>
-				</File>
-				<File
-					RelativePath="scintilla\lexers\LexOthers.cxx"
 					>
 				</File>
 				<File

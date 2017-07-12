@@ -5,16 +5,18 @@
 // Copyright 1998-2001 by Neil Hodgson <neilh@scintilla.org>
 // The License.txt file describes the conditions under which this software may be distributed.
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <stdarg.h>
 
+#include <stdexcept>
 #include <algorithm>
 
 #include "Platform.h"
 
 #include "Scintilla.h"
+#include "Position.h"
 #include "SplitVector.h"
 #include "Partitioning.h"
 #include "CellBuffer.h"
@@ -144,6 +146,7 @@ UndoHistory::UndoHistory() {
 	currentAction = 0;
 	undoSequenceDepth = 0;
 	savePoint = 0;
+	tentativePoint = -1;
 
 	actions[currentAction].Create(startAction);
 }
@@ -168,7 +171,7 @@ void UndoHistory::EnsureUndoRoom() {
 	}
 }
 
-void UndoHistory::AppendAction(actionType at, int position, const char *data, int lengthData,
+const char *UndoHistory::AppendAction(actionType at, int position, const char *data, int lengthData,
 	bool &startSequence, bool mayCoalesce) {
 	EnsureUndoRoom();
 	//Platform::DebugPrintf("%% %d action %d %d %d\n", at, position, lengthData, currentAction);
@@ -190,7 +193,11 @@ void UndoHistory::AppendAction(actionType at, int position, const char *data, in
 			}
 			// See if current action can be coalesced into previous action
 			// Will work if both are inserts or deletes and position is same
-			if (currentAction == savePoint) {
+#if defined(_MSC_VER) && defined(_PREFAST_)
+			// Visual Studio 2013 Code Analysis wrongly believes actions can be NULL at its next reference
+			__analysis_assume(actions);
+#endif
+			if ((currentAction == savePoint) || (currentAction == tentativePoint)) {
 				currentAction++;
 			} else if (!actions[currentAction].mayCoalesce) {
 				// Not allowed to coalesce if this set
@@ -232,10 +239,12 @@ void UndoHistory::AppendAction(actionType at, int position, const char *data, in
 		currentAction++;
 	}
 	startSequence = oldCurrentAction != currentAction;
+	int actionWithData = currentAction;
 	actions[currentAction].Create(at, position, data, lengthData, mayCoalesce);
 	currentAction++;
 	actions[currentAction].Create(startAction);
 	maxAction = currentAction;
+	return actions[actionWithData].data;
 }
 
 void UndoHistory::BeginUndoAction() {
@@ -276,6 +285,7 @@ void UndoHistory::DeleteUndoHistory() {
 	currentAction = 0;
 	actions[currentAction].Create(startAction);
 	savePoint = 0;
+	tentativePoint = -1;
 }
 
 void UndoHistory::SetSavePoint() {
@@ -284,6 +294,26 @@ void UndoHistory::SetSavePoint() {
 
 bool UndoHistory::IsSavePoint() const {
 	return savePoint == currentAction;
+}
+
+void UndoHistory::TentativeStart() {
+	tentativePoint = currentAction;
+}
+
+void UndoHistory::TentativeCommit() {
+	tentativePoint = -1;
+	// Truncate undo history
+	maxAction = currentAction;
+}
+
+int UndoHistory::TentativeSteps() {
+	// Drop any trailing startAction
+	if (actions[currentAction].at == startAction && currentAction > 0)
+		currentAction--;
+	if (tentativePoint >= 0)
+		return currentAction - tentativePoint;
+	else
+		return -1;
 }
 
 bool UndoHistory::CanUndo() const {
@@ -350,7 +380,7 @@ char CellBuffer::CharAt(int position) const {
 }
 
 void CellBuffer::GetCharRange(char *buffer, int position, int lengthRetrieve) const {
-	if (lengthRetrieve < 0)
+	if (lengthRetrieve <= 0)
 		return;
 	if (position < 0)
 		return;
@@ -393,13 +423,13 @@ int CellBuffer::GapPosition() const {
 
 // The char* returned is to an allocation owned by the undo history
 const char *CellBuffer::InsertString(int position, const char *s, int insertLength, bool &startSequence) {
-	char *data = 0;
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
+	const char *data = s;
 	if (!readOnly) {
 		if (collectingUndo) {
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// This takes up about half load time
-			uh.AppendAction(insertAction, position, s, insertLength, startSequence);
+			data = uh.AppendAction(insertAction, position, s, insertLength, startSequence);
 		}
 
 		BasicInsertString(position, s, insertLength);
@@ -407,25 +437,24 @@ const char *CellBuffer::InsertString(int position, const char *s, int insertLeng
 	return data;
 }
 
-bool CellBuffer::SetStyleAt(int position, char styleValue, char mask) {
-	styleValue &= mask;
+bool CellBuffer::SetStyleAt(int position, char styleValue) {
 	char curVal = style.ValueAt(position);
-	if ((curVal & mask) != styleValue) {
-		style.SetValueAt(position, static_cast<char>((curVal & ~mask) | styleValue));
+	if (curVal != styleValue) {
+		style.SetValueAt(position, styleValue);
 		return true;
 	} else {
 		return false;
 	}
 }
 
-bool CellBuffer::SetStyleFor(int position, int lengthStyle, char styleValue, char mask) {
+bool CellBuffer::SetStyleFor(int position, int lengthStyle, char styleValue) {
 	bool changed = false;
 	PLATFORM_ASSERT(lengthStyle == 0 ||
 		(lengthStyle > 0 && lengthStyle + position <= style.Length()));
 	while (lengthStyle--) {
 		char curVal = style.ValueAt(position);
-		if ((curVal & mask) != styleValue) {
-			style.SetValueAt(position, static_cast<char>((curVal & ~mask) | styleValue));
+		if (curVal != styleValue) {
+			style.SetValueAt(position, styleValue);
 			changed = true;
 		}
 		position++;
@@ -437,13 +466,13 @@ bool CellBuffer::SetStyleFor(int position, int lengthStyle, char styleValue, cha
 const char *CellBuffer::DeleteChars(int position, int deleteLength, bool &startSequence) {
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
 	PLATFORM_ASSERT(deleteLength > 0);
-	char *data = 0;
+	const char *data = 0;
 	if (!readOnly) {
 		if (collectingUndo) {
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// The gap would be moved to position anyway for the deletion so this doesn't cost extra
-			const char *data = substance.RangePointer(position, deleteLength);
-			uh.AppendAction(removeAction, position, data, deleteLength, startSequence);
+			data = substance.RangePointer(position, deleteLength);
+			data = uh.AppendAction(removeAction, position, data, deleteLength, startSequence);
 		}
 
 		BasicDeleteChars(position, deleteLength);
@@ -465,6 +494,25 @@ void CellBuffer::SetLineEndTypes(int utf8LineEnds_) {
 		utf8LineEnds = utf8LineEnds_;
 		ResetLineEnds();
 	}
+}
+
+bool CellBuffer::ContainsLineEnd(const char *s, int length) const {
+	unsigned char chBeforePrev = 0;
+	unsigned char chPrev = 0;
+	for (int i = 0; i < length; i++) {
+		const unsigned char ch = s[i];
+		if ((ch == '\r') || (ch == '\n')) {
+			return true;
+		} else if (utf8LineEnds) {
+			unsigned char back3[3] = { chBeforePrev, chPrev, ch };
+			if (UTF8IsSeparator(back3) || UTF8IsNEL(back3 + 1)) {
+				return true;
+			}
+		}
+		chBeforePrev = chPrev;
+		chPrev = ch;
+	}
+	return false;
 }
 
 void CellBuffer::SetPerLine(PerLine *pl) {
@@ -496,8 +544,24 @@ void CellBuffer::SetSavePoint() {
 	uh.SetSavePoint();
 }
 
-bool CellBuffer::IsSavePoint() {
+bool CellBuffer::IsSavePoint() const {
 	return uh.IsSavePoint();
+}
+
+void CellBuffer::TentativeStart() {
+	uh.TentativeStart();
+}
+
+void CellBuffer::TentativeCommit() {
+	uh.TentativeCommit();
+}
+
+int CellBuffer::TentativeSteps() {
+	return uh.TentativeSteps();
+}
+
+bool CellBuffer::TentativeActive() const {
+	return uh.TentativeActive();
 }
 
 // Without undo
@@ -728,7 +792,7 @@ void CellBuffer::DeleteUndoHistory() {
 	uh.DeleteUndoHistory();
 }
 
-bool CellBuffer::CanUndo() {
+bool CellBuffer::CanUndo() const {
 	return uh.CanUndo();
 }
 
@@ -743,6 +807,10 @@ const Action &CellBuffer::GetUndoStep() const {
 void CellBuffer::PerformUndoStep() {
 	const Action &actionStep = uh.GetUndoStep();
 	if (actionStep.at == insertAction) {
+		if (substance.Length() < actionStep.lenData) {
+			throw std::runtime_error(
+				"CellBuffer::PerformUndoStep: deletion must be less than document length.");
+		}
 		BasicDeleteChars(actionStep.position, actionStep.lenData);
 	} else if (actionStep.at == removeAction) {
 		BasicInsertString(actionStep.position, actionStep.data, actionStep.lenData);
@@ -750,7 +818,7 @@ void CellBuffer::PerformUndoStep() {
 	uh.CompletedUndoStep();
 }
 
-bool CellBuffer::CanRedo() {
+bool CellBuffer::CanRedo() const {
 	return uh.CanRedo();
 }
 
