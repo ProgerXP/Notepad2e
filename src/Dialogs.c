@@ -660,7 +660,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
 
-        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR), LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FAVORITESDIR), LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_FAVORITESDIR), NULL);
         DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
@@ -1080,7 +1080,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
           (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
 
-        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU), LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_FILEMRU), LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_FILEMRU), 0, &lvc);
 
         // Update view
@@ -1906,7 +1906,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
         DeleteObject(hbmp);
         ListView_SetImageList(GetDlgItem(hwnd, IDC_ENCODINGLIST), himl, LVSIL_SMALL);
 
-        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(hwndLV, 0, &lvc);
 
         Encoding_AddToListView(hwndLV, pdd->idEncoding, pdd->bRecodeOnly);
