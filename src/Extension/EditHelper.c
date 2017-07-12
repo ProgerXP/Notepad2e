@@ -944,14 +944,18 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     case WM_PASTE:
       {
-        char *pClip = EditGetClipboardText(hwnd, FALSE);
+        char *pClip = EditGetClipboardText(hwndEdit, FALSE);
         if (pClip)
         {
           remove_char(pClip, '\r');
           remove_char(pClip, '\n');
-          SetWindowTextA(hwnd, pClip);
-          const textLength = strlen(pClip);
-          SendMessage(hwnd, EM_SETSEL, textLength, textLength);
+
+          const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
+          const int textLength = MultiByteToWideChar(codePage, 0, pClip, -1, NULL, 0);
+          wchar_t* pWideText = LocalAlloc(LPTR, textLength * 2);
+          MultiByteToWideChar(codePage, 0, pClip, -1, pWideText, textLength);
+          SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
+          LocalFree(pWideText);
           LocalFree(pClip);
 
           DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
