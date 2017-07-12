@@ -1008,51 +1008,6 @@ DWORD WINAPI FileMRUIconThread(LPVOID lpParam)
   return (0);
 }
 
-BOOL n2e_OpenMRULast(LPWSTR fn)
-{
-  int i;
-  int count;
-  WCHAR tch[MAX_PATH];
-  WCHAR cd[MAX_PATH];
-  BOOL open;
-  open = FALSE;
-  count = MRU_Enum(pFileMRU, 0, NULL, 0);
-  GetCurrentDirectory(COUNTOF(cd), cd);
-  for (i = 0; i < count && i < 2; i++)
-  {
-    MRU_Enum(pFileMRU, i, tch, COUNTOF(tch));
-    N2E_WTrace("mru '%s'", tch);
-    PathAbsoluteFromApp(tch, NULL, 0, TRUE);
-    N2E_WTrace("mru full '%s'", tch);
-    if (0 == i || open)
-    {
-      lstrcpy(fn, tch);
-      if (open)
-      {
-        break;
-      }
-    }
-    if (0 == lstrcmp(tch, szCurFile) && i < count - 1)
-    {
-      open = TRUE;
-    }
-  }
-  N2E_WTrace("check for path '%s'", fn);
-  if (!PathFileExists(fn))
-  {
-    N2E_WTrace("no path '%s'", fn);
-    if (IDYES == MsgBox(MBYESNO, IDS_ERR_MRUDLG))
-    {
-      MRU_DeleteFileFromStore(pFileMRU, fn);
-      MRU_Destroy(pFileMRU);
-      pFileMRU = MRU_Create(L"Recent Files", MRU_NOCASE, 32);
-      MRU_Load(pFileMRU);
-    }
-    return 0;
-  }
-  return  i > 0 && lstrcmp(fn, szCurFile);
-}
-
 INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
 

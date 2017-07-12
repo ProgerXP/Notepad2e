@@ -2,6 +2,7 @@
 #include "stdafx.h"
 
 extern HANDLE g_hScintilla;
+extern WCHAR szCurFile[MAX_PATH + 40];
 
 enum CSS_PROP
 {
@@ -64,6 +65,7 @@ VOID n2e_SaveINI();
 VOID n2e_Release();
 VOID n2e_Reload_Settings();
 BOOL n2e_Is_Empty(LPCWSTR txt);
+BOOL n2e_OpenMRULast(LPWSTR fn);
 VOID n2e_GetLastDir(LPTSTR out);
 UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam);
 BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex);
