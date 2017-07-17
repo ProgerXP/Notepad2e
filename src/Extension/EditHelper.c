@@ -944,7 +944,7 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   {
     case WM_PASTE:
       {
-        char *pClip = EditGetClipboardText(hwndEdit, FALSE);
+        char *pClip = EditGetClipboardText(hwndEdit);
         if (pClip)
         {
           remove_char(pClip, '\r');

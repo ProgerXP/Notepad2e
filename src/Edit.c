@@ -371,7 +371,7 @@ BOOL EditSetNewEncoding(HWND hwnd, int iCurrentEncoding, int iNewEncoding, BOOL 
 //
 //  EditGetClipboardText()
 //
-char *EditGetClipboardText(HWND hwnd, BOOL adjustNewLines)
+char *EditGetClipboardText(HWND hwnd)
 {
   HANDLE hmem;
   WCHAR *pwch;
@@ -405,8 +405,7 @@ char *EditGetClipboardText(HWND hwnd, BOOL adjustNewLines)
     int i;
     for (i = 0; (i < mlen) && (*s != 0); i++)
     {
-      if (adjustNewLines
-          && (*s == '\n' || *s == '\r'))
+      if (*s == '\n' || *s == '\r')
       {
         if (eolmode == SC_EOL_CR)
         {
@@ -5644,7 +5643,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
+    pszReplace2 = EditGetClipboardText(hwnd);
   }
   else
   {
@@ -5776,7 +5775,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
+    pszReplace2 = EditGetClipboardText(hwnd);
   }
   else
   {
@@ -5903,7 +5902,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
     iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd, TRUE);
+    pszReplace2 = EditGetClipboardText(hwnd);
   }
   else
   {
