@@ -1088,7 +1088,6 @@ static INT UTF8_mbslen_bytes(LPCSTR utf8_string)
     {
       /* we got an invalid byte value but need to count it,
          it will be later ignored during the string conversion */
-         //WARN("invalid first byte value 0x%02X in UTF-8 sequence!\n",byte);
       length++;
       utf8_string++;
     }
@@ -6540,206 +6539,38 @@ BOOL EditEncloseSelectionDlg(HWND hwnd, LPWSTR pwszOpen, LPWSTR pwszClose)
 //  Controls: 100 Input
 //            101 Input
 //
-typedef struct _tagsdata
-{
-  LPWSTR pwsz1;
-  LPWSTR pwsz2;
-} TAGSDATA, *PTAGSDATA;
-
-
 INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
-  const WCHAR* _left_braces = L"<{([";
-  const WCHAR* _right_braces = L">})]";
   static PTAGSDATA pdata;
   switch (umsg)
   {
     case WM_INITDIALOG: {
-        WCHAR end[0xff] = L"</";
-        INT len = lstrlen(n2e_last_html_tag);
         pdata = (PTAGSDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
         SetDlgItemTextW(hwnd, 100, n2e_last_html_tag);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 101, n2e_last_html_end_tag);
         SetFocus(GetDlgItem(hwnd, 100));
-        {
-          int k = 0;
-          while (1)
-          {
-            if (len > k * 2 + 1 &&
-                StrChr(_left_braces, n2e_last_html_tag[k]) &&
-                StrChr(_right_braces, n2e_last_html_tag[len - k - 1]))
-            {
-              ++k;
-            }
-            else
-            {
-              break;
-            }
-          }
-          if (k)
-          {
-            PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, k, len - k);
-          }
-          else
-          {
-            PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 0, len);
-          }
-        }
+        n2e_Init_EditInsertTagDlg(hwnd);
         CenterDlgInParent(hwnd);
       }
       return FALSE;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
-        case 100: {
-            if (HIWORD(wParam) == EN_CHANGE)
-            {
-              WCHAR wchBuf[256];
-              WCHAR wchIns[256];
-              WCHAR *pwCur;
-              int  cchIns = 2;
-              BOOL bClear = TRUE;
-              BOOL bCopy = FALSE;
-              GetDlgItemTextW(hwnd, 100, wchBuf, 256);
-              if (lstrlen(wchBuf) >= 3)
-              {
-                if (((StrCmpNI(wchBuf, L"<!--", 4) == 0) && (StrStrI(wchBuf + 4, L"-->") != NULL))
-                    || ((StrCmpNI(wchBuf, L"<!DOCTYPE", 9) == 0) && (StrStrI(wchBuf + 9, L">") != NULL)))
-                {
-                  bClear = TRUE;
-                  bCopy = FALSE;
-                }
-                else if (StrChr(_left_braces, *wchBuf))
-                {
-                  int open_tag_len = 0;
-                  wchIns[0] = *wchBuf;
-                  // detect len of open tag
-                  while (StrChr(_left_braces, *(wchBuf + (++open_tag_len))))
-                  {
-                    wchIns[open_tag_len] = *(wchBuf + open_tag_len);
-                  }
-                  wchIns[open_tag_len] = L'/';
-                  wchIns[open_tag_len + 1] = L'\0';
-                  // get next char
-                  pwCur = wchBuf + open_tag_len;
-                  cchIns += open_tag_len - 1;
-
-                  // extract tag
-                  // trim left
-                  while (
-                    *pwCur &&
-                    !N2E_IS_LITERAL(*pwCur)
-                    )
-                  {
-                    *pwCur++;
-                  }
-                  while (
-                    *pwCur &&
-                    !StrChr(_left_braces, *pwCur) &&
-                    !StrChr(_right_braces, *pwCur) &&
-                    N2E_IS_LITERAL(*pwCur))
-                  {
-                    wchIns[cchIns++] = *pwCur++;
-                  }
-                  // get end of string
-                  while (
-                    *pwCur &&
-                    !StrChr(_right_braces, *pwCur))
-                  {
-                    pwCur++;
-                  }
-                  // if not short version
-                  if (* (pwCur - 1) != L'/')
-                  {
-                    while (open_tag_len--)
-                    {
-                      wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
-                    }
-                    wchIns[cchIns] = L'\0';
-                    if (cchIns > 3
-                        && // tags hasn't to be closed
-                        lstrcmpi(wchIns, L"</area>") &&
-                        lstrcmpi(wchIns, L"</base>") &&
-                        lstrcmpi(wchIns, L"</basefont>") &&
-                        lstrcmpi(wchIns, L"</bgsound>") &&
-                        lstrcmpi(wchIns, L"</br>") &&
-                        lstrcmpi(wchIns, L"</col>") &&
-                        lstrcmpi(wchIns, L"</embed>") &&
-                        lstrcmpi(wchIns, L"</frame>") &&
-                        lstrcmpi(wchIns, L"</hr>") &&
-                        lstrcmpi(wchIns, L"</img>") &&
-                        lstrcmpi(wchIns, L"</input>") &&
-                        lstrcmpi(wchIns, L"</keygen>") &&
-                        lstrcmpi(wchIns, L"</link>") &&
-                        lstrcmpi(wchIns, L"</meta>") &&
-                        lstrcmpi(wchIns, L"</param>") &&
-                        lstrcmpi(wchIns, L"</source>") &&
-                        lstrcmpi(wchIns, L"</track>"))
-                    {
-                      SetDlgItemTextW(hwnd, 101, wchIns);
-                      bClear = FALSE;
-                    }
-                  }
-                  else
-                  {
-                    bCopy = TRUE;
-                  }
-                  N2E_WTrace("wchIns %s", wchIns);
-                  N2E_WTrace("pwCur %s", pwCur);
-                }
-                else
-                {
-                  bCopy = TRUE;
-                }
-              }
-              else
-              {
-                bCopy = TRUE;
-              }
-              if (bCopy)
-              {
-                SetDlgItemTextW(hwnd, 101, wchBuf);
-              }
-              else if (bClear)
-              {
-                SetDlgItemTextW(hwnd, 101, L"");
-              }
-            }
+        case 100:
+          if (HIWORD(wParam) == EN_CHANGE)
+          {
+            WCHAR wchBuf[256];
+            GetDlgItemTextW(hwnd, 100, wchBuf, 256);
+            SetDlgItemTextW(hwnd, 101, n2e_GetClosingTagText_EditInsertTagDlg(wchBuf));
           }
-                  break;
-        case IDOK: {
-            GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
-            GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
-            // may be i need to correct pwsz1 according to pwsz2??
-            {
-              int idx = 0, len = 0;
-              len = lstrlen(pdata->pwsz1);
-              while (len > 0 && StrChr(_right_braces, pdata->pwsz1[len - 1]))
-              {
-                pdata->pwsz1[--len] = L'\0';
-              }
-              while (1)
-              {
-                int k;
-                WCHAR const* br = StrChr(_left_braces, pdata->pwsz1[idx++]);
-                if (!br)
-                {
-                  break;
-                }
-                for (k = idx; k >= 0; --k)
-                {
-                  pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k];
-                }
-                pdata->pwsz1[len] = _right_braces[br - _left_braces];
-                N2E_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
-              }
-            }
-            EndDialog(hwnd, IDOK);
-            lstrcpy(n2e_last_html_tag, pdata->pwsz1);
-            lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
-          }
+          break;
+        case IDOK:
+          GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
+          GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+          n2e_SaveTagsData_EditInsertTagDlg(pdata);
+          EndDialog(hwnd, IDOK);
           break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
@@ -6748,7 +6579,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
       return TRUE;
   }
   return FALSE;
-}
+};
 
 
 //=============================================================================
@@ -6757,7 +6588,6 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 //
 BOOL EditInsertTagDlg(HWND hwnd, LPWSTR pwszOpen, LPWSTR pwszClose)
 {
-
   INT_PTR iResult;
   TAGSDATA data = { pwszOpen, pwszClose };
 

@@ -1054,3 +1054,174 @@ BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
   }
   return FALSE;
 }
+
+const WCHAR* _left_braces = L"<{([";
+const WCHAR* _right_braces = L">})]";
+
+void n2e_Init_EditInsertTagDlg(HWND hwnd)
+{
+  const int len = lstrlen(n2e_last_html_tag);
+  int k = 0;
+  while (1)
+  {
+    if (len > k * 2 + 1 &&
+        StrChr(_left_braces, n2e_last_html_tag[k]) &&
+        StrChr(_right_braces, n2e_last_html_tag[len - k - 1]))
+    {
+      ++k;
+    }
+    else
+    {
+      break;
+    }
+  }
+  if (k)
+  {
+    PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, k, len - k);
+  }
+  else
+  {
+    PostMessage(GetDlgItem(hwnd, 100), EM_SETSEL, 0, len);
+  }
+}
+
+WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
+{
+  static WCHAR wchIns[256];
+  WCHAR *pwCur;
+  int  cchIns = 2;
+  BOOL bClear = TRUE;
+  BOOL bCopy = FALSE;
+
+  if (lstrlen(wchBuf) >= 3)
+  {
+    if (((StrCmpNI(wchBuf, L"<!--", 4) == 0) && (StrStrI(wchBuf + 4, L"-->") != NULL))
+        || ((StrCmpNI(wchBuf, L"<!DOCTYPE", 9) == 0) && (StrStrI(wchBuf + 9, L">") != NULL)))
+    {
+      bClear = TRUE;
+      bCopy = FALSE;
+    }
+    else if (StrChr(_left_braces, *wchBuf))
+    {
+      int open_tag_len = 0;
+      wchIns[0] = *wchBuf;
+      // detect len of open tag
+      while (StrChr(_left_braces, *(wchBuf + (++open_tag_len))))
+      {
+        wchIns[open_tag_len] = *(wchBuf + open_tag_len);
+      }
+      wchIns[open_tag_len] = L'/';
+      wchIns[open_tag_len + 1] = L'\0';
+      // get next char
+      pwCur = wchBuf + open_tag_len;
+      cchIns += open_tag_len - 1;
+
+      // extract tag
+      // trim left
+      while (
+        *pwCur &&
+        !N2E_IS_LITERAL(*pwCur)
+        )
+      {
+        *pwCur++;
+      }
+      while (
+        *pwCur &&
+        !StrChr(_left_braces, *pwCur) &&
+        !StrChr(_right_braces, *pwCur) &&
+        N2E_IS_LITERAL(*pwCur))
+      {
+        wchIns[cchIns++] = *pwCur++;
+      }
+      // get end of string
+      while (
+        *pwCur &&
+        !StrChr(_right_braces, *pwCur))
+      {
+        pwCur++;
+      }
+      // if not short version
+      if (*(pwCur - 1) != L'/')
+      {
+        while (open_tag_len--)
+        {
+          wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
+        }
+        wchIns[cchIns] = L'\0';
+        if (cchIns > 3
+            && // tags hasn't to be closed
+            lstrcmpi(wchIns, L"</area>") &&
+            lstrcmpi(wchIns, L"</base>") &&
+            lstrcmpi(wchIns, L"</basefont>") &&
+            lstrcmpi(wchIns, L"</bgsound>") &&
+            lstrcmpi(wchIns, L"</br>") &&
+            lstrcmpi(wchIns, L"</col>") &&
+            lstrcmpi(wchIns, L"</embed>") &&
+            lstrcmpi(wchIns, L"</frame>") &&
+            lstrcmpi(wchIns, L"</hr>") &&
+            lstrcmpi(wchIns, L"</img>") &&
+            lstrcmpi(wchIns, L"</input>") &&
+            lstrcmpi(wchIns, L"</keygen>") &&
+            lstrcmpi(wchIns, L"</link>") &&
+            lstrcmpi(wchIns, L"</meta>") &&
+            lstrcmpi(wchIns, L"</param>") &&
+            lstrcmpi(wchIns, L"</source>") &&
+            lstrcmpi(wchIns, L"</track>"))
+        {
+          bClear = FALSE;
+        }
+      }
+      else
+      {
+        bCopy = TRUE;
+      }
+      N2E_WTrace("wchIns %s", wchIns);
+      N2E_WTrace("pwCur %s", pwCur);
+    }
+    else
+    {
+      bCopy = TRUE;
+    }
+  }
+  else
+  {
+    bCopy = TRUE;
+  }
+  if (bCopy)
+  {
+    return wchBuf;
+  }
+  else if (bClear)
+  {
+    return L"";
+  }
+  return wchIns;
+}
+
+void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata)
+{
+  // may be i need to correct pwsz1 according to pwsz2??
+  int idx = 0, len = 0;
+  len = lstrlen(pdata->pwsz1);
+  while (len > 0 && StrChr(_right_braces, pdata->pwsz1[len - 1]))
+  {
+    pdata->pwsz1[--len] = L'\0';
+  }
+  while (1)
+  {
+    int k;
+    WCHAR const* br = StrChr(_left_braces, pdata->pwsz1[idx++]);
+    if (!br)
+    {
+      break;
+    }
+    for (k = idx; k >= 0; --k)
+    {
+      pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k];
+    }
+    pdata->pwsz1[len] = _right_braces[br - _left_braces];
+    N2E_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
+  }
+  lstrcpy(n2e_last_html_tag, pdata->pwsz1);
+  lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
+}

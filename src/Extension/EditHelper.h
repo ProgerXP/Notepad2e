@@ -74,3 +74,7 @@ void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd);
 
 BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd);
 BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo);
+
+void n2e_Init_EditInsertTagDlg(HWND hwnd);
+WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* buf);
+void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata);

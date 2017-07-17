@@ -206,3 +206,9 @@ BOOL FileVars_IsUTF8(LPFILEVARS);
 BOOL FileVars_IsNonUTF8(LPFILEVARS);
 BOOL FileVars_IsValidEncoding(LPFILEVARS);
 int  FileVars_GetEncoding(LPFILEVARS);
+
+typedef struct _tagsdata
+{
+  LPWSTR pwsz1;
+  LPWSTR pwsz2;
+} TAGSDATA, *PTAGSDATA;
