@@ -20,6 +20,13 @@ typedef enum
   ELI_SHOW_NON_US
 } ELanguageIndicatorMode;
 
+typedef enum
+{
+  EEM_DISABLED = 0,
+  EEM_LINE,
+  EEM_SELECTION
+} EExpressionEvaluationMode;
+
 #define N2E_INI_SECTION L"Notepad2e"
 #define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"

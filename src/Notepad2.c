@@ -1987,9 +1987,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, bCtrlWheelScroll);
   CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == 0);
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == 1);
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == 2);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == EEM_DISABLED);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == EEM_SELECTION);
+  CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == EEM_LINE);
   CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == 0);
   CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == 1);
 }
@@ -4096,19 +4096,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case ID_SETTINGS_EVAL_DISABLED:
-      iEvaluateMathExpression = 0;
+      iEvaluateMathExpression = EEM_DISABLED;
       UpdateStatusbar();
       break;
 
 
     case ID_SETTINGS_EVAL_SELECTION:
-      iEvaluateMathExpression = 1;
+      iEvaluateMathExpression = EEM_SELECTION;
       UpdateStatusbar();
       break;
 
 
     case ID_SETTINGS_EVAL_LINE:
-      iEvaluateMathExpression = 2;
+      iEvaluateMathExpression = EEM_LINE;
       UpdateStatusbar();
       break;
 
@@ -6449,11 +6449,11 @@ BOOL IsExpressionEvaluationEnabled()
 {
   switch (iEvaluateMathExpression)
   {
-    case 0:
+    case EEM_DISABLED:
     default:
       return FALSE;
-    case 1:
-    case 2:
+    case EEM_SELECTION:
+    case EEM_LINE:
       return TRUE;
   }
 }
@@ -6464,13 +6464,13 @@ int GetExpressionTextRange(int* piStart, int* piEnd)
   *piStart = *piEnd = 0;
   switch (iEvaluateMathExpression)
   {
-    case 0:
+    case EEM_DISABLED:
       break;
-    case 1:
+    case EEM_SELECTION:
       *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
       *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
       break;
-    case 2:
+    case EEM_LINE:
       *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
       *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
       if (*piEnd == *piStart)

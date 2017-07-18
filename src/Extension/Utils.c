@@ -27,7 +27,7 @@ BOOL	_n2e_skip_highlight = FALSE;
 BOOL	bUsePrefixInOpenDialog = TRUE;
 BOOL	bCtrlWheelScroll = TRUE;
 BOOL  bMoveCaretOnRightClick = TRUE;
-int iEvaluateMathExpression = 0;
+EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
 int iWordNavigationMode = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
 
