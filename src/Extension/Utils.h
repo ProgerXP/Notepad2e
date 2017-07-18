@@ -86,6 +86,8 @@ void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
                            LPCWSTR lpszFile, int iFormat, BOOL bModified,
                            UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt);
 void n2e_UpdateWindowTitle(HWND hwnd);
+int n2e_GetCurrentShowTitleMenuID();
+int n2e_GetCurrentLanguageIndicatorMenuID();
 
 extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;

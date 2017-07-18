@@ -49,6 +49,9 @@ BOOL bShowProgressBar = FALSE;
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
 
+extern WCHAR szTitleExcerpt[128];
+extern int iPathNameFormat;
+
 void n2e_InitInstance()
 {
   InitScintillaHandle(hwndEdit);
@@ -823,6 +826,38 @@ void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
 void n2e_UpdateWindowTitle(HWND hwnd)
 {
   SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
+}
+
+int n2e_GetCurrentShowTitleMenuID()
+{
+  if (lstrlen(szTitleExcerpt))
+  {
+    return IDM_VIEW_SHOWEXCERPT;
+  }
+  else switch (iPathNameFormat)
+  {
+    case 0:
+      return IDM_VIEW_SHOWFILENAMEONLY;
+    case 1:
+      return IDM_VIEW_SHOWFILENAMEFIRST;
+    default:
+      return IDM_VIEW_SHOWFULLPATH;
+  }
+}
+
+int n2e_GetCurrentLanguageIndicatorMenuID()
+{
+  switch (iShowLanguageInTitle)
+  {
+    case ELI_HIDE:
+      return IDM_VIEW_NOLANGUAGEINDICATOR;
+    case ELI_SHOW:
+      return IDM_VIEW_SHOWLANGUAGEINDICATOR;
+    case ELI_SHOW_NON_US:
+      return IDM_VIEW_SHOWLANGUAGEINDICATORNONUS;
+    default:
+      return 0;
+  }
 }
 
 void n2e_CreateProgressBarInStatusBar()

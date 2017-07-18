@@ -1678,7 +1678,7 @@ int cxStyleSelectDlg;
 int cyStyleSelectDlg;
 extern int  iDefaultCodePage;
 extern int  iDefaultCharSet;
-extern BOOL bHiliteCurrentLine;
+extern BOOL bHighlightCurrentLine;
 
 
 //=============================================================================
@@ -2125,7 +2125,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   }
   SendMessage(hwnd, SCI_SETWHITESPACESIZE, iValue, 0);
 
-  if (bHiliteCurrentLine)
+  if (bHighlightCurrentLine)
   {
     if (Style_StrGetColor(FALSE, lexDefault.Styles[8 + iIdx].szValue, &rgb))
     { // caret line back
@@ -2422,7 +2422,7 @@ void Style_SetCurrentLineBackground(HWND hwnd)
   // Use 2nd default style
   int iIdx = (bUse2ndDefaultStyle) ? 12 : 0;
 
-  if (bHiliteCurrentLine)
+  if (bHighlightCurrentLine)
   {
 
     if (Style_StrGetColor(FALSE, lexDefault.Styles[8 + iIdx].szValue, &rgb))

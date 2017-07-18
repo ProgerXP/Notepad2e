@@ -124,7 +124,7 @@ BOOL      bMatchBraces;
 BOOL      bAutoIndent;
 BOOL      bAutoCloseTags;
 BOOL      bShowIndentGuides;
-BOOL      bHiliteCurrentLine;
+BOOL      bHighlightCurrentLine;
 BOOL      bTabsAsSpaces;
 BOOL      bTabsAsSpacesG;
 BOOL      bTabIndents;
@@ -1820,37 +1820,6 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   }
 }
 
-int GetCurrentShowTitleMenuID()
-{
-  if (lstrlen(szTitleExcerpt))
-  {
-    return IDM_VIEW_SHOWEXCERPT;
-  }
-  else switch (iPathNameFormat)
-  {
-    case 0:
-      return IDM_VIEW_SHOWFILENAMEONLY;
-    case 1:
-      return IDM_VIEW_SHOWFILENAMEFIRST;
-    default:
-      return IDM_VIEW_SHOWFULLPATH;
-  }
-}
-
-int GetCurrentLanguageIndicatorMenuID()
-{
-  switch (iShowLanguageInTitle)
-  {
-    case ELI_HIDE:
-      return IDM_VIEW_NOLANGUAGEINDICATOR;
-    case ELI_SHOW:
-      return IDM_VIEW_SHOWLANGUAGEINDICATOR;
-    case ELI_SHOW_NON_US:
-      return IDM_VIEW_SHOWLANGUAGEINDICATORNONUS;
-    default:
-      return 0;
-  }
-}
 //=============================================================================
 //
 //  MsgInitMenu() - Handles WM_INITMENU
@@ -1974,7 +1943,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_STATUSBAR, bShowStatusbar);
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHiliteCurrentLine);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHighlightCurrentLine);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTWORD, bHighlightSelection);
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
@@ -1990,8 +1959,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, bSaveFindReplace);
   CheckCmd(hmenu, IDM_VIEW_SAVEBEFORERUNNINGTOOLS, bSaveBeforeRunningTools);
   CheckCmd(hmenu, IDM_VIEW_CHANGENOTIFY, iFileWatchingMode);
-  CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
-  CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, n2e_GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, n2e_GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
   if (iEscFunction == 1)
     i = IDM_VIEW_ESCMINIMIZE;
   else if (iEscFunction == 2)
@@ -3791,7 +3760,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_HIGHLIGHTCURRENTLINE:
-      bHiliteCurrentLine = (bHiliteCurrentLine) ? FALSE : TRUE;
+      bHighlightCurrentLine = (bHighlightCurrentLine) ? FALSE : TRUE;
       Style_SetCurrentLineBackground(hwndEdit);
       break;
 
@@ -5331,8 +5300,8 @@ void LoadSettings()
   bAutoCloseTags = IniSectionGetInt(pIniSection, L"AutoCloseTags", 0);
   if (bAutoCloseTags) bAutoCloseTags = 1;
 
-  bHiliteCurrentLine = IniSectionGetInt(pIniSection, L"HighlightCurrentLine", 0);
-  if (bHiliteCurrentLine) bHiliteCurrentLine = 1;
+  bHighlightCurrentLine = IniSectionGetInt(pIniSection, L"HighlightCurrentLine", 0);
+  if (bHighlightCurrentLine) bHighlightCurrentLine = 1;
 
   bAutoIndent = IniSectionGetInt(pIniSection, L"AutoIndent", 1);
   if (bAutoIndent) bAutoIndent = 1;
@@ -5600,7 +5569,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     IniSectionSetInt(pIniSection, L"ShowWordWrapSymbols", bShowWordWrapSymbols);
     IniSectionSetInt(pIniSection, L"MatchBraces", bMatchBraces);
     IniSectionSetInt(pIniSection, L"AutoCloseTags", bAutoCloseTags);
-    IniSectionSetInt(pIniSection, L"HighlightCurrentLine", bHiliteCurrentLine);
+    IniSectionSetInt(pIniSection, L"HighlightCurrentLine", bHighlightCurrentLine);
     IniSectionSetInt(pIniSection, L"AutoIndent", bAutoIndent);
     IniSectionSetInt(pIniSection, L"ShowIndentGuides", bShowIndentGuides);
     IniSectionSetInt(pIniSection, L"TabsAsSpaces", bTabsAsSpacesG);
