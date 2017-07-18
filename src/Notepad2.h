@@ -112,7 +112,7 @@ void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 typedef enum
 {
   SSM_NO          = 0x0,
-  SSM_REGULAR     = 0x1,
+  SSM_ALL         = 0x1,
   SSM_RECENT      = 0x2
 } SAVE_SETTINGS_MODE;
 

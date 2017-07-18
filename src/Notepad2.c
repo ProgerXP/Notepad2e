@@ -100,7 +100,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
 
 WCHAR      szIniFile[MAX_PATH] = L"";
 WCHAR      szIniFile2[MAX_PATH] = L"";
-enum SAVE_SETTINGS_MODE nSaveSettingsMode = SSM_REGULAR;
+enum SAVE_SETTINGS_MODE nSaveSettingsMode = SSM_ALL;
 BOOL      bSaveRecentFiles;
 BOOL      bSaveFindReplace;
 WCHAR      tchLastSaveCopyDir[MAX_PATH] = L"";
@@ -1970,7 +1970,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
 
   i = lstrlen(szIniFile);
-  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, (nSaveSettingsMode == SSM_REGULAR) && i);
+  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, (nSaveSettingsMode == SSM_ALL) && i);
   CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, (nSaveSettingsMode == SSM_RECENT) && i);
   CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, (nSaveSettingsMode == SSM_NO) && i);
 
@@ -4001,7 +4001,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_SAVESETTINGS_MODE_ALL:
-      nSaveSettingsMode = SSM_REGULAR;
+      nSaveSettingsMode = SSM_ALL;
       UpdateToolbar();
       break;
 
@@ -4528,7 +4528,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    case ID_BLOCK_UNWRAPQUOTESATCURSOR:
+    case ID_BLOCK_UNWRAPQUOTES:
       n2e_UnwrapSelection(hwndEdit, TRUE);
       break;
 
@@ -4806,7 +4806,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         case SSM_RECENT:
           nNewSaveSettingsModeID = IDM_VIEW_SAVESETTINGS_MODE_ALL;
           break;
-        case SSM_REGULAR:
+        case SSM_ALL:
           nNewSaveSettingsModeID = IDM_VIEW_SAVESETTINGS_MODE_RECENT;
           break;
         }
@@ -5239,12 +5239,12 @@ void LoadSettings()
   switch (nSaveSettings)
   {
     case SSM_NO:
-    case SSM_REGULAR:
+    case SSM_ALL:
     case SSM_RECENT:
       nSaveSettingsMode = nSaveSettings;
       break;
     default:
-      nSaveSettingsMode = SSM_REGULAR;
+      nSaveSettingsMode = SSM_ALL;
       break;
   }
 
@@ -5540,14 +5540,14 @@ void SaveSettings(BOOL bSaveSettingsNow)
     return;
 
   CreateIniFile();
-  if ((nSaveSettingsMode != SSM_REGULAR) && !bSaveSettingsNow)
+  if ((nSaveSettingsMode != SSM_ALL) && !bSaveSettingsNow)
   {
     IniSetInt(L"Settings", L"SaveSettings", nSaveSettingsMode);
     if (nSaveSettingsMode == SSM_NO)
       return;
   }
   const BOOL bCheckSaveSettingsMode = !bSaveSettingsNow;
-  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR))
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_ALL))
   {
     pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
     cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
@@ -5628,7 +5628,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
   /*
     SaveSettingsNow(): query Window Dimensions
   */
-  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR) && bSaveSettingsNow)
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_ALL) && bSaveSettingsNow)
   {
     WINDOWPLACEMENT wndpl;
 
@@ -5642,7 +5642,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     wi.cy = wndpl.rcNormalPosition.bottom - wndpl.rcNormalPosition.top;
     wi.max = (IsZoomed(hwndMain) || (wndpl.flags & WPF_RESTORETOMAXIMIZED));
   }
-  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR))
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_ALL))
   {
     if (!IniGetInt(L"Settings2", L"StickyWindowPosition", 0))
     {
@@ -5665,7 +5665,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     n2e_SaveINI();
   }
   
-  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR)
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_ALL)
       || (CanSaveINISection(bCheckSaveSettingsMode, SSM_RECENT) && bSaveRecentFiles))
   {
     // Cleanup unwanted MRU's
@@ -5680,7 +5680,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     }
   }
 
-  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_REGULAR)
+  if (CanSaveINISection(bCheckSaveSettingsMode, SSM_ALL)
       || (CanSaveINISection(bCheckSaveSettingsMode, SSM_RECENT) && bSaveFindReplace))
   {
     if (!bSaveFindReplace)
@@ -6422,7 +6422,7 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
-  CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_REGULAR);
+  CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_ALL);
   EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL));
 }
 
