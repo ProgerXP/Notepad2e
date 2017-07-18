@@ -58,7 +58,6 @@ BOOL n2e_IsSelectionModeValid(HWND hwnd);
 void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
 int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
 BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);
-void n2e_MsgCreate();
 BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next);
 void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode);
 void n2e_EscapeHTML(HWND hwnd);
