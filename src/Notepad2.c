@@ -934,12 +934,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       }
 
 
-    case WM_TIMER:
-      if ((timerIDPaneSizeClick > 0) && (wParam == timerIDPaneSizeClick))
-        OnPaneSizeClick(hwnd, TRUE, TRUE);
-      break;
-
-
     case WM_SIZE:
       MsgSize(hwnd, wParam, lParam);
       break;
@@ -1097,9 +1091,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           (nID != IDC_REBAR) && (nID != IDC_TOOLBAR))
           return DefWindowProc(hwnd, umsg, wParam, lParam);
 
-        hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
         pt.x = (int)(short)LOWORD(lParam);
         pt.y = (int)(short)HIWORD(lParam);
+        if (n2e_IsPaneSizePoint(hwnd, pt))
+        {
+          n2e_OnPaneSizeClick(hwnd, FALSE);
+          break;
+        }
+
+        hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
         switch (nID)
         {
           case IDC_EDIT:
@@ -1649,6 +1649,8 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   UpdateStatusbar();
 }
 
+// Statusbar
+int aWidth[6];
 
 //=============================================================================
 //
@@ -1661,9 +1663,6 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   RECT rc;
   int x, y, cx, cy;
   HDWP hdwp;
-
-  // Statusbar
-  int aWidth[6];
 
   if (wParam == SIZE_MINIMIZED)
     return;
@@ -5074,7 +5073,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             switch (pnmm->dwItemSpec)
             {
               case STATUS_DOCSIZE:
-                OnPaneSizeClick(hwnd, TRUE, FALSE);
+                n2e_OnPaneSizeClick(hwnd, TRUE);
                 return TRUE;
 
               case STATUS_EOLMODE:
@@ -5092,10 +5091,6 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             LPNMMOUSE pnmm = (LPNMMOUSE)lParam;
             switch (pnmm->dwItemSpec)
             {
-              case STATUS_DOCSIZE:
-                OnPaneSizeClick(hwnd, FALSE, TRUE);
-                return TRUE;
-
               case STATUS_CODEPAGE:
                 SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_ENCODING_SELECT, 1), 0);
                 return TRUE;

@@ -53,7 +53,7 @@ void n2e_InitInstance()
 {
   InitScintillaHandle(hwndEdit);
   n2e_Init(hwndMain);
-  hShellHook = SetWindowsHookEx(WH_SHELL, ShellProc, NULL, GetCurrentThreadId());
+  hShellHook = SetWindowsHookEx(WH_SHELL, n2e_ShellProc, NULL, GetCurrentThreadId());
 }
 
 void n2e_ExitInstance()

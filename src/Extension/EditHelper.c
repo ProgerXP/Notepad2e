@@ -1200,7 +1200,7 @@ WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
 
 void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata)
 {
-  // may be i need to correct pwsz1 according to pwsz2??
+  // correct pwsz1 according to pwsz2
   int idx = 0, len = 0;
   len = lstrlen(pdata->pwsz1);
   while (len > 0 && StrChr(_right_braces, pdata->pwsz1[len - 1]))

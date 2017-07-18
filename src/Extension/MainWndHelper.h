@@ -14,10 +14,10 @@ typedef enum
 } ExpressionValueMode;
 
 extern HHOOK hShellHook;
-extern UINT_PTR timerIDPaneSizeClick;
 extern ExpressionValueMode modePrevExpressionValue;
 extern char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
 extern ExpressionValueMode modeExpressionValue;
 extern WCHAR arrwchExpressionValue[MAX_PATH];
-LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam);
-void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler);
+LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam);
+BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt);
+void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick);

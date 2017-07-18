@@ -9,46 +9,25 @@ char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH] = { 0 };
 ExpressionValueMode modeExpressionValue = EVM_DEC;
 WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
 
-#define       STATUS_PANE_SIZE_CLICK_TIMER  0x1000
-#define       STATUS_PANE_SIZE_DBLCLICK_TIMER 0x1001
-UINT_PTR      timerIDPaneSizeClick = 0;
-UINT_PTR      timerIDPaneSizeDblClick = 0;
+extern HWND hwndMain;
+extern int aWidth[6];
 
-extern HWND  hwndMain;
-
-void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHandler)
+BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt)
 {
-  if (timerIDPaneSizeClick > 0)
-  {
-    KillTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER);
-    timerIDPaneSizeClick = 0;
-  }
-  if (timerIDPaneSizeDblClick > 0)
-  {
-    KillTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER);
-    timerIDPaneSizeDblClick = 0;
-    if (singleClick)
-    {
-      return;
-    }
-  }
+  ScreenToClient(hwnd, &pt);
+  return (pt.x > aWidth[0]) && (pt.x < aWidth[1]);
+}
 
-  if (singleClick)
+void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
+{
+  if (bLeftClick)
   {
-    if (runHandler)
+    ++modeExpressionValue;
+    if (modeExpressionValue > EVM_MAX)
     {
-      ++modeExpressionValue;
-      if (modeExpressionValue > EVM_MAX)
-      {
-        modeExpressionValue = EVM_MIN;
-      }
-      UpdateStatusbar();
+      modeExpressionValue = EVM_MIN;
     }
-    else
-    {
-      // wait for possible double click
-      timerIDPaneSizeClick = SetTimer(hwnd, STATUS_PANE_SIZE_CLICK_TIMER, GetDoubleClickTime() / 2, NULL);
-    }
+    UpdateStatusbar();
   }
   else
   {
@@ -56,12 +35,10 @@ void OnPaneSizeClick(const HWND hwnd, const BOOL singleClick, const BOOL runHand
     {
       n2e_SetClipboardText(hwnd, arrwchExpressionValue);
     }
-    // skip useless single click
-    timerIDPaneSizeDblClick = SetTimer(hwnd, STATUS_PANE_SIZE_DBLCLICK_TIMER, 100, NULL);
   }
 }
 
-LRESULT CALLBACK ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
   if (nCode < 0)
   {
