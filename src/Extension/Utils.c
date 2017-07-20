@@ -7,6 +7,7 @@
 #include "Notepad2.h"
 #include "ExtSelection.h"
 #include "Edit.h"
+#include "EditHelper.h"
 #include "SciCall.h"
 #include "InlineProgressBarCtrl.h"
 #include "MainWndHelper.h"
@@ -402,7 +403,7 @@ int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2)
   return res1;
 }
 
-BOOL	n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
+BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
   WIN32_FIND_DATA	wfd;
   WCHAR	path[MAX_PATH];
@@ -489,10 +490,11 @@ BOOL n2e_FileIsCdUp(LPCWSTR str)
   return TRUE;
 }
 
+WCHAR last_selected[MAX_PATH];
+
 UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
 {
   static UINT file_ok = 0;
-  static WCHAR last_selected[MAX_PATH];
   static BOOL take_call = FALSE;
   HWND hPar = GetParent(hdlg);
   switch (uiMsg)
@@ -530,27 +532,33 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                 N2E_TRACE("OFN input (%S) ", final_str);
                 if (!n2e_OpenFileByPrefix(final_str, dir, out))
                 {
-                  WCHAR mess[1024];
-                  wsprintf(mess,
-                           L"%s\nFile not found.\n"
-                           L"Additionally, no file name starting "
-                           L"with this string exists in this folder\n%s",
-                           final_str, dir);
-                  MessageBox(hdlg, mess, WC_NOTEPAD2, MB_OK | MB_ICONWARNING);
+                  if (ofn->lpOFN)
+                  {
+                    WCHAR mess[1024];
+                    wsprintf(mess,
+                             L"%s\nFile not found.\n"
+                             L"Additionally, no file name starting "
+                             L"with this string exists in this folder\n%s",
+                             final_str, dir);
+                    MessageBox(hdlg, mess, WC_NOTEPAD2, MB_OK | MB_ICONWARNING);
+                  }
                   take_call = TRUE;
                   return 0;
                 }
                 else
                 {
                   CommDlg_OpenSave_SetControlText(hPar, cmb13, (LPARAM)out);
-                  lstrcpy(ofn->lpOFN->lpstrFile, out);
+                  if (ofn->lpOFN && ofn->lpOFN->lpstrFile)
+                  {
+                    lstrcpy(ofn->lpOFN->lpstrFile, out);
+                  }
                   N2E_TRACE("OFN final result (%S) ", out);
                   SetWindowLong(hdlg, DWL_MSGRESULT, 0);
                   take_call = FALSE;
                 }
               }
             }
-                           return 1;
+            return 1;
           case CDN_SELCHANGE: {
               WCHAR buf[MAX_PATH];
               N2E_TRACE("OFN sel change  ");
@@ -569,21 +577,22 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                 }
               }
             }
-                              break;
+            break;
           case CDN_INITDONE: {
               N2E_TRACE("OFN init  ");
               take_call = FALSE;
               file_ok = RegisterWindowMessage(FILEOKSTRING);
+              n2e_SubclassOpenDialog(hPar);
               *last_selected = 0;
             }
-                             break;
+            break;
           case CDN_FOLDERCHANGE: {
               *last_selected = 0;
             }
-                                 break;
+            break;
         }
       }
-                    break;
+      break;
     default:
       if (file_ok == uiMsg)
       {

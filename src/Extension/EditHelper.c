@@ -952,6 +952,65 @@ BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
   return FALSE;
 }
 
+extern WCHAR last_selected[MAX_PATH];
+
+LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (uMsg)
+  {
+    case WM_COMMAND:
+      switch (LOWORD(wParam))
+      {
+        case IDOK:
+          {
+            WCHAR buf[MAX_PATH];
+            CommDlg_OpenSave_GetSpec(hwnd, buf, COUNTOF(buf));
+            LPWSTR final_str = buf;
+            if (wcsstr(last_selected, buf))
+            {
+              final_str = last_selected;
+              N2E_TRACE("OFN drop window text %S ", buf);
+            }
+            WIN32_FIND_DATA fd = { 0 };
+            BOOL bFolderExists = FALSE;
+            HANDLE hFind = FindFirstFile(final_str, &fd);
+            if (hFind != INVALID_HANDLE_VALUE)
+            {
+              do
+              {
+                if (((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
+                  && (StrCmpI(final_str, fd.cFileName) == 0))
+                {
+                  bFolderExists = TRUE;
+                  break;
+                }
+              } while (FindNextFile(hFind, &fd));
+              FindClose(hFind);
+            }
+            if (!bFolderExists)
+            {
+              OFNOTIFY ofn = { 0 };
+              ofn.hdr.code = CDN_FILEOK;               
+              SendMessage(FindWindowEx(hwnd, NULL, WC_DIALOG, NULL), WM_NOTIFY, MAKEWPARAM(IDOK, 0), (LPARAM)&ofn);
+            }
+          }
+          break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+  return CallWindowProc((WNDPROC)GetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+}
+
+BOOL n2e_SubclassOpenDialog(const HWND hwnd)
+{
+  SetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWL_WNDPROC, (long)n2e_OpenDialogWndProc));
+  return TRUE;
+}
+
 const WCHAR* _left_braces = L"<{([";
 const WCHAR* _right_braces = L">})]";
 

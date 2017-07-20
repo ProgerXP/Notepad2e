@@ -78,6 +78,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
 BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex);
 void n2e_InplaceRev(WCHAR * s);
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2);
+BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out);
 VOID	n2e_Grep(VOID* lpf, BOOL grep);
 VOID n2e_SetWheelScroll(BOOL on);
 BOOL n2e_IsWordChar(WCHAR ch);
