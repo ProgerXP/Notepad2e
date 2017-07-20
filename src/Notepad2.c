@@ -24,7 +24,6 @@
 #include <shlwapi.h>
 #include <shellapi.h>
 #include <commdlg.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
@@ -35,14 +34,11 @@
 #include "styles.h"
 #include "dialogs.h"
 #include "helpers.h"
-#include "resource.h"
 #include "SciCall.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/MainWndHelper.h"
 #include "Extension/InlineProgressBarCtrl.h"
-#include "Extension/Utils.h"
-#include "Extension/tinyexpr/tinyexpr.h"
 
 
 
@@ -6491,83 +6487,8 @@ void UpdateStatusbar()
   else
     FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS2, tchLn, tchLines, tchCol, tchCols, tchSel);
   
-  BOOL docSizeOK = FALSE;
-  int iPosStart = 0;
-  int iPosEnd = 0;
-  int iCount = 0;
-  if (n2e_IsExpressionEvaluationEnabled() &&
-      ((iCount = n2e_GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
-      (iCount <= MAX_EXPRESSION_LENGTH))
-  {
-    char *pszText = LocalAlloc(LPTR, iCount + 1);
-    struct TextRange tr = { { iPosStart, iPosEnd }, pszText };
-    SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-    if ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue))
-    {
-      double exprValue = 0.0;
-      if (is_valid_expression(pszText, 1, &exprValue))
-      {
-        UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
-        switch (modeExpressionValue)
-        {
-          case EVM_DEC:
-            idExpressionFormatString = (floor(exprValue) == exprValue) ? IDS_EXPRESSION_VALUE_INTEGER : IDS_EXPRESSION_VALUE_FLOAT;
-            break;
-          case EVM_HEX:
-            idExpressionFormatString = IDS_EXPRESSION_VALUE_HEX;
-            break;
-          case EVM_BIN:
-            {
-              n2e_int2bin((unsigned int)floor(exprValue), arrwchExpressionValue);
-              idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
-            }
-            break;
-          case EVM_OCT:
-            idExpressionFormatString = IDS_EXPRESSION_VALUE_OCT;
-            break;
-          default:
-            break;
-        }
-        switch (modeExpressionValue)
-        {
-          case EVM_BIN:
-            FormatString(tchDocSize,
-                         COUNTOF(tchDocSize) - 1,
-                         idExpressionFormatString,
-                         arrwchExpressionValue);
-            break;
-          case EVM_DEC:
-            FormatString(tchDocSize,
-                         COUNTOF(tchDocSize) - 1,
-                         idExpressionFormatString,
-                         exprValue);
-            break;
-          case EVM_HEX:
-          case EVM_OCT:
-            FormatString(tchDocSize,
-                         COUNTOF(tchDocSize) - 1,
-                         idExpressionFormatString,
-                         (int)exprValue);
-            break;
-        }
-        modePrevExpressionValue = modeExpressionValue;
-        strncpy_s(arrchPrevExpressionText, COUNTOF(arrchPrevExpressionText) - 1, pszText, strlen(pszText));
-        wcsncpy_s(arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1, tchDocSize, COUNTOF(tchDocSize) - 1);
-        docSizeOK = TRUE;
-      }
-    }
-    else
-    {
-      wcsncpy_s(tchDocSize, COUNTOF(tchDocSize) - 1, arrwchExpressionValue, wcslen(arrwchExpressionValue));
-      docSizeOK = TRUE;
-    }
-    LocalFree(pszText);
-  }
-  else
-  {
-    memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
-    memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
-  }
+  const BOOL docSizeOK = n2e_FormatEvaluatedExpression(hwndEdit, tchDocSize, COUNTOF(tchDocSize));
+
   if (!docSizeOK)
   {
     iBytes = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
