@@ -100,7 +100,7 @@ int	n2e_SelectionKeyAction(int key, int msg)
 {
   if (n2e_IsSelectionEditModeOn())
   {
-    if ((VK_RETURN == key) && n2e_IsKeyDown(VK_SHIFT))
+    if (VK_RETURN == key)
     {
       if (WM_CHAR == msg)
       {
