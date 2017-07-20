@@ -7523,7 +7523,7 @@ void ShowNotifyIcon(HWND hwnd, BOOL bAdd)
   nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
   nid.uCallbackMessage = WM_TRAYMESSAGE;
   nid.hIcon = hIcon;
-  lstrcpy(nid.szTip, L"Notepad 2e");
+  lstrcpy(nid.szTip, WC_NOTEPAD2);
 
   if (bAdd)
     Shell_NotifyIcon(NIM_ADD, &nid);
