@@ -66,12 +66,12 @@ BEGIN
     BEGIN
         MENUITEM "&New\tCtrl+N",                IDM_FILE_NEW
         MENUITEM "&Open...\tCtrl+O",            IDM_FILE_OPEN
-        MENUITEM "Open Next",                   ID_FILE_OPEN__NEXT
-        MENUITEM "Open Previous",               ID_FILE_OPEN__PREVIOUS
+        MENUITEM "Open Next (&1)",              ID_FILE_OPEN__NEXT
+        MENUITEM "Open Previous (&2)",          ID_FILE_OPEN__PREVIOUS
         MENUITEM "Re&vert\tF5",                 IDM_FILE_REVERT
         MENUITEM "&Save\tCtrl+S",               IDM_FILE_SAVE
         MENUITEM "Save &As...\tF6",             IDM_FILE_SAVEAS
-        MENUITEM "Rename To...\tAlt+F6",        ID_FILE_RENAMETO
+        MENUITEM "&Rename To...\tAlt+F6",       ID_FILE_RENAMETO
         MENUITEM "Save &Copy...\tCtrl+F6",      IDM_FILE_SAVECOPY
         MENUITEM "&Read Only",                  IDM_FILE_READONLY
         MENUITEM SEPARATOR
@@ -81,7 +81,7 @@ BEGIN
             MENUITEM "&Empty Window\tAlt+0",        IDM_FILE_NEWWINDOW2
             MENUITEM SEPARATOR
             MENUITEM "Execute &Document\tCtrl+L",   IDM_FILE_LAUNCH
-            MENUITEM "Shell Menu\tCtrl+Shift+R",    ID_FILE_INVOKESHELLMENU
+            MENUITEM "&Shell Menu\tCtrl+Shift+R",   ID_FILE_INVOKESHELLMENU
             MENUITEM "&Open With...\tAlt+L",        IDM_FILE_OPENWITH
             MENUITEM "&Command...\tCtrl+R",         IDM_FILE_RUN
         END
@@ -129,7 +129,7 @@ BEGIN
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               IDM_EDIT_UNDO
         MENUITEM "&Redo\tCtrl+Y",               IDM_EDIT_REDO
-        MENUITEM "Go To Last Change\tCtrl+Shift+Alt+Z", ID_EDIT_UNDO_REDO
+        MENUITEM "Go To Last Change\tCtrl+Alt+Shift+Z", ID_EDIT_UNDO_REDO
         MENUITEM SEPARATOR
         MENUITEM "Cu&t\tCtrl+X",                IDM_EDIT_CUT
         MENUITEM "&Copy\tCtrl+C",               IDM_EDIT_COPY
@@ -165,9 +165,9 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Enclose Selection...\tAlt+Q", IDM_EDIT_ENCLOSESELECTION
             MENUITEM "&Duplicate Selection\tAlt+D", IDM_EDIT_SELECTIONDUPLICATE
-            MENUITEM "Wrap Selection\tCtrl+3",      CMD_EMBRACE
-            MENUITEM "Unwrap Brackets At Cursor\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
-            MENUITEM "Unwrap Quotes At Cursor\tCtrl+Shift+4", ID_BLOCK_UNWRAPQUOTES
+            MENUITEM "Wrap &Selection\tCtrl+3",     CMD_EMBRACE
+            MENUITEM "Unwrap Bra&ckets At Cursor\tCtrl+Shift+3", ID_BLOCK_UNWRAPSELECTION
+            MENUITEM "Unwrap &Quotes At Cursor\tCtrl+Shift+4", ID_BLOCK_UNWRAPQUOTES
             MENUITEM SEPARATOR
             MENUITEM "&Pad With Spaces\tAlt+B",     IDM_EDIT_PADWITHSPACES
             MENUITEM "Strip &First Character\tAlt+Z", IDM_EDIT_STRIP1STCHAR
@@ -214,17 +214,17 @@ BEGIN
             MENUITEM "Stream &Comment\tCtrl+Shift+Q", IDM_EDIT_STREAMCOMMENT
             MENUITEM SEPARATOR
             MENUITEM "URL &Encode\tCtrl+Shift+E",   IDM_EDIT_URLENCODE
-            MENUITEM "URL &Decode\tCtrl+Shift+Alt+E", IDM_EDIT_URLDECODE
+            MENUITEM "URL &Decode\tCtrl+Alt+Shift+E", IDM_EDIT_URLDECODE
             MENUITEM SEPARATOR
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
-            MENUITEM "Strip HTML Tags\tShift+Alt+X", IDM_EDIT_STRIP_HTML_TAGS
-            MENUITEM "Escape HTML\tCtrl+Shift+Alt+X", ID_SPECIAL_ESCAPEHTML
+            MENUITEM "Str&ip HTML Tags\tShift+Alt+X", IDM_EDIT_STRIP_HTML_TAGS
+            MENUITEM "Escape HTML Ta&gs\tCtrl+Alt+Shift+X", ID_SPECIAL_ESCAPEHTML
             MENUITEM SEPARATOR
             MENUITEM "C&har To C Hex\tCtrl+Alt+X",  IDM_EDIT_CHAR2HEX
             MENUITEM "C Hex To Cha&r\tCtrl+Alt+C",  IDM_EDIT_HEX2CHAR
-            MENUITEM "String To Hex\tAlt+Shift+A",  IDM_EDIT_STRING2HEX
-            MENUITEM "Hex To String\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
+            MENUITEM "St&ring To Hex\tAlt+Shift+A", IDM_EDIT_STRING2HEX
+            MENUITEM "Hex To Stri&ng\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
             MENUITEM SEPARATOR
             MENUITEM "&Find Matching Brace\tCtrl+B", IDM_EDIT_FINDMATCHINGBRACE
             MENUITEM "&Select To Matching Brace\tCtrl+Shift+B", IDM_EDIT_SELTOMATCHINGBRACE
@@ -262,7 +262,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Visual &Brace Matching\tCtrl+Shift+V", IDM_VIEW_MATCHBRACES
         MENUITEM "Highlight C&urrent Line\tCtrl+Shift+I", IDM_VIEW_HIGHLIGHTCURRENTLINE
-        MENUITEM "Highlight Current Word",      IDM_VIEW_HIGHLIGHTCURRENTWORD
+        MENUITEM "Highlight Curren&t Word",     IDM_VIEW_HIGHLIGHTCURRENTWORD
         MENUITEM SEPARATOR
         MENUITEM "Line &Numbers\tCtrl+Shift+N", IDM_VIEW_LINENUMBERS
         MENUITEM "Selection &Margin\tCtrl+Shift+M", IDM_VIEW_MARGIN
@@ -305,18 +305,18 @@ BEGIN
             MENUITEM "&Minimize Notepad2",          IDM_VIEW_ESCMINIMIZE
             MENUITEM "E&xit Notepad2",              IDM_VIEW_ESCEXIT
         END
-        POPUP "Evaluate Math Expressions"
+        POPUP "Evaluate Math E&xpressions"
         BEGIN
             MENUITEM "&Disabled",                   ID_SETTINGS_EVAL_DISABLED
             MENUITEM "Current &Selection",          ID_SETTINGS_EVAL_SELECTION
             MENUITEM "Current &Line",               ID_SETTINGS_EVAL_LINE
         END
-        POPUP "Ctrl+&Arrow Navigation"
+        POPUP "&Ctrl+Arrow Navigation"
         BEGIN
-            MENUITEM "&Standard",               ID_SETTINGS_WORD_NAVIGATION_STANDARD
-            MENUITEM "&Accelerated",            ID_SETTINGS_WORD_NAVIGATION_ACCELERATED
+            MENUITEM "&Standard",                   ID_SETTINGS_WORD_NAVIGATION_STANDARD
+            MENUITEM "&Accelerated",                ID_SETTINGS_WORD_NAVIGATION_ACCELERATED
         END
-        MENUITEM "Ctrl+Wheel Scroll",           ID_SETTINGS_CTRL_WHEEL_SCROLL
+        MENUITEM "&Ctrl+Wheel Scroll",          ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
         MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT
@@ -328,9 +328,9 @@ BEGIN
         MENUITEM SEPARATOR
         POPUP "Save Settings On E&xit"
         BEGIN
-            MENUITEM "&All Settings",           IDM_VIEW_SAVESETTINGS_MODE_ALL
-            MENUITEM "&Recent Files/Search Strings",    IDM_VIEW_SAVESETTINGS_MODE_RECENT
-            MENUITEM "&No",                     IDM_VIEW_SAVESETTINGS_MODE_NO
+            MENUITEM "&All Settings",               IDM_VIEW_SAVESETTINGS_MODE_ALL
+            MENUITEM "&Recent Files/Search Strings", IDM_VIEW_SAVESETTINGS_MODE_RECENT
+            MENUITEM "&No",                         IDM_VIEW_SAVESETTINGS_MODE_NO
         END
         MENUITEM "Save Settings &Now\tF7",      IDM_VIEW_SAVESETTINGSNOW
         MENUITEM "Reload From Disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
@@ -581,22 +581,24 @@ END
 // Dialog
 //
 
-IDD_ABOUT DIALOGEX 0, 0, 226, 126
+IDD_ABOUT DIALOGEX 0, 0, 227, 141
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Notepad 2e"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,168,105,50,14
-    ICON            IDR_MAINWND,IDC_STATIC,7,7,20,20
-    LTEXT           "",IDC_VERSION,42,7,174,8
-    LTEXT           "qqqqqqqqqqqqqqqqqq",IDC_COPYRIGHT,42,19,174,8
-    LTEXT           "qqqqqqqqqqqqqqqqqq",IDC_AUTHORNAME,42,43,174,8
-    LTEXT           "qqqqqqqqqqqqqqqqq",IDC_EXT,42,67,174,8
-    LTEXT           "qqqqqqqqqqqqqqqqqqq",IDC_BY,42,78,174,8
-    LTEXT           "compile time",IDC_TIME,42,107,126,8
-    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_WEB,"SysLink",WS_TABSTOP,42,91,174,8
-    CONTROL         "qqqqqqqqqqqqqqqqqqqq",IDC_EMAIL,"SysLink",WS_TABSTOP,42,54,174,8
-    CONTROL         "qqqqqqqqqqqqqqqq",IDC_WEBPAGE,"SysLink",WS_TABSTOP,42,30,174,8
+    DEFPUSHBUTTON   "OK",IDOK,168,119,50,14
+    ICON            IDR_MAINWND,IDC_STATIC,7,7,21,20
+    LTEXT           "Notepad2e",IDC_VERSION,42,7,174,8
+    LTEXT           "Copyright © 2004-2011",IDC_COPYRIGHT,42,32,174,8
+    LTEXT           "Florian Balmer",IDC_AUTHORNAME,42,55,174,8
+    LTEXT           "Extended Edition © 2013-2017",IDC_EXT,42,81,174,8
+    LTEXT           "By Proger_XP and contributors",IDC_BY,42,93,174,8
+    LTEXT           "Built on XXX",IDC_TIME,42,121,126,8
+    CONTROL         "https://github.com/ProgerXP/Notepad2e",IDC_WEB,"SysLink",WS_TABSTOP,42,105,174,8
+    CONTROL         "florian.balmer@gmail.com",IDC_EMAIL,"SysLink",WS_TABSTOP,42,67,174,8
+    CONTROL         "flo's freeware - http://www.flos-freeware.ch",IDC_WEBPAGE,
+                    "SysLink",WS_TABSTOP,42,43,174,8
+    LTEXT           "Based on Notepad2 4.2.25",IDC_STATIC,42,19,175,8
 END
 
 IDD_FIND DIALOGEX 0, 0, 272, 101
@@ -1066,10 +1068,10 @@ BEGIN
     IDD_ABOUT, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 219
-        VERTGUIDE, 45
+        RIGHTMARGIN, 220
+        VERTGUIDE, 42
         TOPMARGIN, 7
-        BOTTOMMARGIN, 119
+        BOTTOMMARGIN, 134
     END
 
     IDD_FIND, DIALOG
@@ -1302,7 +1304,7 @@ STRINGTABLE
 BEGIN
     IDS_APPTITLE            "Notepad 2e"
     IDS_APPTITLE_ELEVATED   "%s (Administrator)"
-    IDS_APPTITLE_PASTEBOARD "Notepad 2e : Paste Board"
+    IDS_APPTITLE_PASTEBOARD "Notepad 2e (Paste Board)"
     IDS_UNTITLED            "Untitled"
     IDS_TITLEEXCERPT        """%s"""
     IDS_READONLY            "(Read Only)"

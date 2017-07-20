@@ -225,7 +225,6 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         WCHAR wch[256];
         LOGFONT lf;
 
-        SetDlgItemText(hwnd, IDC_VERSION, VERSION_FILEVERSION_LONG);
         lstrcpy(wch, L"Built on ");
         lstrcat(wch, H_TIMESTAMP);
         SetDlgItemText(hwnd, IDC_TIME, wch);
