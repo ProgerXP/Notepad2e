@@ -78,3 +78,7 @@ BOOL n2e_SubclassOpenDialog(const HWND hwnd);
 void n2e_Init_EditInsertTagDlg(HWND hwnd);
 WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* buf);
 void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata);
+
+void n2e_int2bin(unsigned int val, LPWSTR binString);
+BOOL n2e_IsExpressionEvaluationEnabled();
+int n2e_GetExpressionTextRange(int* piStart, int* piEnd);

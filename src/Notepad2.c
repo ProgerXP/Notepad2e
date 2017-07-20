@@ -6426,65 +6426,6 @@ void UpdateToolbar()
   EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL));
 }
 
-void int2bin(unsigned int val, LPWSTR binString)
-{
-  int bitCount = 0;
-  int i;
-  WCHAR binString_temp[MAX_PATH];
-
-  do
-  {
-    binString_temp[bitCount++] = '0' + val % 2;
-    val /= 2;
-  } while (val > 0);
-
-  /* Reverse the binary string */
-  for (i = 0; i < bitCount; i++)
-    binString[i] = binString_temp[bitCount - i - 1];
-
-  binString[bitCount] = 0; //Null terminator
-}
-
-BOOL IsExpressionEvaluationEnabled()
-{
-  switch (iEvaluateMathExpression)
-  {
-    case EEM_DISABLED:
-    default:
-      return FALSE;
-    case EEM_SELECTION:
-    case EEM_LINE:
-      return TRUE;
-  }
-}
-
-int GetExpressionTextRange(int* piStart, int* piEnd)
-{
-  int iLength = 0;
-  *piStart = *piEnd = 0;
-  switch (iEvaluateMathExpression)
-  {
-    case EEM_DISABLED:
-      break;
-    case EEM_SELECTION:
-      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-      break;
-    case EEM_LINE:
-      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-      if (*piEnd == *piStart)
-      {
-        const int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, *piStart, 0);
-        *piStart = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0);
-        *piEnd = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iCurLine, 0);
-      }
-      break;
-  }
-  iLength = *piEnd - *piStart;
-  return iLength;
-}
-
 
 //=============================================================================
 //
@@ -6554,8 +6495,8 @@ void UpdateStatusbar()
   int iPosStart = 0;
   int iPosEnd = 0;
   int iCount = 0;
-  if (IsExpressionEvaluationEnabled() &&
-      ((iCount = GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
+  if (n2e_IsExpressionEvaluationEnabled() &&
+      ((iCount = n2e_GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
       (iCount <= MAX_EXPRESSION_LENGTH))
   {
     char *pszText = LocalAlloc(LPTR, iCount + 1);
@@ -6577,7 +6518,7 @@ void UpdateStatusbar()
             break;
           case EVM_BIN:
             {
-              int2bin((unsigned int)floor(exprValue), arrwchExpressionValue);
+              n2e_int2bin((unsigned int)floor(exprValue), arrwchExpressionValue);
               idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
             }
             break;

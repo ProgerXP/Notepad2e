@@ -1181,3 +1181,60 @@ void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata)
   lstrcpy(n2e_last_html_tag, pdata->pwsz1);
   lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
 }
+
+void n2e_int2bin(unsigned int val, LPWSTR binString)
+{
+  int bitCount = 0;
+  int i;
+  WCHAR binString_temp[MAX_PATH];
+
+  do
+  {
+    binString_temp[bitCount++] = '0' + val % 2;
+    val /= 2;
+  } while (val > 0);
+
+  /* Reverse the binary string */
+  for (i = 0; i < bitCount; i++)
+    binString[i] = binString_temp[bitCount - i - 1];
+
+  binString[bitCount] = 0; //Null terminator
+}
+
+BOOL n2e_IsExpressionEvaluationEnabled()
+{
+  switch (iEvaluateMathExpression)
+  {
+    case EEM_DISABLED:
+    default:
+      return FALSE;
+    case EEM_SELECTION:
+    case EEM_LINE:
+      return TRUE;
+  }
+}
+
+int n2e_GetExpressionTextRange(int* piStart, int* piEnd)
+{
+  *piStart = *piEnd = 0;
+  switch (iEvaluateMathExpression)
+  {
+    case EEM_DISABLED:
+      break;
+    case EEM_SELECTION:
+      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+      break;
+    case EEM_LINE:
+      *piStart = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+      *piEnd = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
+      if (*piEnd == *piStart)
+      {
+        const int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, *piStart, 0);
+        *piStart = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iCurLine, 0);
+        *piEnd = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iCurLine, 0);
+      }
+      break;
+  }
+  return *piEnd - *piStart;
+}
