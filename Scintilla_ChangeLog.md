@@ -305,7 +305,7 @@ ScintillaBase::ScintillaBase() {
   
 [/**Implement Notepad's right click behavior #54**]  
   
-[**Always treat Shift+Tab as unindent #61**]  
+[**Unindent and tabs #128**]  
 [scintilla/src/Editor.cxx]  
 Change the code in Editor::Indent(bool forwards): replace condition code block
     
@@ -324,17 +324,32 @@ with:
         SelectionPosition posAnchor(sel.Range(r).anchor.Position());  
         const int indentation = pdoc->GetLineIndentation(lineCurrentPos);  
         const int indentationStep = pdoc->IndentSize();  
-        pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-        if ((caretPosition - pdoc->LineStart(lineCurrentPos) >= indentationStep) && (indentation >= indentationStep)) {  
-            posCaret.SetPosition(posCaret.Position() - indentationStep);  
-            posAnchor.SetPosition(posAnchor.Position() - indentationStep);  
+        bool adjustCaretPosition = false;  
+        int tabsCount = 0;  
+        if (pdoc->CharAt(pdoc->LineStart(lineCurrentPos)) == '\t') {  
+            adjustCaretPosition = true;  
+            for (int i = pdoc->LineStart(lineCurrentPos); i < posCaret.Position(); i++) {  
+                if (pdoc->CharAt(i) != '\t')  
+                    break;  
+                ++tabsCount;  
+            }  
+        }  
+        pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);  
+        if (adjustCaretPosition) {  
+            const int offset = (pdoc->useTabs ? std::max(1, tabsCount - 1) : tabsCount) * (indentationStep - 1);  
+            posCaret.Add(offset);  
+            posAnchor.Add(offset);  
+        }  
+        if ((posCaret.Position() - pdoc->LineStart(lineCurrentPos) >= indentationStep) && (indentation >= indentationStep)) {  
+            posCaret.Add(-indentationStep);  
+            posAnchor.Add(-indentationStep);  
             sel.Range(r) = SelectionRange(posCaret, posAnchor);  
-        }
-    }
+        }  
+    }  
   
   
 [scintilla/src/Editor.cxx]  
-[/**Always treat Shift+Tab as unindent #61**]  
+[/**Unindent and tabs #128**]  
   
 [**ctrl+arrow behavior toggle #89**]  
 Add new message SCI_SETWORDNAVIGATIONMODE:  
