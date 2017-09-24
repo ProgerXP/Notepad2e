@@ -427,6 +427,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
   lstrcat(szTitle, pszSep);
   lstrcat(szTitle, szAppName);
 
+  // [2e]: Language indication #86
   switch (iShowLanguageInTitle)
   {
     case ELI_HIDE:
@@ -450,6 +451,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
       }
       break;
   }
+  // [/2e]
   return SetWindowText(hwnd, szTitle);
 }
 
@@ -957,7 +959,10 @@ int FormatString(LPWSTR lpOutput, int nOutput, UINT uIdFormat, ...)
   WCHAR *p = LocalAlloc(LPTR, sizeof(WCHAR) * nOutput);
 
   if (GetString(uIdFormat, p, nOutput))
+  {
+    // [2e]: "Evaluate selection"-feature, use vswprintf to support floating-point type specifiers
     vswprintf(lpOutput, nOutput, p, arguments);
+  }
 
   va_end(arguments);
 
@@ -1675,6 +1680,7 @@ BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnex
   int i;
   for (i = 0; i < pmru->iSize; i++)
   {
+    // [2e]: access violation fix
     if (pmru->pszItems[i])
     {
       if (lstrcmpi(pmru->pszItems[i], pszFile) == 0)

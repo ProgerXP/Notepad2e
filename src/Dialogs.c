@@ -375,7 +375,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             if (GetDlgItemText(hwnd, IDC_COMMANDLINE, arg1, MAX_PATH))
             {
               BOOL bQuickExit = FALSE;
-              lstrcpy(_n2e_last_run, arg1);
+			  n2e_SetLastRun(arg1);
               ExpandEnvironmentStringsEx(arg1, COUNTOF(arg1));
               ExtractFirstArgument(arg1, arg1, arg2);
               if (lstrcmpi(arg1, L"notepad2") == 0 ||
@@ -438,12 +438,8 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 //
 void RunDlg(HWND hwnd, LPCWSTR lpstrDefault)
 {
-  LPWSTR def = _n2e_last_run;
-  if (lstrlen(def) == 0)
-    def = (LPWSTR)lpstrDefault;
-
   ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_RUN),
-                       hwnd, RunDlgProc, (LPARAM)def);
+                       hwnd, RunDlgProc, (LPARAM)n2e_GetLastRun(lpstrDefault));
 }
 
 
@@ -1068,6 +1064,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         bSaveRecentFiles = (IsDlgButtonChecked(hwnd, IDC_SAVEMRU)) ? 1 : 0;
 
         ResizeDlg_Destroy(hwnd, &cxFileMRUDlg, &cyFileMRUDlg);
+        //[2e]: Save on exit and History #101
         SaveSettings(FALSE);
       }
       return FALSE;
@@ -1758,8 +1755,8 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         DeleteObject(hbmp);
         SendDlgItemMessage(hwnd, IDC_ENCODINGLIST, CBEM_SETIMAGELIST, 0, (LPARAM)himl);
         SendDlgItemMessage(hwnd, IDC_ENCODINGLIST, CB_SETEXTENDEDUI, TRUE, 0);
-
         Encoding_AddToComboboxEx(GetDlgItem(hwnd, IDC_ENCODINGLIST), pdd->idEncoding, 0);
+
         if (bSkipUnicodeDetection)
           CheckDlgButton(hwnd, IDC_NOUNICODEDETECTION, BST_CHECKED);
 

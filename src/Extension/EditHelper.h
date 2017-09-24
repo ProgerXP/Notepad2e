@@ -54,7 +54,7 @@ extern WCHAR	n2e_last_html_end_tag[0xff];
 void n2e_StripHTMLTags(HWND hwnd);
 void n2e_JumpToOffset(HWND hwnd, int iNewPos);
 void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove);
-BOOL n2e_IsSelectionModeValid(HWND hwnd);
+BOOL n2e_ShowPromptIfSelectionModeIsRectangle(HWND hwnd);
 void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next);
 int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf);
 BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos);

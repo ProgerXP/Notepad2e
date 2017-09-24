@@ -118,6 +118,21 @@ VOID n2e_Init(HWND hWnd)
   n2e_SelectionInit();
 }
 
+LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
+{
+  LPCWSTR def = _n2e_last_run;
+  if (lstrlen(def) == 0)
+  {
+	  def = lpstrDefault;
+  }
+  return def;
+}
+
+VOID n2e_SetLastRun(LPCWSTR arg)
+{
+  lstrcpyn(_n2e_last_run, arg, _countof(_n2e_last_run) - 1);
+}
+
 VOID n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
@@ -370,7 +385,7 @@ VOID n2e_Reload_Settings()
   EnumWindows(n2e_EnumProc, (LPARAM)g_hwnd);
 }
 
-BOOL n2e_Is_Empty(LPCWSTR txt)
+BOOL n2e_IsTextEmpty(LPCWSTR txt)
 {
   int t = lstrlen(txt);
   while (--t >= 0)

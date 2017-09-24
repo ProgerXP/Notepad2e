@@ -96,6 +96,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
 
 WCHAR      szIniFile[MAX_PATH] = L"";
 WCHAR      szIniFile2[MAX_PATH] = L"";
+// [2e]: Save on exit and History #101
 enum SAVE_SETTINGS_MODE nSaveSettingsMode = SSM_ALL;
 BOOL      bSaveRecentFiles;
 BOOL      bSaveFindReplace;
@@ -422,12 +423,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
+  // [2e]: Ctrl+H: Replace input behaviour #121
   const HACCEL hAccFindReplaceInline = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE_INLINE));
 
   while (GetMessage(&msg, NULL, 0, 0))
   {
     if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
     {
+      // [2e]: Ctrl+H: Replace input behaviour #121
       if (n2e_IsSubclassedEditInCombo(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
         continue;
       if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
@@ -441,6 +444,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     }
   }
 
+  // [2e]: separate exit-handler function
   ExitInstance(hInstance);
 
   if (hModUxTheme)
@@ -793,12 +797,14 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 
 }
 
+// [2e]: separate exit-handler function
 void ExitInstance(HINSTANCE hInstance)
 {
   n2e_ExitInstance();
   Scintilla_ReleaseResources();
   UnregisterClass(wchWndClass, hInstance);
 }
+// [/2e]
 
 //=============================================================================
 //
@@ -829,21 +835,25 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       return DefWindowProc(hwnd, umsg, wParam, lParam);
 
 
+    // [2e]: Edit highlighted word #18
     case WM_ACTIVATEAPP:
       {
         if (!wParam)
           n2e_SelectionEditStop(N2E_SE_APPLY);
       }
       break;
+    // [/2e]
 
 
     case WM_KEYDOWN:
       break;
 
 
+    // [2e]: Edit highlighted word #18
     case WM_MOUSEACTIVATE:
       n2e_SelectionEditStop(N2E_SE_APPLY);
       return DefWindowProc(hwnd, umsg, wParam, lParam);
+    // [/2e]
 
 
     case WM_CREATE:
@@ -918,9 +928,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Language indication #86
     case WM_INPUTLANGCHANGE:
       n2e_UpdateWindowTitle(hwnd);
       break;
+    // [/2e]
 
 
     // update Scintilla colors
@@ -1281,13 +1293,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       }
       break;
 
-
+     
+    // [2e]: Replace settings in all instances #5
     case HWM_RELOAD_SETTINGS: {
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
         _MsgCreate();
       }
       break;
+    // [/2e]
 
 
     default:
@@ -1304,6 +1318,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   return (0);
 }
 
+// [2e] Edit initialization subroutine
 void _MsgCreate()
 {
   // Tabs
@@ -1406,6 +1421,7 @@ void _MsgCreate()
   SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
   SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
+// [/2e]
 
 //=============================================================================
 //
@@ -1810,10 +1826,12 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   aWidth[5] = -1;
 
   SendMessage(hwndStatus, SB_SETPARTS, COUNTOF(aWidth), (LPARAM)aWidth);
+  // [2e]: Progress indication for Grep/Ungrep
   if (bShowProgressBar && hwndStatusProgressBar)
   {
     InlineProgressBarCtrl_Resize(hwndStatusProgressBar);
   }
+  // [/2e]
 }
 
 //=============================================================================
@@ -1870,6 +1888,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_CUT, i);
   EnableCmd(hmenu, IDM_EDIT_COPY, i);
   EnableCmd(hmenu, IDM_EDIT_COPYALL, i3);
+  // [2e]: "Copy Add (Ctrl+E)" not working when clipboard is empty
   EnableCmd(hmenu, IDM_EDIT_COPYADD, i3);
   EnableCmd(hmenu, IDM_EDIT_PASTE, i2);
   EnableCmd(hmenu, IDM_EDIT_SWAP, i || i2);
@@ -1956,6 +1975,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_SAVEBEFORERUNNINGTOOLS, bSaveBeforeRunningTools);
   CheckCmd(hmenu, IDM_VIEW_CHANGENOTIFY, iFileWatchingMode);
   CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, n2e_GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
+  // [2e]: Language indication #86
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, n2e_GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
   if (iEscFunction == 1)
     i = IDM_VIEW_ESCMINIMIZE;
@@ -1966,28 +1986,37 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
 
   i = lstrlen(szIniFile);
+  // [2e]: Save on exit and History #101
   CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, (nSaveSettingsMode == SSM_ALL) && i);
   CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, (nSaveSettingsMode == SSM_RECENT) && i);
   CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, (nSaveSettingsMode == SSM_NO) && i);
+  // [/2e]
 
   EnableCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   EnableCmd(hmenu, IDM_VIEW_STICKYWINPOS, i);
   EnableCmd(hmenu, IDM_VIEW_SINGLEFILEINSTANCE, i);
   EnableCmd(hmenu, IDM_VIEW_NOSAVERECENT, i);
   EnableCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, i);
+  // [2e]: Save on exit and History #101
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, i);
+  // [/2e]
 
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
+  // [2e]: Ctrl+Wheel scroll feature
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, bCtrlWheelScroll);
+  // [2e]: Implement Notepad's right click behavior #54
   CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
+  // [2e]: MathEval INI setting #88
   CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == EEM_DISABLED);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == EEM_SELECTION);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == EEM_LINE);
+  // [2e]: ctrl + arrow behavior toggle #89
   CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == 0);
   CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == 1);
+  // [/2e]
 }
 
 
@@ -2072,9 +2101,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: File->RenameTo menu item
     case ID_FILE_RENAMETO:
       FileSave(TRUE, FALSE, TRUE, FALSE, TRUE);
       break;
+    // [/2e]
 
 
     case IDM_FILE_SAVECOPY:
@@ -2297,6 +2328,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: File context menu #12
     case ID_FILE_INVOKESHELLMENU: {
         N2E_Trace("Modified %d", bModified);
         if (lstrlen(szCurFile) > 0 &&
@@ -2307,6 +2339,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
+    // [/2e]
 
 
     case IDM_FILE_OPENWITH:
@@ -2437,17 +2470,20 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           if (FileMRUDlg(hwnd, tchFile))
           {
             FileLoad(TRUE, FALSE, FALSE, FALSE, tchFile);
+            // [2e]: file history not updated when reloading recent files
             MRU_AddFile(pFileMRU, tchFile, flagRelativeFileMRU, flagPortableMyDocs);
             if (flagUseSystemMRU == 2)
             {
               SHAddToRecentDocs(SHARD_PATHW, tchFile);
             }
+            // [/2e]
           }
         }
       }
       break;
 
 
+    // [2e]: "Recall previous" command
     case ID_FILE_OPENPREVIOUS:
       if (MRU_Enum(pFileMRU, 0, NULL, 0) > 0)
       {
@@ -2461,6 +2497,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
+      // [/2e]
 
 
     case IDM_FILE_EXIT:
@@ -2473,13 +2510,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_ENCODING_UNICODEREV:
     case IDM_ENCODING_UTF8:
     case IDM_ENCODING_UTF8SIGN:
-    case IDM_ENCODING_SELECT: {
+    case IDM_ENCODING_SELECT:
+      {
         int iNewEncoding = iEncoding;
         int pos, anch, fw;
+        // [2e] Retain caret position on File > Encoding #7
         pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         anch = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
         fw = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
         fw = SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, fw, 0);
+        // [/2e]
         if (LOWORD(wParam) == IDM_ENCODING_SELECT && !SelectEncodingDlg(hwnd, &iNewEncoding))
           break;
         else
@@ -2527,9 +2567,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                          iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                          IDS_READONLY, bReadOnly, szTitleExcerpt);
         }
+        // [2e] Retain caret position on File > Encoding #7
         SendMessage(hwndEdit, SCI_SETANCHOR, anch, 0);
-        SendMessage(hwndEdit, SCI_SETCURRENTPOS, pos, 0);
+        SendMessage(hwndEdit, SCI_SETCURRENTPOS, pos, 0);        
         SendMessage(hwndEdit, SCI_SETFIRSTVISIBLELINE, SendMessage(hwndEdit, SCI_VISIBLEFROMDOCLINE, fw, 0), 0);
+        // [/2e]
       }
       break;
 
@@ -4040,10 +4082,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       n2e_SelectionEditStart(FALSE);
       return 1;
 
-
+    // [2e]: Replace settings in all instances #5
     case ID_SETTINGS_RELOADFROMDISK:
       PostMessage(hwnd, HWM_RELOAD_SETTINGS, 0, 0);
       break;
+    // [/2e]
 
 
     case ID_SETTINGS_REPLACESETTINGSINALLINSTANCES: {
@@ -4053,18 +4096,23 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Ctrl+Wheel scroll feature
     case ID_SETTINGS_CTRL_WHEEL_SCROLL:
       bCtrlWheelScroll = (bCtrlWheelScroll) ? FALSE : TRUE;
       n2e_SetWheelScroll(bCtrlWheelScroll);
       break;
+    // [/2e]
 
 
+    // [2e]: Implement Notepad's right click behavior #54
     case ID_SETTINGS_MOVE_CARET_ON_RCLICK:
       bMoveCaretOnRightClick = !bMoveCaretOnRightClick;
       SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
       break;
+    // [/2e]
 
 
+    // [2e]: MathEval INI setting #88
     case ID_SETTINGS_EVAL_DISABLED:
       iEvaluateMathExpression = EEM_DISABLED;
       UpdateStatusbar();
@@ -4081,12 +4129,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       iEvaluateMathExpression = EEM_LINE;
       UpdateStatusbar();
       break;
+    // [/2e]
 
 
+    // [2e] ctrl + arrow behavior toggle #89
     case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
       iWordNavigationMode = 0;
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
+    // [/2e]
 
 
     case ID_SETTINGS_WORD_NAVIGATION_ACCELERATED:

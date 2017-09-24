@@ -69,14 +69,14 @@ void n2e_StripHTMLTags(HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-BOOL n2e_IsSelectionModeValid(HWND hwnd)
+BOOL n2e_ShowPromptIfSelectionModeIsRectangle(HWND hwnd)
 {
   if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
   {
     MsgBox(MBINFO, IDS_SELRECT);
-    return FALSE;
+    return TRUE;
   }
-  return TRUE;
+  return FALSE;
 }
 
 extern BOOL bAutoIndent;
@@ -713,7 +713,7 @@ void n2e_ResetFindIcon()
 
 void n2e_EditString2Hex(HWND hwnd)
 {
-  if (!n2e_IsSelectionModeValid(hwnd))
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
     return;
   }
@@ -722,7 +722,7 @@ void n2e_EditString2Hex(HWND hwnd)
 
 void n2e_EditHex2String(HWND hwnd)
 {
-  if (!n2e_IsSelectionModeValid(hwnd))
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
     return;
   }
