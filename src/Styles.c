@@ -1974,6 +1974,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.sql.backticks.identifier", (LPARAM) "1");
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.sql.numbersign.comment", (LPARAM) "1");
   }
+  // [2e]: #2, #10 ???
   else if (pLexNew->iLexer == SCLEX_NSIS)
   {
     SciCall_SetProperty("nsis.ignorecase", "1");
@@ -2000,6 +2001,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SciCall_SetProperty("fold.html", "1");
   SciCall_SetProperty("fold.preprocessor", "1");
   SciCall_SetProperty("fold.cpp.comment.explicit", "0");
+  // [/2e]
 
   // Add KeyWord Lists
   for (i = 0; i < 9; i++)
@@ -2232,6 +2234,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_SETEXTRADESCENT, 0, 0);
   }
 
+  // [2e]: #2, #10 ???
   // set folding style; braces are for scoping only
   static const int iMarkerIDs[] = {
       SC_MARKNUM_FOLDEROPEN,
@@ -2260,6 +2263,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SciCall_MarkerSetBack(iMarkerIDs[i], clrFore);
     SciCall_MarkerSetFore(iMarkerIDs[i], clrBack);
   }
+  // [/2e]
 
   if (SendMessage(hwnd, SCI_GETINDENTATIONGUIDES, 0, 0) != SC_IV_NONE)
     Style_SetIndentGuides(hwnd, TRUE);

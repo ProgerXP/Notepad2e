@@ -5,38 +5,26 @@
 #define IDR_RT_MANIFEST                 1
 #define ID_FILE_RENAMETO                2
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
-#define ID_UNGREP                       3
-#define ID_FILE_OPENPREVIOUS            4
-#define ID_EDIT_UNDO                    5
-#define ID_GREP                         5
-#define ID_EDIT_UNDO_REDO               6
-#define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 7
-#define ID_FILE_INVOKESHELLMENU         8
-#define ID_SETTINGS_RELOADFROMDISK      10
-#define ID_SETTINGS_MOVE_CARET_ON_RCLICK 11
-#define ID_ACCELERATOR12                12
+#define ID_GREP                         4
+#define ID_UNGREP                       5
+#define ID_FILE_OPENPREVIOUS            6
+#define ID_EDIT_UNDO                    7
+#define ID_EDIT_UNDO_REDO               8
+#define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
+#define ID_FILE_INVOKESHELLMENU         10
+#define ID_SETTINGS_RELOADFROMDISK      11
+#define ID_SETTINGS_MOVE_CARET_ON_RCLICK 12
 #define ID_EDIT_EDITSELECTION           13
 #define ID_EDIT_EDITSELECTION_LINE      14
-#define ID_ACCELERATOR16                16
-#define ID_FILE_O                       18
-#define ID_FILE_OPENPREIOUS             19
-#define ID_FILE_OPENNEXT                20
 #define ID_FILE_OPEN__PREVIOUS          22
 #define ID_FILE_OPEN__NEXT              23
 #define ID_EDIT_FINDNEXTWORD            24
 #define ID_EDIT_FINDPREVIOUSWORD        25
 #define IDM_EDIT_STRIP_HTML_TAGS        28
-#define ID_INSERT_GT                    31
-#define ID_INSERT_LT                    32
-#define ID_INSERT_AMP                   33
-#define ID_INSERT_QUOT                  34
-#define ID_INSERT_APOS                  35
-#define ID_BLOCK_WRAPSELECTION          42
 #define ID_BLOCK_UNWRAPSELECTION        43
-#define IDACC_BACK                      45
+#define IDR_ACCFINDREPLACE_INLINE       46
 #define ID_SPECIAL_ESCAPEHTML           47
 #define ID_BLOCK_UNWRAPQUOTES           49
-#define QUOTE                           50
 #define ID_SETTINGS_EVAL_DISABLED       51
 #define ID_SETTINGS_EVAL_SELECTION      52
 #define ID_SETTINGS_EVAL_LINE           53
@@ -73,7 +61,6 @@
 #define IDC_RESIZEGRIP4                 101
 #define IDC_NOUNICODEDETECTION          101
 #define IDC_COPYRIGHT                   101
-#define IDR_ACCFINDREPLACE_INLINE       102
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102
@@ -87,7 +74,6 @@
 #define IDI_STYLES                      102
 #define IDC_ASCIIASUTF8                 102
 #define IDC_WEBPAGE                     102
-#define IDC_COLNUM2                     102
 #define IDC_POSNUM                      102
 #define IDD_DEFENCODING                 103
 #define IDC_FINDWORD                    103
@@ -161,6 +147,7 @@
 #define IDACC_SAVEFIND                  207
 #define IDACC_SELTONEXT                 208
 #define IDACC_SELTOPREV                 209
+#define IDACC_BACK                      210
 #define IDS_APPTITLE                    10000
 #define IDS_APPTITLE_ELEVATED           10001
 #define IDS_APPTITLE_PASTEBOARD         10002
@@ -343,6 +330,7 @@
 #define IDM_VIEW_SHOWEOLS               40408
 #define IDM_VIEW_WORDWRAPSYMBOLS        40409
 #define IDM_VIEW_MATCHBRACES            40410
+#define IDM_VIEW_HILITECURRENTLINE      40411
 #define IDM_VIEW_LINENUMBERS            40412
 #define IDM_VIEW_MARGIN                 40413
 #define IDM_VIEW_ZOOMIN                 40414
@@ -374,6 +362,7 @@
 #define IDM_VIEW_TOOLBAR                40440
 #define IDM_VIEW_CUSTOMIZETB            40441
 #define IDM_VIEW_STATUSBAR              40442
+#define IDM_VIEW_SAVESETTINGS           40443
 #define IDM_VIEW_SAVESETTINGSNOW        40444
 #define IDM_VIEW_HIGHLIGHTCURRENTLINE   40445
 #define IDM_VIEW_HIGHLIGHTCURRENTWORD   40446
@@ -463,7 +452,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         51
+#define _APS_NEXT_COMMAND_VALUE         56
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

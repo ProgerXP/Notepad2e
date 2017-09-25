@@ -22,6 +22,7 @@
 
 
 //==== Main Window ============================================================
+// [2e]: application name fix
 #define WC_NOTEPAD2 L"Notepad 2e"
 
 
@@ -98,6 +99,7 @@ typedef struct np2params {
 //==== Function Declarations ==================================================
 BOOL InitApplication(HINSTANCE);
 HWND InitInstance(HINSTANCE, LPSTR, int);
+// [2e]: separate exit-handler function
 void ExitInstance(HINSTANCE);
 BOOL ActivatePrevInst();
 BOOL RelaunchMultiInst();
@@ -109,15 +111,8 @@ void InstallFileWatching(LPCWSTR);
 void CALLBACK WatchTimerProc(HWND, UINT, UINT_PTR, DWORD);
 void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
-typedef enum
-{
-  SSM_NO          = 0x0,
-  SSM_ALL         = 0x1,
-  SSM_RECENT      = 0x2
-} SAVE_SETTINGS_MODE;
-
 void LoadSettings();
-void SaveSettings(BOOL bSaveSettingsNow);
+void SaveSettings(BOOL);
 void ParseCommandLine();
 void LoadFlags();
 int  CheckIniFile(LPWSTR, LPCWSTR);

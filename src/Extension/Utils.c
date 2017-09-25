@@ -113,7 +113,7 @@ VOID n2e_Init(HWND hWnd)
     _n2e_log = fopen("n2e_log.log", "w");
   }
   n2e_SetWheelScroll(bCtrlWheelScroll);
-  *_n2e_last_run = 0;
+  n2e_ResetLastRun();
 
   n2e_SelectionInit();
 }
@@ -131,6 +131,11 @@ LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
 VOID n2e_SetLastRun(LPCWSTR arg)
 {
   lstrcpyn(_n2e_last_run, arg, _countof(_n2e_last_run) - 1);
+}
+
+VOID n2e_ResetLastRun()
+{
+  *_n2e_last_run = 0;
 }
 
 VOID n2e_LoadINI()
@@ -383,6 +388,13 @@ BOOL CALLBACK n2e_EnumProc(
 VOID n2e_Reload_Settings()
 {
   EnumWindows(n2e_EnumProc, (LPARAM)g_hwnd);
+}
+
+extern enum SAVE_SETTINGS_MODE nSaveSettingsMode;
+
+BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired)
+{
+  return !bCheckSaveSettingsMode || (nSaveSettingsMode == modeRequired);
 }
 
 BOOL n2e_IsTextEmpty(LPCWSTR txt)

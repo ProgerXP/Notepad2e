@@ -11,6 +11,13 @@ enum CSS_PROP
   css_prop_hss = 1 << 2,
 };
 
+typedef enum
+{
+  SSM_NO = 0x0,
+  SSM_ALL = 0x1,
+  SSM_RECENT = 0x2
+} SAVE_SETTINGS_MODE;
+
 extern UINT	_n2e_css_property;
 
 typedef enum
@@ -69,10 +76,12 @@ void* n2e_Realloc(void* ptr, size_t len);
 VOID n2e_Init(HWND hWnd);
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 VOID n2e_SetLastRun(LPCWSTR arg);
+VOID n2e_ResetLastRun();
 VOID n2e_LoadINI();
 VOID n2e_SaveINI();
 VOID n2e_Release();
 VOID n2e_Reload_Settings();
+BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_OpenMRULast(LPWSTR fn);
 VOID n2e_GetLastDir(LPTSTR out);
