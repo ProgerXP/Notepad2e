@@ -3,6 +3,11 @@
 
 extern HANDLE g_hScintilla;
 extern WCHAR szCurFile[MAX_PATH + 40];
+extern UINT uidsAppTitle;
+extern BOOL fIsElevated;
+extern BOOL bModified;
+extern int iOriginalEncoding;
+extern BOOL bReadOnly;
 
 enum CSS_PROP
 {
@@ -44,7 +49,7 @@ typedef enum
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE  L"WordNavigationMode"
 
-#define HWM_RELOAD_SETTINGS	(WM_USER + 0xee)
+#define WM_N2E_RELOAD_SETTINGS	(WM_USER + 0xFF)
 
 VOID N2E_Trace(const char *fmt, ...);
 VOID N2E_WTrace(const char *fmt, LPCWSTR word);
@@ -98,12 +103,8 @@ BOOL n2e_IsKeyDown(int key);
 
 #define _N2E_COMPARE_FILES( F1 , F2 )  (n2e_CompareFiles(F1,F2))
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
-#define N2E_IS_SPACE(CH) n2e_IsSpace(CH)
 
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);
-void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
-                           LPCWSTR lpszFile, int iFormat, BOOL bModified,
-                           UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt);
 void n2e_UpdateWindowTitle(HWND hwnd);
 int n2e_GetCurrentShowTitleMenuID();
 int n2e_GetCurrentLanguageIndicatorMenuID();

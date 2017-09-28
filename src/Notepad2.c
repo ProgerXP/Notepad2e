@@ -764,9 +764,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
     bLastCopyFromMe = TRUE;
     hwndNextCBChain = SetClipboardViewer(hwndMain);
     uidsAppTitle = IDS_APPTITLE_PASTEBOARD;
-    SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                   iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                   IDS_READONLY, bReadOnly, szTitleExcerpt);
+    n2e_UpdateWindowTitle(hwndMain);
     bLastCopyFromMe = FALSE;
 
     dwLastCopyTime = 0;
@@ -1063,9 +1061,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
               if (params->flagTitleExcerpt)
               {
                 lstrcpyn(szTitleExcerpt, StrEnd(&params->wchData) + 1, COUNTOF(szTitleExcerpt));
-                SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                               iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                               IDS_READONLY, bReadOnly, szTitleExcerpt);
+                n2e_UpdateWindowTitle(hwnd);
               }
             }
             // reset
@@ -1295,10 +1291,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
      
     // [2e]: Replace settings in all instances #5
-    case HWM_RELOAD_SETTINGS: {
+    case WM_N2E_RELOAD_SETTINGS: {
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
         _MsgCreate();
+        n2e_UpdateWindowTitle(hwnd);
       }
       break;
     // [/2e]
@@ -2133,9 +2130,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
           bReadOnly = (dwFileAttributes & FILE_ATTRIBUTE_READONLY);
 
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                       iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                       IDS_READONLY, bReadOnly, szTitleExcerpt);
+        n2e_UpdateWindowTitle(hwnd);
       }
       break;
 
@@ -2563,9 +2558,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           UpdateToolbar();
           UpdateStatusbar();
 
-          SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                         iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                         IDS_READONLY, bReadOnly, szTitleExcerpt);
+          n2e_UpdateWindowTitle(hwnd);
         }
         // [2e] Retain caret position on File > Encoding #7
         SendMessage(hwndEdit, SCI_SETANCHOR, anch, 0);
@@ -2632,9 +2625,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         EditFixPositions(hwndEdit);
         UpdateToolbar();
         UpdateStatusbar();
-        SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                       iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                       IDS_READONLY, bReadOnly, szTitleExcerpt);
+        n2e_UpdateWindowTitle(hwnd);
       }
       break;
 
@@ -3947,35 +3938,27 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SHOWFILENAMEONLY:
       iPathNameFormat = 0;
       lstrcpy(szTitleExcerpt, L"");
-      SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWFILENAMEFIRST:
       iPathNameFormat = 1;
       lstrcpy(szTitleExcerpt, L"");
-      SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWFULLPATH:
       iPathNameFormat = 2;
       lstrcpy(szTitleExcerpt, L"");
-      SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWEXCERPT:
       EditGetExcerpt(hwndEdit, szTitleExcerpt, COUNTOF(szTitleExcerpt));
-      SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
@@ -4112,7 +4095,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Replace settings in all instances #5
     case ID_SETTINGS_RELOADFROMDISK:
-      PostMessage(hwnd, HWM_RELOAD_SETTINGS, 0, 0);
+      PostMessage(hwnd, WM_N2E_RELOAD_SETTINGS, 0, 0);
       break;
     // [/2e]
 
@@ -4617,9 +4600,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case CMD_TOGGLETITLE:
       EditGetExcerpt(hwndEdit, szTitleExcerpt, COUNTOF(szTitleExcerpt));
-      SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwnd);
       break;
 
 
@@ -5134,16 +5115,12 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         case SCN_SAVEPOINTREACHED:
           bModified = FALSE;
-          SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                         iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                         IDS_READONLY, bReadOnly, szTitleExcerpt);
+          n2e_UpdateWindowTitle(hwnd);
           break;
 
         case SCN_SAVEPOINTLEFT:
           bModified = TRUE;
-          SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                         iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                         IDS_READONLY, bReadOnly, szTitleExcerpt);
+          n2e_UpdateWindowTitle(hwnd);
           break;
 
         // [/2e]: "Scroll margin"-feature
@@ -6705,9 +6682,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     iOriginalEncoding = iDefaultEncoding;
     SendMessage(hwndEdit, SCI_SETCODEPAGE, (iDefaultEncoding == CPI_DEFAULT) ? iDefaultCodePage : SC_CP_UTF8, 0);
     EditSetNewText(hwndEdit, "", 0);
-    SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                   iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                   IDS_READONLY, bReadOnly, szTitleExcerpt);
+    n2e_UpdateWindowTitle(hwndMain);
 
     // Terminate file watching
     if (bResetFileWatching)
@@ -6816,10 +6791,8 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       if (flagUseSystemMRU == 2)
         SHAddToRecentDocs(SHARD_PATHW, szFileName);
     }
-    SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szFileName,
-                   iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                   IDS_READONLY, bReadOnly, szTitleExcerpt);
-
+    n2e_UpdateWindowTitle(hwndMain);
+    
     // Install watching of the current file
     if (!bReload && bResetFileWatching)
       iFileWatchingMode = 0;
@@ -6919,9 +6892,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
       bReadOnly = (dwFileAttributes & FILE_ATTRIBUTE_READONLY);
     if (bReadOnly)
     {
-      SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwndMain);
       if (MsgBox(MBYESNOWARN, IDS_READONLY_SAVE, szCurFile) == IDYES)
         bSaveAs = TRUE;
       else
@@ -6990,9 +6961,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
       MRU_AddFile(pFileMRU, szCurFile, flagRelativeFileMRU, flagPortableMyDocs);
       if (flagUseSystemMRU == 2)
         SHAddToRecentDocs(SHARD_PATHW, szCurFile);
-      SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                     iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                     IDS_READONLY, bReadOnly, szTitleExcerpt);
+      n2e_UpdateWindowTitle(hwndMain);
       // Install watching of the current file
       if (bSaveAs && bResetFileWatching)
         iFileWatchingMode = 0;
@@ -7005,9 +6974,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
     if (lstrlen(szCurFile) != 0)
       lstrcpy(tchFile, szCurFile);
 
-    SetWindowTitle(hwndMain, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
-                   iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
-                   IDS_READONLY, bReadOnly, szTitleExcerpt);
+    n2e_UpdateWindowTitle(hwndMain);
 
     MsgBox(MBWARN, IDS_ERR_SAVEFILE, tchFile);
   }

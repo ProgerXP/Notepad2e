@@ -885,7 +885,7 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
             while (cou >= 0)
             {
               WCHAR ch = buf[cou];
-              if (N2E_IS_SPACE(ch))
+              if (iswspace(ch))
               {
                 curr = 0;
               }

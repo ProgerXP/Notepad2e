@@ -101,10 +101,6 @@ VOID CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
   KillTimer(NULL, idEvent);
 }
 
-VOID CALLBACK n2e_SelEditTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
-{
-}
-
 VOID n2e_Init(HWND hWnd)
 {
   g_hwnd = hWnd;
@@ -369,18 +365,16 @@ VOID n2e_SetWheelScroll(BOOL on)
   }
 }
 
-BOOL CALLBACK n2e_EnumProc(
-  HWND hwnd,
-  LPARAM lParam
-)
+extern WCHAR wchWndClass[16];
+
+BOOL CALLBACK n2e_EnumProc(HWND hwnd, LPARAM lParam)
 {
-  WCHAR title[0xff + 1];
-  GetWindowText(hwnd, title, 0xff);
-  if (wcsstr(title, WC_NOTEPAD2)
-      && g_hwnd != hwnd
-      )
+  WCHAR szClassName[64];
+  if ((g_hwnd != hwnd)
+      && GetClassName(hwnd, szClassName, COUNTOF(szClassName))
+      && (wcsstr(szClassName, wchWndClass) != 0))
   {
-    PostMessage(hwnd, HWM_RELOAD_SETTINGS, 0, 0);
+    PostMessage(hwnd, WM_N2E_RELOAD_SETTINGS, 0, 0);
   }
   return TRUE;
 }
@@ -797,12 +791,7 @@ void n2e_InplaceRev(WCHAR * s)
 
 BOOL n2e_IsWordChar(WCHAR ch)
 {
-  return	IsCharAlphaNumericW(ch) || NULL != StrChr(L"_", ch);
-}
-
-BOOL n2e_IsSpace(WCHAR ch)
-{
-  return iswspace(ch);
+  return IsCharAlphaNumericW(ch) || (ch == L'_');
 }
 
 BOOL n2e_IsKeyDown(int key)
@@ -833,35 +822,11 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
   return TRUE;
 }
 
-// recent window title params
-UINT _uIDAppName;
-BOOL _bIsElevated;
-UINT _uIDUntitled;
-WCHAR _lpszFile[MAX_PATH * 2];
-int _iFormat;
-BOOL _bModified;
-UINT _uIDReadOnly;
-BOOL _bReadOnly;
-WCHAR _lpszExcerpt[MAX_PATH * 2];
-
-void n2e_SaveWindowTitleParams(UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
-                           LPCWSTR lpszFile, int iFormat, BOOL bModified,
-                           UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
-{
-  _uIDAppName = uIDAppName;
-  _bIsElevated = bIsElevated;
-  _uIDUntitled = uIDUntitled;
-  StrCpyW(_lpszFile, lpszFile);
-  _iFormat = iFormat;
-  _bModified = bModified;
-  _uIDReadOnly = uIDReadOnly;
-  _bReadOnly = bReadOnly;
-  StrCpyW(_lpszExcerpt, lpszExcerpt);
-}
-
 void n2e_UpdateWindowTitle(HWND hwnd)
 {
-  SetWindowTitle(hwnd, _uIDAppName, _bIsElevated, _uIDUntitled, _lpszFile, _iFormat, _bModified, _uIDReadOnly, _bReadOnly, _lpszExcerpt);
+  SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
+                 IDS_READONLY, bReadOnly, szTitleExcerpt);
 }
 
 int n2e_GetCurrentShowTitleMenuID()
