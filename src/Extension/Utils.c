@@ -14,7 +14,7 @@
 
 HANDLE g_hScintilla = NULL;
 
-#define N2E_WHEEL_TIMER_ID	0xfefe
+#define N2E_WHEEL_TIMER_ID	0xFF
 #define N2E_SEL_EDIT_TIMER_ID	(N2E_WHEEL_TIMER_ID + 1)
 UINT_PTR	_n2e_sel_edit_timer_id = N2E_SEL_EDIT_TIMER_ID;
 UINT	_n2e_wheel_timer_to = 100;
