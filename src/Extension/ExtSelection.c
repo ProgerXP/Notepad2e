@@ -4,6 +4,7 @@
 #include "scintilla.h"
 #include "ExtSelection.h"
 #include "Helpers.h"
+#include "Trace.h"
 #include "Utils.h"
 
 /************************************************************************/

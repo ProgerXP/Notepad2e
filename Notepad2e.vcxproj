@@ -329,6 +329,7 @@
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\StrToHex.c" />
     <ClCompile Include="src\Extension\tinyexpr\tinyexpr.c" />
+    <ClCompile Include="src\Extension\Trace.c" />
     <ClCompile Include="src\Extension\Utils.c" />
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\Notepad2.c" />
@@ -409,6 +410,7 @@
     <ClInclude Include="src\Extension\stdafx.h" />
     <ClInclude Include="src\Extension\StrToHex.h" />
     <ClInclude Include="src\Extension\tinyexpr\tinyexpr.h" />
+    <ClInclude Include="src\Extension\Trace.h" />
     <ClInclude Include="src\Extension\Utils.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\Notepad2.h" />

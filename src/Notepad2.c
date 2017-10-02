@@ -2325,7 +2325,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: File context menu #12
     case ID_FILE_INVOKESHELLMENU: {
-        N2E_Trace("Modified %d", bModified);
         if (lstrlen(szCurFile) > 0 &&
             PathFileExists(szCurFile)
             )

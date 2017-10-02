@@ -9,6 +9,7 @@
 #include "Edit.h"
 #include "EditHelper.h"
 #include "SciCall.h"
+#include "Trace.h"
 #include "InlineProgressBarCtrl.h"
 #include "MainWndHelper.h"
 
@@ -20,7 +21,6 @@ UINT_PTR	_n2e_sel_edit_timer_id = N2E_SEL_EDIT_TIMER_ID;
 UINT	_n2e_wheel_timer_to = 100;
 UINT	_n2e_css_property = css_prop_less;
 
-FILE	*_n2e_log = 0;
 HWND	g_hwnd = 0;
 
 extern BOOL	bHighlightSelection;
@@ -104,10 +104,7 @@ VOID CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 VOID n2e_Init(HWND hWnd)
 {
   g_hwnd = hWnd;
-  if (IniGetInt(N2E_INI_SECTION, L"DebugLog", 0))
-  {
-    _n2e_log = fopen("n2e_log.log", "w");
-  }
+  n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_ResetLastRun();
 
@@ -175,78 +172,8 @@ VOID n2e_SaveINI()
 VOID n2e_Release()
 {
   n2e_SelectionRelease();
-  if (_n2e_log)
-  {
-    fclose(_n2e_log);
-  }
-  _n2e_log = 0;
+  n2e_FinalizeTrace();
   g_hwnd = 0;
-}
-
-VOID N2E_Trace(const char *fmt, ...)
-{
-  if (_n2e_log)
-  {
-    va_list vl;
-    SYSTEMTIME st;
-    char	buff[0xff + 1];
-    char* ch = 0;
-    GetLocalTime(&st);
-    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    va_start(vl, fmt);
-    vsprintf_s(buff, 0xff, fmt, vl);
-    va_end(vl);
-    ch = buff;
-    while (*ch)
-    {
-      if ('\n' == *ch)
-      {
-        *ch = '¶';
-      }
-      ++ch;
-    }
-    fprintf(_n2e_log, "%s\r\n", buff);
-    fflush(_n2e_log);
-  }
-}
-
-VOID N2E_WTrace(const char *fmt, LPCWSTR word)
-{
-  if (_n2e_log)
-  {
-    int size;
-    char *temp = 0;
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    temp = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word, -1, NULL, 0, NULL, NULL));
-    WideCharToMultiByte(CP_UTF8, 0, word, -1, temp, size, NULL, NULL);
-    fprintf(_n2e_log, fmt, temp);
-    n2e_Free(temp);
-    fprintf(_n2e_log, "\r\n");
-    fflush(_n2e_log);
-  }
-}
-
-VOID N2E_WTrace2(const char *fmt, LPCWSTR word1, LPCWSTR word2)
-{
-  if (_n2e_log)
-  {
-    int size;
-    char *temp, *temp2;
-    SYSTEMTIME st;
-    GetLocalTime(&st);
-    fprintf(_n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
-    temp = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word1, -1, NULL, 0, NULL, NULL));
-    WideCharToMultiByte(CP_UTF8, 0, word1, -1, temp, size, NULL, NULL);
-    temp2 = n2e_Alloc(size = WideCharToMultiByte(CP_UTF8, 0, word2, -1, NULL, 0, NULL, NULL));
-    WideCharToMultiByte(CP_UTF8, 0, word2, -1, temp2, size, NULL, NULL);
-    fprintf(_n2e_log, fmt, temp, temp2);
-    n2e_Free(temp);
-    n2e_Free(temp2);
-    fprintf(_n2e_log, "\r\n");
-    fflush(_n2e_log);
-  }
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)
@@ -284,7 +211,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
           }
         }
         ok = n2e_TestOffsetTail(ec);
-        N2E_Trace("Result is  %d (%d)", *out, ok);
+        N2E_TRACE_PLAIN("Result is  %d (%d)", *out, ok);
         return ok;
       }
       else if (StrChr(L"abcdefABCDEF", temp[0]))
@@ -312,7 +239,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
         }
         *out = wcstol(temp, &ec, 16);
         ok = n2e_TestOffsetTail(ec);
-        N2E_Trace("Result is (hex) %d (ok %d)", *out, ok);
+        N2E_TRACE_PLAIN("Result is (hex) %d (ok %d)", *out, ok);
         return ok;
       }
     }
@@ -337,7 +264,7 @@ VOID n2e_WheelScrollWorker(int lines)
   int anch, sel = 0;
   if (_n2e_wheel_timer)
   {
-    N2E_Trace("wheel timer blocked");
+    N2E_TRACE_PLAIN("wheel timer blocked");
     return;
   }
   _n2e_wheel_timer = TRUE;
@@ -637,9 +564,9 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
   for (i = 0; i < count && i < 2; i++)
   {
     MRU_Enum(pFileMRU, i, tch, COUNTOF(tch));
-    N2E_WTrace("mru '%s'", tch);
+    N2E_WTRACE_PLAIN("mru '%s'", tch);
     PathAbsoluteFromApp(tch, NULL, 0, TRUE);
-    N2E_WTrace("mru full '%s'", tch);
+    N2E_WTRACE_PLAIN("mru full '%s'", tch);
     if (0 == i || open)
     {
       lstrcpy(fn, tch);
@@ -653,10 +580,10 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
       open = TRUE;
     }
   }
-  N2E_WTrace("check for path '%s'", fn);
+  N2E_WTRACE_PLAIN("check for path '%s'", fn);
   if (!PathFileExists(fn))
   {
-    N2E_WTrace("no path '%s'", fn);
+    N2E_WTRACE_PLAIN("no path '%s'", fn);
     if (IDYES == MsgBox(MBYESNO, IDS_ERR_MRUDLG))
     {
       MRU_DeleteFileFromStore(pFileMRU, fn);
@@ -676,7 +603,7 @@ VOID n2e_GetLastDir(LPTSTR out)
   if (count)
   {
     MRU_Enum(pFileMRU, 0, tch, COUNTOF(tch));
-    N2E_WTrace("OFN mru '%s'", tch);
+    N2E_WTRACE_PLAIN("OFN mru '%s'", tch);
     lstrcpy(out, tch);
     PathRemoveFileSpec(out);
     if (PathIsRelative(out))
@@ -687,7 +614,7 @@ VOID n2e_GetLastDir(LPTSTR out)
       PathAppend(tchModule, out);
       PathCanonicalize(out, tchModule);
     }
-    N2E_WTrace("OFN mru final '%s'", out);
+    N2E_WTRACE_PLAIN("OFN mru final '%s'", out);
   }
   else
   {

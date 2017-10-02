@@ -5,7 +5,8 @@
 extern "C"
 {
   extern UINT		_n2e_ctx_menu_type;
-  VOID	N2E_Trace(const char *fmt, ...);
+
+  #include "Trace.h"
   
   LPCONTEXTMENU2	g_IContext2 = NULL;
   LPCONTEXTMENU3	g_IContext3 = NULL;
@@ -129,7 +130,7 @@ extern "C"
     BOOL	bIsWindowsXPorLater =
       ((osvi.dwMajorVersion > 5) ||
        ((osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1)));
-    N2E_Trace("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
+    N2E_TRACE_PLAIN("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
     if (iMenuType > 1) { // only version 2 and 3 supports menu messages
       OldWndProc = (WNDPROC)SetWindowLong((HWND)parentWindow,
                                           GWL_WNDPROC, (DWORD)HookWndProc);

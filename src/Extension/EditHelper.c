@@ -1,20 +1,22 @@
 #include "EditHelper.h"
 #include <cassert>
+#include "Trace.h"
 
 WCHAR	n2e_last_html_tag[0xff] = L"<tag>";
 WCHAR	n2e_last_html_end_tag[0xff] = L"</tag>";
 
 void n2e_StripHTMLTags(HWND hwnd)
 {
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
   struct Sci_TextToFind ttf1, ttf2;
-  int selbeg, selend, res, len;
-
-  //
-  selbeg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  selend = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+  int res, len;
+  int selbeg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  int selend = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
   len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
   SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-  //
   if (0 == selend - selbeg)
   {
     ttf1.chrg.cpMin = selbeg;
@@ -203,12 +205,10 @@ void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 
 VOID	n2e_AdjustOffset(int *pos, BOOL in)
 {
-#ifdef _DEBUG
-  N2E_Trace("UTF8 %d", mEncoding[iEncoding].uFlags & NCP_UTF8);
-  N2E_Trace("8Bit %d", mEncoding[iEncoding].uFlags & NCP_8BIT);
-  N2E_Trace("UNicode %d", mEncoding[iEncoding].uFlags & NCP_UNICODE);
-  N2E_Trace("offset is %d", *pos);
-#endif
+  N2E_TRACE_PLAIN("UTF8 %d", mEncoding[iEncoding].uFlags & NCP_UTF8);
+  N2E_TRACE_PLAIN("8Bit %d", mEncoding[iEncoding].uFlags & NCP_8BIT);
+  N2E_TRACE_PLAIN("UNicode %d", mEncoding[iEncoding].uFlags & NCP_UNICODE);
+  N2E_TRACE_PLAIN("offset is %d", *pos);
 }
 
 void n2e_JumpToOffset(HWND hwnd, int iNewPos)
@@ -644,6 +644,10 @@ OUT_OF_UNWRAP:
 
 void n2e_EscapeHTML(HWND hwnd)
 {
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
   int beg, end, res;
   size_t symb;
   BOOL changed;
@@ -1129,8 +1133,8 @@ WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
       {
         bCopy = TRUE;
       }
-      N2E_WTrace("wchIns %s", wchIns);
-      N2E_WTrace("pwCur %s", pwCur);
+      N2E_WTRACE_PLAIN("wchIns %s", wchIns);
+      N2E_WTRACE_PLAIN("pwCur %s", pwCur);
     }
     else
     {
@@ -1174,7 +1178,7 @@ void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata)
       pdata->pwsz1[len + k + 1] = pdata->pwsz1[len + k];
     }
     pdata->pwsz1[len] = _right_braces[br - _left_braces];
-    N2E_WTrace("pdata->pwsz1 %s", pdata->pwsz1);
+    N2E_WTRACE_PLAIN("pdata->pwsz1 %s", pdata->pwsz1);
   }
   lstrcpy(n2e_last_html_tag, pdata->pwsz1);
   lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
