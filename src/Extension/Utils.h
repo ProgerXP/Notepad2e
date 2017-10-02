@@ -1,29 +1,19 @@
 #pragma once
 #include "stdafx.h"
 
-extern HANDLE g_hScintilla;
-extern WCHAR szCurFile[MAX_PATH + 40];
-extern UINT uidsAppTitle;
-extern BOOL fIsElevated;
-extern BOOL bModified;
-extern int iOriginalEncoding;
-extern BOOL bReadOnly;
-
-enum CSS_PROP
+typedef enum
 {
-  css_prop_sassy = 1 << 0,
-  css_prop_less = 1 << 1,
-  css_prop_hss = 1 << 2,
-};
+  CSS_SASSY = 1 << 0,
+  CSS_LESS = 1 << 1,
+  CSS_HSS = 1 << 2,
+} ECSSSetting;
 
 typedef enum
 {
   SSM_NO = 0x0,
   SSM_ALL = 0x1,
   SSM_RECENT = 0x2
-} SAVE_SETTINGS_MODE;
-
-extern UINT	_n2e_css_property;
+} ESaveSettingsMode;
 
 typedef enum
 {
@@ -39,6 +29,19 @@ typedef enum
   EEM_SELECTION
 } EExpressionEvaluationMode;
 
+typedef enum
+{
+  WNM_STANDARD = 0,
+  WNM_ACCELERATED,
+} EWordNavigationMode;
+
+typedef enum
+{
+  SCP_LEGACY,
+  SCP_THIRD,
+  SCP_HALF
+} EScrollYCaretPolicy;
+
 #define N2E_INI_SECTION L"Notepad2e"
 #define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"
@@ -51,7 +54,8 @@ typedef enum
 
 #define WM_N2E_RELOAD_SETTINGS	(WM_USER + 0xFF)
 #define	N2E_MAX_PATH_N_CMD_LINE	MAX_PATH + 40
-WCHAR	_n2e_last_run[N2E_MAX_PATH_N_CMD_LINE];
+
+extern ECSSSetting	iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 
 void n2e_InitInstance();
@@ -60,7 +64,7 @@ void n2e_ExitInstance();
 void* n2e_Alloc(size_t size);
 void n2e_Free(void* ptr);
 void* n2e_Realloc(void* ptr, size_t len);
-VOID n2e_Init(HWND hWnd);
+VOID n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 VOID n2e_SetLastRun(LPCWSTR arg);
 VOID n2e_ResetLastRun();
@@ -68,7 +72,7 @@ VOID n2e_LoadINI();
 VOID n2e_SaveINI();
 VOID n2e_Release();
 VOID n2e_Reload_Settings();
-BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired);
+BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_OpenMRULast(LPWSTR fn);
 VOID n2e_GetLastDir(LPTSTR out);
@@ -83,7 +87,6 @@ BOOL n2e_IsWordChar(WCHAR ch);
 BOOL n2e_IsSpace(WCHAR ch);
 BOOL n2e_IsKeyDown(int key);
 
-#define _N2E_COMPARE_FILES( F1 , F2 )  (n2e_CompareFiles(F1,F2))
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
 
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);

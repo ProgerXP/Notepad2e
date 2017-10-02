@@ -35,6 +35,7 @@
 #include "resource.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
+#include "Extension/ExtSelection.h"
 #include "Extension/SciCall.h"
 #include "Extension/Utils.h"
 
@@ -4837,14 +4838,14 @@ void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
   int yCaretSlop = 5;
   switch (iScrollYCaretPolicy)
   {
-    case 0:
+    case SCP_LEGACY:
     default:
       // legacy Notepad2 behavior
       break;
-    case 1:
+    case SCP_THIRD:
       yCaretSlop = linesOnScreen / 3;
       break;
-    case 2:
+    case SCP_HALF:
       yCaretSlop = linesOnScreen / 2;
       break;
   }
@@ -6583,9 +6584,9 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
-        SetDlgItemTextW(hwnd, 100, n2e_last_html_tag);
+        SetDlgItemTextW(hwnd, 100, wchLastHTMLTag);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
-        SetDlgItemTextW(hwnd, 101, n2e_last_html_end_tag);
+        SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);
         CenterDlgInParent(hwnd);

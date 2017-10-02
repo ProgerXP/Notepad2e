@@ -1981,15 +1981,15 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   }
   else if (pLexNew->iLexer == SCLEX_CSS)
   {
-    if (_n2e_css_property & css_prop_sassy)
+    if (iCSSSettings & CSS_SASSY)
     {
       SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.css.scss.language", (LPARAM) "1");
     }
-    if (_n2e_css_property & css_prop_less)
+    if (iCSSSettings & CSS_LESS)
     {
       SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.css.less.language", (LPARAM) "1");
     }
-    if (_n2e_css_property & css_prop_hss)
+    if (iCSSSettings & CSS_HSS)
     {
       SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.css.hss.language", (LPARAM) "1");
     }

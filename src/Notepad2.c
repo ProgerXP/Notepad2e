@@ -34,11 +34,14 @@
 #include "styles.h"
 #include "dialogs.h"
 #include "helpers.h"
+#include "resource.h"
 #include "SciCall.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
+#include "Extension/ExtSelection.h"
 #include "Extension/MainWndHelper.h"
 #include "Extension/InlineProgressBarCtrl.h"
+#include "Extension/Utils.h"
 
 
 
@@ -97,7 +100,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
 WCHAR      szIniFile[MAX_PATH] = L"";
 WCHAR      szIniFile2[MAX_PATH] = L"";
 // [2e]: Save on exit and History #101
-enum SAVE_SETTINGS_MODE nSaveSettingsMode = SSM_ALL;
+enum ESaveSettingsMode nSaveSettingsMode = SSM_ALL;
 BOOL      bSaveRecentFiles;
 BOOL      bSaveFindReplace;
 WCHAR      tchLastSaveCopyDir[MAX_PATH] = L"";
@@ -835,9 +838,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Edit highlighted word #18
     case WM_ACTIVATEAPP:
+      if (!wParam)
       {
-        if (!wParam)
-          n2e_SelectionEditStop(N2E_SE_APPLY);
+       n2e_SelectionEditStop(SES_APPLY);
       }
       break;
     // [/2e]
@@ -849,7 +852,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Edit highlighted word #18
     case WM_MOUSEACTIVATE:
-      n2e_SelectionEditStop(N2E_SE_APPLY);
+      n2e_SelectionEditStop(SES_APPLY);
       return DefWindowProc(hwnd, umsg, wParam, lParam);
     // [/2e]
 
@@ -2011,8 +2014,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == EEM_SELECTION);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == EEM_LINE);
   // [2e]: ctrl + arrow behavior toggle #89
-  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == 0);
-  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == 1);
+  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == WNM_STANDARD);
+  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == WNM_ACCELERATED);
   // [/2e]
 }
 
@@ -2636,9 +2639,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_UNDO:
       if (n2e_IsSelectionEditModeOn())
-        n2e_SelectionEditStop(N2E_SE_REJECT);
+      {
+        n2e_SelectionEditStop(SES_REJECT);
+      }
       else
+      {
         SendMessage(hwndEdit, SCI_UNDO, 0, 0);
+      }
       break;
 
 
@@ -2830,7 +2837,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_DUPLICATELINE:
-      n2e_SelectionEditStop(N2E_SE_APPLY);
+      n2e_SelectionEditStop(SES_APPLY);
       SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
       break;
 
@@ -3789,7 +3796,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // [2e]: selection highlight
     case IDM_VIEW_HIGHLIGHTCURRENTWORD:
       bHighlightSelection = (bHighlightSelection) ? FALSE : TRUE;
-      n2e_SelectionUpdate(SH_INIT);
+      n2e_SelectionUpdate(SUM_INIT);
       break;
     // [/2e]
 
@@ -4146,12 +4153,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e] ctrl + arrow behavior toggle #89
     case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
-      iWordNavigationMode = 0;
+      iWordNavigationMode = WNM_STANDARD;
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
 
     case ID_SETTINGS_WORD_NAVIGATION_ACCELERATED:
-      iWordNavigationMode = 1;
+      iWordNavigationMode = WNM_ACCELERATED;
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     // [/2e]
@@ -4163,11 +4170,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
     case CMD_ESCAPE:
       if (n2e_IsSelectionEditModeOn())
-        n2e_SelectionEditStop(N2E_SE_REJECT);
+      {
+        n2e_SelectionEditStop(SES_REJECT);
+      }
       else if (iEscFunction == 1)
+      {
         SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+      }
       else if (iEscFunction == 2)
+      {
         SendMessage(hwnd, WM_CLOSE, 0, 0);
+      }
       break;
 
 
@@ -4181,7 +4194,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_CTRLENTER:
       if (n2e_IsSelectionEditModeOn())
       {
-        n2e_SelectionEditStop(N2E_SE_APPLY);
+        n2e_SelectionEditStop(SES_APPLY);
       }
       else
       {

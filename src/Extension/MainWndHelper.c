@@ -2,16 +2,17 @@
 #include <math.h>
 #include "EditHelper.h"
 #include "Notepad2.h"
-#include "Utils.h"
 #include "resource.h"
 #include "Scintilla.h"
+#include "Helpers.h"
 #include "tinyexpr/tinyexpr.h"
+#include "Utils.h"
 
 HHOOK hShellHook = NULL;
 
-ExpressionValueMode modePrevExpressionValue = EVM_DEC;
+EExpressionValueMode modePrevExpressionValue = EVM_DEC;
 char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH] = { 0 };
-ExpressionValueMode modeExpressionValue = EVM_DEC;
+EExpressionValueMode modeExpressionValue = EVM_DEC;
 WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
 
 extern HWND hwndMain;
@@ -56,7 +57,7 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
   return 0;
 }
 
-BOOL n2e_FormatEvaluatedExpression(HWND hwnd, WCHAR* tchBuffer, const int bufferSize)
+BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int bufferSize)
 {
   int iPosStart = 0;
   int iPosEnd = 0;

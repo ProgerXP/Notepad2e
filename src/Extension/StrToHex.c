@@ -4,6 +4,10 @@
 #include "Scintilla.h"
 #include "Utils.h"
 
+#define MIN_VALID_CHAR_CODE 0x21
+#define TEXT_BUFFER_SIZE_MIN 65536
+#define TEXT_BUFFER_SIZE_MAX TEXT_BUFFER_SIZE_MIN * 10
+
 extern NP2ENCODING mEncoding[];
 extern	int       iEncoding;
 

@@ -1,11 +1,6 @@
 #pragma once
 #include "stdafx.h"
 
-#define MIN_VALID_CHAR_CODE 0x21
-
-#define TEXT_BUFFER_SIZE_MIN  65536
-#define TEXT_BUFFER_SIZE_MAX  TEXT_BUFFER_SIZE_MIN * 10
-
 struct TTextBuffer
 {
   int m_iSize;

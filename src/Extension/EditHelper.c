@@ -1,9 +1,24 @@
 #include "EditHelper.h"
 #include <cassert>
+#include "Dialogs.h"
+#include "Helpers.h"
+#include "Edit.h"
+#include "ExtSelection.h"
+#include "Notepad2.h"
+#include "resource.h"
+#include "StrToHex.h"
 #include "Trace.h"
+#include "Utils.h"
 
-WCHAR	n2e_last_html_tag[0xff] = L"<tag>";
-WCHAR	n2e_last_html_end_tag[0xff] = L"</tag>";
+WCHAR	wchLastHTMLTag[0xff] = L"<tag>";
+WCHAR	wchLastHTMLEndTag[0xff] = L"</tag>";
+
+extern NP2ENCODING mEncoding[];
+extern int iEncoding;
+extern int bFindWordMatchCase;
+extern int bFindWordWrapAround;
+extern TBBUTTON tbbMainWnd[];
+extern HWND hwndToolbar;
 
 void n2e_StripHTMLTags(HWND hwnd)
 {
@@ -137,11 +152,10 @@ void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
 
 void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove)
 {
-  if (n2e_SelectionEditStop(N2E_SE_APPLY))
+  if (n2e_SelectionEditStop(SES_APPLY))
   {
     return;
   }
-
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
   const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
@@ -351,14 +365,16 @@ void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
       ttf.chrg.cpMax = 0;
     }
     searchflags = SCFIND_WHOLEWORD;
-    if (iFindWordMatchCase != 0)
+    if (bFindWordMatchCase)
+    {
       searchflags |= SCFIND_MATCHCASE;
+    }
 
     res = n2e_FindTextImpl(hwnd, searchflags, &ttf);
     const BOOL bTextFound = (res >= 0);
     n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, searchflags, &ttf, res + 1) >= 0));
 
-    if ((-1 == res) && (iFindWordWrapAround != 0))
+    if ((-1 == res) && (bFindWordWrapAround != 0))
     {
       if (next)
       {
@@ -424,7 +440,7 @@ BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next)
   {
     if (0 == (ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
     {
-      cmp_res = _N2E_COMPARE_FILES(filename, ffd.cFileName);
+      cmp_res = n2e_CompareFiles(filename, ffd.cFileName);
       N2E_TRACE(L"%S vs %S = %d", ffd.cFileName, filename, cmp_res);
       if ((next && cmp_res >= 0) || (!next&&cmp_res <= 0))
       {
@@ -432,7 +448,7 @@ BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next)
       }
       if (*found_path)
       {
-        cmp_res = _N2E_COMPARE_FILES(found_path, ffd.cFileName);
+        cmp_res = n2e_CompareFiles(found_path, ffd.cFileName);
       }
       else
       {
@@ -1018,13 +1034,13 @@ const WCHAR* _right_braces = L">})]";
 
 void n2e_Init_EditInsertTagDlg(HWND hwnd)
 {
-  const int len = lstrlen(n2e_last_html_tag);
+  const int len = lstrlen(wchLastHTMLTag);
   int k = 0;
   while (1)
   {
     if (len > k * 2 + 1 &&
-        StrChr(_left_braces, n2e_last_html_tag[k]) &&
-        StrChr(_right_braces, n2e_last_html_tag[len - k - 1]))
+        StrChr(_left_braces, wchLastHTMLTag[k]) &&
+        StrChr(_right_braces, wchLastHTMLTag[len - k - 1]))
     {
       ++k;
     }
@@ -1180,8 +1196,8 @@ void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata)
     pdata->pwsz1[len] = _right_braces[br - _left_braces];
     N2E_WTRACE_PLAIN("pdata->pwsz1 %s", pdata->pwsz1);
   }
-  lstrcpy(n2e_last_html_tag, pdata->pwsz1);
-  lstrcpy(n2e_last_html_end_tag, pdata->pwsz2);
+  lstrcpy(wchLastHTMLTag, pdata->pwsz1);
+  lstrcpy(wchLastHTMLEndTag, pdata->pwsz2);
 }
 
 void n2e_int2bin(unsigned int val, LPWSTR binString)

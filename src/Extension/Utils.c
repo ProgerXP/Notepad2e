@@ -1,62 +1,59 @@
 #include "Utils.h"
 #include "Dialogs.h"
-#include "scintilla.h"
-#include "helpers.h"
-#include "resource.h"
-#include <cassert>
-#include "Notepad2.h"
 #include "ExtSelection.h"
-#include "Edit.h"
 #include "EditHelper.h"
-#include "SciCall.h"
-#include "Trace.h"
 #include "InlineProgressBarCtrl.h"
 #include "MainWndHelper.h"
-
-HANDLE g_hScintilla = NULL;
+#include "resource.h"
+#include "Scintilla.h"
+#include "Helpers.h"
+#include "SciCall.h"
+#include "Notepad2.h"
+#include "Trace.h"
 
 #define N2E_WHEEL_TIMER_ID	0xFF
-#define N2E_SEL_EDIT_TIMER_ID	(N2E_WHEEL_TIMER_ID + 1)
-UINT_PTR	_n2e_sel_edit_timer_id = N2E_SEL_EDIT_TIMER_ID;
-UINT	_n2e_wheel_timer_to = 100;
-UINT	_n2e_css_property = css_prop_less;
 
-HWND	g_hwnd = 0;
-
-extern BOOL	bHighlightSelection;
-BOOL	_n2e_skip_highlight = FALSE;
-BOOL	bUsePrefixInOpenDialog = TRUE;
-BOOL	bCtrlWheelScroll = TRUE;
-BOOL  bMoveCaretOnRightClick = TRUE;
+HANDLE g_hScintilla = NULL;
+UINT iWheelScrollInterval = 100;
+BOOL bWheelTimerActive = FALSE;
+ECSSSetting iCSSSettings = CSS_LESS;
+WCHAR	wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
+BOOL bUsePrefixInOpenDialog = TRUE;
+BOOL bCtrlWheelScroll = TRUE;
+BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
-int iWordNavigationMode = 0;
+EWordNavigationMode iWordNavigationMode = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
-
-UINT	_n2e_ctx_menu_type = 0;
-extern	LPMRULIST pFileMRU;
-extern	WCHAR     g_wchWorkingDirectory[MAX_PATH];
-//
-BOOL	_n2e_wheel_timer = FALSE;
-INT		_n2e_alloc_count = 0;
-extern	long	_n2e_max_search_range;
-
-int iHighlightLineIfWindowInactive = 0;
-int iScrollYCaretPolicy = 0;
-int iFindWordMatchCase = 0;
-int iFindWordWrapAround = 0;
-
+UINT iShellMenuType = 0;
+INT iAllocCount = 0;
+BOOL bHighlightLineIfWindowInactive = FALSE;
+EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
+BOOL bFindWordMatchCase = FALSE;
+BOOL bFindWordWrapAround = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
+
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
-
 extern WCHAR szTitleExcerpt[128];
 extern int iPathNameFormat;
+extern WCHAR szCurFile[MAX_PATH + 40];
+extern UINT uidsAppTitle;
+extern BOOL fIsElevated;
+extern BOOL bModified;
+extern int iEncoding;
+extern int iOriginalEncoding;
+extern BOOL bReadOnly;
+extern long	iMaxSearchDistance;
+extern BOOL	bHighlightSelection;
+extern LPMRULIST pFileMRU;
+extern WCHAR g_wchWorkingDirectory[MAX_PATH];
+extern enum ESaveSettingsMode nSaveSettingsMode;
 
 void n2e_InitInstance()
 {
   InitScintillaHandle(hwndEdit);
-  n2e_Init(hwndMain);
+  n2e_Init();
   hShellHook = SetWindowsHookEx(WH_SHELL, n2e_ShellProc, NULL, GetCurrentThreadId());
 }
 
@@ -72,11 +69,11 @@ void n2e_ExitInstance()
 
 void* n2e_Alloc(size_t size)
 {
-  if (_n2e_alloc_count)
+  if (iAllocCount)
   {
-    N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", _n2e_alloc_count);
+    N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", iAllocCount);
   }
-  ++_n2e_alloc_count;
+  ++iAllocCount;
   return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
 }
 
@@ -84,7 +81,7 @@ void n2e_Free(void* ptr)
 {
   if (ptr)
   {
-    --_n2e_alloc_count;
+    --iAllocCount;
     GlobalFree(ptr);
   }
 }
@@ -97,23 +94,21 @@ void* n2e_Realloc(void* ptr, size_t len)
 
 VOID CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
-  _n2e_wheel_timer = FALSE;
+  bWheelTimerActive = FALSE;
   KillTimer(NULL, idEvent);
 }
 
-VOID n2e_Init(HWND hWnd)
+VOID n2e_Init()
 {
-  g_hwnd = hWnd;
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_ResetLastRun();
-
   n2e_SelectionInit();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
 {
-  LPCWSTR def = _n2e_last_run;
+  LPCWSTR def = wchLastRun;
   if (lstrlen(def) == 0)
   {
 	  def = lpstrDefault;
@@ -123,27 +118,27 @@ LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
 
 VOID n2e_SetLastRun(LPCWSTR arg)
 {
-  lstrcpyn(_n2e_last_run, arg, _countof(_n2e_last_run) - 1);
+  lstrcpyn(wchLastRun, arg, _countof(wchLastRun) - 1);
 }
 
 VOID n2e_ResetLastRun()
 {
-  *_n2e_last_run = 0;
+  *wchLastRun = 0;
 }
 
 VOID n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
-  _n2e_wheel_timer_to = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", _n2e_wheel_timer_to);
-  _n2e_css_property = IniGetInt(N2E_INI_SECTION, L"CSSSettings", _n2e_css_property);
-  _n2e_ctx_menu_type = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
-  _n2e_max_search_range = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
+  iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
+  iCSSSettings = IniGetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
+  iShellMenuType = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
+  iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
   bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
-  iHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
+  bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  iFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  iFindWordWrapAround = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+  bFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
+  bFindWordWrapAround = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, bFindWordWrapAround);
   bMoveCaretOnRightClick = IniGetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   iEvaluateMathExpression = IniGetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
@@ -154,15 +149,15 @@ VOID n2e_SaveINI()
 {
   IniSetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
   IniSetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
-  IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", _n2e_wheel_timer_to);
-  IniSetInt(N2E_INI_SECTION, L"CSSSettings", _n2e_css_property);
-  IniSetInt(N2E_INI_SECTION, L"ShellMenuType", _n2e_ctx_menu_type);
-  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", _n2e_max_search_range / 1024);
+  IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
+  IniSetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
+  IniSetInt(N2E_INI_SECTION, L"ShellMenuType", iShellMenuType);
+  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", iMaxSearchDistance / 1024);
   IniSetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, iHighlightLineIfWindowInactive);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, iFindWordMatchCase);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, iFindWordWrapAround);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, bFindWordWrapAround);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
@@ -173,7 +168,6 @@ VOID n2e_Release()
 {
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
-  g_hwnd = 0;
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)
@@ -262,13 +256,13 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
 VOID n2e_WheelScrollWorker(int lines)
 {
   int anch, sel = 0;
-  if (_n2e_wheel_timer)
+  if (bWheelTimerActive)
   {
     N2E_TRACE_PLAIN("wheel timer blocked");
     return;
   }
-  _n2e_wheel_timer = TRUE;
-  SetTimer(NULL, N2E_WHEEL_TIMER_ID, _n2e_wheel_timer_to, n2e_WheelTimerProc);
+  bWheelTimerActive = TRUE;
+  SetTimer(NULL, N2E_WHEEL_TIMER_ID, iWheelScrollInterval, n2e_WheelTimerProc);
   anch = SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0);
   if (lines > 0)
   {
@@ -297,7 +291,7 @@ extern WCHAR wchWndClass[16];
 BOOL CALLBACK n2e_EnumProc(HWND hwnd, LPARAM lParam)
 {
   WCHAR szClassName[64];
-  if ((g_hwnd != hwnd)
+  if ((hwnd != hwndMain)
       && GetClassName(hwnd, szClassName, COUNTOF(szClassName))
       && (wcsstr(szClassName, wchWndClass) != 0))
   {
@@ -308,12 +302,10 @@ BOOL CALLBACK n2e_EnumProc(HWND hwnd, LPARAM lParam)
 
 VOID n2e_Reload_Settings()
 {
-  EnumWindows(n2e_EnumProc, (LPARAM)g_hwnd);
+  EnumWindows(n2e_EnumProc, (LPARAM)hwndMain);
 }
 
-extern enum SAVE_SETTINGS_MODE nSaveSettingsMode;
-
-BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const SAVE_SETTINGS_MODE modeRequired)
+BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired)
 {
   return !bCheckSaveSettingsMode || (nSaveSettingsMode == modeRequired);
 }

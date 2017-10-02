@@ -11,14 +11,14 @@ typedef enum
   EVM_OCT,
   EVM_MAX = EVM_OCT,
   EVM_MIN = EVM_DEC
-} ExpressionValueMode;
+} EExpressionValueMode;
 
 extern HHOOK hShellHook;
-extern ExpressionValueMode modePrevExpressionValue;
+extern EExpressionValueMode modePrevExpressionValue;
 extern char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
-extern ExpressionValueMode modeExpressionValue;
+extern EExpressionValueMode modeExpressionValue;
 extern WCHAR arrwchExpressionValue[MAX_PATH];
 BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt);
 void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick);
 LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam);
-BOOL n2e_FormatEvaluatedExpression(HWND hwnd, WCHAR* tchBuffer, const int bufferSize);
+BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int bufferSize);
