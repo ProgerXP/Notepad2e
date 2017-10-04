@@ -103,7 +103,7 @@ VOID n2e_Init()
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_ResetLastRun();
-  n2e_SelectionInit();
+  n2e_EditInit();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)

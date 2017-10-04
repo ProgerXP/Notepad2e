@@ -487,18 +487,17 @@ void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
   tr_2.chrg.cpMin = cpos;
   tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
   tr_2.lpstrText = NULL;
-  {
-    temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
-    if (!temp) goto OUT_OF_UNWRAP;
-    tr_1.lpstrText = (char*)n2e_Alloc(temp + 1);
-    SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
-  }
-  {
-    temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
-    if (!temp) goto OUT_OF_UNWRAP;
-    tr_2.lpstrText = (char*)n2e_Alloc(temp + 1);
-    SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
-  }
+
+  temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
+  if (!temp) goto OUT_OF_UNWRAP;
+  tr_1.lpstrText = (char*)n2e_Alloc(temp + 1);
+  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
+
+  temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
+  if (!temp) goto OUT_OF_UNWRAP;
+  tr_2.lpstrText = (char*)n2e_Alloc(temp + 1);
+  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
+
   pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
   found = FALSE;
   if (quote_mode)
@@ -574,10 +573,8 @@ void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
               }
             }
           }
-          {
-            N2E_TRACE("Left bracket found '%c'", lch);
-            break;
-          }
+          N2E_TRACE("Left bracket found '%c'", lch);
+          break;
         }
         if (tchl = (char*)strchr(_right_braces, lch))
         {
@@ -664,16 +661,15 @@ void n2e_EscapeHTML(HWND hwnd)
   {
     return;
   }
-  int beg, end, res;
   size_t symb;
-  BOOL changed;
+  BOOL changed = FALSE;
   struct Sci_TextToFind ttf;
   const char* _source = "&<>";
   const char* _target[] = { "&amp;", "&lt;", "&gt;" };
   assert(strlen(_source) == COUNTOF(_target));
   SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-  beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+  int beg = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  int end = SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
   if (beg == end)
   {
     beg = 0;
@@ -687,7 +683,7 @@ void n2e_EscapeHTML(HWND hwnd)
     ttf.chrg.cpMin = beg;
     ttf.chrg.cpMax = end;
     ttf.lpstrText[0] = _source[symb];
-    res = 0;
+    int res = 0;
     while (-1 != res)
     {
       res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf);
@@ -707,7 +703,7 @@ void n2e_EscapeHTML(HWND hwnd)
   }
   if (changed)
   {
-    SendMessage(hwnd, SCI_SETSEL, beg, beg);
+    SendMessage(hwnd, SCI_SETSEL, beg, end);
   }
   n2e_Free(ttf.lpstrText);
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);

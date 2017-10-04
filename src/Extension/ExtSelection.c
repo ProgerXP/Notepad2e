@@ -7,19 +7,19 @@
 #include "Utils.h"
 
 /************************************************************************/
-/* when many matches on ALL document  but NOT ALL OF THEM  on screen    */
+/* multiple words matches selection, some are located on other pages    */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR 9
 /************************************************************************/
-/* when one match one document                                          */
+/* single word matches                                                  */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_SINGLE 10
 /************************************************************************/
-/* when many matches on screen                                          */
+/* multiple words matches selection, all are visible on current page    */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_PAGE 11
 /************************************************************************/
-/* SE mode                                                              */
+/* "selection edit"-mode, Ctrl+Tab to activate                          */
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_EDIT 12
 
@@ -52,22 +52,13 @@ typedef enum
 } EProcessChangesMode;
 
 SE_DATA arrEditSelections[N2E_SELECT_MAX_COUNT];
-long iEditSelections = 0; // total count   '
+long iEditSelectionsCount = 0;
 struct Sci_TextRange trEditSelection;
 long iOriginalSelectionLength = 0;
 long iMaxSearchDistance = 2048 * 1024;
 BOOL bEditSelectionWholeWordMode = TRUE;
 BOOL bEditSelectionStrictMode = TRUE;
 char *pEditSelectionOriginalWord = NULL;
-
-char to_lower(char in)
-{
-  if (in <= 'Z' && in >= 'A')
-    return in - ('Z' - 'z');
-  if (in <= 'ß' && in >= 'À')
-    return in - ('ß' - 'ÿ');
-  return in;
-}
 
 BOOL case_compare(const char* a, const char* b, BOOL ignore_case)
 {
@@ -76,26 +67,6 @@ BOOL case_compare(const char* a, const char* b, BOOL ignore_case)
     return 0 == _stricmp(a, b);
   }
   return 0 == strcmp(a, b);
-}
-
-BOOL icase_compare(const char* a, const char* b)
-{
-  while (*a && *b)
-  {
-    if (*a != *b)
-    {
-      char lA = to_lower(*a);
-      char lB = to_lower(*b);
-      if (lA != lB)
-      {
-        return FALSE;
-      }
-    }
-    a++;
-    b++;
-  }
-  // Either *a or *b is nul
-  return *a == *b;
 }
 
 int	n2e_SelectionKeyAction(int key, int msg)
@@ -114,51 +85,52 @@ int	n2e_SelectionKeyAction(int key, int msg)
   return -1;
 }
 
-void	n2e_SelectionInit()
+void n2e_EditSelectionInit(LPCWSTR lpSection, const int iDefaultSection, const int iIndicator,
+  LPCWSTR lpAlphaSetting, const int iDefaultAlpha,
+  LPCWSTR lpLineAlphaSetting, const int iDefaultLineAlpha,
+  LPCWSTR lpColorSetting, const COLORREF iDefaultColor,
+  LPCWSTR lpUnderSetting, const int iDefaultUnder)
+{
+  const int indi_style = IniGetInt(N2E_INI_SECTION, lpSection, iDefaultSection);
+  if (indi_style >= 0)
+  {
+    SendMessage(hwndEdit, SCI_INDICSETSTYLE, iIndicator, indi_style);
+    SendMessage(hwndEdit, SCI_INDICSETALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpAlphaSetting, iDefaultAlpha));
+    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpLineAlphaSetting, iDefaultLineAlpha));
+    SendMessage(hwndEdit, SCI_INDICSETFORE, iIndicator, IniGetInt(N2E_INI_SECTION, lpColorSetting, iDefaultColor));
+    SendMessage(hwndEdit, SCI_INDICSETUNDER, iIndicator, IniGetInt(N2E_INI_SECTION, lpUnderSetting, iDefaultUnder));
+  }
+}
+
+void n2e_EditInit()
 {
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
-  int indi_style = IniGetInt(N2E_INI_SECTION, L"SelectionType", 6);
-  if (indi_style >= 0)
-  {
-    SendMessage(hwndEdit, SCI_INDICSETSTYLE, N2E_SELECT_INDICATOR, indi_style);
-    SendMessage(hwndEdit, SCI_INDICSETALPHA, N2E_SELECT_INDICATOR, IniGetInt(N2E_INI_SECTION, L"SelectionAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, N2E_SELECT_INDICATOR, IniGetInt(N2E_INI_SECTION, L"SelectionLineAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETFORE, N2E_SELECT_INDICATOR, IniGetInt(N2E_INI_SECTION, L"SelectionColor", RGB(0x00, 0x00, 0x00)));
-    SendMessage(hwndEdit, SCI_INDICSETUNDER, N2E_SELECT_INDICATOR, IniGetInt(N2E_INI_SECTION, L"SelectionUnder", 0));
-  }
-  indi_style = IniGetInt(N2E_INI_SECTION, L"PageSelectionType", 6);
-  if (indi_style >= 0)
-  {
-    SendMessage(hwndEdit, SCI_INDICSETSTYLE, N2E_SELECT_INDICATOR_PAGE, indi_style);
-    SendMessage(hwndEdit, SCI_INDICSETALPHA, N2E_SELECT_INDICATOR_PAGE, IniGetInt(N2E_INI_SECTION, L"PageSelectionAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, N2E_SELECT_INDICATOR_PAGE, IniGetInt(N2E_INI_SECTION, L"PageSelectionLineAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETFORE, N2E_SELECT_INDICATOR_PAGE, IniGetInt(N2E_INI_SECTION, L"PageSelectionColor", RGB(0x00, 0x00,
-                                                                                                                           0x90)));
-    SendMessage(hwndEdit, SCI_INDICSETUNDER, N2E_SELECT_INDICATOR_PAGE, IniGetInt(N2E_INI_SECTION, L"PageSelectionUnder", 0));
-  }
-  //
-  indi_style = IniGetInt(N2E_INI_SECTION, L"SingleSelectionType", 6);
-  if (indi_style >= 0)
-  {
-    SendMessage(hwndEdit, SCI_INDICSETSTYLE, N2E_SELECT_INDICATOR_SINGLE, indi_style);
-    SendMessage(hwndEdit, SCI_INDICSETALPHA, N2E_SELECT_INDICATOR_SINGLE, IniGetInt(N2E_INI_SECTION, L"SingleSelectionAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, N2E_SELECT_INDICATOR_SINGLE, IniGetInt(N2E_INI_SECTION, L"SingleSelectionLineAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETFORE, N2E_SELECT_INDICATOR_SINGLE, IniGetInt(N2E_INI_SECTION, L"SingleSelectionColor", RGB(0x90, 0x00,
-                                                                                                                               0x00)));
-    SendMessage(hwndEdit, SCI_INDICSETUNDER, N2E_SELECT_INDICATOR_SINGLE, IniGetInt(N2E_INI_SECTION, L"SingleSelectionUnder", 0));
-  }
-  //
-  indi_style = IniGetInt(N2E_INI_SECTION, L"EditSelectionType", 6);
-  if (indi_style >= 0)
-  {
-    SendMessage(hwndEdit, SCI_INDICSETSTYLE, N2E_SELECT_INDICATOR_EDIT, indi_style);
-    SendMessage(hwndEdit, SCI_INDICSETALPHA, N2E_SELECT_INDICATOR_EDIT, IniGetInt(N2E_INI_SECTION, L"EditSelectionAlpha", 100));
-    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, N2E_SELECT_INDICATOR_EDIT, IniGetInt(N2E_INI_SECTION, L"EditSelectionLineAlpha", 0));
-    SendMessage(hwndEdit, SCI_INDICSETFORE, N2E_SELECT_INDICATOR_EDIT, IniGetInt(N2E_INI_SECTION, L"EditSelectionColor", RGB(0xaa, 0xaa,
-                                                                                                                           0x00)));
-    SendMessage(hwndEdit, SCI_INDICSETUNDER, N2E_SELECT_INDICATOR_EDIT, IniGetInt(N2E_INI_SECTION, L"EditSelectionUnder", 0));
-  }
+
+  n2e_EditSelectionInit(L"SelectionType", 6, N2E_SELECT_INDICATOR,
+                        L"SelectionAlpha", 0,
+                        L"SelectionLineAlpha", 0,
+                        L"SelectionColor", RGB(0x00, 0x00, 0x00),
+                        L"SelectionUnder", 0);
+  
+  n2e_EditSelectionInit(L"PageSelectionType", 6, N2E_SELECT_INDICATOR_PAGE,
+                        L"PageSelectionAlpha", 0,
+                        L"PageSelectionLineAlpha", 0,
+                        L"PageSelectionColor", RGB(0x00, 0x00, 0x90),
+                        L"PageSelectionUnder", 0);
+  
+  n2e_EditSelectionInit(L"SingleSelectionType", 6, N2E_SELECT_INDICATOR_SINGLE,
+                        L"SingleSelectionAlpha", 0,
+                        L"SingleSelectionLineAlpha", 0,
+                        L"SingleSelectionColor", RGB(0x90, 0x00, 0x00),
+                        L"SingleSelectionUnder", 0);
+
+  n2e_EditSelectionInit(L"EditSelectionType", 6, N2E_SELECT_INDICATOR_EDIT,
+                        L"EditSelectionAlpha", 100,
+                        L"EditSelectionLineAlpha", 0,
+                        L"EditSelectionColor", RGB(0xaa, 0xaa, 0x00),
+                        L"EditSelectionUnder", 0);
+  
   n2e_proc_action = n2e_SelectionKeyAction;
   trEditSelection.lpstrText = 0;
 }
@@ -237,10 +209,10 @@ VOID n2e_HighlightWord(LPCSTR word)
     int	search_opt = SCFIND_WHOLEWORD;
     int wlen = strlen(word);
     int	curr_indi = N2E_SELECT_INDICATOR_SINGLE;
-    BOOL	is_visible = FALSE;
+    BOOL bPreviousMatchIsVisible = FALSE;
     if (bEditSelectionInit)
     {
-      iEditSelections = 0;
+      iEditSelectionsCount = 0;
       if (!bEditSelectionWholeWordMode)
       {
         search_opt = SCFIND_MATCHCASE;
@@ -265,7 +237,7 @@ VOID n2e_HighlightWord(LPCSTR word)
     }
     ttf1.lpstrText = (LPSTR)word;
     res = SendMessage(hwndEdit, SCI_FINDTEXT, search_opt, (LPARAM)&ttf1);
-    is_visible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
+    bPreviousMatchIsVisible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
     while (1)
     {
       ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
@@ -278,8 +250,7 @@ VOID n2e_HighlightWord(LPCSTR word)
           ttf1.chrgText.cpMin < ttf.chrg.cpMax
           )
         {
-          // if previous match was visible
-          if (is_visible)
+          if (bPreviousMatchIsVisible)
           {
             if (bEditSelectionInit)
             {
@@ -296,17 +267,12 @@ VOID n2e_HighlightWord(LPCSTR word)
           else
           {
             curr_indi = N2E_SELECT_INDICATOR;
-            /*
-             previous match was invisible and this is visible
-             then we must don't check next matches
-             Anyhow HL_SELECT_INDICATOR must be there ?!?!
-             **/
             if (!bEditSelectionInit)
             {
               break;
             }
           }
-          is_visible = TRUE;
+          bPreviousMatchIsVisible = TRUE;
         }
         else
         {
@@ -356,7 +322,7 @@ VOID n2e_HighlightWord(LPCSTR word)
           N2E_TRACE("[%d] line__ %d (%d , %d , %d) ", ttf.chrgText.cpMin, line, lwrap, lstart, lrange);
           if (line <= lrange + lstart)
           {
-            LPSE_DATA dt = &arrEditSelections[iEditSelections++];
+            LPSE_DATA dt = &arrEditSelections[iEditSelectionsCount++];
             dt->pos = ttf.chrgText.cpMin;
             dt->len = wlen;
             if (dt->original)
@@ -492,7 +458,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
   {
     if (0 == pEditSelectionOriginalWord)
     {
-      N2E_TRACE("NO original word ????????????????");
+      N2E_TRACE("NO original word!");
       goto _EXIT;
     }
     N2E_TRACE("ROLLBACK to TR '%s' (%d - %d) ", pEditSelectionOriginalWord, trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
@@ -511,7 +477,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
     SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&trEditSelection);
     if (case_compare(old_word, trEditSelection.lpstrText, 0/*_hl_se_mode_whole_word*/))
     {
-      N2E_TRACE("case (%d) compare exit  ????????????????", bEditSelectionWholeWordMode);
+      N2E_TRACE("case (%d) compare exit!", bEditSelectionWholeWordMode);
       goto _EXIT;
     }
   }
@@ -519,7 +485,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
   clear cur edit
   */
   SendMessage(hwndEdit, SCI_SETMODEVENTMASK, n2e_SelectionGetSciEventMask(FALSE), 0);
-  for (k = 0; k < iEditSelections; ++k)
+  for (k = 0; k < iEditSelectionsCount; ++k)
   {
     LPSE_DATA se = &arrEditSelections[k];
     // shifting
@@ -630,7 +596,7 @@ VOID n2e_SelectionEditStart(const BOOL highlightAll)
     return;
   }
   bEditSelectionInit = TRUE;
-  iEditSelections = 0;
+  iEditSelectionsCount = 0;
   n2e_SelectionHighlightTurn();
   bEditSelectionInit = FALSE;
   if (n2e_IsSelectionEditModeOn())
