@@ -1,5 +1,6 @@
 #pragma once
-#include "stdafx.h"
+#include <stddef.h>
+#include <wtypes.h>
 
 typedef enum
 {
@@ -64,25 +65,25 @@ void n2e_ExitInstance();
 void* n2e_Alloc(size_t size);
 void n2e_Free(void* ptr);
 void* n2e_Realloc(void* ptr, size_t len);
-VOID n2e_Init();
+void n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
-VOID n2e_SetLastRun(LPCWSTR arg);
-VOID n2e_ResetLastRun();
-VOID n2e_LoadINI();
-VOID n2e_SaveINI();
-VOID n2e_Release();
-VOID n2e_Reload_Settings();
+void n2e_SetLastRun(LPCWSTR arg);
+void n2e_ResetLastRun();
+void n2e_LoadINI();
+void n2e_SaveINI();
+void n2e_Release();
+void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_OpenMRULast(LPWSTR fn);
-VOID n2e_GetLastDir(LPTSTR out);
+void n2e_GetLastDir(LPTSTR out);
 UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam);
 BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex);
 void n2e_InplaceRev(WCHAR * s);
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2);
 BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out);
-VOID	n2e_Grep(VOID* lpf, BOOL grep);
-VOID n2e_SetWheelScroll(BOOL on);
+void n2e_Grep(void* lpf, BOOL grep);
+void n2e_SetWheelScroll(BOOL on);
 BOOL n2e_IsWordChar(WCHAR ch);
 BOOL n2e_IsSpace(WCHAR ch);
 BOOL n2e_IsKeyDown(int key);
@@ -98,7 +99,6 @@ extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
-WCHAR tchProgressBarTaskName[MAX_PATH];
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

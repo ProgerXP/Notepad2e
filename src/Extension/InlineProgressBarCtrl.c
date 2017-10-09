@@ -1,4 +1,5 @@
 #include "InlineProgressBarCtrl.h"
+#include <CommCtrl.h>
 
 #define PROPERTY_PANE_ID  L"Pane Id"
 
@@ -97,7 +98,7 @@ void InlineProgressBarCtrl_SetPos(HWND hwnd, const long nValue)
   SendMessage(hwnd, PBM_SETPOS, nValue, 0);
 }
 
-extern WCHAR tchProgressBarTaskName[MAX_PATH];
+WCHAR tchProgressBarTaskName[MAX_PATH];
 
 BOOL InlineProgressBarCtrl_Resize(HWND hwnd)
 {

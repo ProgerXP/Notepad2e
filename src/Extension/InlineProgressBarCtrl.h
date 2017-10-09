@@ -1,5 +1,7 @@
 #pragma once
-#include "stdafx.h"
+#include <wtypes.h>
+
+extern WCHAR tchProgressBarTaskName[MAX_PATH];
 
 HWND InlineProgressBarCtrl_Create(HWND hwndParent, const long nCurrentValue, const long MaxValue, const BOOL bSmooth, const int nPane);
 BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const long nLower, const long nUpper, const long nStep);

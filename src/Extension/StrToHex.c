@@ -1,15 +1,14 @@
-#include "stdafx.h"
+#include <Windows.h>
+#include <Strsafe.h>
 #include "StrToHex.h"
-#include "Edit.h"
-#include "Scintilla.h"
-#include "Utils.h"
+
+#ifdef __cplusplus
+extern "C" { // C-Declarations
+#endif //__cplusplus
 
 #define MIN_VALID_CHAR_CODE 0x21
 #define TEXT_BUFFER_SIZE_MIN 65536
 #define TEXT_BUFFER_SIZE_MAX TEXT_BUFFER_SIZE_MIN * 10
-
-extern NP2ENCODING mEncoding[];
-extern	int       iEncoding;
 
 BOOL bBreakOnError = TRUE;
 
@@ -23,7 +22,28 @@ void MemFree(LPVOID ptr)
   GlobalFree(ptr);
 }
 
-BOOL GetText(const HWND hwnd, LPSTR pText, const long iStart, const long iEnd)
+long TSS_GetSelectionStart(const StringSource* pSS)
+{
+  return pSS->hwnd
+    ? SendMessage(pSS->hwnd, SCI_GETSELECTIONSTART, 0, 0)
+    : 0;
+}
+
+long TSS_GetSelectionEnd(const StringSource* pSS)
+{
+  return pSS->hwnd
+    ? SendMessage(pSS->hwnd, SCI_GETSELECTIONEND, 0, 0)
+    : 0;
+}
+
+long TSS_GetLength(const StringSource* pSS)
+{
+  return pSS->hwnd
+    ? SendMessage(pSS->hwnd, SCI_GETLENGTH, 0, 0)
+    : strlen(pSS->text);
+}
+
+BOOL GetText(const StringSource* pSS, LPSTR pText, const long iStart, const long iEnd)
 {
   LPSTR res = NULL;
   const long length = iEnd - iStart;
@@ -33,7 +53,15 @@ BOOL GetText(const HWND hwnd, LPSTR pText, const long iStart, const long iEnd)
     tr.chrg.cpMin = iStart;
     tr.chrg.cpMax = iEnd;
     tr.lpstrText = pText;
-    return SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr) > 0;
+    if (pSS->hwnd)
+    {
+      return SendMessage(pSS->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr) > 0;
+    }
+    else
+    {
+      strncpy_s(tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1, &pSS->text[tr.chrg.cpMin], _TRUNCATE);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -283,15 +311,15 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
   }
 }
 
-BOOL TextRange_Init(struct TTextRange* pTR, const HWND hwnd)
+BOOL TextRange_Init(const StringSource* pSS, struct TTextRange* pTR)
 {
-  pTR->m_hwnd = hwnd;
-  pTR->m_iSelStart = (long long)SendMessage(pTR->m_hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  pTR->m_iSelEnd = (long long)SendMessage(pTR->m_hwnd, SCI_GETSELECTIONEND, 0, 0);
+  pTR->m_hwnd = pSS->hwnd;
+  pTR->m_iSelStart = TSS_GetSelectionStart(pSS);
+  pTR->m_iSelEnd = TSS_GetSelectionEnd(pSS);
   if (pTR->m_iSelStart == pTR->m_iSelEnd)
   {
     pTR->m_iSelStart = 0;
-    pTR->m_iSelEnd = (long long)SendMessage(pTR->m_hwnd, SCI_GETLENGTH, 0, 0);
+    pTR->m_iSelEnd = TSS_GetLength(pSS);
   };
   pTR->m_iPositionStart = pTR->m_iSelStart;
   pTR->m_iPositionCurrent = pTR->m_iSelStart;
@@ -303,10 +331,10 @@ BOOL TextRange_IsDataPortionAvailable(struct TTextRange* pTR)
   return pTR->m_iPositionCurrent < pTR->m_iSelEnd;
 }
 
-BOOL TextRange_GetNextDataPortion(struct TTextRange* pTR, struct TTextBuffer* pTB)
+BOOL TextRange_GetNextDataPortion(const StringSource* pSS, struct TTextRange* pTR, struct TTextBuffer* pTB)
 {
   const long iEnd = min(pTR->m_iPositionCurrent + pTB->m_iSize - 1, pTR->m_iSelEnd);
-  if (GetText(pTR->m_hwnd, pTB->m_ptr, pTR->m_iPositionCurrent, iEnd))
+  if (GetText(pSS, pTB->m_ptr, pTR->m_iPositionCurrent, iEnd))
   {
     TextBuffer_ResetPos(pTB, iEnd - pTR->m_iPositionCurrent);
     pTR->m_iPositionStart = pTR->m_iPositionCurrent;
@@ -316,9 +344,9 @@ BOOL TextRange_GetNextDataPortion(struct TTextRange* pTR, struct TTextBuffer* pT
   return FALSE;
 }
 
-BOOL EncodingSettings_Init(struct TEncodingData* pED, const HWND hwnd, const BOOL bChar2Hex)
+BOOL EncodingSettings_Init(const StringSource* pSS, struct TEncodingData* pED, const BOOL bChar2Hex)
 {
-  if (!TextRange_Init(&pED->m_tr, hwnd))
+  if (!TextRange_Init(pSS, &pED->m_tr))
   {
     return FALSE;
   }
@@ -390,7 +418,7 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED)
   return FALSE;
 }
 
-BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
+BOOL CodeStrHex_ProcessDataPortion(StringSource* pSS, struct TEncodingData* pED)
 {
   BOOL bRes = TRUE;
   long iCursorOffset = 0;
@@ -459,9 +487,18 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
 
   if (charsProcessed)
   {
-    SendMessage(pED->m_tr.m_hwnd, SCI_SETSEL, pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
     pED->m_tbRes.m_ptr[pED->m_tbRes.m_iPos] = 0;
-    SendMessage(pED->m_tr.m_hwnd, SCI_REPLACESEL, 0, (LPARAM)pED->m_tbRes.m_ptr);
+    if (pSS->hwnd)
+    {
+      SendMessage(pED->m_tr.m_hwnd, SCI_SETSEL, pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
+      SendMessage(pED->m_tr.m_hwnd, SCI_REPLACESEL, 0, (LPARAM)pED->m_tbRes.m_ptr);
+    }
+    else
+    {
+      strncpy_s(pSS->result + pED->m_tr.m_iPositionStart,
+                sizeof(pSS->result) - pED->m_tr.m_iPositionStart,
+                pED->m_tbRes.m_ptr, _TRUNCATE);
+    }
     pED->m_tr.m_iPositionCurrent += iCursorOffset;
     pED->m_tr.m_iSelEnd += iCursorOffset;
   }
@@ -474,12 +511,15 @@ BOOL CodeStrHex_ProcessDataPortion(struct TEncodingData* pED)
   return bRes;
 }
 
-void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
+void CodeStrHex(StringSource* pSS, const BOOL bChar2Hex)
 {
-  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
-  SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+  if (pSS->hwnd)
+  {
+    SendMessage(pSS->hwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
+    SendMessage(pSS->hwnd, SCI_BEGINUNDOACTION, 0, 0);
+  }
   struct TEncodingData ed;
-  if (!EncodingSettings_Init(&ed, hwnd, bChar2Hex))
+  if (!EncodingSettings_Init(pSS, &ed, bChar2Hex))
   {
     return;
   }
@@ -487,9 +527,9 @@ void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
   BOOL bProcessFailed = FALSE;
   while (TextRange_IsDataPortionAvailable(&ed.m_tr))
   {
-    if (TextRange_GetNextDataPortion(&ed.m_tr, &ed.m_tb))
+    if (TextRange_GetNextDataPortion(pSS, &ed.m_tr, &ed.m_tb))
     {
-      if (!CodeStrHex_ProcessDataPortion(&ed))
+      if (!CodeStrHex_ProcessDataPortion(pSS, &ed))
       {
         bProcessFailed = TRUE;
         break;
@@ -500,22 +540,55 @@ void CodeStrHex(const HWND hwnd, const BOOL bChar2Hex)
   {
     ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
   }
-  SendMessage(hwnd, SCI_LINESCROLL, -ed.m_tr.m_iSelEnd, 0);
-  SendMessage(hwnd, SCI_SETSEL, ed.m_tr.m_iSelStart, ed.m_tr.m_iSelEnd);
+  if (pSS->hwnd)
+  {
+    SendMessage(pSS->hwnd, SCI_LINESCROLL, -ed.m_tr.m_iSelEnd, 0);
+    SendMessage(pSS->hwnd, SCI_SETSEL, ed.m_tr.m_iSelStart, ed.m_tr.m_iSelEnd);
+    SendMessage(pSS->hwnd, SCI_ENDUNDOACTION, 0, 0);
+    SendMessage(pSS->hwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
+    InvalidateRect(pSS->hwnd, NULL, FALSE);
+    UpdateWindow(pSS->hwnd);
+  }
   EncodingSettings_Free(&ed);
-  SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-  SendMessage(hwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
-  InvalidateRect(hwnd, NULL, FALSE);
-  UpdateWindow(hwnd);
   n2e_HideProgressBarInStatusBar();
+}
+
+static StringSource ss = { 0 };
+
+LPCSTR EncodeStringToHex(LPCSTR text, const int encoding)
+{
+  iEncoding = encoding;
+  strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);  
+  CodeStrHex(&ss, TRUE);
+  return ss.result;
+}
+
+// LPCSTR EncodeStringToHex(LPCWSTR text, const int encoding)
+// {
+//   iEncoding = encoding;
+//   strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);
+//   CodeStrHex(&ss, TRUE);
+//   return ss.result;
+// }
+
+void DecodeHexToString(LPCSTR text)
+{
+  strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);
+  CodeStrHex(&ss, FALSE);
 }
 
 void EncodeStrToHex(const HWND hwnd)
 {
-  CodeStrHex(hwnd, TRUE);
+  ss.hwnd = hwnd;
+  CodeStrHex(&ss, TRUE);
 }
 
 void DecodeHexToStr(const HWND hwnd)
 {
-  CodeStrHex(hwnd, FALSE);
+  ss.hwnd = hwnd;
+  CodeStrHex(&ss, FALSE);
 }
+
+#ifdef __cplusplus
+} // C-Declarations
+#endif //__cplusplus

@@ -92,13 +92,13 @@ void* n2e_Realloc(void* ptr, size_t len)
   return n2e_Alloc(len);
 }
 
-VOID CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
+void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
   bWheelTimerActive = FALSE;
   KillTimer(NULL, idEvent);
 }
 
-VOID n2e_Init()
+void n2e_Init()
 {
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
@@ -116,17 +116,17 @@ LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
   return def;
 }
 
-VOID n2e_SetLastRun(LPCWSTR arg)
+void n2e_SetLastRun(LPCWSTR arg)
 {
   lstrcpyn(wchLastRun, arg, _countof(wchLastRun) - 1);
 }
 
-VOID n2e_ResetLastRun()
+void n2e_ResetLastRun()
 {
   *wchLastRun = 0;
 }
 
-VOID n2e_LoadINI()
+void n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
@@ -145,7 +145,7 @@ VOID n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
-VOID n2e_SaveINI()
+void n2e_SaveINI()
 {
   IniSetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
   IniSetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
@@ -164,7 +164,7 @@ VOID n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
 }
 
-VOID n2e_Release()
+void n2e_Release()
 {
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
@@ -253,7 +253,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
   return 0;
 }
 
-VOID n2e_WheelScrollWorker(int lines)
+void n2e_WheelScrollWorker(int lines)
 {
   int anch, sel = 0;
   if (bWheelTimerActive)
@@ -274,7 +274,7 @@ VOID n2e_WheelScrollWorker(int lines)
   }
 }
 
-VOID n2e_SetWheelScroll(BOOL on)
+void n2e_SetWheelScroll(BOOL on)
 {
   if (on)
   {
@@ -300,7 +300,7 @@ BOOL CALLBACK n2e_EnumProc(HWND hwnd, LPARAM lParam)
   return TRUE;
 }
 
-VOID n2e_Reload_Settings()
+void n2e_Reload_Settings()
 {
   EnumWindows(n2e_EnumProc, (LPARAM)hwndMain);
 }
@@ -588,7 +588,7 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
   return  i > 0 && lstrcmp(fn, szCurFile);
 }
 
-VOID n2e_GetLastDir(LPTSTR out)
+void n2e_GetLastDir(LPTSTR out)
 {
   WCHAR	tch[MAX_PATH];
   INT count = MRU_Enum(pFileMRU, 0, NULL, 0);
@@ -614,7 +614,7 @@ VOID n2e_GetLastDir(LPTSTR out)
   }
 }
 
-VOID n2e_Grep(VOID* _lpf, BOOL grep)
+void n2e_Grep(void* _lpf, BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
