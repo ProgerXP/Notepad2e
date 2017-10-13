@@ -33,6 +33,8 @@ struct TEncodingData
 };
 
 #define MAX_INPUT_STRING_LENGTH 512*1024
+#define STR2HEX_TEXT_BUFFER_SIZE_MIN 65536
+#define STR2HEX_TEXT_BUFFER_SIZE_MAX STR2HEX_TEXT_BUFFER_SIZE_MIN * 10
 
 struct TStringSource
 {
@@ -44,8 +46,7 @@ struct TStringSource
 typedef struct TStringSource StringSource;
 
 LPCSTR EncodeStringToHex(LPCSTR text, const int encoding);
-//LPCSTR EncodeStringToHex(LPCWSTR text, const int encoding);
-void DecodeHexToString(LPCSTR text);
+LPCSTR DecodeHexToString(LPCSTR text, const int encoding);
 void EncodeStrToHex(const HWND hwnd);
 void DecodeHexToStr(const HWND hwnd);
 

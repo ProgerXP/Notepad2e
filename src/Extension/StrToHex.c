@@ -7,8 +7,6 @@ extern "C" { // C-Declarations
 #endif //__cplusplus
 
 #define MIN_VALID_CHAR_CODE 0x21
-#define TEXT_BUFFER_SIZE_MIN 65536
-#define TEXT_BUFFER_SIZE_MAX TEXT_BUFFER_SIZE_MIN * 10
 
 BOOL bBreakOnError = TRUE;
 
@@ -351,10 +349,10 @@ BOOL EncodingSettings_Init(const StringSource* pSS, struct TEncodingData* pED, c
     return FALSE;
   }
   pED->m_bChar2Hex = bChar2Hex;
-  long iBufferSize = TEXT_BUFFER_SIZE_MIN;
-  while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < TEXT_BUFFER_SIZE_MAX))
+  long iBufferSize = STR2HEX_TEXT_BUFFER_SIZE_MIN;
+  while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < STR2HEX_TEXT_BUFFER_SIZE_MAX))
   {
-    iBufferSize += TEXT_BUFFER_SIZE_MIN;
+    iBufferSize += STR2HEX_TEXT_BUFFER_SIZE_MIN;
   }
   TextBuffer_Init(&pED->m_tb, iBufferSize);
   TextBuffer_Init(&pED->m_tbRes, iBufferSize * 4);
@@ -563,18 +561,12 @@ LPCSTR EncodeStringToHex(LPCSTR text, const int encoding)
   return ss.result;
 }
 
-// LPCSTR EncodeStringToHex(LPCWSTR text, const int encoding)
-// {
-//   iEncoding = encoding;
-//   strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);
-//   CodeStrHex(&ss, TRUE);
-//   return ss.result;
-// }
-
-void DecodeHexToString(LPCSTR text)
+LPCSTR DecodeHexToString(LPCSTR text, const int encoding)
 {
+  iEncoding = encoding;
   strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);
   CodeStrHex(&ss, FALSE);
+  return ss.result;
 }
 
 void EncodeStrToHex(const HWND hwnd)
