@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <Strsafe.h>
+#include <assert.h>
 #include "StrToHex.h"
 
 #ifdef __cplusplus
@@ -7,6 +8,10 @@ extern "C" { // C-Declarations
 #endif //__cplusplus
 
 #define MIN_VALID_CHAR_CODE 0x21
+#define DEFAULT_STR2HEX_BUFFER_SIZE 65536
+
+int STR2HEX_BUFFER_SIZE = DEFAULT_STR2HEX_BUFFER_SIZE;
+int STR2HEX_BUFFER_SIZE_MAX = DEFAULT_STR2HEX_BUFFER_SIZE * 10;
 
 BOOL bBreakOnError = TRUE;
 
@@ -20,6 +25,13 @@ void MemFree(LPVOID ptr)
   GlobalFree(ptr);
 }
 
+void TSS_Init(StringSource* pSS, LPCSTR text)
+{
+  pSS->iTextLength = strlen(text);
+  pSS->iProcessedChars = 0;
+  strncpy_s(pSS->text, sizeof(pSS->text), text, _TRUNCATE);
+}
+
 long TSS_GetSelectionStart(const StringSource* pSS)
 {
   return pSS->hwnd
@@ -31,17 +43,29 @@ long TSS_GetSelectionEnd(const StringSource* pSS)
 {
   return pSS->hwnd
     ? SendMessage(pSS->hwnd, SCI_GETSELECTIONEND, 0, 0)
-    : 0;
+    : pSS->iTextLength;
 }
 
 long TSS_GetLength(const StringSource* pSS)
 {
   return pSS->hwnd
     ? SendMessage(pSS->hwnd, SCI_GETLENGTH, 0, 0)
-    : strlen(pSS->text);
+    : pSS->iTextLength;
 }
 
-BOOL GetText(const StringSource* pSS, LPSTR pText, const long iStart, const long iEnd)
+long TSS_IsDataPortionAvailable(const StringSource* pSS, struct TEncodingData* pED)
+{
+  if (pSS->hwnd)
+  {
+    return pED->m_tr.m_iPositionCurrent < pED->m_tr.m_iSelEnd;
+  }
+  else
+  {
+    return pSS->iProcessedChars < pSS->iTextLength;
+  }
+}
+
+BOOL TSS_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long iEnd)
 {
   LPSTR res = NULL;
   const long length = iEnd - iStart;
@@ -57,7 +81,7 @@ BOOL GetText(const StringSource* pSS, LPSTR pText, const long iStart, const long
     }
     else
     {
-      strncpy_s(tr.lpstrText, tr.chrg.cpMax - tr.chrg.cpMin + 1, &pSS->text[tr.chrg.cpMin], _TRUNCATE);
+      strncpy_s(tr.lpstrText, (iEnd - iStart) + 1, &pSS->text[pSS->iProcessedChars], _TRUNCATE);
       return TRUE;
     }
   }
@@ -167,7 +191,7 @@ BOOL TextBuffer_Update(struct TTextBuffer* pTB, LPSTR ptr, const int iSize)
 
 BOOL TextBuffer_IsPosOKImpl(struct TTextBuffer* pTB, const int requiredChars)
 {
-  return pTB->m_iPos < pTB->m_iSize - 1 - requiredChars;
+  return pTB->m_iPos <= pTB->m_iSize - 1 - requiredChars;
 }
 
 BOOL TextBuffer_IsPosOK(struct TTextBuffer* pTB)
@@ -238,13 +262,48 @@ BOOL TextBuffer_IsDataPortionAvailable(struct TTextBuffer* pTB, const long iRequ
   return FALSE;
 }
 
-void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB)
+void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
 {
   if (IsUnicodeEncodingMode())
   {
-	  int cbDataWide = (pTB->m_iMaxPos * sizeof(WCHAR) + 1);
+	  int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = MemAlloc(cbDataWide);
     cbDataWide = MultiByteToWideChar(CP_UTF8, 0, pTB->m_ptr, pTB->m_iMaxPos, lpDataWide, cbDataWide/sizeof(WCHAR)) * sizeof(WCHAR);
+    lpDataWide[pTB->m_iMaxPos] = 0;
+
+    #define INVALID_UNICODE_CHAR    0xFFFD
+    LPWSTR lpInvalidCharPos = wcschr(lpDataWide, INVALID_UNICODE_CHAR);
+    while (lpInvalidCharPos)
+    {
+      // block starts with specific code
+      if (lpInvalidCharPos == lpDataWide)
+      {
+        ++lpInvalidCharPos;
+        cbDataWide = (lpInvalidCharPos - lpDataWide) * sizeof(WCHAR);
+        lpInvalidCharPos[0] = 0;
+        if (piPositionCurrent)
+        {
+          (*piPositionCurrent) -= pTB->m_iMaxPos - WideCharToMultiByte(CP_UTF8, 0, lpDataWide, wcslen(lpDataWide), NULL, 0, NULL, NULL);
+        }
+        break;
+      }
+      // invalid char is a part of truncated UTF-8 sequence
+      if (lpInvalidCharPos && (lpInvalidCharPos < lpDataWide + pTB->m_iMaxPos - 2))
+      {
+        cbDataWide = (lpInvalidCharPos - lpDataWide) * sizeof(WCHAR);
+        lpInvalidCharPos[0] = 0;
+        if (piPositionCurrent)
+        {
+          (*piPositionCurrent) -= pTB->m_iMaxPos - WideCharToMultiByte(CP_UTF8, 0, lpDataWide, wcslen(lpDataWide), NULL, 0, NULL, NULL);
+        }
+        break;
+      }
+      lpInvalidCharPos = wcschr(lpInvalidCharPos+1, INVALID_UNICODE_CHAR);
+    }
+    if (piUnicodeProcessedChars)
+    {
+      *piUnicodeProcessedChars = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, wcslen(lpDataWide), NULL, 0, NULL, NULL);
+    }
     if (!IsReverseUnicodeEncodingMode())
     {
       _swab((char *)lpDataWide, (char *)lpDataWide, cbDataWide);
@@ -303,7 +362,12 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
     int cbData = pTB->m_iPos * 2 + 16;
     LPWSTR lpDataWide = MemAlloc(cbData);
     cbData = MultiByteToWideChar(uCodePage, 0, pTB->m_ptr, pTB->m_iPos, lpDataWide, cbData);
-    pTB->m_iPos = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, cbData, pTB->m_ptr, pTB->m_iPos, NULL, NULL);
+    const int requiredBufferSize = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, cbData, NULL, 0, NULL, NULL);
+    if (requiredBufferSize >= pTB->m_iMaxPos)
+    {
+      TextBuffer_Init(pTB, requiredBufferSize+1);
+    }
+    pTB->m_iPos = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, cbData, pTB->m_ptr, pTB->m_iMaxPos, NULL, NULL);
     pTB->m_ptr[pTB->m_iPos] = 0;
     MemFree(lpDataWide);
   }
@@ -319,20 +383,16 @@ BOOL TextRange_Init(const StringSource* pSS, struct TTextRange* pTR)
     pTR->m_iSelStart = 0;
     pTR->m_iSelEnd = TSS_GetLength(pSS);
   };
-  pTR->m_iPositionStart = pTR->m_iSelStart;
   pTR->m_iPositionCurrent = pTR->m_iSelStart;
+  pTR->m_iExpectedProcessedChars = 0;
+  
   return pTR->m_iSelStart != pTR->m_iSelEnd;
 }
 
-BOOL TextRange_IsDataPortionAvailable(struct TTextRange* pTR)
-{
-  return pTR->m_iPositionCurrent < pTR->m_iSelEnd;
-}
-
-BOOL TextRange_GetNextDataPortion(const StringSource* pSS, struct TTextRange* pTR, struct TTextBuffer* pTB)
+BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, struct TTextBuffer* pTB)
 {
   const long iEnd = min(pTR->m_iPositionCurrent + pTB->m_iSize - 1, pTR->m_iSelEnd);
-  if (GetText(pSS, pTB->m_ptr, pTR->m_iPositionCurrent, iEnd))
+  if (TSS_GetText(pSS, pTB->m_ptr, pTR->m_iPositionCurrent, iEnd))
   {
     TextBuffer_ResetPos(pTB, iEnd - pTR->m_iPositionCurrent);
     pTR->m_iPositionStart = pTR->m_iPositionCurrent;
@@ -349,10 +409,10 @@ BOOL EncodingSettings_Init(const StringSource* pSS, struct TEncodingData* pED, c
     return FALSE;
   }
   pED->m_bChar2Hex = bChar2Hex;
-  long iBufferSize = STR2HEX_TEXT_BUFFER_SIZE_MIN;
-  while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < STR2HEX_TEXT_BUFFER_SIZE_MAX))
+  long iBufferSize = STR2HEX_BUFFER_SIZE;
+  while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < STR2HEX_BUFFER_SIZE_MAX))
   {
-    iBufferSize += STR2HEX_TEXT_BUFFER_SIZE_MIN;
+    iBufferSize += STR2HEX_BUFFER_SIZE;
   }
   TextBuffer_Init(&pED->m_tb, iBufferSize);
   TextBuffer_Init(&pED->m_tbRes, iBufferSize * 4);
@@ -367,15 +427,19 @@ void EncodingSettings_Free(struct TEncodingData* pED)
   TextBuffer_Free(&pED->m_tbTmp);
 }
 
-BOOL CodeStrHex_Char2Hex(struct TEncodingData* pED)
+BOOL CodeStrHex_Char2Hex(struct TEncodingData* pED, long* piCharsProcessed)
 {
   const char ch = TextBuffer_PopChar(&pED->m_tb);
   TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[(ch >> 4) & 0xF]);
   TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[ch & 0xF]);
+  if (piCharsProcessed)
+  {
+    (*piCharsProcessed) += 1;
+  }
   return TRUE;
 }
 
-BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED)
+BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED, long* piCharsProcessed)
 {
   if (IsUnicodeEncodingMode())
   {
@@ -397,6 +461,10 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED)
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
       }
+      if (piCharsProcessed)
+      {
+        (*piCharsProcessed) += 4;
+      }
       return TRUE;
     }
     return FALSE;
@@ -409,6 +477,10 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED)
     {
       const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
+      if (piCharsProcessed)
+      {
+        (*piCharsProcessed) += 2;
+      }
       return TRUE;
     }
     return FALSE;
@@ -421,13 +493,19 @@ BOOL CodeStrHex_ProcessDataPortion(StringSource* pSS, struct TEncodingData* pED)
   BOOL bRes = TRUE;
   long iCursorOffset = 0;
   BOOL charsProcessed = FALSE;
+  long iCharsProcessed = 0;
   if (pED->m_bChar2Hex)
   {
-    TextBuffer_NormalizeBeforeEncode(&pED->m_tb);
+    TextBuffer_NormalizeBeforeEncode(&pED->m_tb, &pED->m_tr.m_iPositionCurrent, &pED->m_tr.m_iExpectedProcessedChars);
+    if (pED->m_tr.m_iExpectedProcessedChars
+        && (pED->m_tbRes.m_iSize < pED->m_tr.m_iExpectedProcessedChars * 4))
+    {
+      TextBuffer_Init(&pED->m_tbRes, (pED->m_tr.m_iExpectedProcessedChars + 1) * 4);
+    }
     while (TextBuffer_IsDataPortionAvailable(&pED->m_tb, 1, FALSE)
            && TextBuffer_IsPosOK(&pED->m_tbRes))
     {
-      charsProcessed |= CodeStrHex_Char2Hex(pED);
+      charsProcessed |= CodeStrHex_Char2Hex(pED, &iCharsProcessed);
     }
     iCursorOffset = pED->m_tbRes.m_iPos - (pED->m_tr.m_iPositionCurrent - pED->m_tr.m_iPositionStart);
     if (!TextBuffer_IsPosOK(&pED->m_tbRes))
@@ -441,7 +519,10 @@ BOOL CodeStrHex_ProcessDataPortion(StringSource* pSS, struct TEncodingData* pED)
   {
     while (TextBuffer_IsDataPortionAvailable(&pED->m_tb, RequiredCharsForCode(), FALSE))
     {
-      charsProcessed |= CodeStrHex_Hex2Char(pED);
+      auto res = CodeStrHex_Hex2Char(pED, &iCharsProcessed);
+      charsProcessed |= res;
+      if (!res)
+        break;
     }
     if (charsProcessed)
     {
@@ -494,8 +575,24 @@ BOOL CodeStrHex_ProcessDataPortion(StringSource* pSS, struct TEncodingData* pED)
     else
     {
       strncpy_s(pSS->result + pED->m_tr.m_iPositionStart,
-                sizeof(pSS->result) - pED->m_tr.m_iPositionStart,
+                MAX_TEST_STRING_LENGTH - pED->m_tr.m_iPositionStart,
                 pED->m_tbRes.m_ptr, _TRUNCATE);
+    }
+    if (pED->m_bChar2Hex && IsUnicodeEncodingMode())
+    {
+      if (pED->m_tr.m_iExpectedProcessedChars)
+      {
+        pSS->iProcessedChars += pED->m_tr.m_iExpectedProcessedChars;
+      }
+      else
+      {
+        pSS->iProcessedChars += iCharsProcessed / 2;
+      }
+      pED->m_tr.m_iExpectedProcessedChars = 0;
+    }
+    else
+    {
+      pSS->iProcessedChars += iCharsProcessed;
     }
     pED->m_tr.m_iPositionCurrent += iCursorOffset;
     pED->m_tr.m_iSelEnd += iCursorOffset;
@@ -509,8 +606,18 @@ BOOL CodeStrHex_ProcessDataPortion(StringSource* pSS, struct TEncodingData* pED)
   return bRes;
 }
 
-void CodeStrHex(StringSource* pSS, const BOOL bChar2Hex)
+void CodeStrHex(StringSource* pSS, const BOOL bChar2Hex, const int bufferSize)
 {
+  if (bufferSize > 0)
+  {
+    STR2HEX_BUFFER_SIZE = bufferSize;
+    STR2HEX_BUFFER_SIZE_MAX = bufferSize;
+  }
+  else
+  {
+    STR2HEX_BUFFER_SIZE = DEFAULT_STR2HEX_BUFFER_SIZE;
+    STR2HEX_BUFFER_SIZE_MAX = DEFAULT_STR2HEX_BUFFER_SIZE * 10;
+  }
   if (pSS->hwnd)
   {
     SendMessage(pSS->hwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
@@ -523,8 +630,12 @@ void CodeStrHex(StringSource* pSS, const BOOL bChar2Hex)
   }
   n2e_ShowProgressBarInStatusBar(bChar2Hex ? L"String to Hex..." : L"Hex to String...", 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
   BOOL bProcessFailed = FALSE;
-  while (TextRange_IsDataPortionAvailable(&ed.m_tr))
+  while (TSS_IsDataPortionAvailable(pSS, &ed))
   {
+    if (ed.m_tb.m_iSize < STR2HEX_BUFFER_SIZE)
+    {
+      TextBuffer_Init(&ed.m_tb, STR2HEX_BUFFER_SIZE);
+    }
     if (TextRange_GetNextDataPortion(pSS, &ed.m_tr, &ed.m_tb))
     {
       if (!CodeStrHex_ProcessDataPortion(pSS, &ed))
@@ -553,32 +664,32 @@ void CodeStrHex(StringSource* pSS, const BOOL bChar2Hex)
 
 static StringSource ss = { 0 };
 
-LPCSTR EncodeStringToHex(LPCSTR text, const int encoding)
+LPCSTR EncodeStringToHex(LPCSTR text, const int encoding, const int bufferSize)
 {
   iEncoding = encoding;
-  strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);  
-  CodeStrHex(&ss, TRUE);
+  TSS_Init(&ss, text);
+  CodeStrHex(&ss, TRUE, bufferSize);
   return ss.result;
 }
 
-LPCSTR DecodeHexToString(LPCSTR text, const int encoding)
+LPCSTR DecodeHexToString(LPCSTR text, const int encoding, const int bufferSize)
 {
   iEncoding = encoding;
-  strncpy_s(ss.text, sizeof(ss.text), text, _TRUNCATE);
-  CodeStrHex(&ss, FALSE);
+  TSS_Init(&ss, text);
+  CodeStrHex(&ss, FALSE, bufferSize);
   return ss.result;
 }
 
 void EncodeStrToHex(const HWND hwnd)
 {
   ss.hwnd = hwnd;
-  CodeStrHex(&ss, TRUE);
+  CodeStrHex(&ss, TRUE, -1);
 }
 
 void DecodeHexToStr(const HWND hwnd)
 {
   ss.hwnd = hwnd;
-  CodeStrHex(&ss, FALSE);
+  CodeStrHex(&ss, FALSE, -1);
 }
 
 #ifdef __cplusplus

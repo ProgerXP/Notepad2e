@@ -1,7 +1,14 @@
 #pragma once
 #include "Scintilla.h"
 
-#ifdef N2E_TESTING
+#ifndef N2E_TESTING
+
+#include "Edit.h"
+#include "Utils.h"
+extern NP2ENCODING mEncoding[];
+extern	int       iEncoding;
+
+#else // ifndef N2E_TESTING
 
 #define NCP_DEFAULT            1
 #define NCP_UTF8               2
@@ -116,10 +123,4 @@ void n2e_HideProgressBarInStatusBar() {}
 void n2e_UpdateProgressBarInStatusBar(const long nCurPos) {}
 void n2e_AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos){}
 
-#else
-#include "Edit.h"
-#include "Utils.h"
-
-extern NP2ENCODING mEncoding[];
-extern	int       iEncoding;
 #endif

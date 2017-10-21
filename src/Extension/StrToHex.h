@@ -21,6 +21,7 @@ struct TTextRange
   long m_iSelEnd;
   long m_iPositionStart;
   long m_iPositionCurrent;
+  long m_iExpectedProcessedChars;
 };
 
 struct TEncodingData
@@ -32,21 +33,21 @@ struct TEncodingData
   BOOL m_bChar2Hex;
 };
 
-#define MAX_INPUT_STRING_LENGTH 512*1024
-#define STR2HEX_TEXT_BUFFER_SIZE_MIN 65536
-#define STR2HEX_TEXT_BUFFER_SIZE_MAX STR2HEX_TEXT_BUFFER_SIZE_MIN * 10
+#define MAX_TEST_STRING_LENGTH 1200000
 
 struct TStringSource
 {
   HWND hwnd;
-  char text[MAX_INPUT_STRING_LENGTH];
-  char result[MAX_INPUT_STRING_LENGTH*4];
+  char text[MAX_TEST_STRING_LENGTH];
+  char result[MAX_TEST_STRING_LENGTH];
+  int iTextLength;
+  int iProcessedChars;
 };
 
 typedef struct TStringSource StringSource;
 
-LPCSTR EncodeStringToHex(LPCSTR text, const int encoding);
-LPCSTR DecodeHexToString(LPCSTR text, const int encoding);
+LPCSTR EncodeStringToHex(LPCSTR text, const int encoding, const int bufferSize);
+LPCSTR DecodeHexToString(LPCSTR text, const int encoding, const int bufferSize);
 void EncodeStrToHex(const HWND hwnd);
 void DecodeHexToStr(const HWND hwnd);
 

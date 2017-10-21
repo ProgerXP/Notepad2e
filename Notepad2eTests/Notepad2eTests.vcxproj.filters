@@ -22,17 +22,17 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\src\Extension\StrToHex.h">
-      <Filter>External</Filter>
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Extension\StrToHex.c">
-      <Filter>External</Filter>
-    </ClCompile>
     <ClCompile Include="TextEncodingTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\Extension\StrToHex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
