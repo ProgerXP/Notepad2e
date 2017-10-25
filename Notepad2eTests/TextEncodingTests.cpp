@@ -145,7 +145,9 @@ namespace Notepad2eTests
     TEST_METHOD(TestBase64_FileSamples)
     {
       CTestCaseData data[] = {
-        CTestCaseData(true, "TODO", CPI_DEFAULT, "TODO"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_Base64_UTF8.txt"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UTF8, "StrToHex\\TestFile1_Base64_UTF8_big.txt"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "StrToHex\\TestFile1_Base64_SHIFT-JIS.txt"),
       };
       DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);
@@ -158,7 +160,8 @@ namespace Notepad2eTests
     TEST_METHOD(TestQP_StringSamples)
     {
       const CTestCaseData data[] = {
-        CTestCaseData(false, "TODO", CPI_DEFAULT, "TODO"),
+        CTestCaseData(false, "test string", CPI_DEFAULT, "test string"),
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "=D1=82=D0=B5=D1=81=D1=82=D0=BE=D0=B2=D0=B0=D1=8F=D1=81=D1=82=D1=80=D0=BE=D0=BA=D0=B0")
       };
       DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
@@ -167,7 +170,9 @@ namespace Notepad2eTests
     TEST_METHOD(TestQP_FileSamples)
     {
       CTestCaseData data[] = {
-        CTestCaseData(true, "TODO", CPI_DEFAULT, "TODO"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_QP_UTF8.txt"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UTF8, "StrToHex\\TestFile1_QP_UTF8_big.txt"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "StrToHex\\TestFile1_QP_SHIFT-JIS.txt"),
       };
       DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
