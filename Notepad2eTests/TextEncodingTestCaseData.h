@@ -66,13 +66,20 @@ private:
   std::string strSrc;
   int iEncoding;
   std::string strExpectedRes;
+  bool isDecodeOnly;              // result sample is impure, data is for decoding test only
+                                  // sufficient buffer size for decoder is required
+  int iDecodeOnlyMinBufferSize;
 public:
-  CTestCaseData(const bool file, const std::string src, const int encoding, const std::string res)
-    : isFile(file), strSrc(src), iEncoding(encoding), strExpectedRes(res)
+  CTestCaseData(const bool file, const std::string src, const int encoding, const std::string res, 
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+    : isFile(file), strSrc(src), iEncoding(encoding), strExpectedRes(res), isDecodeOnly(decodeOnly),
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
   {
   }
-  CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res)
-    : isFile(file), strSrc(UCS2toUTF8(src)), iEncoding(encoding), strExpectedRes(res)
+  CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res,
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+    : isFile(file), strSrc(UCS2toUTF8(src)), iEncoding(encoding), strExpectedRes(res), isDecodeOnly(decodeOnly),
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
   {
   }
   static std::string LoadFile(const std::string filename)
@@ -97,6 +104,14 @@ public:
   bool IsFile() const
   {
     return isFile;
+  }
+  bool IsDecodeOnly() const
+  {
+    return isDecodeOnly;
+  }
+  int GetDecodeOnlyMinBufferSize() const
+  {
+    return iDecodeOnlyMinBufferSize;
   }
   LPCSTR GetPlainSource() const
   {

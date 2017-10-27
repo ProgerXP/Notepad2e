@@ -25,12 +25,21 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
     for (auto i = 0; i < count; i++)
     {
       const auto info = pData[i];
+      const int bufferSizeOld = bufferSize;
+      if (!isEncoding && info.IsDecodeOnly() && (bufferSize > 0))
+      {
+        if (bufferSize < info.GetDecodeOnlyMinBufferSize())
+        {
+          bufferSize = info.GetDecodeOnlyMinBufferSize();
+        }
+        assert(bufferSize >= bufferSizeOld);
+      }
       std::wstring errorMessage(isEncoding ? L"Encoding, " : L"Decoding, ");
       errorMessage += info.GetErrorMessageText();
       errorMessage += L", ";
       errorMessage += L" source: " + CPtoUCS2(info.GetPlainSource(), CP_ACP);
       errorMessage += L"\r\n";
-      if (isEncoding)
+      if (isEncoding && !info.IsDecodeOnly())
       {
         errorMessage += info.GetErrorMessageText();
         if (!info.IsFile())
@@ -47,7 +56,7 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
           }
         }
       }
-      else
+      else if (!isEncoding)
       {
         if (!info.IsFile())
         {
@@ -60,6 +69,7 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
           Assert::Fail(errorMessage.c_str(), LINE_INFO());
         }
       }
+      bufferSize = bufferSizeOld;
     }
     bufferSize = max(MIN_BUFFER_SIZE, min(MAX_BUFFER_SIZE, rand()));
     ++bufferTestCount;
@@ -104,6 +114,7 @@ namespace Notepad2eTests
       const CTestCaseData data[] = {
           CTestCaseData(false, "test", CPI_DEFAULT, "74657374"),
           CTestCaseData(false, "test", CPI_UNICODE, "0074006500730074"),
+          CTestCaseData(false, L"тестовая строка", CPI_UTF8, "D182 D0B  5D181D1\r\n82D0BED  0B2D 0B0  D18F20\rD1\n   81D \r182D1  80D0BED    0BAD 0 B 0", true/*test decode only*/, MIN_BUFFER_SIZE*10),
           CTestCaseData(false, L"тестовая строка", CPI_UTF8, "D182D0B5D181D182D0BED0B2D0B0D18F20D181D182D180D0BED0BAD0B0"),
           CTestCaseData(false, UCS2toCP(L"тестовая строка", CP_WINDOWS_1251), CPI_DEFAULT, "F2E5F1F2EEE2E0FF20F1F2F0EEEAE0"),
           CTestCaseData(false, UCS2toCP(L"test string", CP_WINDOWS_1250), CPI_DEFAULT, "7465737420737472696E67"),
@@ -118,6 +129,7 @@ namespace Notepad2eTests
       CTestCaseData data[] = {
         CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_Hex_UTF8.txt"),
         CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE.txt"),
+        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE_impure.txt", true, MIN_BUFFER_SIZE*30),
         CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE_big.txt"),
         CTestCaseData(true, "StrToHex\\TestFile1__src_1251.txt", CPI_DEFAULT/*no need to recode file contents*/, "StrToHex\\TestFile1_Hex_1251.txt"),
         CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT/*no need to recode file contents*/, "StrToHex\\TestFile1_Hex_SHIFT-JIS.txt"),

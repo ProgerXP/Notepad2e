@@ -228,7 +228,7 @@ BOOL TextBuffer_PushChar(struct TTextBuffer* pTB, const char ch)
   return TRUE;
 }
 
-BOOL TextBuffer_GetHexChar(struct TTextBuffer* pTB, char* pCh)
+BOOL TextBuffer_GetHexChar(struct TTextBuffer* pTB, char* pCh, long* piCharsProcessed)
 {
   *pCh = MIN_VALID_CHAR_CODE - 1;
   int charsProcessed = 0;
@@ -236,6 +236,10 @@ BOOL TextBuffer_GetHexChar(struct TTextBuffer* pTB, char* pCh)
   {
     *pCh = TextBuffer_PopChar(pTB);
     ++charsProcessed;
+    if (piCharsProcessed)
+    {
+      ++(*piCharsProcessed);
+    }
   }
   const BOOL res = (*pCh >= MIN_VALID_CHAR_CODE);
   if (!res)
@@ -243,6 +247,10 @@ BOOL TextBuffer_GetHexChar(struct TTextBuffer* pTB, char* pCh)
     while (charsProcessed--)
     {
       TextBuffer_DecPos(pTB);
+      if (piCharsProcessed)
+      {
+        --(*piCharsProcessed);
+      }
     }
   }
   return res;
@@ -444,10 +452,10 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED, long* piCharsProcessed)
   if (IsUnicodeEncodingMode())
   {
     char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
-    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded3)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded4))
+    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2, piCharsProcessed)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded3, piCharsProcessed)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded4, piCharsProcessed))
     {
       const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
@@ -461,10 +469,6 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED, long* piCharsProcessed)
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
       }
-      if (piCharsProcessed)
-      {
-        (*piCharsProcessed) += 4;
-      }
       return TRUE;
     }
     return FALSE;
@@ -472,15 +476,11 @@ BOOL CodeStrHex_Hex2Char(struct TEncodingData* pED, long* piCharsProcessed)
   else
   {
     char chEncoded1, chEncoded2;
-    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2))
+    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2, piCharsProcessed))
     {
       const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
-      if (piCharsProcessed)
-      {
-        (*piCharsProcessed) += 2;
-      }
       return TRUE;
     }
     return FALSE;
