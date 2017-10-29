@@ -4012,7 +4012,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
                               (HIMAGELIST)SHGetFileInfo(L"C:\\", 0, &shfi, sizeof(SHFILEINFO), SHGFI_LARGEICON | SHGFI_SYSICONINDEX),
                               LVSIL_NORMAL);
 
-        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(hwndLV, 0, &lvc);
 
         // Add lexers

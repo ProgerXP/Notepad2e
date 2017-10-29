@@ -464,7 +464,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
 
-        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_OPENWITHDIR),/*LVS_EX_FULLROWSELECT|*/LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_SetExtendedListViewStyle(GetDlgItem(hwnd, IDC_OPENWITHDIR), LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
         ListView_InsertColumn(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, &lvc);
         DirList_Init(GetDlgItem(hwnd, IDC_OPENWITHDIR), NULL);
         DirList_Fill(GetDlgItem(hwnd, IDC_OPENWITHDIR), tchOpenWithDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
