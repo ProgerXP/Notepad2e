@@ -848,7 +848,7 @@ void remove_char(char* str, char c)
   *pw = '\0';
 }
 
-#define WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC L"OriginalWindowProc"
+#define PROPERTY_ORIGINAL_WINDOW_PROC L"OriginalWindowProc"
 
 LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -946,12 +946,12 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     default:
       break;
   }
-  return CallWindowProc((WNDPROC)GetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
 }
 
 BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd)
 {
-  return GetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC) != 0;
+  return GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC) != 0;
 }
 
 BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
@@ -960,7 +960,7 @@ BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
   HWND hwndEdit = FindWindowEx(hwndCombo, NULL, WC_EDIT, NULL);
   if (hwndEdit && !n2e_IsSubclassedEditInCombo(hwndEdit))
   {
-    SetProp(hwndEdit, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (LONG_PTR)n2e_FindEditWndProc));
+    SetProp(hwndEdit, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (LONG_PTR)n2e_FindEditWndProc));
     return TRUE;
   }
   return FALSE;
@@ -1016,12 +1016,12 @@ LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     default:
       break;
   }
-  return CallWindowProc((WNDPROC)GetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
 }
 
 BOOL n2e_SubclassOpenDialog(const HWND hwnd)
 {
-  SetProp(hwnd, WINDOW_PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (long)n2e_OpenDialogWndProc));
+  SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (long)n2e_OpenDialogWndProc));
   return TRUE;
 }
 
