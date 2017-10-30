@@ -90,13 +90,15 @@ BOOL TSS_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long i
 
 int IntByHexDigit(const unsigned char ch)
 {
+#define MIN_HEX_DIGIT_VALUE 10
+
   if (ch >= 'a')
   {
-    return (ch - 'a') + 10;
+    return (ch - 'a') + MIN_HEX_DIGIT_VALUE;
   }
   else if (ch >= 'A')
   {
-    return (ch - 'A') + 10;
+    return (ch - 'A') + MIN_HEX_DIGIT_VALUE;
   }
   else
   {

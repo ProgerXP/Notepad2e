@@ -107,25 +107,27 @@ void n2e_EditInit()
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
 
-  n2e_EditSelectionInit(L"SelectionType", 6, N2E_SELECT_INDICATOR,
+#define DEFAULT_SECTION 6
+
+  n2e_EditSelectionInit(L"SelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR,
                         L"SelectionAlpha", 0,
                         L"SelectionLineAlpha", 0,
                         L"SelectionColor", RGB(0x00, 0x00, 0x00),
                         L"SelectionUnder", 0);
   
-  n2e_EditSelectionInit(L"PageSelectionType", 6, N2E_SELECT_INDICATOR_PAGE,
+  n2e_EditSelectionInit(L"PageSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_PAGE,
                         L"PageSelectionAlpha", 0,
                         L"PageSelectionLineAlpha", 0,
                         L"PageSelectionColor", RGB(0x00, 0x00, 0x90),
                         L"PageSelectionUnder", 0);
   
-  n2e_EditSelectionInit(L"SingleSelectionType", 6, N2E_SELECT_INDICATOR_SINGLE,
+  n2e_EditSelectionInit(L"SingleSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_SINGLE,
                         L"SingleSelectionAlpha", 0,
                         L"SingleSelectionLineAlpha", 0,
                         L"SingleSelectionColor", RGB(0x90, 0x00, 0x00),
                         L"SingleSelectionUnder", 0);
 
-  n2e_EditSelectionInit(L"EditSelectionType", 6, N2E_SELECT_INDICATOR_EDIT,
+  n2e_EditSelectionInit(L"EditSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_EDIT,
                         L"EditSelectionAlpha", 100,
                         L"EditSelectionLineAlpha", 0,
                         L"EditSelectionColor", RGB(0xaa, 0xaa, 0x00),
@@ -405,8 +407,7 @@ void n2e_SelectionHighlightTurn()
   }
   else
   {
-    int old;
-    old = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
+    const int old = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
     const int len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
     SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, N2E_SELECT_INDICATOR, 0);
     SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
@@ -624,7 +625,6 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
     bEditSelection = FALSE;
     bHighlightAll = TRUE;
 
-    //
     n2e_SelectionHighlightTurn();
     SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;

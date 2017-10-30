@@ -126,6 +126,18 @@ void n2e_ResetLastRun()
   *wchLastRun = 0;
 }
 
+#define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
+
+long BytesToKB(const long bytes)
+{
+  return bytes / 1024;
+}
+
+long KBToBytes(const long kb)
+{
+  return kb * 1024;
+}
+
 void n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
@@ -133,7 +145,7 @@ void n2e_LoadINI()
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
   iCSSSettings = IniGetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
   iShellMenuType = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
-  iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", 64) * 1024;
+  iMaxSearchDistance = KBToBytes(IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", DEFAULT_MAX_SEARCH_DISTANCE_KB));
   bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
@@ -152,7 +164,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
   IniSetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
   IniSetInt(N2E_INI_SECTION, L"ShellMenuType", iShellMenuType);
-  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", iMaxSearchDistance / 1024);
+  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", BytesToKB(iMaxSearchDistance));
   IniSetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
@@ -185,6 +197,9 @@ BOOL n2e_TestOffsetTail(WCHAR *wch)
 
 BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
 {
+#define RADIX_DEC 10
+#define RADIX_HEX 16
+
   BOOL ok = 0;
   int cou = 0;
   BOOL is_hex = 0;
@@ -195,10 +210,10 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
     {
       if (isdigit(temp[0]))
       {
-        *out = wcstol(temp, &ec, 10);
+        *out = wcstol(temp, &ec, RADIX_DEC);
         if (StrChr(L"abcdefABCDEFxh", *ec))
         {
-          *out = wcstol(temp, &ec, 16);
+          *out = wcstol(temp, &ec, RADIX_HEX);
           if (0 == *out)
           {
             return 0;
@@ -231,7 +246,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
         {
           return 0;
         }
-        *out = wcstol(temp, &ec, 16);
+        *out = wcstol(temp, &ec, RADIX_HEX);
         ok = n2e_TestOffsetTail(ec);
         N2E_TRACE_PLAIN("Result is (hex) %d (ok %d)", *out, ok);
         return ok;
@@ -241,7 +256,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
     {
       if (isdigit(temp[0]))
       {
-        *out = wcstol(temp, &ec, 10);
+        *out = wcstol(temp, &ec, RADIX_DEC);
         return 1;
       }
       else

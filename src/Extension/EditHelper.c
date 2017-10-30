@@ -22,6 +22,9 @@ extern HWND hwndToolbar;
 
 void n2e_StripHTMLTags(const HWND hwnd)
 {
+#define HTML_TAG_LEFT "<"
+#define HTML_TAG_RIGHT ">"
+
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
     return;
@@ -36,13 +39,13 @@ void n2e_StripHTMLTags(const HWND hwnd)
   {
     ttf1.chrg.cpMin = selbeg;
     ttf1.chrg.cpMax = 0;
-    ttf1.lpstrText = "<";
+    ttf1.lpstrText = HTML_TAG_LEFT;
     res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf1);
     if (-1 != res)
     {
       ttf2.chrg.cpMin = ttf1.chrgText.cpMax;
       ttf2.chrg.cpMax = len;
-      ttf2.lpstrText = ">";
+      ttf2.lpstrText = HTML_TAG_RIGHT;
       res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf2);
       if (-1 != res)
       {
@@ -57,13 +60,13 @@ void n2e_StripHTMLTags(const HWND hwnd)
     {
       ttf1.chrg.cpMin = selbeg;
       ttf1.chrg.cpMax = selend;
-      ttf1.lpstrText = "<";
+      ttf1.lpstrText = HTML_TAG_LEFT;
       res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf1);
       if (-1 != res)
       {
         ttf2.chrg.cpMin = ttf1.chrgText.cpMax;
         ttf2.chrg.cpMax = selend;
-        ttf2.lpstrText = ">";
+        ttf2.lpstrText = HTML_TAG_RIGHT;
         res = SendMessage(hwnd, SCI_FINDTEXT, 0, (LPARAM)&ttf2);
         if (-1 != res)
         {
@@ -1206,7 +1209,7 @@ void n2e_int2bin(unsigned int val, LPWSTR binString)
   for (i = 0; i < bitCount; i++)
     binString[i] = binString_temp[bitCount - i - 1];
 
-  binString[bitCount] = 0; //Null terminator
+  binString[bitCount] = 0;
 }
 
 BOOL n2e_IsExpressionEvaluationEnabled()
