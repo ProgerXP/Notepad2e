@@ -6740,7 +6740,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
   WCHAR szFolder[MAX_PATH];
   if (lstrcpyn(szFolder, szFileName, _countof(szFolder) - 1) && PathRemoveFileSpec(szFolder))
   {
-	  SetCurrentDirectory(szFolder);
+    SetCurrentDirectory(szFolder);
   }
   // [/2e]
 

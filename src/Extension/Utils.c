@@ -111,7 +111,7 @@ LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
   LPCWSTR def = wchLastRun;
   if (lstrlen(def) == 0)
   {
-	  def = lpstrDefault;
+    def = lpstrDefault;
   }
   return def;
 }

@@ -274,7 +274,7 @@ void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB, long* piPositionC
 {
   if (IsUnicodeEncodingMode())
   {
-	  int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
+    int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = MemAlloc(cbDataWide);
     cbDataWide = MultiByteToWideChar(CP_UTF8, 0, pTB->m_ptr, pTB->m_iMaxPos, lpDataWide, cbDataWide/sizeof(WCHAR)) * sizeof(WCHAR);
     lpDataWide[pTB->m_iMaxPos] = 0;
@@ -356,7 +356,7 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
   if (IsUnicodeEncodingMode())
   {
     LPSTR lpData = MemAlloc(pTB->m_iPos * 2 + 16);
-	  const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos/sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
+    const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos/sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
     lpData[cbData] = 0;
     TextBuffer_Update(pTB, lpData, cbData);
     pTB->m_iPos = cbData;

@@ -1849,7 +1849,7 @@ BOOL Style_Import(HWND hwnd)
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
   ofn.Flags = OFN_FILEMUSTEXIST | OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    		| OFN_PATHMUSTEXIST | OFN_SHAREAWARE;
+            | OFN_PATHMUSTEXIST | OFN_SHAREAWARE;
 
   if (GetOpenFileName(&ofn))
   {
@@ -1903,7 +1903,7 @@ BOOL Style_Export(HWND hwnd)
   ofn.lpstrDefExt = L"ini";
   ofn.nMaxFile = COUNTOF(szFile);
   ofn.Flags = OFN_HIDEREADONLY | OFN_NOCHANGEDIR | OFN_DONTADDTORECENT
-    		| OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_OVERWRITEPROMPT;
+            | OFN_PATHMUSTEXIST | OFN_SHAREAWARE | OFN_OVERWRITEPROMPT;
 
   if (GetSaveFileName(&ofn))
   {

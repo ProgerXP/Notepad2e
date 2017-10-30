@@ -375,7 +375,7 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             if (GetDlgItemText(hwnd, IDC_COMMANDLINE, arg1, MAX_PATH))
             {
               BOOL bQuickExit = FALSE;
-			  n2e_SetLastRun(arg1);
+              n2e_SetLastRun(arg1);
               ExpandEnvironmentStringsEx(arg1, COUNTOF(arg1));
               ExtractFirstArgument(arg1, arg1, arg2);
               if (lstrcmpi(arg1, L"notepad2") == 0 ||
