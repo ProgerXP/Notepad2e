@@ -20,7 +20,7 @@ extern int bFindWordWrapAround;
 extern TBBUTTON tbbMainWnd[];
 extern HWND hwndToolbar;
 
-void n2e_StripHTMLTags(HWND hwnd)
+void n2e_StripHTMLTags(const HWND hwnd)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
@@ -86,7 +86,7 @@ void n2e_StripHTMLTags(HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-BOOL n2e_ShowPromptIfSelectionModeIsRectangle(HWND hwnd)
+BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
 {
   if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
   {
@@ -98,7 +98,7 @@ BOOL n2e_ShowPromptIfSelectionModeIsRectangle(HWND hwnd)
 
 extern BOOL bAutoIndent;
 
-LPSTR GetLinePrefix(HWND hwnd, int iLine, LPBOOL pbLineEmpty)
+LPSTR GetLinePrefix(const HWND hwnd, const int iLine, LPBOOL pbLineEmpty)
 {
   *pbLineEmpty = TRUE;
   LPSTR pszPrefix = NULL;
@@ -132,7 +132,7 @@ void FreeLinePrefix(LPSTR pszPrefix)
   }
 }
 
-void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
+void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInsertAbove)
 {
   const BOOL bAutoIndentOrigin = bAutoIndent;
   bAutoIndent = 0;
@@ -150,7 +150,7 @@ void InsertNewLineWithPrefix(HWND hwnd, LPSTR pszPrefix, BOOL bInsertAbove)
   }
 }
 
-void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove)
+void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
 {
   if (n2e_SelectionEditStop(SES_APPLY))
   {
@@ -217,27 +217,21 @@ void n2e_EditInsertNewLine(HWND hwnd, BOOL insertAbove)
   FreeLinePrefix(pszPrefixText);
 }
 
-VOID	n2e_AdjustOffset(int *pos, BOOL in)
+void n2e_AdjustOffset(const int pos)
 {
   N2E_TRACE_PLAIN("UTF8 %d", mEncoding[iEncoding].uFlags & NCP_UTF8);
   N2E_TRACE_PLAIN("8Bit %d", mEncoding[iEncoding].uFlags & NCP_8BIT);
   N2E_TRACE_PLAIN("UNicode %d", mEncoding[iEncoding].uFlags & NCP_UNICODE);
-  N2E_TRACE_PLAIN("offset is %d", *pos);
+  N2E_TRACE_PLAIN("offset is %d", pos);
 }
 
-void n2e_JumpToOffset(HWND hwnd, int iNewPos)
+void n2e_JumpToOffset(const HWND hwnd, const int iNewPos)
 {
-  n2e_AdjustOffset(&iNewPos, TRUE);
+  n2e_AdjustOffset(iNewPos);
   SendMessage(hwnd, SCI_GOTOPOS, (WPARAM)iNewPos, 0);
 }
 
-void n2e_GetOffset(HWND hwnd, int *out)
-{
-  *out = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  n2e_AdjustOffset(out, FALSE);
-}
-
-int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, struct TextToFind* pttf)
+int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf)
 {
   return (int)SendMessage(hwnd, SCI_FINDTEXT, searchFlags, (LPARAM)pttf);
 }
@@ -254,29 +248,29 @@ BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct Te
   return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
 }
 
-void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
+void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next)
 {
   struct Sci_TextRange	tr;
   struct Sci_TextToFind	ttf;
   static char* szPrevWord = NULL;
-  int cpos, wlen, doclen, res, searchflags;
-  BOOL has;
+  int searchflags = 0;
+  BOOL has = FALSE;
 #define _N2E_SEARCH_FOR_WORD_LIMIT 0x100
   N2E_TRACE(L"look for next(%d) word", next);
   ZeroMemory(&ttf, sizeof(ttf));
   ttf.lpstrText = 0;
-  cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  doclen = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+  const int cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+  const int doclen = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
   tr.chrg.cpMin = SendMessage(hwnd, SCI_WORDSTARTPOSITION, cpos, TRUE);
   tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
-  wlen = tr.chrg.cpMax - tr.chrg.cpMin;
-  res = 0;
+  int wlen = tr.chrg.cpMax - tr.chrg.cpMin;
+  int res = 0;
 
   tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
   SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
   const int iSelCount = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) -
-    (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+                        (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
 
   n2e_Free(tr.lpstrText);
 
@@ -350,7 +344,7 @@ void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
       res = 1;
     }
   }
-  //
+
   if (res)
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
@@ -412,7 +406,7 @@ void n2e_FindNextWord(HWND hwnd, LPCEDITFINDREPLACE lpref, BOOL next)
   }
 }
 
-BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next)
+BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
 {
   WCHAR	dirname[MAX_PATH], odn[MAX_PATH], found_path[MAX_PATH], *filename;
   HANDLE	hFind = INVALID_HANDLE_VALUE;
@@ -472,15 +466,14 @@ BOOL n2e_OpenNextFile(HWND hwnd, LPCWSTR file, BOOL next)
   return TRUE;
 }
 
-void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
+void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
 {
-  int cpos, len, temp, pos_left, pos_right;
   struct Sci_TextRange tr_1, tr_2;
-  BOOL found;
+  BOOL found = FALSE;
   const static int max_region_to_scan = 1024;
   const static int max_brackets_to_skip = 100;
-  cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
+  const int cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+  const int len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
   tr_1.chrg.cpMax = cpos;
   tr_1.chrg.cpMin = max(0, cpos - max_region_to_scan);
   tr_1.lpstrText = NULL;
@@ -488,7 +481,7 @@ void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
   tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
   tr_2.lpstrText = NULL;
 
-  temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
+  int temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
   if (!temp) goto OUT_OF_UNWRAP;
   tr_1.lpstrText = (char*)n2e_Alloc(temp + 1);
   SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
@@ -498,7 +491,8 @@ void n2e_UnwrapSelection(HWND hwnd, BOOL quote_mode)
   tr_2.lpstrText = (char*)n2e_Alloc(temp + 1);
   SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
 
-  pos_left = tr_1.chrg.cpMax, pos_right = tr_2.chrg.cpMin;
+  int pos_left = tr_1.chrg.cpMax;
+  int pos_right = tr_2.chrg.cpMin;
   found = FALSE;
   if (quote_mode)
   {
@@ -655,7 +649,7 @@ OUT_OF_UNWRAP:
   n2e_Free(tr_2.lpstrText);
 }
 
-void n2e_EscapeHTML(HWND hwnd)
+void n2e_EscapeHTML(const HWND hwnd)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
@@ -727,7 +721,7 @@ void n2e_ResetFindIcon()
   n2e_UpdateFindIcon(TRUE);
 }
 
-void n2e_EditString2Hex(HWND hwnd)
+void n2e_EditString2Hex(const HWND hwnd)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
@@ -736,7 +730,7 @@ void n2e_EditString2Hex(HWND hwnd)
   EncodeStrToHex(hwnd);
 }
 
-void n2e_EditHex2String(HWND hwnd)
+void n2e_EditHex2String(const HWND hwnd)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
@@ -751,34 +745,34 @@ LPCWSTR GetControlIDAsString(const UINT nCtrlID)
   return _itow(nCtrlID, wchBuffer, 16);
 }
 
-UINT GetCheckboxState(HWND hwnd, const UINT nCtrlID)
+UINT GetCheckboxState(const HWND hwnd, const UINT nCtrlID)
 {
   return IsDlgButtonChecked(hwnd, nCtrlID);
 }
 
-void SaveCheckboxState(HWND hwnd, const UINT nCtrlID)
+void SaveCheckboxState(const HWND hwnd, const UINT nCtrlID)
 {
   SetProp(hwnd, GetControlIDAsString(nCtrlID), (HANDLE)GetCheckboxState(hwnd, nCtrlID));
 }
 
-UINT RestoreCheckboxState(HWND hwnd, const UINT nCtrlID)
+UINT RestoreCheckboxState(const HWND hwnd, const UINT nCtrlID)
 {
   return GetProp(hwnd, GetControlIDAsString(nCtrlID)) ? BST_CHECKED : BST_UNCHECKED;
 }
 
-BOOL n2e_IsCheckboxChecked(HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState)
+BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState)
 {
   return (GetCheckboxState(hwnd, nCtrlID) == BST_CHECKED)
     || (bCheckRestoredState && (RestoreCheckboxState(hwnd, nCtrlID) == BST_CHECKED));
 }
 
-void UpdateCheckboxState(HWND hwnd, const UINT nCtrlID, const BOOL bRestoreState, const BOOL bEnabled)
+void UpdateCheckboxState(const HWND hwnd, const UINT nCtrlID, const BOOL bRestoreState, const BOOL bEnabled)
 {
   CheckDlgButton(hwnd, nCtrlID, bRestoreState ? RestoreCheckboxState(hwnd, nCtrlID) : BST_UNCHECKED);
   EnableWindow(GetDlgItem(hwnd, nCtrlID), bEnabled);
 }
 
-void n2e_SaveCheckboxes(HWND hwnd)
+void n2e_SaveCheckboxes(const HWND hwnd)
 {
   SaveCheckboxState(hwnd, IDC_FINDWORD);
   SaveCheckboxState(hwnd, IDC_FINDSTART);
@@ -827,12 +821,12 @@ void UpdateCheckboxesImpl(HWND hwnd, const UINT nCtrlID, const BOOL bInitialUpda
   }
 }
 
-void n2e_EditFindReplaceUpdateCheckboxes(HWND hwnd, const UINT nCtrlID)
+void n2e_EditFindReplaceUpdateCheckboxes(const HWND hwnd, const UINT nCtrlID)
 {
   UpdateCheckboxesImpl(hwnd, nCtrlID, FALSE);
 }
 
-void n2e_EditFindReplaceInitialUpdateCheckboxes(HWND hwnd)
+void n2e_EditFindReplaceInitialUpdateCheckboxes(const HWND hwnd)
 {
   UpdateCheckboxesImpl(hwnd, 0, TRUE);
 }
@@ -993,7 +987,7 @@ LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
               do
               {
                 if (((fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == FILE_ATTRIBUTE_DIRECTORY)
-                  && (StrCmpI(final_str, fd.cFileName) == 0))
+                    && (StrCmpI(final_str, fd.cFileName) == 0))
                 {
                   bFolderExists = TRUE;
                   break;
@@ -1028,7 +1022,7 @@ BOOL n2e_SubclassOpenDialog(const HWND hwnd)
 const WCHAR* _left_braces = L"<{([";
 const WCHAR* _right_braces = L">})]";
 
-void n2e_Init_EditInsertTagDlg(HWND hwnd)
+void n2e_Init_EditInsertTagDlg(const HWND hwnd)
 {
   const int len = lstrlen(wchLastHTMLTag);
   int k = 0;

@@ -171,7 +171,7 @@ int n2e_SelectionGetWraps(const int beg, const int end)
   return out;
 }
 
-VOID n2e_HighlightWord(LPCSTR word)
+void n2e_HighlightWord(LPCSTR word)
 {
   int res = 0;
   int cnt = 0;
@@ -357,7 +357,7 @@ VOID n2e_HighlightWord(LPCSTR word)
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, old, 0);
 }
 
-VOID	n2e_SelectionGetWord()
+void n2e_SelectionGetWord()
 {
   int sel_len = 0, cpos = 0;
   if (trEditSelection.lpstrText)
@@ -396,7 +396,7 @@ VOID	n2e_SelectionGetWord()
   }
 }
 
-VOID n2e_SelectionHighlightTurn()
+void n2e_SelectionHighlightTurn()
 {
   if (bHighlightSelection)
   {
@@ -586,7 +586,7 @@ BOOL n2e_IsSelectionEditModeOn()
   return bEditSelection;
 }
 
-VOID n2e_SelectionEditStart(const BOOL highlightAll)
+void n2e_SelectionEditStart(const BOOL highlightAll)
 {
   bHighlightAll = highlightAll;
   // if mode already ON - then turn it OFF
@@ -658,16 +658,6 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
   {
     n2e_SelectionHighlightTurn();
   }
-}
-
-BOOL _check_se_mode(struct SCNotification *scn)
-{
-  if (scn->position >= trEditSelection.chrg.cpMin && scn->position < trEditSelection.chrg.cpMin + iOriginalSelectionLength)
-  {
-    return TRUE;
-  }
-  bEditSelectionExit = TRUE;
-  return FALSE;
 }
 
 void n2e_SelectionNotificationHandler(const int code, const struct SCNotification *scn)

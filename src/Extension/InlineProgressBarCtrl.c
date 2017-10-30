@@ -3,7 +3,7 @@
 
 #define PROPERTY_PANE_ID  L"Pane Id"
 
-void ModifyStyle(HWND hwnd, DWORD dwStyleRemove, DWORD dwStyleAdd)
+void ModifyStyle(const HWND hwnd, const DWORD dwStyleRemove, const DWORD dwStyleAdd)
 {
   if (!IsWindow(hwnd))
   {
@@ -23,7 +23,7 @@ RECT GetStatusBarPaneRect(const HWND hwndStatusBar, const int nPane)
   return rcPane;
 }
 
-HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const long nCurrentValue, const long MaxValue, const BOOL bSmooth, const int nPane)
+HWND InlineProgressBarCtrl_Create(const HWND hwndStatusBar, const long nCurrentValue, const long MaxValue, const BOOL bSmooth, const int nPane)
 {
   if (!hwndStatusBar)
   {
@@ -55,7 +55,7 @@ HWND InlineProgressBarCtrl_Create(HWND hwndStatusBar, const long nCurrentValue, 
   return hwnd;
 }
 
-BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const long nLower, const long nUpper, const long nStep)
+BOOL InlineProgressBarCtrl_SetRange(const HWND hwnd, const long nLower, const long nUpper, const long nStep)
 {	 
   if (!IsWindow(hwnd))
   {
@@ -66,7 +66,7 @@ BOOL InlineProgressBarCtrl_SetRange(HWND hwnd, const long nLower, const long nUp
   return TRUE;
 }
 
-int InlineProgressBarCtrl_SetStep(HWND hwnd, const long nStep)
+int InlineProgressBarCtrl_SetStep(const HWND hwnd, const long nStep)
 { 
   if (!IsWindow(hwnd))
   {
@@ -79,7 +79,7 @@ int InlineProgressBarCtrl_SetStep(HWND hwnd, const long nStep)
   return (int)SendMessage(hwnd, PBM_SETSTEP, nStep, 0);
 }
 
-void InlineProgressBarCtrl_StepIt(HWND hwnd)
+void InlineProgressBarCtrl_StepIt(const HWND hwnd)
 {
   if (!IsWindow(hwnd))
   {
@@ -88,7 +88,7 @@ void InlineProgressBarCtrl_StepIt(HWND hwnd)
   SendMessage(hwnd, PBM_STEPIT, 0, 0);
 }
 
-void InlineProgressBarCtrl_SetPos(HWND hwnd, const long nValue)
+void InlineProgressBarCtrl_SetPos(const HWND hwnd, const long nValue)
 {
   if (!IsWindow(hwnd))
   {
@@ -99,7 +99,7 @@ void InlineProgressBarCtrl_SetPos(HWND hwnd, const long nValue)
 
 WCHAR tchProgressBarTaskName[MAX_PATH];
 
-BOOL InlineProgressBarCtrl_Resize(HWND hwnd)
+BOOL InlineProgressBarCtrl_Resize(const HWND hwnd)
 {
   if (!IsWindow(hwnd))
   {

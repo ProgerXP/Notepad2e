@@ -78,20 +78,20 @@ BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_OpenMRULast(LPWSTR fn);
 void n2e_GetLastDir(LPTSTR out);
 UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam);
-BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex);
+BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex);
 void n2e_InplaceRev(WCHAR * s);
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2);
 BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out);
-void n2e_Grep(void* lpf, BOOL grep);
-void n2e_SetWheelScroll(BOOL on);
-BOOL n2e_IsWordChar(WCHAR ch);
-BOOL n2e_IsSpace(WCHAR ch);
-BOOL n2e_IsKeyDown(int key);
+void n2e_Grep(void* lpf, const BOOL grep);
+void n2e_SetWheelScroll(const BOOL enable);
+BOOL n2e_IsWordChar(const WCHAR ch);
+BOOL n2e_IsSpace(const WCHAR ch);
+BOOL n2e_IsKeyDown(const int key);
 
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
 
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);
-void n2e_UpdateWindowTitle(HWND hwnd);
+void n2e_UpdateWindowTitle(const HWND hwnd);
 int n2e_GetCurrentShowTitleMenuID();
 int n2e_GetCurrentLanguageIndicatorMenuID();
 

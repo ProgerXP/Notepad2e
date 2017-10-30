@@ -183,7 +183,7 @@ BOOL n2e_TestOffsetTail(WCHAR *wch)
   return TRUE;
 }
 
-BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, BOOL hex)
+BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
 {
   BOOL ok = 0;
   int cou = 0;
@@ -274,16 +274,9 @@ void n2e_WheelScrollWorker(int lines)
   }
 }
 
-void n2e_SetWheelScroll(BOOL on)
+void n2e_SetWheelScroll(const BOOL enable)
 {
-  if (on)
-  {
-    n2e_wheel_action = n2e_WheelScrollWorker;
-  }
-  else
-  {
-    n2e_wheel_action = 0;
-  }
+  n2e_wheel_action = enable ? n2e_WheelScrollWorker : 0;
 }
 
 extern WCHAR wchWndClass[16];
@@ -614,7 +607,7 @@ void n2e_GetLastDir(LPTSTR out)
   }
 }
 
-void n2e_Grep(void* _lpf, BOOL grep)
+void n2e_Grep(void* _lpf, const BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
@@ -708,12 +701,12 @@ void n2e_InplaceRev(WCHAR * s)
   }
 }
 
-BOOL n2e_IsWordChar(WCHAR ch)
+BOOL n2e_IsWordChar(const WCHAR ch)
 {
   return IsCharAlphaNumericW(ch) || (ch == L'_');
 }
 
-BOOL n2e_IsKeyDown(int key)
+BOOL n2e_IsKeyDown(const int key)
 {
   return (GetKeyState(key) & 0x80000000) != 0;
 }
@@ -741,7 +734,7 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
   return TRUE;
 }
 
-void n2e_UpdateWindowTitle(HWND hwnd)
+void n2e_UpdateWindowTitle(const HWND hwnd)
 {
   SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
                  iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
