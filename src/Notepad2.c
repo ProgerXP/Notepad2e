@@ -113,7 +113,7 @@ WCHAR      tchToolbarButtons[512];
 WCHAR      tchToolbarBitmap[MAX_PATH];
 WCHAR      tchToolbarBitmapHot[MAX_PATH];
 WCHAR      tchToolbarBitmapDisabled[MAX_PATH];
-int       iPathNameFormat;
+enum EPathNameFormat iPathNameFormat = PNM_FILENAMEONLY;
 BOOL      fWordWrap;
 BOOL      fWordWrapG;
 int       iWordWrapMode;
@@ -162,7 +162,7 @@ int       iFileWatchingMode;
 BOOL      bResetFileWatching;
 DWORD     dwFileCheckInverval;
 DWORD     dwAutoReloadTimeout;
-int       iEscFunction;
+enum EEscFunction iEscFunction = EEF_IGNORE;
 BOOL      bAlwaysOnTop;
 BOOL      bMinimizeToTray;
 BOOL      bTransparentMode;
@@ -1977,9 +1977,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, n2e_GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
   // [2e]: Language indication #86
   CheckMenuRadioItem(hmenu, IDM_VIEW_NOLANGUAGEINDICATOR, IDM_VIEW_SHOWLANGUAGEINDICATORNONUS, n2e_GetCurrentLanguageIndicatorMenuID(), MF_BYCOMMAND);
-  if (iEscFunction == 1)
+  if (iEscFunction == EEF_MINIMIZE)
     i = IDM_VIEW_ESCMINIMIZE;
-  else if (iEscFunction == 2)
+  else if (iEscFunction == EEF_EXIT)
     i = IDM_VIEW_ESCEXIT;
   else
     i = IDM_VIEW_NOESCFUNC;
@@ -3942,21 +3942,21 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_SHOWFILENAMEONLY:
-      iPathNameFormat = 0;
+      iPathNameFormat = PNM_FILENAMEONLY;
       lstrcpy(szTitleExcerpt, L"");
       n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWFILENAMEFIRST:
-      iPathNameFormat = 1;
+      iPathNameFormat = PNM_FILENAMEFIRST;
       lstrcpy(szTitleExcerpt, L"");
       n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWFULLPATH:
-      iPathNameFormat = 2;
+      iPathNameFormat = PNM_FULLPATH;
       lstrcpy(szTitleExcerpt, L"");
       n2e_UpdateWindowTitle(hwnd);
       break;
@@ -3970,19 +3970,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Language indication #86
     case IDM_VIEW_NOLANGUAGEINDICATOR:
-      iShowLanguageInTitle = ELI_HIDE;
+      iShowLanguageInTitle = LIT_HIDE;
       n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWLANGUAGEINDICATOR:
-      iShowLanguageInTitle = ELI_SHOW;
+      iShowLanguageInTitle = LIT_SHOW;
       n2e_UpdateWindowTitle(hwnd);
       break;
 
 
     case IDM_VIEW_SHOWLANGUAGEINDICATORNONUS:
-      iShowLanguageInTitle = ELI_SHOW_NON_US;
+      iShowLanguageInTitle = LIT_SHOW_NON_US;
       n2e_UpdateWindowTitle(hwnd);
       break;
     // [/2e]
@@ -4010,17 +4010,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_NOESCFUNC:
-      iEscFunction = 0;
+      iEscFunction = EEF_IGNORE;
       break;
 
 
     case IDM_VIEW_ESCMINIMIZE:
-      iEscFunction = 1;
+      iEscFunction = EEF_MINIMIZE;
       break;
 
 
     case IDM_VIEW_ESCEXIT:
-      iEscFunction = 2;
+      iEscFunction = EEF_EXIT;
       break;
 
 
@@ -4173,13 +4173,20 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         n2e_SelectionEditStop(SES_REJECT);
       }
-      else if (iEscFunction == 1)
+      else
       {
-        SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
-      }
-      else if (iEscFunction == 2)
-      {
-        SendMessage(hwnd, WM_CLOSE, 0, 0);
+        switch (iEscFunction)
+        {
+          case EEF_MINIMIZE:
+            SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
+            break;
+          case EEF_EXIT:
+            SendMessage(hwnd, WM_CLOSE, 0, 0);
+            break;
+          case EEF_IGNORE:
+          default:
+            break;
+        }
       }
       break;
 
@@ -5331,7 +5338,7 @@ void LoadSettings()
     PathAbsoluteFromApp(tchFavoritesDir, NULL, COUNTOF(tchFavoritesDir), TRUE);
 
   iPathNameFormat = IniSectionGetInt(pIniSection, L"PathNameFormat", 0);
-  iPathNameFormat = max(min(iPathNameFormat, 2), 0);
+  iPathNameFormat = max(min(iPathNameFormat, PNM_FULLPATH), 0);
 
   fWordWrap = IniSectionGetInt(pIniSection, L"WordWrap", 0);
   if (fWordWrap) fWordWrap = 1;
@@ -5453,7 +5460,7 @@ void LoadSettings()
   if (bResetFileWatching) bResetFileWatching = 1;
 
   iEscFunction = IniSectionGetInt(pIniSection, L"EscFunction", 0);
-  iEscFunction = max(min(iEscFunction, 2), 0);
+  iEscFunction = max(min(iEscFunction, EEF_EXIT), 0);
 
   bAlwaysOnTop = IniSectionGetInt(pIniSection, L"AlwaysOnTop", 0);
   if (bAlwaysOnTop) bAlwaysOnTop = 1;

@@ -7,40 +7,54 @@ typedef enum
   CSS_SASSY = 1 << 0,
   CSS_LESS = 1 << 1,
   CSS_HSS = 1 << 2,
-} ECSSSetting;
+} ECSSSettingsMode;
 
 typedef enum
 {
-  SSM_NO = 0x0,
-  SSM_ALL = 0x1,
-  SSM_RECENT = 0x2
+  SSM_NO = 0,
+  SSM_ALL = 1,
+  SSM_RECENT = 2
 } ESaveSettingsMode;
 
 typedef enum
 {
-  ELI_HIDE = 0,
-  ELI_SHOW,
-  ELI_SHOW_NON_US
+  PNM_FILENAMEONLY = 0,
+  PNM_FILENAMEFIRST = 1,
+  PNM_FULLPATH = 2
+} EPathNameFormat;
+
+typedef enum 
+{
+  EEF_IGNORE = 0,
+  EEF_MINIMIZE = 1,
+  EEF_EXIT = 2
+} EEscFunction;
+
+typedef enum
+{
+  LIT_HIDE = 0,
+  LIT_SHOW = 1,
+  LIT_SHOW_NON_US = 2
 } ELanguageIndicatorMode;
 
 typedef enum
 {
   EEM_DISABLED = 0,
-  EEM_LINE,
-  EEM_SELECTION
+  EEM_LINE = 1,
+  EEM_SELECTION = 2
 } EExpressionEvaluationMode;
 
 typedef enum
 {
   WNM_STANDARD = 0,
-  WNM_ACCELERATED,
+  WNM_ACCELERATED = 1,
 } EWordNavigationMode;
 
 typedef enum
 {
-  SCP_LEGACY,
-  SCP_THIRD,
-  SCP_HALF
+  SCP_LEGACY = 0,
+  SCP_THIRD = 1,
+  SCP_HALF = 2
 } EScrollYCaretPolicy;
 
 #define N2E_INI_SECTION L"Notepad2e"
@@ -56,7 +70,7 @@ typedef enum
 #define WM_N2E_RELOAD_SETTINGS	(WM_USER + 0xFF)
 #define	N2E_MAX_PATH_N_CMD_LINE	MAX_PATH + 40
 
-extern ECSSSetting	iCSSSettings;
+extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 
 void n2e_InitInstance();

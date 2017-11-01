@@ -88,25 +88,26 @@ BOOL TSS_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long i
   return FALSE;
 }
 
-int IntByHexDigit(const unsigned char ch)
-{
+#define HEX_DIGITS_UPPER  "0123456789ABCDEF"
+#define MIN_HEX_DIGIT_LOWER 'a'
+#define MIN_HEX_DIGIT_UPPER 'A'
 #define MIN_HEX_DIGIT_VALUE 10
 
-  if (ch >= 'a')
+int IntByHexDigit(const unsigned char ch)
+{
+  if (ch >= MIN_HEX_DIGIT_LOWER)
   {
-    return (ch - 'a') + MIN_HEX_DIGIT_VALUE;
+    return (ch - MIN_HEX_DIGIT_LOWER) + MIN_HEX_DIGIT_VALUE;
   }
-  else if (ch >= 'A')
+  else if (ch >= MIN_HEX_DIGIT_UPPER)
   {
-    return (ch - 'A') + MIN_HEX_DIGIT_VALUE;
+    return (ch - MIN_HEX_DIGIT_UPPER) + MIN_HEX_DIGIT_VALUE;
   }
   else
   {
     return ch - '0';
   }
 }
-
-#define HEX_DIGITS_UPPER  "0123456789ABCDEF"
 
 inline BOOL IsHexDigit(const unsigned char ch)
 {

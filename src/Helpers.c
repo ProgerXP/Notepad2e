@@ -342,7 +342,7 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
 BOOL bFreezeAppTitle = FALSE;
 
 BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
-                    LPCWSTR lpszFile, int iFormat, BOOL bModified,
+                    LPCWSTR lpszFile, enum EPathNameFormat nPathNameFormat, BOOL bModified,
                     UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
   WCHAR szUntitled[128];
@@ -384,7 +384,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
 
   else if (lstrlen(lpszFile))
   {
-    if (iFormat < 2 && !PathIsRoot(lpszFile))
+    if (nPathNameFormat < PNM_FULLPATH && !PathIsRoot(lpszFile))
     {
       if (lstrcmp(szCachedFile, lpszFile) != 0)
       {
@@ -396,7 +396,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
           lstrcpy(szCachedDisplayName, PathFindFileName(lpszFile));
       }
       lstrcat(szTitle, szCachedDisplayName);
-      if (iFormat == 1)
+      if (nPathNameFormat == PNM_FILENAMEFIRST)
       {
         WCHAR tchPath[MAX_PATH];
         StrCpyN(tchPath, lpszFile, COUNTOF(tchPath));
@@ -428,10 +428,10 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
   // [2e]: Language indication #86
   switch (iShowLanguageInTitle)
   {
-    case ELI_HIDE:
+    case LIT_HIDE:
       break;
-    case ELI_SHOW:
-    case ELI_SHOW_NON_US:
+    case LIT_SHOW:
+    case LIT_SHOW_NON_US:
       {
         WCHAR lang[MAX_PATH];
         const HKL hkl = GetKeyboardLayout(0);
@@ -440,7 +440,7 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
         {
           lang[i] = toupper(lang[i]);
         }
-        if ((iShowLanguageInTitle == ELI_SHOW) || (lstrcmp(lang, L"EN") != 0))
+        if ((iShowLanguageInTitle == LIT_SHOW) || (lstrcmp(lang, L"EN") != 0))
         {
           lstrcat(szTitle, L" [");
           lstrcat(szTitle, lang);

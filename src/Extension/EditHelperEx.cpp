@@ -18,7 +18,7 @@ extern "C"
       std::wstring pathFolder = path;
       PathRemoveFileSpec((LPWSTR)pathFolder.data());
 
-      CMINVOKECOMMANDINFOEX info ={0};
+      CMINVOKECOMMANDINFOEX info = {0};
       info.cbSize = sizeof(info);
       info.fMask = CMIC_MASK_UNICODE;
       info.hwnd = win;

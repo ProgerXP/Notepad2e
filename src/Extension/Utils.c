@@ -12,18 +12,21 @@
 #include "Trace.h"
 
 #define N2E_WHEEL_TIMER_ID	0xFF
+#define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  100
+#define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
+#define BYTES_IN_KB 1024
 
 HANDLE g_hScintilla = NULL;
-UINT iWheelScrollInterval = 100;
+UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
-ECSSSetting iCSSSettings = CSS_LESS;
+ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR	wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
 BOOL bUsePrefixInOpenDialog = TRUE;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
 EWordNavigationMode iWordNavigationMode = 0;
-ELanguageIndicatorMode iShowLanguageInTitle = ELI_HIDE;
+ELanguageIndicatorMode iShowLanguageInTitle = LIT_HIDE;
 UINT iShellMenuType = 0;
 INT iAllocCount = 0;
 BOOL bHighlightLineIfWindowInactive = FALSE;
@@ -126,16 +129,14 @@ void n2e_ResetLastRun()
   *wchLastRun = 0;
 }
 
-#define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
-
 long BytesToKB(const long bytes)
 {
-  return bytes / 1024;
+  return bytes / BYTES_IN_KB;
 }
 
 long KBToBytes(const long kb)
 {
-  return kb * 1024;
+  return kb * BYTES_IN_KB;
 }
 
 void n2e_LoadINI()
@@ -764,10 +765,11 @@ int n2e_GetCurrentShowTitleMenuID()
   }
   else switch (iPathNameFormat)
   {
-    case 0:
+    case PNM_FILENAMEONLY:
       return IDM_VIEW_SHOWFILENAMEONLY;
-    case 1:
+    case PNM_FILENAMEFIRST:
       return IDM_VIEW_SHOWFILENAMEFIRST;
+    case PNM_FULLPATH:
     default:
       return IDM_VIEW_SHOWFULLPATH;
   }
@@ -777,11 +779,11 @@ int n2e_GetCurrentLanguageIndicatorMenuID()
 {
   switch (iShowLanguageInTitle)
   {
-    case ELI_HIDE:
+    case LIT_HIDE:
       return IDM_VIEW_NOLANGUAGEINDICATOR;
-    case ELI_SHOW:
+    case LIT_SHOW:
       return IDM_VIEW_SHOWLANGUAGEINDICATOR;
-    case ELI_SHOW_NON_US:
+    case LIT_SHOW_NON_US:
       return IDM_VIEW_SHOWLANGUAGEINDICATORNONUS;
     default:
       return 0;

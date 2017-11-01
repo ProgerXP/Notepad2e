@@ -98,23 +98,14 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
         switch (modeExpressionValue)
         {
           case EVM_BIN:
-            FormatString(tchBuffer,
-                         bufferSize - 1,
-                         idExpressionFormatString,
-                         arrwchExpressionValue);
+            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, arrwchExpressionValue);
             break;
           case EVM_DEC:
-            FormatString(tchBuffer,
-                         bufferSize - 1,
-                         idExpressionFormatString,
-                         exprValue);
+            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, exprValue);
             break;
           case EVM_HEX:
           case EVM_OCT:
-            FormatString(tchBuffer,
-                         bufferSize - 1,
-                         idExpressionFormatString,
-                         (int)exprValue);
+            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, (int)exprValue);
             break;
         }
         modePrevExpressionValue = modeExpressionValue;
