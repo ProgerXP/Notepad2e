@@ -1,5 +1,6 @@
 #include "EditHelper.h"
 #include <cassert>
+#include "CommonUtils.h"
 #include "Dialogs.h"
 #include "Helpers.h"
 #include "Edit.h"
@@ -8,7 +9,6 @@
 #include "resource.h"
 #include "StrToHex.h"
 #include "Trace.h"
-#include "Utils.h"
 
 WCHAR	wchLastHTMLTag[0xff] = L"<tag>";
 WCHAR	wchLastHTMLEndTag[0xff] = L"</tag>";

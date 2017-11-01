@@ -1,6 +1,7 @@
 #include <Windows.h>
 #include <Strsafe.h>
 #include <assert.h>
+#include "CommonUtils.h"
 #include "StrToHex.h"
 
 #ifdef __cplusplus
@@ -14,16 +15,6 @@ int STR2HEX_BUFFER_SIZE = DEFAULT_STR2HEX_BUFFER_SIZE;
 int STR2HEX_BUFFER_SIZE_MAX = DEFAULT_STR2HEX_BUFFER_SIZE * 10;
 
 BOOL bBreakOnError = TRUE;
-
-LPVOID MemAlloc(const int sz)
-{
-  return GlobalAlloc(GPTR, sz);
-}
-
-void MemFree(LPVOID ptr)
-{
-  GlobalFree(ptr);
-}
 
 void TSS_Init(StringSource* pSS, LPCSTR text)
 {
@@ -163,7 +154,7 @@ void TextBuffer_Clear(struct TTextBuffer* pTB)
 BOOL TextBuffer_Init(struct TTextBuffer* pTB, const int iSize)
 {
   pTB->m_iSize = iSize;
-  pTB->m_ptr = (LPSTR)MemAlloc(pTB->m_iSize);
+  pTB->m_ptr = (LPSTR)n2e_Alloc(pTB->m_iSize);
   TextBuffer_ResetPos(pTB, iSize-1);
   return TRUE;
 }
@@ -172,7 +163,7 @@ BOOL TextBuffer_Free(struct TTextBuffer* pTB)
 {
   if (pTB->m_ptr)
   {
-    MemFree((LPVOID)pTB->m_ptr);
+    n2e_Free((LPVOID)pTB->m_ptr);
   }
   pTB->m_iSize = 0;
   pTB->m_ptr = NULL;
@@ -278,7 +269,7 @@ void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB, long* piPositionC
   if (IsUnicodeEncodingMode())
   {
     int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
-    LPWSTR lpDataWide = MemAlloc(cbDataWide);
+    LPWSTR lpDataWide = n2e_Alloc(cbDataWide);
     cbDataWide = MultiByteToWideChar(CP_UTF8, 0, pTB->m_ptr, pTB->m_iMaxPos, lpDataWide, cbDataWide/sizeof(WCHAR)) * sizeof(WCHAR);
     lpDataWide[pTB->m_iMaxPos] = 0;
 
@@ -331,12 +322,12 @@ void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB, long* piPositionC
     UINT uCodePage = mEncoding[iEncoding].uCodePage;
     int cbData = pTB->m_iMaxPos + 1;
     LPSTR lpData = pTB->m_ptr;
-    LPWSTR lpDataWide = MemAlloc(cbData * sizeof(WCHAR) + 1);
+    LPWSTR lpDataWide = n2e_Alloc(cbData * sizeof(WCHAR) + 1);
     int    cbDataWide = MultiByteToWideChar(CP_UTF8, 0, lpData, cbData, lpDataWide, (int)GlobalSize(lpDataWide) / sizeof(WCHAR));
     // Special cases: 42, 50220, 50221, 50222, 50225, 50227, 50229, 54936, 57002-11, 65000, 65001
     if (uCodePage == CP_UTF7 || uCodePage == 54936)
     {
-      lpData = MemAlloc(GlobalSize(lpDataWide) * 2);
+      lpData = n2e_Alloc(GlobalSize(lpDataWide) * 2);
       cbData = WideCharToMultiByte(uCodePage, 0, lpDataWide, cbDataWide, lpData, (int)GlobalSize(lpData), NULL, NULL);
     }
     else
@@ -348,7 +339,7 @@ void TextBuffer_NormalizeBeforeEncode(struct TTextBuffer* pTB, long* piPositionC
         bCancelDataLoss = FALSE;
       }
     }
-    MemFree(lpDataWide);
+    n2e_Free(lpDataWide);
     TextBuffer_Update(pTB, lpData, cbData);
   }
 }
@@ -358,7 +349,7 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
   if (IsUnicodeEncodingMode())
   {
-    LPSTR lpData = MemAlloc(pTB->m_iPos * 2 + 16);
+    LPSTR lpData = n2e_Alloc(pTB->m_iPos * 2 + 16);
     const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos/sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
     lpData[cbData] = 0;
     TextBuffer_Update(pTB, lpData, cbData);
@@ -371,7 +362,7 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
   else if (mEncoding[iEncoding].uFlags & NCP_8BIT)
   {
     int cbData = pTB->m_iPos * 2 + 16;
-    LPWSTR lpDataWide = MemAlloc(cbData);
+    LPWSTR lpDataWide = n2e_Alloc(cbData);
     cbData = MultiByteToWideChar(uCodePage, 0, pTB->m_ptr, pTB->m_iPos, lpDataWide, cbData);
     const int requiredBufferSize = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, cbData, NULL, 0, NULL, NULL);
     if (requiredBufferSize >= pTB->m_iMaxPos)
@@ -380,7 +371,7 @@ void TextBuffer_NormalizeAfterDecode(struct TTextBuffer* pTB)
     }
     pTB->m_iPos = WideCharToMultiByte(CP_UTF8, 0, lpDataWide, cbData, pTB->m_ptr, pTB->m_iMaxPos, NULL, NULL);
     pTB->m_ptr[pTB->m_iPos] = 0;
-    MemFree(lpDataWide);
+    n2e_Free(lpDataWide);
   }
 }
 

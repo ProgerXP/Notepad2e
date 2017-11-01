@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include <cassert>
+#include "CommonUtils.h"
 #include "ExtSelection.h"
 #include "Scintilla.h"
 #include "Helpers.h"

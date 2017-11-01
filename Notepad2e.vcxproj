@@ -322,6 +322,7 @@
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />
+    <ClCompile Include="src\Extension\CommonUtils.c" />
     <ClCompile Include="src\Extension\EditHelper.c" />
     <ClCompile Include="src\Extension\EditHelperEx.cpp" />
     <ClCompile Include="src\Extension\ExtSelection.c" />
@@ -404,6 +405,7 @@
     <ClInclude Include="src\Dialogs.h" />
     <ClInclude Include="src\Dlapi.h" />
     <ClInclude Include="src\Edit.h" />
+    <ClInclude Include="src\Extension\CommonUtils.h" />
     <ClInclude Include="src\Extension\EditHelper.h" />
     <ClInclude Include="src\Extension\EditHelperEx.h" />
     <ClInclude Include="src\Extension\ExtSelection.h" />

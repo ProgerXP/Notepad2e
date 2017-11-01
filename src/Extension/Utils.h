@@ -76,9 +76,6 @@ extern ELanguageIndicatorMode iShowLanguageInTitle;
 void n2e_InitInstance();
 void n2e_ExitInstance();
 
-void* n2e_Alloc(size_t size);
-void n2e_Free(void* ptr);
-void* n2e_Realloc(void* ptr, size_t len);
 void n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 void n2e_SetLastRun(LPCWSTR arg);
@@ -99,8 +96,6 @@ BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out);
 void n2e_Grep(void* lpf, const BOOL grep);
 void n2e_SetWheelScroll(const BOOL enable);
 BOOL n2e_IsWordChar(const WCHAR ch);
-BOOL n2e_IsSpace(const WCHAR ch);
-BOOL n2e_IsKeyDown(const int key);
 
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
 

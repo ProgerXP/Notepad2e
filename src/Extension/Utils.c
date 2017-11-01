@@ -28,7 +28,6 @@ EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
 EWordNavigationMode iWordNavigationMode = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = LIT_HIDE;
 UINT iShellMenuType = 0;
-INT iAllocCount = 0;
 BOOL bHighlightLineIfWindowInactive = FALSE;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 BOOL bFindWordMatchCase = FALSE;
@@ -70,31 +69,6 @@ void n2e_ExitInstance()
   n2e_SaveINI();
 }
 
-void* n2e_Alloc(size_t size)
-{
-  if (iAllocCount)
-  {
-    N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", iAllocCount);
-  }
-  ++iAllocCount;
-  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
-}
-
-void n2e_Free(void* ptr)
-{
-  if (ptr)
-  {
-    --iAllocCount;
-    GlobalFree(ptr);
-  }
-}
-
-void* n2e_Realloc(void* ptr, size_t len)
-{
-  n2e_Free(ptr);
-  return n2e_Alloc(len);
-}
-
 void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
   bWheelTimerActive = FALSE;
@@ -129,16 +103,6 @@ void n2e_ResetLastRun()
   *wchLastRun = 0;
 }
 
-long BytesToKB(const long bytes)
-{
-  return bytes / BYTES_IN_KB;
-}
-
-long KBToBytes(const long kb)
-{
-  return kb * BYTES_IN_KB;
-}
-
 void n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
@@ -146,7 +110,7 @@ void n2e_LoadINI()
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
   iCSSSettings = IniGetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
   iShellMenuType = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
-  iMaxSearchDistance = KBToBytes(IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", DEFAULT_MAX_SEARCH_DISTANCE_KB));
+  iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
   bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
@@ -165,7 +129,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
   IniSetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
   IniSetInt(N2E_INI_SECTION, L"ShellMenuType", iShellMenuType);
-  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", BytesToKB(iMaxSearchDistance));
+  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", iMaxSearchDistance / BYTES_IN_KB);
   IniSetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
@@ -324,7 +288,7 @@ BOOL n2e_IsTextEmpty(LPCWSTR txt)
   int t = lstrlen(txt);
   while (--t >= 0)
   {
-    if (!isspace(txt[t]))
+    if (!iswspace(txt[t]))
     {
       return FALSE;
     }
@@ -448,12 +412,14 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
   HWND hPar = GetParent(hdlg);
   switch (uiMsg)
   {
-    case WM_NOTIFY: {
+    case WM_NOTIFY:
+      {
         OFNOTIFY *ofn = (OFNOTIFY *)lParam;
         NMHDR nm = ofn->hdr;
         switch (nm.code)
         {
-          case CDN_FILEOK: {
+          case CDN_FILEOK:
+            {
               WCHAR buf[MAX_PATH];
               WCHAR dir[MAX_PATH];
               //
@@ -504,11 +470,13 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                   N2E_TRACE("OFN final result (%S) ", out);
                   SetWindowLong(hdlg, DWL_MSGRESULT, 0);
                   take_call = FALSE;
+                  return 1;
                 }
               }
             }
             return 1;
-          case CDN_SELCHANGE: {
+          case CDN_SELCHANGE:
+            {
               WCHAR buf[MAX_PATH];
               N2E_TRACE("OFN sel change  ");
               if ((CommDlg_OpenSave_GetFilePath(hPar, buf, MAX_PATH) > 0) && !PathIsDirectory(buf))
@@ -527,7 +495,8 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
               }
             }
             break;
-          case CDN_INITDONE: {
+          case CDN_INITDONE:
+            {
               N2E_TRACE("OFN init  ");
               take_call = FALSE;
               file_ok = RegisterWindowMessage(FILEOKSTRING);
@@ -535,7 +504,8 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
               *last_selected = 0;
             }
             break;
-          case CDN_FOLDERCHANGE: {
+          case CDN_FOLDERCHANGE:
+            {
               *last_selected = 0;
             }
             break;
@@ -720,11 +690,6 @@ void n2e_InplaceRev(WCHAR * s)
 BOOL n2e_IsWordChar(const WCHAR ch)
 {
   return IsCharAlphaNumericW(ch) || (ch == L'_');
-}
-
-BOOL n2e_IsKeyDown(const int key)
-{
-  return (GetKeyState(key) & 0x80000000) != 0;
 }
 
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)

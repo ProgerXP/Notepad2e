@@ -123,4 +123,6 @@ void n2e_HideProgressBarInStatusBar() {}
 void n2e_UpdateProgressBarInStatusBar(const long nCurPos) {}
 void n2e_AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos){}
 
+WCHAR szIniFile[MAX_PATH];
+
 #endif
