@@ -5145,9 +5145,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             // [2e]: disable search for invalid regex values
             if (bEnable && (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED))
             {
-              char szFind[512];
+              char szFind[512], szReplace[512];
               GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
-              bEnable = n2e_isValidRegex(szFind) != 0;
+              GetDlgItemTextA2W(uCPEdit, hwnd, IDC_REPLACETEXT, szReplace, COUNTOF(szReplace));
+              bEnable = (n2e_isValidRegex(szFind) != 0) && (n2e_isValidRegex(szReplace) != 0);
             }
             // [/2e]
 
