@@ -1000,11 +1000,11 @@ EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; 
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { SCE_SH_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
         { SCE_SH_ERROR, 63325, L"Error", L"fore:#FFFF00,back:#FF0000", L"" },
-        { SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_SH_COMMENTLINE, 63127, L"Comment", L"fore:#007F00", L"" },
         { SCE_SH_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_SH_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
-        { SCE_SH_STRING, 63131, L"String", L"fore:#7F007F,font:Consolas", L"" },
-        { SCE_SH_CHARACTER, 63265, L"Char", L"fore:#7F007F,font:Consolas", L"" },
+        { SCE_SH_STRING, 63131, L"String", L"fore:#7F007F", L"" },
+        { SCE_SH_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
         { SCE_SH_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#000000", L"" },
         { SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#000000,back:#FFE0E0", L"" },
@@ -1075,7 +1075,7 @@ KEYWORDLIST KeyWords_ASN1 = {
 
 EDITLEXER lexASN1= { SCLEX_ASN1, 63024, L"ASN1", L"mib", L"", &KeyWords_ASN1, {
         { SCE_ASN1_DEFAULT, 63126, L"Default", L"fore:#000000", L"" },
-        { SCE_ASN1_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_ASN1_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
         { SCE_ASN1_IDENTIFIER, 63129, L"Identifier", L"fore:#000000,bold", L"" },
         { SCE_ASN1_STRING, 63131, L"String", L"fore:#7F007F", L"" },
         { SCE_ASN1_OID, 63129, L"Identifier", L"fore:#007F7F,bold", L"" },
@@ -1120,10 +1120,10 @@ EDITLEXER lexCAML = { SCLEX_CAML, 63025, L"OCaml", L"ml; mli", L"", &KeyWords_CA
         { SCE_CAML_CHAR, 63265, L"Char", L"fore:#000000,back:#ffff00", L"" },
         { SCE_CAML_WHITE, 63266, L"Whitespace", L"fore:#000000,back:#e0e0e0", L"" },
         { SCE_CAML_STRING, 63131, L"String", L"fore:#000000,back:#ffff00", L"" },
-        { SCE_CAML_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_CAML_COMMENT1, 63267, L"Comment 1", L"back:#E0EEFF,font:Georgia", L"" },
-        { SCE_CAML_COMMENT2, 63268, L"Comment 2", L"back:#E0EEFF,font:Georgia", L"" },
-        { SCE_CAML_COMMENT3, 63269, L"Comment 3", L"back:#E0EEFF,font:Georgia", L"" },
+        { SCE_CAML_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
+        { SCE_CAML_COMMENT1, 63267, L"Comment 1", L"back:#E0EEFF", L"" },
+        { SCE_CAML_COMMENT2, 63268, L"Comment 2", L"back:#E0EEFF", L"" },
+        { SCE_CAML_COMMENT3, 63269, L"Comment 3", L"back:#E0EEFF", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1136,9 +1136,9 @@ KEYWORDLIST KeyWords_COFFEESCRIPT = {
 
 EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63026, L"CoffeeScript", L"coffee", L"", &KeyWords_COFFEESCRIPT,{
         { SCE_COFFEESCRIPT_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
-        { SCE_COFFEESCRIPT_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_COFFEESCRIPT_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_COFFEESCRIPT_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
+        { SCE_COFFEESCRIPT_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F", L"" },
         { SCE_COFFEESCRIPT_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_COFFEESCRIPT_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_COFFEESCRIPT_STRING, 63131, L"String", L"fore:#7F007F", L"" },
@@ -1147,17 +1147,17 @@ EDITLEXER lexCOFFEESCRIPT = { SCLEX_COFFEESCRIPT, 63026, L"CoffeeScript", L"coff
         { SCE_COFFEESCRIPT_PREPROCESSOR, 63273, L"Preprocessor", L"fore:#7F7F00", L"" },
         { SCE_COFFEESCRIPT_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_COFFEESCRIPT_IDENTIFIER, 63129, L"Identifier", L"", L"" },
-        { SCE_COFFEESCRIPT_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Consolas,back:#E0C0E0,eolfilled", L"" },
-        { SCE_COFFEESCRIPT_VERBATIM, 63275, L"Verbatim", L"fore:#007F00,font:Consolas,back:#E0FFE0,eolfilled", L"" },
-        { SCE_COFFEESCRIPT_REGEX, 63135, L"Regex", L"fore:#3F7F3F,font:Consolas,back:#E0F0FF,eolfilled", L"" },
-        { SCE_COFFEESCRIPT_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_STRINGEOL, 63274, L"String EOL", L"fore:#000000,back:#E0C0E0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_VERBATIM, 63275, L"Verbatim", L"fore:#007F00,back:#E0FFE0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_REGEX, 63135, L"Regex", L"fore:#3F7F3F,back:#E0F0FF,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F", L"" },
         { SCE_COFFEESCRIPT_WORD2, 63262, L"Keyword 2", L"fore:#B00040", L"" },
-        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0,font:Georgia", L"" },
-        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020,font:Georgia", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0", L"" },
+        { SCE_COFFEESCRIPT_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020", L"" },
         { SCE_COFFEESCRIPT_GLOBALCLASS, 63279, L"Global Class", L"fore:#DD9900", L"" },
         { SCE_COFFEESCRIPT_STRINGRAW, 63280, L"String Raw", L"fore:#7F007F,back:#FFF3FF,eolfilled", L"" },
-        { SCE_COFFEESCRIPT_TRIPLEVERBATIM, 63281, L"Trip Lever Batim", L"font:Consolas,fore:#007F00,back:#E0FFE0,eolfilled", L"" },
-        { SCE_COFFEESCRIPT_COMMENTBLOCK, 63282, L"Comment Block", L"font:Consolas,fore:#007F00,back:#E7FFD7,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_TRIPLEVERBATIM, 63281, L"Trip Lever Batim", L"fore:#007F00,back:#E0FFE0,eolfilled", L"" },
+        { SCE_COFFEESCRIPT_COMMENTBLOCK, 63282, L"Comment Block", L"fore:#007F00,back:#E7FFD7,eolfilled", L"" },
         { SCE_COFFEESCRIPT_VERBOSE_REGEX, 63283, L"Verbose Regex", L"fore:#659900", L"" },
         { SCE_COFFEESCRIPT_VERBOSE_REGEX_COMMENT, 63284, L"Regex Comment", L"fore:#3F703F", L"" },
         { -1, 00000, L"", L"", L"" }
@@ -1202,23 +1202,23 @@ KEYWORDLIST KeyWords_D = {
 
 EDITLEXER lexD = { SCLEX_D, 63027, L"D", L"d", L"", &KeyWords_D,{
         { SCE_D_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
-        { SCE_D_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_D_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_D_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F,font:Georgia", L"" },
-        { SCE_D_COMMENTNESTED, 63286, L"Comment Nested", L"fore:#A0C0A0,font:Georgia", L"" },
+        { SCE_D_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
+        { SCE_D_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00", L"" },
+        { SCE_D_COMMENTDOC, 63271, L"Comment Doc", L"fore:#3F703F", L"" },
+        { SCE_D_COMMENTNESTED, 63286, L"Comment Nested", L"fore:#A0C0A0", L"" },
         { SCE_D_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_D_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_D_WORD2, 63262, L"Keyword 2", L"fore:#00007F,bold", L"" },
         { SCE_D_WORD3, 63263, L"Keyword 3", L"fore:#00007F,bold", L"" },
         { SCE_D_TYPEDEF, 63285, L"Typedef", L"fore:#00007F,bold", L"" },
         { SCE_D_STRING, 63131, L"String", L"fore:#7F007F", L"" },
-        { SCE_D_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Consolas,back:#E0C0E0,eolfilled", L"" },
+        { SCE_D_STRINGEOL, 63274, L"String EOL", L"fore:#000000,back:#E0C0E0,eolfilled", L"" },
         { SCE_D_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
         { SCE_D_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_D_IDENTIFIER, 63129, L"Identifier", L"", L"" },
-        { SCE_D_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
-        { SCE_D_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0,font:Georgia", L"" },
-        { SCE_D_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020,font:Georgia", L"" },
+        { SCE_D_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F", L"" },
+        { SCE_D_COMMENTDOCKEYWORD, 63277, L"Comment Doc Keyword", L"fore:#3060A0", L"" },
+        { SCE_D_COMMENTDOCKEYWORDERROR, 63278, L"Comment Doc Keyword Error", L"fore:#804020", L"" },
         { SCE_D_STRINGB, 63287, L"String B", L"fore:#DD9900", L"" },
         { SCE_D_STRINGR, 63288, L"String R", L"fore:#DD9900", L"" },
         { SCE_D_WORD5, 63290, L"Keyword 5", L"fore:#DD9900", L"" },
@@ -1249,17 +1249,17 @@ KEYWORDLIST KeyWords_Lisp = {
 
 EDITLEXER lexLisp = { SCLEX_LISP, 63028, L"Lisp", L"lsp;lisp", L"", &KeyWords_Lisp,{
         { SCE_LISP_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
-        { SCE_LISP_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LISP_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
         { SCE_LISP_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_LISP_KEYWORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_LISP_KEYWORD_KW, 63262, L"Keyword 2", L"fore:#EE00AA", L"" },
         { SCE_LISP_SYMBOL, 63294, L"Symbol", L"fore:#DD9900", L"" },
         { SCE_LISP_STRING, 63131, L"String", L"fore:#7F007F", L"" },
-        { SCE_LISP_STRINGEOL, 63274, L"String EOL", L"fore:#000000,font:Verdana,back:#fefecc,eolfilled", L"" },
+        { SCE_LISP_STRINGEOL, 63274, L"String EOL", L"fore:#000000,back:#fefecc,eolfilled", L"" },
         { SCE_LISP_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { SCE_LISP_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_LISP_SPECIAL, 63295, L"Special", L"fore:#60AA00", L"" },
-        { SCE_LISP_MULTI_COMMENT, 63296, L"Multi-line Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LISP_MULTI_COMMENT, 63296, L"Multi-line Comment", L"fore:#007F00", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1317,14 +1317,14 @@ KEYWORDLIST KeyWords_Lua = {
 
 EDITLEXER lexLua = { SCLEX_LUA, 63029, L"Lua", L"lua", L"", &KeyWords_Lua,{
         { SCE_LUA_DEFAULT, 63126, L"Default", L"fore:#FF0000", L"" },
-        { SCE_LUA_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia,back:#D0F0F0,eolfilled", L"" },
-        { SCE_LUA_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_LUA_COMMENT, 63127, L"Comment", L"fore:#007F00,back:#D0F0F0,eolfilled", L"" },
+        { SCE_LUA_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00", L"" },
         { SCE_LUA_COMMENTDOC, 63271, L"Comment Doc", L"back:#FF0000", L"" },
         { SCE_LUA_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_LUA_WORD, 63128, L"Keyword", L"fore:#00007F", L"" },
         { SCE_LUA_STRING, 63131, L"String", L"fore:#7F007F", L"" },
         { SCE_LUA_CHARACTER, 63265, L"Char", L"fore:#7F007F", L"" },
-        { SCE_LUA_LITERALSTRING, 63295, L"Literal String", L"fore:#7F007F,font:Georgia,back:#E0FFFF", L"" },
+        { SCE_LUA_LITERALSTRING, 63295, L"Literal String", L"fore:#7F007F,back:#E0FFFF", L"" },
         { SCE_LUA_PREPROCESSOR, 63133, L"Preprocessor", L"fore:#7F7F00", L"" },
         { SCE_LUA_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
         { SCE_LUA_IDENTIFIER, 63129, L"Identifier", L"", L"" },
@@ -1407,8 +1407,8 @@ KEYWORDLIST KeyWords_NSIS = {
 
 
 EDITLEXER lexNSIS = { SCLEX_NSIS, 63030, L"NSIS Script", L"nsi;nsh", L"", &KeyWords_NSIS,{
-        { SCE_NSIS_DEFAULT, 63126, L"Default", L"fore:#000000,font:Verdana", L"" },
-        { SCE_NSIS_COMMENT, 63127, L"Comment", L"fore:#007F00,font:Georgia", L"" },
+        { SCE_NSIS_DEFAULT, 63126, L"Default", L"fore:#000000", L"" },
+        { SCE_NSIS_COMMENT, 63127, L"Comment", L"fore:#007F00", L"" },
         { SCE_NSIS_STRINGDQ, 63211, L"String double quoted", L"fore:#999999,back:#EEEEEE", L"" },
         { SCE_NSIS_STRINGLQ, 63298, L"String left quote", L"fore:#999999,back:#EEEEEE", L"" },
         { SCE_NSIS_STRINGRQ, 63299, L"String right quote", L"fore:#999999,back:#EEEEEE", L"" },
@@ -1425,7 +1425,7 @@ EDITLEXER lexNSIS = { SCLEX_NSIS, 63030, L"NSIS Script", L"nsi;nsh", L"", &KeyWo
         { SCE_NSIS_SECTIONGROUP, 63305, L"Section Group", L"fore:#00007F,bold", L"" },
         { SCE_NSIS_PAGEEX, 63306, L"Page Ex", L"fore:#00007F,bold", L"" },
         { SCE_NSIS_FUNCTIONDEF, 63307, L"Function Definition", L"fore:#00007F,bold", L"" },
-        { SCE_NSIS_COMMENTBOX, 63308, L"Comment Box", L"fore:#007F00,font:Georgia,bold", L"" },
+        { SCE_NSIS_COMMENTBOX, 63308, L"Comment Box", L"fore:#007F00,bold", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
@@ -1537,15 +1537,15 @@ KEYWORDLIST KeyWords_Yaml = {
 
 
 EDITLEXER lexYaml = { SCLEX_YAML, 63032, L"YAML", L"yaml;yml", L"", &KeyWords_Yaml,{
-        { SCE_YAML_DEFAULT, 63126, L"Default", L"font:Times New Roman,fore:#000000", L"" },
-        { SCE_YAML_COMMENT, 63127, L"Comment", L"font:Georgia,fore:#008800", L"" },
-        { SCE_YAML_IDENTIFIER, 63129, L"Identifier", L"font:Verdana,fore:#000088,bold", L"" },
-        { SCE_YAML_KEYWORD, 63128, L"Keyword", L"font:Verdana,fore:#880088", L"" },
-        { SCE_YAML_NUMBER, 63130, L"Number", L"font:Verdana,fore:#880000", L"" },
-        { SCE_YAML_REFERENCE, 63323, L"Reference", L"font:Verdana,fore:#008888", L"" },
-        { SCE_YAML_DOCUMENT, 63324, L"Document", L"font:Georgia,fore:#FFFFFF,bold,back:#000088,eolfilled", L"" },
-        { SCE_YAML_TEXT, 63322, L"Text", L"font:Times New Roman,fore:#333366", L"" },
-        { SCE_YAML_ERROR, 63325, L"Error", L"font:Times New Roman,fore:#FFFFFF,italics,bold,back:#FF0000,eolfilled", L"" },
+        { SCE_YAML_DEFAULT, 63126, L"Default", L"fore:#000000", L"" },
+        { SCE_YAML_COMMENT, 63127, L"Comment", L"fore:#008800", L"" },
+        { SCE_YAML_IDENTIFIER, 63129, L"Identifier", L"fore:#000088,bold", L"" },
+        { SCE_YAML_KEYWORD, 63128, L"Keyword", L"fore:#880088", L"" },
+        { SCE_YAML_NUMBER, 63130, L"Number", L"fore:#880000", L"" },
+        { SCE_YAML_REFERENCE, 63323, L"Reference", L"fore:#008888", L"" },
+        { SCE_YAML_DOCUMENT, 63324, L"Document", L"fore:#FFFFFF,bold,back:#000088,eolfilled", L"" },
+        { SCE_YAML_TEXT, 63322, L"Text", L"fore:#333366", L"" },
+        { SCE_YAML_ERROR, 63325, L"Error", L"fore:#FFFFFF,italics,bold,back:#FF0000,eolfilled", L"" },
         { SCE_YAML_OPERATOR, 63132, L"Operator", L"fore:#000000", L"" },
         { -1, 00000, L"", L"", L"" }
       }
@@ -1564,10 +1564,10 @@ KEYWORDLIST KeyWords_Rust = {
 
 EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust", L"rs", L"", &KeyWords_Rust,{
         { SCE_RUST_DEFAULT, 63126, L"Default", L"fore:#808080", L"" },
-        { SCE_RUST_COMMENTBLOCK, 63282, L"Comment Block", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_RUST_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00,font:Georgia", L"" },
-        { SCE_RUST_COMMENTBLOCKDOC, 63326, L"Comment Block Dock", L"fore:#3F703F,font:Georgia", L"" },
-        { SCE_RUST_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F,font:Georgia", L"" },
+        { SCE_RUST_COMMENTBLOCK, 63282, L"Comment Block", L"fore:#007F00", L"" },
+        { SCE_RUST_COMMENTLINE, 63270, L"Comment Line", L"fore:#007F00", L"" },
+        { SCE_RUST_COMMENTBLOCKDOC, 63326, L"Comment Block Dock", L"fore:#3F703F", L"" },
+        { SCE_RUST_COMMENTLINEDOC, 63276, L"Comment Line Doc", L"fore:#3F703F", L"" },
         { SCE_RUST_NUMBER, 63130, L"Number", L"fore:#007F7F", L"" },
         { SCE_RUST_WORD, 63128, L"Keyword", L"fore:#00007F,bold", L"" },
         { SCE_RUST_WORD2, 63262, L"Keyword 2", L"fore:#00007F,bold", L"" },
@@ -1583,7 +1583,7 @@ EDITLEXER lexRust = { SCLEX_RUST, 63033, L"Rust", L"rs", L"", &KeyWords_Rust,{
         { SCE_RUST_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { SCE_RUST_LIFETIME, 63327, L"Lifetime", L"fore:#007F7F", L"" },
         { SCE_RUST_MACRO, 63303, L"Macro def", L"fore:#7F7F00", L"" },
-        { SCE_RUST_LEXERROR, 63325, L"Error", L"fore:#000000,font:Consolas,back:#E0C0E0", L"" },
+        { SCE_RUST_LEXERROR, 63325, L"Error", L"fore:#000000,back:#E0C0E0", L"" },
         { SCE_RUST_BYTESTRING, 63328, L"Byte String", L"fore:#7F007F", L"" },
         { SCE_RUST_BYTESTRINGR, 63329, L"Byte String R", L"fore:#B090B0", L"" },
         { SCE_RUST_BYTECHARACTER, 63330, L"Byte Char", L"fore:#7F007F", L"" },
@@ -1617,7 +1617,7 @@ EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown", L"markdown;mdown;m
         { SCE_MARKDOWN_STRIKEOUT, 63346, L"Strike Out", L"", L"" },
         { SCE_MARKDOWN_HRULE, 63347, L"HRule", L"fore:#CC00FF", L"" },
         { SCE_MARKDOWN_LINK, 63348, L"Link", L"fore:#FF5555", L"" },
-        { SCE_MARKDOWN_CODE, 63349, L"Code", L"fore:#80FF80,font:Consolas,back:#100010", L"" },
+        { SCE_MARKDOWN_CODE, 63349, L"Code", L"fore:#80FF80,back:#100010", L"" },
         { SCE_MARKDOWN_CODE2, 63350, L"Code 2", L"fore:#CC00FF", L"" },
         { SCE_MARKDOWN_CODEBK, 63351, L"Code Block", L"fore:#CC00FF", L"" },
         { -1, 00000, L"", L"", L"" }
