@@ -56,7 +56,7 @@ HWND InlineProgressBarCtrl_Create(const HWND hwndStatusBar, const long nCurrentV
 }
 
 BOOL InlineProgressBarCtrl_SetRange(const HWND hwnd, const long nLower, const long nUpper, const long nStep)
-{	 
+{
   if (!IsWindow(hwnd))
   {
     return FALSE;
@@ -67,7 +67,7 @@ BOOL InlineProgressBarCtrl_SetRange(const HWND hwnd, const long nLower, const lo
 }
 
 int InlineProgressBarCtrl_SetStep(const HWND hwnd, const long nStep)
-{ 
+{
   if (!IsWindow(hwnd))
   {
     return 0;
@@ -147,7 +147,7 @@ BOOL InlineProgressBarCtrl_Resize(const HWND hwnd)
   // Leave a litle vertical margin (10%) between the top and bottom of the bar
   int Height = rcPane.bottom - rcPane.top;
   rcPane.bottom -= Height/10;
-  rcPane.top	  += Height/10;
+  rcPane.top += Height/10;
 
   // If the window size has changed, resize the window
   RECT rcCurrent;

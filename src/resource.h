@@ -8,7 +8,6 @@
 #define ID_GREP                         4
 #define ID_UNGREP                       5
 #define ID_FILE_OPENPREVIOUS            6
-#define ID_EDIT_UNDO                    7
 #define ID_EDIT_UNDO_REDO               8
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
 #define ID_FILE_INVOKESHELLMENU         10
@@ -82,7 +81,6 @@
 #define IDC_STYLEFORE                   103
 #define IDC_AUTOSTRIPBLANKS             103
 #define IDC_ENCODINGFROMFILEVARS        103
-#define IDC_WEBPAGE2                    103
 #define IDD_ENCODING                    104
 #define IDC_FINDSTART                   104
 #define IDB_PICK                        104
@@ -96,7 +94,6 @@
 #define IDD_DEFEOLMODE                  106
 #define IDC_FINDTRANSFORMBS             106
 #define IDC_PREVIEW                     106
-#define IDC_EMAIL2                      106
 #define IDC_TIME                        106
 #define IDD_FAVORITES                   107
 #define IDC_NOWRAP                      107
@@ -330,7 +327,6 @@
 #define IDM_VIEW_SHOWEOLS               40408
 #define IDM_VIEW_WORDWRAPSYMBOLS        40409
 #define IDM_VIEW_MATCHBRACES            40410
-#define IDM_VIEW_HILITECURRENTLINE      40411
 #define IDM_VIEW_LINENUMBERS            40412
 #define IDM_VIEW_MARGIN                 40413
 #define IDM_VIEW_ZOOMIN                 40414
@@ -362,7 +358,6 @@
 #define IDM_VIEW_TOOLBAR                40440
 #define IDM_VIEW_CUSTOMIZETB            40441
 #define IDM_VIEW_STATUSBAR              40442
-#define IDM_VIEW_SAVESETTINGS           40443
 #define IDM_VIEW_SAVESETTINGSNOW        40444
 #define IDM_VIEW_HIGHLIGHTCURRENTLINE   40445
 #define IDM_VIEW_HIGHLIGHTCURRENTWORD   40446

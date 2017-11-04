@@ -4,12 +4,12 @@
 
 extern "C"
 {
-  extern UINT	iShellMenuType;
+  extern UINT iShellMenuType;
 
   #include "Trace.h"
   
-  LPCONTEXTMENU2	g_IContext2 = NULL;
-  LPCONTEXTMENU3	g_IContext3 = NULL;
+  LPCONTEXTMENU2  g_IContext2 = NULL;
+  LPCONTEXTMENU3  g_IContext3 = NULL;
 
   void Invoke(const int cmd, LPCONTEXTMENU menu, const HWND win, LPCWSTR path)
   {
@@ -34,7 +34,7 @@ extern "C"
   {
     switch (message)
     {
-      case WM_MENUCHAR:	// only supported by IContextMenu3
+      case WM_MENUCHAR: // only supported by IContextMenu3
         if (g_IContext3)
         {
           LRESULT lResult = 0;
@@ -54,7 +54,7 @@ extern "C"
           g_IContext2->HandleMenuMsg(message, wParam, lParam);
         }
         else
-        {	// version 3
+        {  // version 3
           g_IContext3->HandleMenuMsg(message, wParam, lParam);
         }
         return (message == WM_INITMENUPOPUP ? 0 : TRUE); // inform caller that
@@ -129,7 +129,7 @@ extern "C"
       return FALSE;    // something went wrong
     }
 
-    HMENU	h_menu = CreatePopupMenu();
+    HMENU h_menu = CreatePopupMenu();
     pContextMenu->QueryContextMenu(h_menu, 0, 1, 0x7FFF, iShellMenuType);
     WNDPROC OldWndProc = NULL;
 
@@ -137,7 +137,7 @@ extern "C"
     ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     GetVersionEx((OSVERSIONINFO *)&osvi);
-    BOOL	bIsWindowsXPorLater =
+    BOOL bIsWindowsXPorLater =
       ((osvi.dwMajorVersion > 5) ||
        ((osvi.dwMajorVersion == 5) && (osvi.dwMinorVersion >= 1)));
     N2E_TRACE_PLAIN("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);

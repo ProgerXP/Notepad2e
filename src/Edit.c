@@ -71,7 +71,7 @@ extern BOOL bLoadASCIIasUTF8;
 extern int iSrcEncoding;
 extern int iWeakSrcEncoding;
 
-extern	int       iEncoding;
+extern int iEncoding;
 
 // Supported Encodings
 WCHAR wchANSI[8] = L"";
@@ -6070,9 +6070,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
             int iMaxLine;
             int iMaxPos;
             int iNewPos;
-            TCHAR	wsLine[0xff];
-            TCHAR	wsCol[0xff];
-            TCHAR	wsPos[0xff];
+            TCHAR wsLine[0xff];
+            TCHAR wsCol[0xff];
+            TCHAR wsPos[0xff];
             GetDlgItemText(hwnd, IDC_LINENUM, wsLine, 0xff);
             GetDlgItemText(hwnd, IDC_COLNUM, wsCol, 0xff);
             GetDlgItemText(hwnd, IDC_POSNUM, wsPos, 0xff);

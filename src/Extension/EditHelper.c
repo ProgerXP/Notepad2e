@@ -10,8 +10,8 @@
 #include "StrToHex.h"
 #include "Trace.h"
 
-WCHAR	wchLastHTMLTag[0xff] = L"<tag>";
-WCHAR	wchLastHTMLEndTag[0xff] = L"</tag>";
+WCHAR wchLastHTMLTag[0xff] = L"<tag>";
+WCHAR wchLastHTMLEndTag[0xff] = L"</tag>";
 
 extern NP2ENCODING mEncoding[];
 extern int iEncoding;
@@ -253,8 +253,8 @@ BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct Te
 
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next)
 {
-  struct Sci_TextRange	tr;
-  struct Sci_TextToFind	ttf;
+  struct Sci_TextRange tr;
+  struct Sci_TextToFind ttf;
   static char* szPrevWord = NULL;
   int searchflags = 0;
   BOOL has = FALSE;
@@ -411,10 +411,10 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
 
 BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
 {
-  WCHAR	dirname[MAX_PATH], odn[MAX_PATH], found_path[MAX_PATH], *filename;
-  HANDLE	hFind = INVALID_HANDLE_VALUE;
-  WIN32_FIND_DATA	ffd;
-  INT		cmp_res;
+  WCHAR dirname[MAX_PATH], odn[MAX_PATH], found_path[MAX_PATH], *filename;
+  HANDLE hFind = INVALID_HANDLE_VALUE;
+  WIN32_FIND_DATA ffd;
+  INT cmp_res;
   *found_path = L'\0';
   filename = PathFindFileName(file);
   StrCpy(dirname, file);
@@ -545,7 +545,7 @@ void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
     const char* _left_braces = "<{([";
     const char* _right_braces = ">})]";
     char* tchl = NULL, *tchr = NULL, *qchl = NULL;
-    int	  skipcl = 0, skipcr = 0;
+    int   skipcl = 0, skipcr = 0;
     int*  skipl = (int*)n2e_Alloc(max_brackets_to_skip * sizeof(int));
 
     // search left

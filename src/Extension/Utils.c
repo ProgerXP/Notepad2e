@@ -11,16 +11,16 @@
 #include "Notepad2.h"
 #include "Trace.h"
 
-#define N2E_WHEEL_TIMER_ID	0xFF
+#define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  100
 #define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
-#define BYTES_IN_KB 1024
+#define BYTES_IN_KB  1024
 
 HANDLE g_hScintilla = NULL;
 UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
-WCHAR	wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
+WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
 BOOL bUsePrefixInOpenDialog = TRUE;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
@@ -46,8 +46,8 @@ extern BOOL bModified;
 extern int iEncoding;
 extern int iOriginalEncoding;
 extern BOOL bReadOnly;
-extern long	iMaxSearchDistance;
-extern BOOL	bHighlightSelection;
+extern long iMaxSearchDistance;
+extern BOOL bHighlightSelection;
 extern LPMRULIST pFileMRU;
 extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern enum ESaveSettingsMode nSaveSettingsMode;
@@ -318,13 +318,13 @@ int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2)
 
 BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out)
 {
-  WIN32_FIND_DATA	wfd;
-  WCHAR	path[MAX_PATH];
-  WCHAR	temp[MAX_PATH], filter[MAX_PATH];
-  WCHAR	_in[MAX_PATH];
-  WCHAR*	in = _in;
+  WIN32_FIND_DATA wfd;
+  WCHAR path[MAX_PATH];
+  WCHAR temp[MAX_PATH], filter[MAX_PATH];
+  WCHAR _in[MAX_PATH];
+  WCHAR* in = _in;
   HANDLE res;
-  int		len;
+  int len;
   lstrcpy(_in, pref);
   while ((len = lstrlen(in) - 1) >= 0)
   {
@@ -437,8 +437,8 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
               N2E_TRACE("OFN OK '%S' ", buf);
               if (len)
               {
-                WCHAR	out[MAX_PATH];
-                LPWSTR	final_str = buf;
+                WCHAR out[MAX_PATH];
+                LPWSTR final_str = buf;
                 if (wcsstr(last_selected, buf))
                 {
                   final_str = last_selected;
@@ -569,7 +569,7 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
 
 void n2e_GetLastDir(LPTSTR out)
 {
-  WCHAR	tch[MAX_PATH];
+  WCHAR tch[MAX_PATH];
   INT count = MRU_Enum(pFileMRU, 0, NULL, 0);
   if (count)
   {

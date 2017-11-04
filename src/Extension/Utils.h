@@ -67,8 +67,8 @@ typedef enum
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE  L"WordNavigationMode"
 
-#define WM_N2E_RELOAD_SETTINGS	(WM_USER + 0xFF)
-#define	N2E_MAX_PATH_N_CMD_LINE	MAX_PATH + 40
+#define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
+#define N2E_MAX_PATH_N_CMD_LINE MAX_PATH + 40
 
 extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;

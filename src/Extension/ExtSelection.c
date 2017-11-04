@@ -24,8 +24,8 @@
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_EDIT 12
 
-#define N2E_SELECT_MAX_SIZE	0xff
-#define N2E_SELECT_MAX_COUNT	0xff
+#define N2E_SELECT_MAX_SIZE 0xff
+#define N2E_SELECT_MAX_COUNT 0xff
 
 BOOL bHighlightSelection = TRUE;
 BOOL bEditSelection = FALSE;
@@ -40,9 +40,9 @@ extern HWND hwndEdit;
 
 typedef struct tagHLSEdata
 {
-  long	pos;
-  long	len;
-  char*	original;
+  long  pos;
+  long  len;
+  char* original;
 } SE_DATA, *LPSE_DATA;
 
 typedef enum
@@ -70,7 +70,7 @@ BOOL case_compare(const char* a, const char* b, BOOL ignore_case)
   return 0 == strcmp(a, b);
 }
 
-int	n2e_SelectionKeyAction(int key, int msg)
+int n2e_SelectionKeyAction(int key, int msg)
 {
   if (n2e_IsSelectionEditModeOn())
   {
@@ -209,9 +209,9 @@ void n2e_HighlightWord(LPCSTR word)
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
   if (word)
   {
-    int	search_opt = SCFIND_WHOLEWORD;
+    int search_opt = SCFIND_WHOLEWORD;
     int wlen = strlen(word);
-    int	curr_indi = N2E_SELECT_INDICATOR_SINGLE;
+    int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
     BOOL bPreviousMatchIsVisible = FALSE;
     if (bEditSelectionInit)
     {
@@ -424,18 +424,18 @@ void n2e_SelectionHighlightTurn()
 
 BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
 {
-  int		old_ind;
-  int		new_len = 0;
-  int		k = 0;
-  int		doc_len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
-  BOOL	out = TRUE;
-  BOOL	work = TRUE;
-  BOOL	cur_se = FALSE;
-  BOOL	rollback = opt & PCM_ROLLBACK;
-  char 	*old_word = 0;
-  struct	Sci_TextRange	tr;
-  int		cur_pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-  int		delta_len = 0;
+  int old_ind;
+  int new_len = 0;
+  int k = 0;
+  int doc_len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
+  BOOL out = TRUE;
+  BOOL work = TRUE;
+  BOOL cur_se = FALSE;
+  BOOL rollback = opt & PCM_ROLLBACK;
+  char *old_word = 0;
+  struct Sci_TextRange tr;
+  int cur_pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+  int delta_len = 0;
   tr.lpstrText = 0;
   old_ind = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
   if (cur_pos < trEditSelection.chrg.cpMin || cur_pos > trEditSelection.chrg.cpMax)

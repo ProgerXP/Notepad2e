@@ -6,7 +6,7 @@
 #include "Edit.h"
 #include "Utils.h"
 extern NP2ENCODING mEncoding[];
-extern	int       iEncoding;
+extern int iEncoding;
 
 #else // ifndef N2E_TESTING
 

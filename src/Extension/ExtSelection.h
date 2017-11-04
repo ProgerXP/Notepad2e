@@ -7,7 +7,7 @@ typedef enum
   SUM_MODIF
 } ESelectionUpdateMode;
 
-typedef	enum
+typedef enum
 {
   SES_APPLY = 1 << 0,
   SES_REJECT = 1 << 1

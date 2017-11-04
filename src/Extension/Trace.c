@@ -1,10 +1,11 @@
 #include "Trace.h"
+#include "CommonUtils.h"
 #include "Scintilla.h"  // required for Helpers.h
 #include "Helpers.h"
 #include "Utils.h"
 
 #ifdef _DEBUG
-FILE	*n2e_log = 0;
+FILE *n2e_log = 0;
 #endif
 
 VOID n2e_InitializeTrace()
@@ -35,7 +36,7 @@ VOID n2e_Trace(const char *fmt, ...)
   {
     va_list vl;
     SYSTEMTIME st;
-    char	buff[0xff + 1];
+    char buff[0xff + 1];
     char* ch = 0;
     GetLocalTime(&st);
     fprintf(n2e_log, "- [%d:%d:%d] ", st.wMinute, st.wSecond, st.wMilliseconds);
