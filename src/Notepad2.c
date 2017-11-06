@@ -5107,16 +5107,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 }
                 tchIns[cchIns++] = '>';
                 tchIns[cchIns] = 0;
-                if (cchIns > 3 &&
-                    lstrcmpiA(tchIns, "</base>") &&
-                    lstrcmpiA(tchIns, "</bgsound>") &&
-                    lstrcmpiA(tchIns, "</br>") &&
-                    lstrcmpiA(tchIns, "</embed>") &&
-                    lstrcmpiA(tchIns, "</hr>") &&
-                    lstrcmpiA(tchIns, "</img>") &&
-                    lstrcmpiA(tchIns, "</input>") &&
-                    lstrcmpiA(tchIns, "</link>") &&
-                    lstrcmpiA(tchIns, "</meta>"))
+                if (cchIns > 3 && n2e_IsValidClosingTagA(tchIns))
                 {
                   SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
                   SendMessage(hwndEdit, SCI_REPLACESEL, 0, (LPARAM)tchIns);

@@ -40,6 +40,9 @@ BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd);
 BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo);
 BOOL n2e_SubclassOpenDialog(const HWND hwnd);
 
+BOOL n2e_IsValidClosingTagA(LPCSTR pTag);
+BOOL n2e_IsValidClosingTagW(LPCWSTR pwchTag);
+
 void n2e_Init_EditInsertTagDlg(const HWND hwnd);
 WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* buf);
 void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata);

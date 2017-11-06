@@ -861,7 +861,7 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
           const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
           const int textLength = MultiByteToWideChar(codePage, 0, pClip, -1, NULL, 0);
-          wchar_t* pWideText = LocalAlloc(LPTR, textLength * 2);
+          LPWSTR pWideText = LocalAlloc(LPTR, textLength * 2);
           MultiByteToWideChar(codePage, 0, pClip, -1, pWideText, textLength);
           SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
           LocalFree(pWideText);
@@ -1052,6 +1052,50 @@ void n2e_Init_EditInsertTagDlg(const HWND hwnd)
   }
 }
 
+BOOL n2e_IsValidClosingTagA(LPCSTR pTag)
+{
+  const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
+  const int textLength = MultiByteToWideChar(codePage, 0, pTag, -1, NULL, 0);
+  LPWSTR pwchTag = LocalAlloc(LPTR, textLength * 2);
+  MultiByteToWideChar(codePage, 0, pTag, -1, pwchTag, textLength);
+
+  const BOOL res = n2e_IsValidClosingTagW(pwchTag);
+  LocalFree(pwchTag);
+  return res;;
+}
+
+BOOL n2e_IsValidClosingTagW(LPCWSTR pwchTag)
+{
+  LPCWSTR arrInvalidClosingTags[17] = {
+    L"</area>",
+    L"</base>",
+    L"</basefont>",
+    L"</bgsound>",
+    L"</br>",
+    L"</col>",
+    L"</embed>",
+    L"</frame>",
+    L"</hr>",
+    L"</img>",
+    L"</input>",
+    L"</keygen>",
+    L"</link>",
+    L"</meta>",
+    L"</param>",
+    L"</source>",
+    L"</track>"
+  };
+
+  for (int i = 0; i < _countof(arrInvalidClosingTags); ++i)
+  {
+    if (lstrcmpi(pwchTag, arrInvalidClosingTags[i]) == 0)
+    {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}
+
 WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
 {
   static WCHAR wchIns[256];
@@ -1115,25 +1159,7 @@ WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
           wchIns[cchIns++] = _right_braces[StrChr(_left_braces, wchIns[open_tag_len]) - _left_braces];
         }
         wchIns[cchIns] = L'\0';
-        if (cchIns > 3
-            && // tags hasn't to be closed
-            lstrcmpi(wchIns, L"</area>") &&
-            lstrcmpi(wchIns, L"</base>") &&
-            lstrcmpi(wchIns, L"</basefont>") &&
-            lstrcmpi(wchIns, L"</bgsound>") &&
-            lstrcmpi(wchIns, L"</br>") &&
-            lstrcmpi(wchIns, L"</col>") &&
-            lstrcmpi(wchIns, L"</embed>") &&
-            lstrcmpi(wchIns, L"</frame>") &&
-            lstrcmpi(wchIns, L"</hr>") &&
-            lstrcmpi(wchIns, L"</img>") &&
-            lstrcmpi(wchIns, L"</input>") &&
-            lstrcmpi(wchIns, L"</keygen>") &&
-            lstrcmpi(wchIns, L"</link>") &&
-            lstrcmpi(wchIns, L"</meta>") &&
-            lstrcmpi(wchIns, L"</param>") &&
-            lstrcmpi(wchIns, L"</source>") &&
-            lstrcmpi(wchIns, L"</track>"))
+        if (cchIns > 3 && n2e_IsValidClosingTagW(wchIns))
         {
           bClear = FALSE;
         }
