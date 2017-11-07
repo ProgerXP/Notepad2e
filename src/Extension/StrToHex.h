@@ -1,5 +1,4 @@
 #pragma once
-#include <WTypes.h>
 #include "Externals.h"
 
 #ifdef __cplusplus

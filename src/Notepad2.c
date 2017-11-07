@@ -840,19 +840,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       if (!wParam)
       {
-       n2e_SelectionEditStop(SES_APPLY);
+        n2e_SelectionEditStop(SES_APPLY);
       }
       break;
-    // [/2e]
 
 
-    case WM_KEYDOWN:
-      break;
-
-
-    // [2e]: Edit highlighted word #18
     case WM_MOUSEACTIVATE:
       n2e_SelectionEditStop(SES_APPLY);
+      // [2e]: Broken X-Mouse #113
       return DefWindowProc(hwnd, umsg, wParam, lParam);
     // [/2e]
 
@@ -1101,11 +1096,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
         pt.x = (int)(short)LOWORD(lParam);
         pt.y = (int)(short)HIWORD(lParam);
+        // [2e]: right click for copy-to-clipboard evaluated result
         if (n2e_IsPaneSizePoint(hwnd, pt))
         {
           n2e_OnPaneSizeClick(hwnd, FALSE);
           break;
         }
+        // [/2e]
 
         hmenu = LoadMenu(g_hInstance, MAKEINTRESOURCE(IDR_POPUPMENU));
         switch (nID)
@@ -1318,7 +1315,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   return (0);
 }
 
-// [2e] Edit initialization subroutine
+// [2e]: Edit initialization subroutine
 void _MsgCreate()
 {
   // Tabs
@@ -2040,6 +2037,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Open Next/Previous #43
     case ID_FILE_OPEN__NEXT:
     case IDT_FILE_OPEN_NEXT:
       n2e_OpenNextFile(hwnd, szCurFile, TRUE);
@@ -2050,6 +2048,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDT_FILE_OPEN_PREV:
       n2e_OpenNextFile(hwnd, szCurFile, FALSE);
       break;
+    // [/2e]
 
 
     case IDM_FILE_REVERT: {
@@ -2085,6 +2084,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
             }
           }
+          // [2e]: Match indicator
           n2e_ResetFindIcon();
         }
       }
@@ -2494,7 +2494,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
-      // [/2e]
+    // [/2e]
 
 
     case IDM_FILE_EXIT:
@@ -2511,7 +2511,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         int iNewEncoding = iEncoding;
         int pos, anch, fw;
-        // [2e] Retain caret position on File > Encoding #7
+        // [2e]: Retain caret position on File > Encoding #7
         pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         anch = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
         fw = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
@@ -2562,7 +2562,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
           n2e_UpdateWindowTitle(hwnd);
         }
-        // [2e] Retain caret position on File > Encoding #7
+        // [2e]: Retain caret position on File > Encoding #7
         SendMessage(hwndEdit, SCI_SETANCHOR, anch, 0);
         SendMessage(hwndEdit, SCI_SETCURRENTPOS, pos, 0);        
         SendMessage(hwndEdit, SCI_SETFIRSTVISIBLELINE, SendMessage(hwndEdit, SCI_VISIBLEFROMDOCLINE, fw, 0), 0);
@@ -2591,7 +2591,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
           if (RecodeDlg(hwnd, &iNewEncoding))
           {
-            // [2e] Retain caret position on File > Encoding #7
+            // [2e]: Retain caret position on File > Encoding #7
             int pos, anch, fw;
             pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
             anch = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
@@ -2601,7 +2601,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             lstrcpy(tchCurFile2, szCurFile);
             iSrcEncoding = iNewEncoding;
             FileLoad(TRUE, FALSE, TRUE, FALSE, tchCurFile2);
-            // [2e] Retain caret position on File > Encoding #7
+            // [2e]: Retain caret position on File > Encoding #7
             SendMessage(hwndEdit, SCI_SETANCHOR, anch, 0);
             SendMessage(hwndEdit, SCI_SETCURRENTPOS, pos, 0);
             SendMessage(hwndEdit, SCI_SETFIRSTVISIBLELINE, SendMessage(hwndEdit, SCI_VISIBLEFROMDOCLINE, fw, 0), 0);
@@ -2638,10 +2638,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_UNDO:
+      // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
         n2e_SelectionEditStop(SES_REJECT);
       }
+      // [/2e]
       else
       {
         SendMessage(hwndEdit, SCI_UNDO, 0, 0);
@@ -2837,6 +2839,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_DUPLICATELINE:
+      // [2e]: Edit highlighted word #18
       n2e_SelectionEditStop(SES_APPLY);
       SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
       break;
@@ -3341,6 +3344,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Char/Hex #87
     case IDM_EDIT_STRING2HEX:
       BeginWaitCursor();
       n2e_EditString2Hex(hwndEdit);
@@ -3353,6 +3357,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       n2e_EditHex2String(hwndEdit);
       EndWaitCursor();
       break;
+    // [/2e]
 
 
     case IDM_EDIT_FINDMATCHINGBRACE: {
@@ -3793,7 +3798,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    // [2e]: selection highlight
+    // [2e]: Edit highlighted word #18
     case IDM_VIEW_HIGHLIGHTCURRENTWORD:
       bHighlightSelection = (bHighlightSelection) ? FALSE : TRUE;
       n2e_SelectionUpdate(SUM_INIT);
@@ -4087,7 +4092,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    // [2e]: edit word on the same line
+    // [2e]: Edit highlighted word #18
     case ID_EDIT_EDITSELECTION:
       n2e_SelectionEditStart(TRUE);
       return 1;
@@ -4151,7 +4156,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // [/2e]
 
 
-    // [2e] ctrl + arrow behavior toggle #89
+    // [2e]: ctrl + arrow behavior toggle #89
     case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
       iWordNavigationMode = WNM_STANDARD;
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
@@ -4169,10 +4174,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                       hwnd, AboutDlgProc);
       break;
     case CMD_ESCAPE:
+      // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
         n2e_SelectionEditStop(SES_REJECT);
       }
+      // [/2e]
       else
       {
         switch (iEscFunction)
@@ -4197,12 +4204,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-      // Newline with toggled auto indent setting
+    // Newline with toggled auto indent setting
     case CMD_CTRLENTER:
+      // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
         n2e_SelectionEditStop(SES_APPLY);
       }
+      // [/2e]
       else
       {
         bAutoIndent = (bAutoIndent) ? 0 : 1;
@@ -6698,6 +6707,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     if (bResetFileWatching)
       iFileWatchingMode = 0;
     InstallFileWatching(NULL);
+    // [2e]: Match indicator
     n2e_ResetFindIcon();
     n2e_ResetLastRun();
 
@@ -6838,6 +6848,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
   if (fSuccess)
   {
+    // [2e]: Match indicator
     n2e_ResetFindIcon();
     n2e_ResetLastRun();
   }
@@ -7028,7 +7039,9 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
       }
     }
     else
+    {
       n2e_GetLastDir(tchInitialDir);
+    }
   }
 
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
@@ -7096,7 +7109,9 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
     }
   }
   else
+  {
     n2e_GetLastDir(tchInitialDir);
+  }
 
   ZeroMemory(&ofn, sizeof(OPENFILENAME));
   ofn.lStructSize = sizeof(OPENFILENAME);

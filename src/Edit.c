@@ -1214,6 +1214,7 @@ BOOL EditLoadFile(
   }
 
   lpData = GlobalAlloc(GPTR, dwBufSize);
+  // [2e]: Loading large file silently stops #126
   dwLastIOError = GetLastError();
   if (!lpData)
   {
@@ -1223,6 +1224,7 @@ BOOL EditLoadFile(
     iWeakSrcEncoding = -1;
     return FALSE;
   }
+  // [/2e]
   bReadSuccess = ReadFile(hFile, lpData, (DWORD)GlobalSize(lpData) - 2, &cbData, NULL);
   dwLastIOError = GetLastError();
   CloseHandle(hFile);
@@ -3034,7 +3036,7 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
           lstrcatA(mszInsert, mszPrefix2);
           iPrefixNum++;
         }
-        iPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
+        iPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
@@ -5076,9 +5078,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         GetString(SC_RESETPOS, tch, COUNTOF(tch));
         InsertMenu(hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch);
         InsertMenu(hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
+        // [2e]: Match indicator
         n2e_ResetFindIcon();
+        // [2e]: Ctrl+H: Replace input behaviour #121
         n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
+        // [/2e]
       }
       return TRUE;
 
@@ -5151,6 +5156,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           {
             GetDlgPos(hwnd, &xFindReplaceDlgSave, &yFindReplaceDlgSave);
             bSwitchedFindReplace = TRUE;
+            // [2e]: Match indicator
             n2e_ResetFindIcon();
             CopyMemory(&efrSave, lpefr, sizeof(EDITFINDREPLACE));
           }
@@ -5273,6 +5279,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           if (bCloseDlg)
           {
+            // [2e]: Match indicator
             n2e_ResetFindIcon();
             DestroyWindow(hwnd);
             hDlgFindReplace = NULL;
@@ -5323,6 +5330,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
 
         case IDCANCEL:
+          // [2e]: Match indicator
           n2e_ResetFindIcon();
           DestroyWindow(hwnd);
           break;
@@ -5477,6 +5485,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
 
   const BOOL bTextFound = (iPos >= 0);
+  // [2e]: Match indicator
   n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
@@ -5484,13 +5493,18 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     {
       ttf.chrg.cpMin = 0;
       iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Match indicator
       n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
     }
     else
     {
       bSuppressNotFound = TRUE;
+      // [2e]: Match indicator
       if (!IsWindowVisible(hDlgFindReplace))
+      {
         n2e_ResetFindIcon();
+      }
+      // [/2e]
     }
   }
 
@@ -5552,6 +5566,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
 
   const BOOL bTextFound = (iPos >= 0);
+  // [2e]: Match indicator
   n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
@@ -5560,13 +5575,18 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     {
       ttf.chrg.cpMin = iLength;
       iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Match indicator
       n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
     }
     else
     {
       bSuppressNotFound = TRUE;
+      // [2e]: Match indicator
       if (!IsWindowVisible(hDlgFindReplace))
+      {
         n2e_ResetFindIcon();
+      }
+      // [/2e]
     }
   }
 
@@ -6077,26 +6097,11 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
               PostMessage(hwnd, WM_NEXTDLGCTL,
                           (WPARAM)(GetDlgItem(hwnd, IDC_LINENUM)), 1);
             }
+            // [/2e]
           }
-          // [/2e]
           break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
-          break;
-        case IDC_LINENUM:
-          if (EN_CHANGE == HIWORD(wParam))
-          {
-          }
-          break;
-        case IDC_COLNUM:
-          if (EN_CHANGE == HIWORD(wParam))
-          {
-          }
-          break;
-        case IDC_POSNUM:
-          if (EN_CHANGE == HIWORD(wParam))
-          {
-          }
           break;
 
       }
@@ -6566,7 +6571,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
       return TRUE;
   }
   return FALSE;
-};
+}
 
 
 //=============================================================================
