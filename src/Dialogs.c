@@ -221,6 +221,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
   switch (umsg)
   {
+    // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
         WCHAR wch[256];
         LOGFONT lf;

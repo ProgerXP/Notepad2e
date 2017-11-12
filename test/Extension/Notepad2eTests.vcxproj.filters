@@ -21,13 +21,13 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Extension\StrToHex.h">
+    <ClInclude Include="..\..\src\Extension\StrToHex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Extension\CommonUtils.h">
+    <ClInclude Include="..\..\src\Extension\CommonUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\Extension\Trace.h">
+    <ClInclude Include="..\..\src\Extension\Trace.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -38,13 +38,13 @@
     <ClCompile Include="TextEncodingTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Extension\StrToHex.c">
+    <ClCompile Include="..\..\src\Extension\StrToHex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Extension\CommonUtils.c">
+    <ClCompile Include="..\..\src\Extension\CommonUtils.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\Extension\Trace.c">
+    <ClCompile Include="..\..\src\Extension\Trace.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

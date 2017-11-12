@@ -58,14 +58,6 @@ typedef enum
 } EScrollYCaretPolicy;
 
 #define N2E_INI_SECTION L"Notepad2e"
-#define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
-#define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"
-#define INI_SETTING_FIND_WORD_MATCH_CASE  L"FindWordMatchCase"
-#define INI_SETTING_FIND_WRAP_AROUND  L"FindWordWrapAround"
-#define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
-#define INI_SETTING_MATH_EVAL L"MathEval"
-#define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
-#define INI_SETTING_WORD_NAVIGATION_MODE  L"WordNavigationMode"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
 #define N2E_MAX_PATH_N_CMD_LINE MAX_PATH + 40

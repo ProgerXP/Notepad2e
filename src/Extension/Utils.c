@@ -11,6 +11,22 @@
 #include "Notepad2.h"
 #include "Trace.h"
 
+#define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
+#define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
+#define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
+#define INI_SETTING_CSS_SETTINGS L"CSSSettings"
+#define INI_SETTING_SHELL_MENU_TYPE L"ShellMenuType"
+#define INI_SETTING_MAX_SEARCH_DISTANCE L"MaxSearchDistance"
+#define INI_SETTING_OPEN_DIALOG_BY_PREFIX L"OpenDialogByPrefix"
+#define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
+#define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"
+#define INI_SETTING_FIND_WORD_MATCH_CASE L"FindWordMatchCase"
+#define INI_SETTING_FIND_WRAP_AROUND L"FindWordWrapAround"
+#define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
+#define INI_SETTING_MATH_EVAL L"MathEval"
+#define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
+#define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
+
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  100
 #define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
@@ -105,13 +121,13 @@ void n2e_ResetLastRun()
 
 void n2e_LoadINI()
 {
-  bHighlightSelection = IniGetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
-  bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
-  iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
-  iCSSSettings = IniGetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
-  iShellMenuType = IniGetInt(N2E_INI_SECTION, L"ShellMenuType", CMF_EXPLORE);
-  iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, L"MaxSearchDistance", DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
-  bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
+  bHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
+  iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
+  iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, CMF_EXPLORE);
+  iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
+  bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, bUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   bFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);

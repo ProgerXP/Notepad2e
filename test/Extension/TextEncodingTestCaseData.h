@@ -59,6 +59,8 @@ std::map<int, std::wstring> mapEncodingNames = {
   { CPI_WINDOWS_1250, L"Windows-1250" }
 };
 
+#define TEST_DATA_PATH "..\\test\\data\\Extension\\"
+
 class CTestCaseData
 {
 private:
@@ -85,7 +87,7 @@ public:
   static std::string LoadFile(const std::string filename)
   {
     std::vector<char> vectorBuffer;
-    auto file = "..\\Notepad2eTests\\" + filename;
+    auto file = TEST_DATA_PATH + filename;
     if (PathFileExistsA(file.c_str()))
     {
       HANDLE hFile = CreateFileA(file.c_str(), FILE_READ_ACCESS, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);

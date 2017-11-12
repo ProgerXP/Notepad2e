@@ -105,12 +105,12 @@ LPCSTR DecodeQPToString(LPCSTR, const int, const int)
 }
 
 namespace Notepad2eTests
-{		
-	TEST_CLASS(CStringToHex)
-	{
-	public:
-		TEST_METHOD(TestHex_StringSamples)
-		{
+{
+  TEST_CLASS(CStringToHex)
+  {
+  public:
+    TEST_METHOD(TestHex_StringSamples)
+    {
       const CTestCaseData data[] = {
           CTestCaseData(false, "test", CPI_DEFAULT, "74657374"),
           CTestCaseData(false, "test", CPI_UNICODE, "0074006500730074"),
@@ -122,23 +122,23 @@ namespace Notepad2eTests
       };
       DoRecodingTest(EncodeStringToHex, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeHexToString, false, &data[0], _countof(data), false);
-		}
+    }
 
     TEST_METHOD(TestHex_FileSamples)
     {
       CTestCaseData data[] = {
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_Hex_UTF8.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE_impure.txt", true, MIN_BUFFER_SIZE*30),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UNICODE, "StrToHex\\TestFile1_Hex_UnicodeLE_big.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_1251.txt", CPI_DEFAULT/*no need to recode file contents*/, "StrToHex\\TestFile1_Hex_1251.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT/*no need to recode file contents*/, "StrToHex\\TestFile1_Hex_SHIFT-JIS.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_1250.txt", CPI_DEFAULT/*no need to recode file contents*/, "StrToHex\\TestFile1_Hex_1250.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_Hex_UTF8.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE_impure.txt", true, MIN_BUFFER_SIZE*30),
+        CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE_big.txt"),
+        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_1251.txt"),
+        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_1250.txt"),
       };
       DoRecodingTest(EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
       DoRecodingTest(DecodeHexToString, false, &data[0], _countof(data), true);
     }
-	};
+  };
 
   TEST_CLASS(CStringToBase64)
   {
@@ -157,9 +157,9 @@ namespace Notepad2eTests
     TEST_METHOD(TestBase64_FileSamples)
     {
       CTestCaseData data[] = {
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_Base64_UTF8.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UTF8, "StrToHex\\TestFile1_Base64_UTF8_big.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "StrToHex\\TestFile1_Base64_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_Base64_UTF8.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_Base64_UTF8_big.txt"),
+        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_Base64_SHIFT-JIS.txt"),
       };
       DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);
@@ -182,9 +182,9 @@ namespace Notepad2eTests
     TEST_METHOD(TestQP_FileSamples)
     {
       CTestCaseData data[] = {
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8.txt", CPI_UTF8, "StrToHex\\TestFile1_QP_UTF8.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_UTF8_big.txt", CPI_UTF8, "StrToHex\\TestFile1_QP_UTF8_big.txt"),
-        CTestCaseData(true, "StrToHex\\TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "StrToHex\\TestFile1_QP_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_QP_UTF8.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_QP_UTF8_big.txt"),
+        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_QP_SHIFT-JIS.txt"),
       };
       DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
