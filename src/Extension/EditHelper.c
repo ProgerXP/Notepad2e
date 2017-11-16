@@ -8,7 +8,9 @@
 #include "Notepad2.h"
 #include "resource.h"
 #include "StrToHex.h"
+#include "StrToBase64.h"
 #include "Trace.h"
+#include "Utils.h"
 
 WCHAR wchLastHTMLTag[0xff] = L"<tag>";
 WCHAR wchLastHTMLEndTag[0xff] = L"</tag>";
@@ -740,6 +742,24 @@ void n2e_EditHex2String(const HWND hwnd)
     return;
   }
   DecodeHexToStr(hwnd);
+}
+
+void n2e_EditString2Base64(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  EncodeStrToBase64(hwnd);
+}
+
+void n2e_EditBase642String(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  DecodeBase64ToStr(hwnd);
 }
 
 LPCWSTR GetControlIDAsString(const UINT nCtrlID)

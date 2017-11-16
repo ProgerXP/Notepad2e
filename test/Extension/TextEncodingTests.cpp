@@ -2,7 +2,9 @@
 #include <assert.h>
 #include <Shlwapi.h>
 #include "CppUnitTest.h"
+#include "../src/Extension/Externals.h"
 #include "../src/Extension/StrToHex.h"
+#include "../src/Extension/StrToBase64.h"
 #include "CppUnitTest.h"
 #include "TextEncodingTestCaseData.h"
 
@@ -80,18 +82,6 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
   }
 };
 
-LPCSTR EncodeStringToBase64(LPCSTR, const int, const int)
-{
-  Assert::Fail(L"not implemented");
-  return NULL;
-}
-
-LPCSTR DecodeBase64ToString(LPCSTR, const int, const int)
-{
-  Assert::Fail(L"not implemented");
-  return NULL;
-}
-
 LPCSTR EncodeStringToQP(LPCSTR, const int, const int)
 {
   Assert::Fail(L"not implemented");
@@ -148,7 +138,12 @@ namespace Notepad2eTests
       const CTestCaseData data[] = {
         CTestCaseData(false, "test", CPI_DEFAULT, "dGVzdA=="),
         CTestCaseData(false, "test", CPI_UTF8, "dGVzdA=="),
-        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0YLQtdGB0YLQvtCy0LDRjyDRgdGC0YDQvtC60LA=")
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0YLQtdGB0YLQvtCy0LDRjyDRgdGC0YDQvtC60LA="),
+        CTestCaseData(false, L"тестовая строка кириллица-1251", CPI_WINDOWS_1251, "8uXx8u7i4P8g8fLw7urgIOro8Ojr6+j24C0xMjUx"),
+        CTestCaseData(false, L"тестовая строка кириллица-KOI8-R", CPI_WINDOWS_KOI8_R, "1MXT1M/XwdEg09TSz8vBIMvJ0snMzMnDwS1LT0k4LVI="),
+        CTestCaseData(false, "Base64 is a generic term for a number of similar encoding schemes that encode binary data by treating it numerically and translating it into a base 64 representation. The Base64 term originates from a specific MIME content transfer encoding.",
+                      CPI_DEFAULT,
+                      "QmFzZTY0IGlzIGEgZ2VuZXJpYyB0ZXJtIGZvciBhIG51bWJlciBvZiBzaW1pbGFyIGVuY29kaW5nIHNjaGVtZXMgdGhhdCBlbmNvZGUgYmluYXJ5IGRhdGEgYnkgdHJlYXRpbmcgaXQgbnVtZXJpY2FsbHkgYW5kIHRyYW5zbGF0aW5nIGl0IGludG8gYSBiYXNlIDY0IHJlcHJlc2VudGF0aW9uLiBUaGUgQmFzZTY0IHRlcm0gb3JpZ2luYXRlcyBmcm9tIGEgc3BlY2lmaWMgTUlNRSBjb250ZW50IHRyYW5zZmVyIGVuY29kaW5nLg==")
       };
       DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);

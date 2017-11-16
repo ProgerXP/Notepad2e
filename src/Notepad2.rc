@@ -225,6 +225,8 @@ BEGIN
             MENUITEM "C Hex To Cha&r\tCtrl+Alt+C",  IDM_EDIT_HEX2CHAR
             MENUITEM "St&ring To Hex\tAlt+Shift+A", IDM_EDIT_STRING2HEX
             MENUITEM "Hex To Stri&ng\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
+            MENUITEM "&Base64 Encode\tAlt+Shift+W", IDM_EDIT_BASE64ENCODE
+            MENUITEM "B&ase64 Decode\tCtrl+Alt+Shift+W", IDM_EDIT_BASE64DECODE
             MENUITEM SEPARATOR
             MENUITEM "&Find Matching Brace\tCtrl+B", IDM_EDIT_FINDMATCHINGBRACE
             MENUITEM "&Select To Matching Brace\tCtrl+Shift+B", IDM_EDIT_SELTOMATCHINGBRACE
@@ -541,6 +543,8 @@ BEGIN
     "W",            IDM_VIEW_WORDWRAP,      VIRTKEY, CONTROL, NOINVERT
     "W",            IDM_EDIT_TRIMLINES,     VIRTKEY, ALT, NOINVERT
     "W",            IDM_EDIT_COLUMNWRAP,    VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "W",            IDM_EDIT_BASE64ENCODE,  VIRTKEY, SHIFT, ALT, NOINVERT
+    "W",            IDM_EDIT_BASE64DECODE,  VIRTKEY, SHIFT, CONTROL, ALT, NOINVERT
     "X",            IDM_EDIT_CUT,           VIRTKEY, CONTROL, NOINVERT
     "X",            IDM_EDIT_INSERT_TAG,    VIRTKEY, ALT, NOINVERT
     "X",            IDM_EDIT_CHAR2HEX,      VIRTKEY, CONTROL, ALT, NOINVERT

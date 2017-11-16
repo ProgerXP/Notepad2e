@@ -30,6 +30,8 @@ void n2e_UpdateFindIcon(const BOOL findOK);
 void n2e_ResetFindIcon();
 void n2e_EditString2Hex(const HWND hwnd);
 void n2e_EditHex2String(const HWND hwnd);
+void n2e_EditString2Base64(const HWND hwnd);
+void n2e_EditBase642String(const HWND hwnd);
 
 void n2e_SaveCheckboxes(const HWND hwnd);
 BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);
