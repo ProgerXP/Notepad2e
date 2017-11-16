@@ -130,9 +130,9 @@ BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChar
   return FALSE;
 }
 
-void TextBuffer_NormalizeBeforeEncode(TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
+void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
 {
-  if (IsUnicodeEncodingMode())
+  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = n2e_Alloc(cbDataWide);
@@ -211,10 +211,10 @@ void TextBuffer_NormalizeBeforeEncode(TextBuffer* pTB, long* piPositionCurrent, 
   }
 }
 
-void TextBuffer_NormalizeAfterDecode(TextBuffer* pTB)
+void TextBuffer_NormalizeAfterDecode(RecodingAlgorythm* pRA, TextBuffer* pTB)
 {
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
-  if (IsUnicodeEncodingMode())
+  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     LPSTR lpData = n2e_Alloc(pTB->m_iPos * 2 + 16);
     const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos / sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
@@ -483,7 +483,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
   long iCharsProcessed = 0;
   if (pED->m_bIsEncoding)
   {
-    TextBuffer_NormalizeBeforeEncode(&pED->m_tb, &pED->m_tr.m_iPositionCurrent, &pED->m_tr.m_iExpectedProcessedChars);
+    TextBuffer_NormalizeBeforeEncode(pRA, &pED->m_tb, &pED->m_tr.m_iPositionCurrent, &pED->m_tr.m_iExpectedProcessedChars);
     if (pED->m_tr.m_iExpectedProcessedChars
         && (pED->m_tbRes.m_iSize < pED->m_tr.m_iExpectedProcessedChars * 4))
     {
@@ -529,7 +529,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
     if (charsProcessed)
     {
       pED->m_tr.m_iPositionCurrent += pED->m_tb.m_iPos - pED->m_tb.m_iMaxPos;
-      TextBuffer_NormalizeAfterDecode(&pED->m_tbRes);
+      TextBuffer_NormalizeAfterDecode(pRA, &pED->m_tbRes);
       iCursorOffset = pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
     }
     else
