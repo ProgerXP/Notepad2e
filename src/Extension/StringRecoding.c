@@ -318,12 +318,21 @@ BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA)
   }
 }
 
-void StringSource_Init(StringSource* pSS, LPCSTR text, const HWND hwnd)
+void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength)
 {
-  pSS->iTextLength = strlen(text);
+  pSS->iTextLength = (textLength <= 0) ? strlen(text) : textLength;
+  pSS->iProcessedChars = 0;
+  pSS->hwnd = NULL;
+  memcpy(pSS->text, text, min(sizeof(pSS->text), textLength));
+  pSS->iResultLength = 0;
+}
+
+void StringSource_InitFromHWND(StringSource* pSS, const HWND hwnd)
+{
+  pSS->iTextLength = 0;
   pSS->iProcessedChars = 0;
   pSS->hwnd = hwnd;
-  strncpy_s(pSS->text, sizeof(pSS->text), text, _TRUNCATE);
+  pSS->iResultLength = 0;
 }
 
 long StringSource_GetSelectionStart(const StringSource* pSS)
@@ -375,7 +384,7 @@ BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, con
     }
     else
     {
-      strncpy_s(tr.lpstrText, (iEnd - iStart) + 1, &pSS->text[pSS->iProcessedChars], _TRUNCATE);
+      memcpy(tr.lpstrText, &pSS->text[pSS->iProcessedChars], (iEnd - iStart) + 1);
       return TRUE;
     }
   }
@@ -571,16 +580,19 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
     if (pSS->hwnd)
     {
       SendMessage(pED->m_tr.m_hwnd, SCI_SETSEL, pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
-      SendMessage(pED->m_tr.m_hwnd, SCI_REPLACESEL, 0, (LPARAM)pED->m_tbRes.m_ptr);
+      SendMessage(pED->m_tr.m_hwnd, SCI_REPLACESEL, 0, (LPARAM)"");
+      SendMessage(pED->m_tr.m_hwnd, SCI_ADDTEXT, (WPARAM)pED->m_tbRes.m_iPos, (LPARAM)pED->m_tbRes.m_ptr);
       pED->m_tr.m_iSelEnd += iCursorOffset;
       pED->m_tr.m_iPositionCurrent = SendMessage(pED->m_tr.m_hwnd, SCI_GETCURRENTPOS, 0, 0);
       iCursorOffset = 0;
     }
     else
     {
-      strncpy_s(pSS->result + pED->m_tr.m_iPositionStart,
+      const int length = pED->m_tbRes.m_iPos;
+      memcpy_s(pSS->result + pED->m_tr.m_iPositionStart,
                 MAX_TEST_STRING_LENGTH - pED->m_tr.m_iPositionStart,
-                pED->m_tbRes.m_ptr, _TRUNCATE);
+                pED->m_tbRes.m_ptr, length);
+      pSS->iResultLength += length;
     }
     if (pED->m_bIsEncoding && IsUnicodeEncodingMode())
     {

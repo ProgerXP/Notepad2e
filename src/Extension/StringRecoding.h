@@ -44,6 +44,7 @@ struct TStringSource
   char result[MAX_TEST_STRING_LENGTH];
   int iTextLength;
   int iProcessedChars;
+  int iResultLength;
 };
 typedef struct TStringSource StringSource;
 
@@ -93,7 +94,8 @@ typedef enum
 BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding);
 BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA);
 
-void StringSource_Init(StringSource* pSS, LPCSTR text, const HWND hwnd);
+void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength);
+void StringSource_InitFromHWND(StringSource* pSS, const HWND hwnd);
 long StringSource_GetSelectionStart(const StringSource* pSS);
 long StringSource_GetSelectionEnd(const StringSource* pSS);
 long StringSource_GetLength(const StringSource* pSS);

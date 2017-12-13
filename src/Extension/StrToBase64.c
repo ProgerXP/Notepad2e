@@ -7,30 +7,32 @@
 extern StringSource ss = { 0 };
 extern RecodingAlgorythm ra = { 0 };
 
-LPCSTR EncodeStringToBase64(LPCSTR text, const int encoding, const int bufferSize)
+LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
   RecodingAlgorythm_Init(&ra, ERT_BASE64, TRUE);
-  StringSource_Init(&ss, text, NULL);
+  StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorythm_Release(&ra);
+  *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
-LPCSTR DecodeBase64ToString(LPCSTR text, const int encoding, const int bufferSize)
+LPCSTR DecodeBase64ToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
   RecodingAlgorythm_Init(&ra, ERT_BASE64, FALSE);
-  StringSource_Init(&ss, text, NULL);
+  StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorythm_Release(&ra);
+  *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
 void EncodeStrToBase64(const HWND hwnd)
 {
   RecodingAlgorythm_Init(&ra, ERT_BASE64, TRUE);
-  StringSource_Init(&ss, "", hwnd);
+  StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorythm_Release(&ra);
 }
@@ -38,7 +40,7 @@ void EncodeStrToBase64(const HWND hwnd)
 void DecodeBase64ToStr(const HWND hwnd)
 {
   RecodingAlgorythm_Init(&ra, ERT_BASE64, FALSE);
-  StringSource_Init(&ss, "", hwnd);
+  StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorythm_Release(&ra);
 }

@@ -10,7 +10,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int);
+typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, int*);
 
 #define MIN_BUFFER_SIZE 8
 #define MAX_BUFFER_SIZE 65536
@@ -39,34 +39,31 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
       std::wstring errorMessage(isEncoding ? L"Encoding, " : L"Decoding, ");
       errorMessage += info.GetErrorMessageText();
       errorMessage += L", ";
-      errorMessage += L" source: " + CPtoUCS2(info.GetPlainSource(), CP_ACP);
+      errorMessage += L" source: " + CPtoUCS2(StringFromVector(info.GetPlainSource()), CP_ACP);
       errorMessage += L"\r\n";
       if (isEncoding && !info.IsDecodeOnly())
       {
         errorMessage += info.GetErrorMessageText();
-        if (!info.IsFile())
+        int resultLength = 0;
+        LPCSTR result = proc((LPCSTR)info.GetSourceText().data(),
+                                info.GetSourceText().size(),
+                                info.GetEncoding(),
+                                bufferSize,
+                                &resultLength);
+        if (info.GetExpectedResultText() != VectorFromString(result, resultLength))
         {
-          Assert::AreEqual(info.GetExpectedResultText(),
-                           proc(info.GetSourceText(), info.GetEncoding(), bufferSize),
-                           UCS2toCP(errorMessage, CP_ACP).c_str(), LINE_INFO());
-        }
-        else
-        {
-          if (StrCmpA(info.GetExpectedResultText(), proc(info.GetSourceText(), info.GetEncoding(), bufferSize)) != 0)
-          {
-            Assert::Fail(errorMessage.c_str(), LINE_INFO());
-          }
+          Assert::Fail(errorMessage.c_str(), LINE_INFO());
         }
       }
       else if (!isEncoding)
       {
-        if (!info.IsFile())
-        {
-          Assert::AreEqual(info.GetSourceText(),
-                           proc(info.GetExpectedResultText(), info.GetEncoding(), bufferSize),
-                           UCS2toCP(errorMessage, CP_ACP).c_str(), LINE_INFO());
-        }
-        else if (StrCmpA(info.GetSourceText(), proc(info.GetExpectedResultText(), info.GetEncoding(), bufferSize)) != 0)
+        int resultLength = 0;
+        LPCSTR result = proc((LPCSTR)info.GetExpectedResultText().data(),
+                             info.GetExpectedResultText().size(),
+                             info.GetEncoding(),
+                             bufferSize,
+                             &resultLength);
+        if (info.GetSourceText() != VectorFromString(result, resultLength))
         {
           Assert::Fail(errorMessage.c_str(), LINE_INFO());
         }
@@ -82,13 +79,13 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
   }
 };
 
-LPCSTR EncodeStringToQP(LPCSTR, const int, const int)
+LPCSTR EncodeStringToQP(LPCSTR, const int, const int, const int, int*)
 {
   Assert::Fail(L"not implemented");
   return NULL;
 }
 
-LPCSTR DecodeQPToString(LPCSTR, const int, const int)
+LPCSTR DecodeQPToString(LPCSTR, const int, const int, const int, int*)
 {
   Assert::Fail(L"not implemented");
   return NULL;
@@ -138,6 +135,7 @@ namespace Notepad2eTests
       const CTestCaseData data[] = {
         CTestCaseData(false, "test", CPI_DEFAULT, "dGVzdA=="),
         CTestCaseData(false, "test", CPI_UTF8, "dGVzdA=="),
+        CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "dABlAHMAdABzAAAAdAByAGkAbgBnAA=="),
         CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0YLQtdGB0YLQvtCy0LDRjyDRgdGC0YDQvtC60LA="),
         CTestCaseData(false, L"тестовая строка кириллица-1251", CPI_WINDOWS_1251, "8uXx8u7i4P8g8fLw7urgIOro8Ojr6+j24C0xMjUx"),
         CTestCaseData(false, L"тестовая строка кириллица-KOI8-R", CPI_WINDOWS_KOI8_R, "1MXT1M/XwdEg09TSz8vBIMvJ0snMzMnDwS1LT0k4LVI="),

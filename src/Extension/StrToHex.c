@@ -139,30 +139,32 @@ BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
 static StringSource ss = { 0 };
 static RecodingAlgorythm ra = { 0 };
 
-LPCSTR EncodeStringToHex(LPCSTR text, const int encoding, const int bufferSize)
+LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
   RecodingAlgorythm_Init(&ra, ERT_HEX, TRUE);
-  StringSource_Init(&ss, text, NULL);
+  StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorythm_Release(&ra);
+  *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
-LPCSTR DecodeHexToString(LPCSTR text, const int encoding, const int bufferSize)
+LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
   RecodingAlgorythm_Init(&ra, ERT_HEX, FALSE);
-  StringSource_Init(&ss, text, NULL);
+  StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorythm_Release(&ra);
+  *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
 void EncodeStrToHex(const HWND hwnd)
 {
   RecodingAlgorythm_Init(&ra, ERT_HEX, TRUE);
-  StringSource_Init(&ss, "", hwnd);
+  StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorythm_Release(&ra);
 }
@@ -170,7 +172,7 @@ void EncodeStrToHex(const HWND hwnd)
 void DecodeHexToStr(const HWND hwnd)
 {
   RecodingAlgorythm_Init(&ra, ERT_HEX, FALSE);
-  StringSource_Init(&ss, "", hwnd);
+  StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorythm_Release(&ra);
 }

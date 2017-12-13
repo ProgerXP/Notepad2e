@@ -52,14 +52,15 @@ std::map<int, std::wstring> mapEncodingNames = {
   { CPI_UNICODE, L"Unicode encoding" },
   { CPI_UTF8, L"UTF-8 encoding" },
   { CPI_WINDOWS_1251, L"Windows-1251" },
-  { CPI_WINDOWS_1250, L"Windows-1250" }
+  { CPI_WINDOWS_1250, L"Windows-1250" },
+  { CPI_WINDOWS_KOI8_R, L"Windows-KOI8-R" }
 };
 
 #define TEST_DATA_PATH "..\\..\\..\\test\\data\\Extension\\"
 
-std::string CTestCaseData::LoadFile(const std::string filename)
+std::vector<unsigned char> CTestCaseData::LoadFile(const std::string filename)
 {
-  std::vector<char> vectorBuffer;
+  std::vector<unsigned char> vectorBuffer;
   auto file = TEST_DATA_PATH + filename;
   if (PathFileExistsA(file.c_str()))
   {
@@ -70,20 +71,19 @@ std::string CTestCaseData::LoadFile(const std::string filename)
       vectorBuffer.resize(fileSize);
       DWORD dwBytesRead = 0;
       ReadFile(hFile, &vectorBuffer[0], fileSize, &dwBytesRead, NULL);
-      vectorBuffer.push_back(0);
       CloseHandle(hFile);
     }
   }
   else
   {
     vectorBuffer.resize(MAX_PATH);
-    GetCurrentDirectoryA(vectorBuffer.size() - 1, &vectorBuffer[0]);
-    std::string filePath(&vectorBuffer[0]);
+    GetCurrentDirectoryA(vectorBuffer.size() - 1, (LPSTR)&vectorBuffer[0]);
+    std::string filePath((LPSTR)&vectorBuffer[0]);
     filePath += "\\" + file;
     const std::wstring errorMessage(L"File not found: " + CPtoUCS2(filePath, CP_ACP));
     Microsoft::VisualStudio::CppUnitTestFramework::Assert::Fail(errorMessage.c_str(), LINE_INFO());
   }
-  return &vectorBuffer[0];
+  return vectorBuffer;
 }
 
 bool CTestCaseData::IsFile() const
@@ -101,22 +101,22 @@ int CTestCaseData::GetDecodeOnlyMinBufferSize() const
   return iDecodeOnlyMinBufferSize;
 }
 
-LPCSTR CTestCaseData::GetPlainSource() const
+const std::vector<unsigned char>& CTestCaseData::GetPlainSource() const
 {
-  return strSrc.c_str();
+  return vectorSource;
 }
 
-LPCSTR CTestCaseData::GetSourceText() const
+const std::vector<unsigned char>& CTestCaseData::GetSourceText() const
 {
   if (isFile)
   {
-    static std::string fileSourceText;
-    fileSourceText = LoadFile(strSrc);
-    return fileSourceText.c_str();
+    static std::vector<unsigned char> fileSourceText;
+    fileSourceText = LoadFile(StringFromVector(vectorSource));
+    return fileSourceText;
   }
   else
   {
-    return strSrc.c_str();
+    return vectorSource;
   }
 }
 
@@ -125,17 +125,17 @@ int CTestCaseData::GetEncoding() const
   return iEncoding;
 }
 
-LPCSTR CTestCaseData::GetExpectedResultText() const
+std::vector<unsigned char> CTestCaseData::GetExpectedResultText() const
 {
   if (isFile)
   {
-    static std::string fileExpectedResultText;
-    fileExpectedResultText = LoadFile(strExpectedRes);
-    return fileExpectedResultText.c_str();
+    static std::vector<unsigned char> fileExpectedResultText;
+    fileExpectedResultText = LoadFile(StringFromVector(vectorExpectedResult));
+    return fileExpectedResultText;
   }
   else
   {
-    return strExpectedRes.c_str();
+    return vectorExpectedResult;
   }
 }
 

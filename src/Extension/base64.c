@@ -294,15 +294,33 @@ BOOL Base64_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProce
 
   unsigned char chInput[5] = { 0 };
   unsigned char block[5] = { 0 };
+  int pad = 0;
   for (int i = 0; i < _countof(chInput) - 1; ++i)
   {
     chInput[i] = (unsigned char)TextBuffer_PopChar(&pED->m_tb);
     block[i] = pData->dtable[chInput[i]];
+    if (chInput[i] == '=')
+    {
+      pad++;
+    }
   }
 
   TextBuffer_PushChar(&pED->m_tbRes, (block[0] << 2) | (block[1] >> 4));
-  TextBuffer_PushNonZeroChar(&pED->m_tbRes, (block[1] << 4) | (block[2] >> 2));
-  TextBuffer_PushNonZeroChar(&pED->m_tbRes, (block[2] << 6) | block[3]);
+  switch (pad)
+  {
+  case 0:
+    TextBuffer_PushChar(&pED->m_tbRes, (block[1] << 4) | (block[2] >> 2));
+    TextBuffer_PushChar(&pED->m_tbRes, (block[2] << 6) | block[3]);
+    break;
+  case 1:
+    TextBuffer_PushChar(&pED->m_tbRes, (block[1] << 4) | (block[2] >> 2));
+    break;
+  case 2:
+    break;
+  default:
+    assert(FALSE);
+    return FALSE;   // Invalid padding
+  }
 
   if (piCharsProcessed)
   {
