@@ -39,6 +39,9 @@
     <ClInclude Include="..\..\src\Extension\StringRecoding.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StrToQP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StringRecoding.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToQP.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

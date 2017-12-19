@@ -5,6 +5,7 @@
 #include "../src/Extension/Externals.h"
 #include "../src/Extension/StrToHex.h"
 #include "../src/Extension/StrToBase64.h"
+#include "../src/Extension/StrToQP.h"
 #include "CppUnitTest.h"
 #include "TextEncodingTestCaseData.h"
 
@@ -78,18 +79,6 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
     }
   }
 };
-
-LPCSTR EncodeStringToQP(LPCSTR, const int, const int, const int, int*)
-{
-  Assert::Fail(L"not implemented");
-  return NULL;
-}
-
-LPCSTR DecodeQPToString(LPCSTR, const int, const int, const int, int*)
-{
-  Assert::Fail(L"not implemented");
-  return NULL;
-}
 
 namespace Notepad2eTests
 {
@@ -166,7 +155,10 @@ namespace Notepad2eTests
     {
       const CTestCaseData data[] = {
         CTestCaseData(false, "test string", CPI_DEFAULT, "test string"),
-        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "=D1=82=D0=B5=D1=81=D1=82=D0=BE=D0=B2=D0=B0=D1=8F=D1=81=D1=82=D1=80=D0=BE=D0=BA=D0=B0")
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "=D1=82=D0=B5=D1=81=D1=82=D0=BE=D0=B2=D0=B0=D1=8F =D1=81=D1=82=D1=80=D0=BE=\r\n"
+                                                           "=D0=BA=D0=B0"),
+        CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing space test  =0D=0Awith new    line    test   =20"),
+        CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t=00e=00s=00t=00s=00=00=00t=00r=00i=00n=00g=00"),
       };
       DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);

@@ -335,6 +335,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="src\Extension\StrToQP.c" />
     <ClCompile Include="src\Extension\tinyexpr\tinyexpr.c" />
     <ClCompile Include="src\Extension\Trace.c" />
     <ClCompile Include="src\Extension\Utils.c" />
@@ -420,6 +421,7 @@
     <ClInclude Include="src\Extension\StringRecoding.h" />
     <ClInclude Include="src\Extension\StrToBase64.h" />
     <ClInclude Include="src\Extension\StrToHex.h" />
+    <ClInclude Include="src\Extension\StrToQP.h" />
     <ClInclude Include="src\Extension\tinyexpr\tinyexpr.h" />
     <ClInclude Include="src\Extension\Trace.h" />
     <ClInclude Include="src\Extension\Utils.h" />

@@ -7,8 +7,9 @@
 #include "ExtSelection.h"
 #include "Notepad2.h"
 #include "resource.h"
-#include "StrToHex.h"
 #include "StrToBase64.h"
+#include "StrToHex.h"
+#include "StrToQP.h"
 #include "Trace.h"
 #include "Utils.h"
 
@@ -760,6 +761,24 @@ void n2e_EditBase642String(const HWND hwnd)
     return;
   }
   DecodeBase64ToStr(hwnd);
+}
+
+void n2e_EditString2QP(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  EncodeStrToQP(hwnd);
+}
+
+void n2e_EditQP2String(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  DecodeQPToStr(hwnd);
 }
 
 LPCWSTR GetControlIDAsString(const UINT nCtrlID)

@@ -1921,6 +1921,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_HEX2STRING, i3);
   EnableCmd(hmenu, IDM_EDIT_BASE64ENCODE, i3);
   EnableCmd(hmenu, IDM_EDIT_BASE64DECODE, i3);
+  EnableCmd(hmenu, IDM_EDIT_QPENCODE, i3);
+  EnableCmd(hmenu, IDM_EDIT_QPDECODE, i3);
   EnableCmd(hmenu, IDM_VIEW_SHOWEXCERPT, i);
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   EnableCmd(hmenu, IDM_EDIT_LINECOMMENT, !(i == SCLEX_NULL || i == SCLEX_DIFF));
@@ -3373,6 +3375,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_BASE64DECODE:
       BeginWaitCursor();
       n2e_EditBase642String(hwndEdit);
+      EndWaitCursor();
+      break;
+    // [/2e]
+
+
+    // [2e]: QP de/coding #124
+    case IDM_EDIT_QPENCODE:
+      BeginWaitCursor();
+      n2e_EditString2QP(hwndEdit);
+      EndWaitCursor();
+      break;
+
+
+    case IDM_EDIT_QPDECODE:
+      BeginWaitCursor();
+      n2e_EditQP2String(hwndEdit);
       EndWaitCursor();
       break;
     // [/2e]

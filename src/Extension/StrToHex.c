@@ -5,33 +5,7 @@
 
 #define MIN_VALID_CHAR_CODE 0x21
 
-#define HEX_DIGITS_UPPER  "0123456789ABCDEF"
-#define MIN_HEX_DIGIT_LOWER 'a'
-#define MIN_HEX_DIGIT_UPPER 'A'
-#define MIN_HEX_DIGIT_VALUE 10
-
-int IntByHexDigit(const unsigned char ch)
-{
-  if (ch >= MIN_HEX_DIGIT_LOWER)
-  {
-    return (ch - MIN_HEX_DIGIT_LOWER) + MIN_HEX_DIGIT_VALUE;
-  }
-  else if (ch >= MIN_HEX_DIGIT_UPPER)
-  {
-    return (ch - MIN_HEX_DIGIT_UPPER) + MIN_HEX_DIGIT_VALUE;
-  }
-  else
-  {
-    return ch - '0';
-  }
-}
-
-BOOL IsHexDigit(const unsigned char ch)
-{
-  return (isxdigit(ch) != 0);
-}
-
-BOOL TextBuffer_GetHexChar(TextBuffer* pTB, char* pCh, long* piCharsProcessed)
+BOOL TextBuffer_GetHexCharFiltered(TextBuffer* pTB, char* pCh, long* piCharsProcessed)
 {
   *pCh = MIN_VALID_CHAR_CODE - 1;
   int charsProcessed = 0;
@@ -85,9 +59,8 @@ BOOL Hex_IsValidSequence(EncodingData* pED, const int requiredChars)
 
 BOOL Hex_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
-  const char ch = TextBuffer_PopChar(&pED->m_tb);
-  TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[(ch >> 4) & 0xF]);
-  TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[ch & 0xF]);
+  const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
+  TextBuffer_PushHexChar(pED, ch);
   if (piCharsProcessed)
   {
     (*piCharsProcessed) += 1;
@@ -100,10 +73,10 @@ BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
   if (IsUnicodeEncodingMode())
   {
     char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
-    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2, piCharsProcessed)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded3, piCharsProcessed)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded4, piCharsProcessed))
+    if (TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded2, piCharsProcessed)
+        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded3, piCharsProcessed)
+        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded4, piCharsProcessed))
     {
       const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
@@ -124,8 +97,8 @@ BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
   else
   {
     char chEncoded1, chEncoded2;
-    if (TextBuffer_GetHexChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetHexChar(&pED->m_tb, &chEncoded2, piCharsProcessed))
+    if (TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded2, piCharsProcessed))
     {
       const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);

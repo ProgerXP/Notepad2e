@@ -1,7 +1,7 @@
 #pragma once
 #include <wtypes.h>
 
-#define MAX_TEST_STRING_LENGTH 1200000
+#define MAX_TEST_STRING_LENGTH 1400000  // must be greater than the size of the largest file test\data\Extension\TestFile*.txt
 
 extern int RECODING_BUFFER_SIZE;
 extern int RECODING_BUFFER_SIZE_MAX;
@@ -61,6 +61,7 @@ struct TRecodingAlgorythm
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;
   RecodeMethod pDecodeMethod;
+  RecodeMethod pDecodeTailMethod;
   wchar_t statusText[MAX_PATH];
   LPVOID data;
 };
@@ -69,6 +70,9 @@ typedef struct TRecodingAlgorythm RecodingAlgorythm;
 BOOL IsUnicodeEncodingMode();
 BOOL Is8BitEncodingMode();
 BOOL IsReverseUnicodeEncodingMode();
+BOOL IsHexDigit(const unsigned char ch);
+int IntByHexDigit(const unsigned char ch);
+BOOL DecodeHexDigits(const unsigned char chEncoded1, const unsigned char chEncoded2, unsigned char* pchDecoded);
 
 void TextBuffer_ResetPos(TextBuffer* pTB, const int iMaxPos);
 void TextBuffer_Clear(TextBuffer* pTB);
@@ -83,12 +87,14 @@ void TextBuffer_DecPos(TextBuffer* pTB);
 char TextBuffer_GetChar(TextBuffer* pTB);
 char TextBuffer_PopChar(TextBuffer* pTB);
 BOOL TextBuffer_PushChar(TextBuffer* pTB, const char ch);
+BOOL TextBuffer_PushHexChar(EncodingData* pED, const unsigned char ch);
 BOOL TextBuffer_PushNonZeroChar(TextBuffer* pTB, const char ch);
 
 typedef enum
 {
   ERT_HEX,
-  ERT_BASE64
+  ERT_BASE64,
+  ERT_QP,
 } ERecodingType;
 
 BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding);

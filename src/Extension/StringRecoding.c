@@ -5,10 +5,13 @@
 #include "Scintilla.h"
 #include "StrToBase64.h"
 #include "StrToHex.h"
+#include "StrToQP.h"
 
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
 int RECODING_BUFFER_SIZE = DEFAULT_RECODING_BUFFER_SIZE;
 int RECODING_BUFFER_SIZE_MAX = DEFAULT_RECODING_BUFFER_SIZE * 10;
+
+#define HEX_DIGITS_UPPER  "0123456789ABCDEF"
 
 BOOL bBreakOnError = TRUE;
 
@@ -25,6 +28,45 @@ BOOL Is8BitEncodingMode()
 BOOL IsReverseUnicodeEncodingMode()
 {
   return (mEncoding[iEncoding].uFlags & NCP_UNICODE_REVERSE);
+}
+
+#define MIN_HEX_DIGIT_LOWER 'a'
+#define MIN_HEX_DIGIT_UPPER 'A'
+#define MIN_HEX_DIGIT_VALUE 10
+
+BOOL IsHexDigit(const unsigned char ch)
+{
+  return (isxdigit(ch) != 0);
+}
+
+int IntByHexDigit(const unsigned char ch)
+{
+  if (ch >= MIN_HEX_DIGIT_LOWER)
+  {
+    return (ch - MIN_HEX_DIGIT_LOWER) + MIN_HEX_DIGIT_VALUE;
+  }
+  else if (ch >= MIN_HEX_DIGIT_UPPER)
+  {
+    return (ch - MIN_HEX_DIGIT_UPPER) + MIN_HEX_DIGIT_VALUE;
+  }
+  else
+  {
+    return ch - '0';
+  }
+}
+
+BOOL DecodeHexDigits(const unsigned char chEncoded1, const unsigned char chEncoded2, unsigned char* pchDecoded)
+{
+  if (IsHexDigit(chEncoded1) && IsHexDigit(chEncoded2))
+  {
+    assert(pchDecoded);
+    if (pchDecoded)
+    {
+      *pchDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
+      return TRUE;
+    }
+  }
+  return FALSE;
 }
 
 void TextBuffer_ResetPos(TextBuffer* pTB, const int iMaxPos)
@@ -112,6 +154,13 @@ BOOL TextBuffer_PushChar(TextBuffer* pTB, const char ch)
 {
   pTB->m_ptr[pTB->m_iPos] = ch;
   TextBuffer_IncPos(pTB);
+  return TRUE;
+}
+
+BOOL TextBuffer_PushHexChar(EncodingData* pED, const unsigned char ch)
+{
+  TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[(ch >> 4) & 0xF]);
+  TextBuffer_PushChar(&pED->m_tbRes, HEX_DIGITS_UPPER[ch & 0xF]);
   return TRUE;
 }
 
@@ -285,6 +334,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeMethod = Hex_Encode;
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = Hex_Decode;
+    pRA->pDecodeTailMethod = NULL;
     pRA->data = NULL;
     return TRUE;
   case ERT_BASE64:
@@ -295,7 +345,21 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeMethod = Base64_Encode;
     pRA->pEncodeTailMethod = Base64_EncodeTail;
     pRA->pDecodeMethod = Base64_Decode;
+    pRA->pDecodeTailMethod = NULL;
     pRA->data = Base64_InitAlgorythmData(pRA->isEncoding);
+    return TRUE;
+  case ERT_QP:
+    lstrcpy(pRA->statusText, isEncoding ? L"String to QP..." : L"QP to String...");
+    pRA->iRequiredCharsForEncode = 1;
+    pRA->iRequiredCharsForDecode = 3;   // specify max correctly encoded sequence length as
+                                        // minimal required length to prevent buffer transition problem
+                                        // when encoded sequence is splitted between buffers
+    pRA->pIsValidStrSequence = QP_IsValidSequence;
+    pRA->pEncodeMethod = QP_Encode;
+    pRA->pEncodeTailMethod = NULL;
+    pRA->pDecodeMethod = QP_Decode;
+    pRA->pDecodeTailMethod = QP_Decode; // use regular decode proc for tail
+    pRA->data = QP_InitAlgorythmData(pRA->isEncoding);
     return TRUE;
   default:
     assert(FALSE);
@@ -311,6 +375,9 @@ BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA)
     return TRUE;
   case ERT_BASE64:
     Base64_ReleaseAlgorythmData(pRA->data);
+    return TRUE;
+  case ERT_QP:
+    QP_ReleaseAlgorythmData(pRA->data);
     return TRUE;
   default:
     assert(FALSE);
@@ -534,6 +601,10 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
       charsProcessed |= res;
       if (!res)
         break;
+    }
+    if (pRA->pDecodeTailMethod && !charsProcessed && !TextBuffer_IsDataPortionAvailable(&pED->m_tb, pRA->iRequiredCharsForDecode))
+    {
+      charsProcessed |= pRA->pDecodeTailMethod(pRA, pED, &iCharsProcessed);
     }
     if (charsProcessed)
     {
