@@ -4,16 +4,18 @@
 // Copyright 1998-2007 by Neil Hodgson <neilh@scintilla.org>
 // The License.txt file describes the conditions under which this software may be distributed.
 
-#include <stdio.h>
-#include <string.h>
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 #include <stdarg.h>
 
 #include <stdexcept>
+#include <algorithm>
 
 #include "Platform.h"
 
 #include "Scintilla.h"
+#include "Position.h"
 #include "SplitVector.h"
 #include "Partitioning.h"
 #include "RunStyles.h"
@@ -87,7 +89,7 @@ int RunStyles::ValueAt(int position) const {
 	return styles->ValueAt(starts->PartitionFromPosition(position));
 }
 
-int RunStyles::FindNextChange(int position, int end) {
+int RunStyles::FindNextChange(int position, int end) const {
 	int run = starts->PartitionFromPosition(position);
 	if (run < starts->Partitions()) {
 		int runChange = starts->PositionFromPartition(run);
@@ -106,11 +108,11 @@ int RunStyles::FindNextChange(int position, int end) {
 	}
 }
 
-int RunStyles::StartRun(int position) {
+int RunStyles::StartRun(int position) const {
 	return starts->PositionFromPartition(starts->PartitionFromPosition(position));
 }
 
-int RunStyles::EndRun(int position) {
+int RunStyles::EndRun(int position) const {
 	return starts->PositionFromPartition(starts->PartitionFromPosition(position) + 1);
 }
 
@@ -258,7 +260,7 @@ int RunStyles::Find(int value, int start) const {
 	return -1;
 }
 
-void RunStyles::Check() {
+void RunStyles::Check() const {
 	if (Length() < 0) {
 		throw std::runtime_error("RunStyles: Length can not be negative.");
 	}

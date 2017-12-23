@@ -21,7 +21,6 @@
 
 #define VERSION_FILEVERSION_NUM      4,2,25,0
 #define VERSION_FILEVERSION_SHORT    L"4.2.25"
-#define VERSION_FILEVERSION_LONG     L"Notepad 2e 4.2.25"
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2011"
 #ifdef _M_AMD64
@@ -34,6 +33,6 @@
 #define VERSION_AUTHORNAME           L"Florian Balmer"
 #define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"
 #define VERSION_EMAILDISPLAY         L"florian.balmer@gmail.com"
-#define VERSION_EXT_VERSION         L"Extended Edition © 2013-2015"
-#define VERSION_EXT_BY				L"By Proger_XP and haccel"
-#define VERSION_EXT_PAGE				L"https://github.com/ProgerXP/Notepad2e"
+#define VERSION_EXT_VERSION          L"Extended Edition © 2013-2017"
+#define VERSION_EXT_BY               L"By Proger_XP and contributors"
+#define VERSION_EXT_PAGE             L"https://github.com/ProgerXP/Notepad2e"

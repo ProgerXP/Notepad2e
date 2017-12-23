@@ -1,8 +1,0 @@
-*.obj
-*.opensdf
-*.tlog
-*.pdb
-
-*.log
-.hg/
-/bin/Notepad2.ini
