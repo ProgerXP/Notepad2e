@@ -100,7 +100,7 @@ BOOL QP_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed
   int iCharsProcessed = 0;
   const char ch = TextBuffer_PopChar(&pED->m_tb);
   unsigned char chNext = TextBuffer_GetChar(&pED->m_tb);
-  if (ch == '=')
+  if ((ch == '=') && (TextBuffer_GetTailLength(&pED->m_tb) >= 2))
   {
     ++iCharsProcessed;
     const char chEncoded1 = TextBuffer_PopChar(&pED->m_tb);
