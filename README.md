@@ -18,7 +18,7 @@ Some folks use it to replace the standard `Notepad.exe` of Windows. It knows abo
 The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items without this mark are changes (or minor features added) compared to the original *Notepad2*.
 
 ### [NEW] Current Word Highlighting
-Word under cursor is highlighted in one of 3 modes:
+Word under cursor is highlighted in one of 3 modes: #27 #1
 1. One occurrence in the document. Indispensible to spot typos.
 2. Two or more occurrences but all are visible on the screen.
 3. Multiple occurrences with some hidden under the scrollbar.
@@ -26,13 +26,13 @@ Word under cursor is highlighted in one of 3 modes:
 Each mode's formatting can be customized (fill color, border style, etc.).
 
 ### [NEW] Edit Selection
-Allows simultaneous editing of all occurrences of the same string as the selection. Enter the mode with **Ctrl+Tab** (all visible substrings) or **Ctrl+Backtick** (limit substrings to those on the same line). Escape cancels all changes, while Enter or any command that causes cursor to leave the selected block - commits them. #27 #18 #1
+Allows simultaneous editing of all occurrences of the same string as the selection. Enter the mode with **Ctrl+Tab** (all visible substrings) or **Ctrl+Backtick** (limit substrings to those on the same line). Escape cancels all changes, while Enter or any command that causes cursor to leave the selected block - commits them. #18
 
 **Note:** when selection is empty, this mode affects word near the cursor, and finds other substrings case-insensitively. When selection is non-empty - case-sensitive search is performed, and word boundaries are not checked.
 
 This mode allows easy renaming of varaibles, typo corrections and so on.
 
-Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and any change you do (such as typing `bar`) will edit both `foo`s at the same time:
+Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and any change you do (such as typing `bar`) will edit all of the three `foo`s at the same time:
 
 ```
 $foo = "foo";
@@ -66,7 +66,7 @@ Vim-like Edit > Lines > New Line Above/Below (**Ctrl+Alt+Enter**, **Ctrl+Shift+E
 
 If Auto Indent is enabled and the caret is already at line start/end (whitespace excluded) - indentation of the previous line is used, otherwise - of the current line. #67
 
-### Unindent by Shift+Tab
+### Unindent By Shift+Tab
 **Shift+Tab** always unindents selected lines (or current line if empty), even if the caret isn't at line start (exactly as Edit > Block > Unindent). #128
 
 Tab's behaviour is not changed, it still indents to the column. #61
@@ -142,7 +142,7 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
 * Gutter is now automatically resized if it can't fit max line number.
 
 ### PCRE Support
-Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features.
+Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features. #78
 
 Additionally, old regexp didn't support UTF-8 buffers (only ASCII) - new one does.
 
@@ -222,7 +222,7 @@ Window's title reflects current keyboard language, if configured with `TitleLang
 
 ### Syntax Schemes
 
-[NEW] These syntax schemes were added:
+**[NEW]** These syntax schemes were added:
 * ASN1
 * bash
 * CoffeeScript
@@ -316,7 +316,7 @@ Value | Meaning
 ------|--------
 0 | No evaluation (as in *Notepad2*)
 1 | Evaluate selection (if it's a valid expression)
-2 | Evaluate selection or, if empty - entire current line
+2 | Evaluate selection or, if empty - entire current line (if valid)
 
 ### TitleLanguage
 **Type:** int.
