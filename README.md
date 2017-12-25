@@ -405,6 +405,10 @@ int, bitfield | 0 |
 Controls behaviour of Shell Menu (**Ctrl+Shift+R**). For values see `uFlags` at this page:
 http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097(v=vs.85).aspx
 
+These flags affect how the menu looks like and which commands are available; it's highly dependent on the OS and particular environment. Useful values you may try in case of problems (mainly on Windows XP):
+* `ShellMenuType=16`
+* `ShellMenuType=4`
+
 ### WheelScroll
 
 Type | Default | Set By UI
