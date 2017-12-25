@@ -23,7 +23,10 @@ Word under cursor is highlighted in one of 3 modes: #27 #1
 2. Two or more occurrences but all are visible on the screen.
 3. Multiple occurrences with some hidden under the scrollbar.
 
-Each mode's formatting can be customized (fill color, border style, etc.).
+Related settings:
+* `HighlightSelection`
+* `MaxSearchDistance`
+* More - see **Current Word Highlighting** configuration section.
 
 ### [NEW] Edit Selection
 Allows simultaneous editing of all occurrences of the same string as the selection. Enter the mode with **Ctrl+Tab** (all visible substrings) or **Ctrl+Backtick** (limit substrings to those on the same line). Escape cancels all changes, while Enter or any command that causes cursor to leave the selected block - commits them. #18
@@ -38,6 +41,9 @@ Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and a
 $foo = "foo";
 print($foo);
 ```
+
+Related settings:
+* See **Current Word Highlighting** section (above).
 
 ### [NEW] Math Evaluation
 In certain cases (such as in current selection - controlled by the `MathEval` setting), the file size group in the status bar is replaced with a recognized math expression's result. Left click on the group toggles the base (bin, oct, dec, hex), right click copies result (as it appears) to the clipboard.
@@ -56,10 +62,17 @@ The following expression tokens are recognized:
 * hexadecimal base prefix: `0x`
 * base suffixes: `b o d h`
 
+Related settings:
+* `MathEval`
+
 ### [NEW] Find Next/Previous Word
 Vim-like Edit > Find Next/Previous Word (**Ctrl+[Shift]+8**) commands for quick case-insensitive navigation between highlighted words. It's independent of highlight mode settings and of normal Find/Replace and doesn't affect the latter's state. #38
 
 If there's no selection then these search for word at cursor (or for nearby next/previous word). If there's selection then these search for previously used word (not for selection!).
+
+Related settings:
+* `FindWordMatchCase`
+* `FindWordWrapAround`
 
 ### [NEW] New Line Above/Below
 Vim-like Edit > Lines > New Line Above/Below (**Ctrl+Alt+Enter**, **Ctrl+Shift+Enter**) commands that insert a line regardless of which column the cursor is positioned at.
@@ -88,7 +101,8 @@ If entered string is a wildcard (e.g. `*.txt`) then the first matching file is o
 
 **Note:** prefix cannot match one of reserved file system names such as `NUL` and `CON` (case-insensitive).
 
-This feature is disabled by default - enable it with `OpenDialogByPrefix` setting.
+Related settings:
+* `OpenDialogByPrefix`
 
 ### [NEW] Open Next/Previous
 File > Open Next/Previous commands allow opening files going before/after current in the currently opened file's directory (this is determined by regular name sorting, it doesn't depend on how Explorer or Open Dialog sorts files). #43
@@ -115,7 +129,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 * In *Notepad2*, Auto Close HTML corrupts non-Latin tags in UTF-8 buffers - this is fixed. #112
 
 ### Find
-* **[NEW]** Find and other commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. #41
+* **[NEW]** Find and other commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
 * **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search hits last result in that direction, regardless of the **Wrap around** flag.
 * Find respects the **Match case** flag even with Cyrillic characters in the search string. #9
 
@@ -130,7 +144,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 * Input priority: use Offset if non-empty, else use Column+Line if Column non-empty, else use only Line.
 
 ### File > Launch
-* **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. #12
+* **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. Setting: `ShellMenuType`. #12
 * **[NEW]** File > Launch > Open Folder (**Ctrl+Shift+L**) command that opens Explorer's window with the current file selected. #136
 * File > Launch > Command (**Ctrl+R**) retains the command string until another file is opened and sets current directory to that of the file. #26
 
@@ -142,7 +156,7 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
 * Gutter is now automatically resized if it can't fit max line number.
 
 ### PCRE Support
-Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features. #78
+Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features. #78 #90 #114
 
 Additionally, old regexp didn't support UTF-8 buffers (only ASCII) - new one does.
 
@@ -163,7 +177,7 @@ These changes make editing Markdown and wiki sources much more pleasant: `[[foo|
 ### Special Commands
 HTML data:
 * **[NEW]** Edit > Special > Strip HTML Tags (**Shift+Alt+X**) command removes `<tags>` inside selection, or if there's none - removes first tag before cursor. #40
-* **[NEW]** Edit > Special > Escape HTML (**Ctrl+Shift+Alt+X**) command turns `< > &` into `&lt; &gt; &amp;` respectively (inside selection or everywhere in the document if selection is empty). #51
+* **[NEW]** Edit > Special > Escape HTML (**Ctrl+Shift+Alt+X**) command turns `< > &` into `&lt; &gt; &amp;` respectively (inside selection or everywhere in the document if selection is empty). #51 #31
 
 Binary data:
 * **[NEW]** Edit > Special > String To Hex and Hex To String (**[Ctrl+]Alt+Shift+A**) operate on the document as a bytestream similarly to PHP's `bin2hex()` and `hex2bin()`. Hex To String ignores whitespace (#123). Output: `616263` for `abc`. #87
@@ -176,8 +190,15 @@ Binary data:
 ### [NEW] Ctrl+Wheel Scroll
 Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11
 
+Related settings:
+* `WheelScroll`
+* `WheelScrollInterval`
+
 ### Highlight Line
-`HighlightLineIfWindowInactive` setting keeps current line highlighted even if the window is not focused (especially useful when using Windows' X-Mouse behaviour).
+Ability to keep current line highlighted even if the window is not focused (especially useful when using Windows' X-Mouse feature).
+
+Related settings:
+* `HighlightLineIfWindowInactive`
 
 ### Drop Text
 When dropping an object from another application on an empty line - line break is added automatically. #63 #110
@@ -207,15 +228,22 @@ Join Lines and Join Paragraphs (**Ctrl+[Shift+]J**) adjust selection's end so th
 ### [NEW] Language Indicator
 Window's title reflects current keyboard language, if configured with `TitleLanguage`. For example: `Untitled - Notepad 2e [RU]`. #86
 
+Related settings:
+* `TitleLanguage`
+
 ### Other Changes
+* Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
+* Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are simply inserted into a focused input instead of replacing its value. #119
+* Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
+* "Accelerated" navigation mode for **Ctrl+Arrow** (like in Windows Notepad) that skips punctuation and other characters. Setting: `WordNavigationMode`.
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
 * File > Line Endings > Unix has **Alt+F8** hotkey assigned. #44
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
 * Upgraded Scintilla library to a more recent version (3.6.6).
 
 ### Undocumented Notepad2 Features
-* Rectangular selection mode is actually supported - hold Alt while dragging your mouse to make a selection. This is particularly useful for **Column sort** in Sort Lines (**Alt+O**).
+* Rectangular selection mode is actually supported - hold **Alt** while dragging your mouse to make a selection. This is particularly useful for **Column sort** in Sort Lines (**Alt+O**).
 * Web search: if you set `WebTemplate1` (or `WebTemplate2`) setting in the INI to `https://google.com/search?q=%s` and then press **Ctrl+Shift+1-2** with non-empty selection - you will be navigated to that URL (`%s` replaced with a selection string, not URL-encoded).
 * If Replace's dialog Replace With is `^c` - clipboard contents is used instead of this string.
 * If the program is started with `/B` flag, it enters "Pasteboard mode" where new content on the clipboard is automatically added to the buffer.
@@ -241,18 +269,49 @@ CSS syntax scheme was improved:
 * Added CSS 3 properties. #4
 * Enabled `//`-inline comments (**Ctrl+Q**) that are used in LESS, SASS and other preprocessors. #4
 * Fixed brackets of nested rules not matching in some cases (visually and when using **Ctrl+B**). #4
+* Related setting: `CSSSettings`.
 
 Lua syntax scheme was improved:
 * Added single-line: `--...` and multi-line comments: `--[[...]]`. #111
 
-## Extended Edition INI Configuration
+
+## Extended Edition INI Changes
+Settings in this section extend *Notepad2*'s values and thus appear under its own INI groups, normally under `[Settings]`.
+
+### SaveSettings
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 1 (if INI exists) | Settings > Save Settings On Exit
+
+Causes the program to save its settings on exit. Any changes to the INI file from the time this process was started are overwritten.
+
+Saving is only possible when an INI file exists. The easiest way to create it is using Save Settings Now (**F7**) command.
+
+Value | Meaning
+----|-----
+0 | Don't save settings
+1 | Save all settings
+2 | **[NEW]** Save only Recent Files and Search Strings but no settings
+
+
+## [NEW] Extended Edition INI Configuration
 *Notepad2* stores all of its settings in `Notepad2.ini` (or rather in `exe_base_name.ini`).
 *Notepad 2e* uses the same file but puts its settings under the `[Notepad2e]` group.
 
-These settings are all **[NEW]**.
+### DebugLog
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 0 |
+
+Enables creation of debug log file `n2e_log.log` in the program's folder.
 
 ### CSSSettings
-**Type:** int, bitfield.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bitfield | 2 |
 
 Extend standard CSS highlighting to support:
 
@@ -264,37 +323,39 @@ Bit | Type
 
 It's a bitfield so bits can be combined: **3** = Sassy + LESS.
 
-### DebugLog
-**Type:** int, bool.
-
-Enables creation of debug log in the program's folder.
-
 ### FindWordMatchCase & FindWordWrapAround
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 0 |
 
 These control **Ctrl[+Shift]+8** search like normal Find dialog flags.
 
 The **Match whole word only** flag is always enabled for those commands so it can't be customized.
 
 ### HighlightLineIfWindowInactive
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 0 |
 
 If **0**, current line is not highlighted if window is inactive (default *Notepad2* behaviour).
 
 If **1**, highlighting is independent of window focus (always visible if enabled).
 
-### MaxSearchDistance
-**Type:** int, KiB.
-
-Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
-
 ### OpenDialogByPrefix
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 1 |
 
 If set, Open File dialog can be submitted even if just a prefix of an existing file's name or a mask was entered.
 
 ### ScrollYCaretPolicy
-**Type:** int.
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 |
 
 Sets vertical margin for commands that can scroll the buffer, including:
 * **F3, F2, Ctrl+8** and their **Shift** versions
@@ -308,7 +369,10 @@ Value | Meaning
 2 | 50% margin
 
 ### MathEval
-**Type:** int.
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 | Settings > Evaluate Math Expressions
 
 Controls math expression evaluation. #88
 
@@ -319,7 +383,10 @@ Value | Meaning
 2 | Evaluate selection or, if empty - entire current line (if valid)
 
 ### TitleLanguage
-**Type:** int.
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 | Settings > Window Title Display
 
 Controls keyboard language display in window's title.
 
@@ -329,64 +396,157 @@ Value | Meaning
 1 | Always add language name as in `... [RU]`
 2 | As **1** but don't add if the language is English (`EN`)
 
-This setting is controlled by Settings > Window Title Display.
-
 ### ShellMenuType
-**Type:** int, bitfield.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bitfield | 0 |
 
 Controls behaviour of Shell Menu (**Ctrl+Shift+R**). For values see `uFlags` at this page:
 http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097(v=vs.85).aspx
 
 ### WheelScroll
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 1 | Settings > Ctrl+Wheel Scroll
 
 Enables scrolling by **Ctrl+Wheel**.
 
-This setting is controlled by Settings > Ctrl+Wheel Scroll.
-
 ### WheelScrollInterval
-**Type:** int, ms.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, ms | 100 ms |
 
 when using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Necessary because Windows fires a handful of wheel scroll events per one real scroll.
 
 ### MoveCaretOnRightClick
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 1 | Settings > Move Caret On Right Click
 
 If **0** - caret is not moved and selection is not changed on right mouse button click. #54
 
-This setting is controlled by Settings > Move Caret On Right Click.
-
 ### WordNavigationMode
-**Type:** int, bool.
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 0 | Settings > Ctrl+Arrow Navigation
 
 Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary. #89
 
-This setting is controlled by Settings > Ctrl+Arrow Navigation.
+### Current Word Highlighting
 
-### SelectionType & PageSelectionType & SingleSelectionType & EditSelectionType
-**Type:** int.
+Settings in this section that begin with `_` have variations depending on highlighting conditions; all variations have the same format and meaning but may have different default values and apply in different situations.
 
-Type of decoration for a word that's present elsewhere in the document (`SelectionType`), on the visible page (`PageXXX`), not present at all (`SingleXXX`) or when it's in Edit Mode (`EditXXX`).
+Prefix   | Conditions
+---------|----------
+*(none)* | Multiple occurrences, some are not visible on screen
+Page     | Multiple occurrences, all are visible on screen
+Single   | Single occurrence
+Edit     | Edit Mode active
 
-For values see:
+For example, `_SelectionType` expands to the following settings:
+```
+SelectionType
+PageSelectionType
+SingleSelectionType
+EditSelectionType
+```
+
+#### HighlightSelection
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 1 | View > Highlight Current Word
+
+If **1**, enables both current word highlighting and Edit Mode. Edit Mode doesn't work if highlighting is disabled.
+
+#### MaxSearchDistance
+
+Type | Default | Set By UI
+-----|---------|----------
+int, KiB | 2 MiB |
+
+Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
+
+#### _SelectionType
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 6 (`INDIC_BOX`) |
+
+Decoration type. Value **0** disables this condition indication (other settings are ignored) - can be used, for example, to disable special rendering of `Single` occurrence.
+
+* For `Edit`, **0** disables indication only - Edit Mode still continues to work.
+* If you want to disable highlighting and Edit Mode then use `HighlightSelection` setting as it removes all highlighting overhead.
+* Adjust search distance (performance on large buffers) with `MaxSearchDistance`.
+
+For details and examples see:
 http://www.scintilla.org/ScintillaDoc.html#Indicators
 
-### SelectionColor & PageSelectionColor & SingleSelectionColor & EditSelectionColor
-**Type:** str, BGR.
+Symbol | Value
+-------|------
+INDIC_PLAIN | 0
+INDIC_SQUIGGLE | 1
+INDIC_TT | 2
+INDIC_DIAGONAL | 3
+INDIC_STRIKE | 4
+INDIC_HIDDEN | 5
+INDIC_BOX | 6
+INDIC_ROUNDBOX | 7
+INDIC_STRAIGHTBOX | 8
+INDIC_FULLBOX | 16
+INDIC_DASH | 9
+INDIC_DOTS | 10
+INDIC_SQUIGGLELOW | 11
+INDIC_DOTBOX | 12
+INDIC_SQUIGGLEPIXMAP | 13
+INDIC_COMPOSITIONTHICK | 14
+INDIC_COMPOSITIONTHIN | 15
+INDIC_TEXTFORE | 17
+INDIC_POINT | 18
+INDIC_POINTCHARACTER | 19
 
-Foreground highlight color like `0xFF0000` (blue - not RGB!).
+#### _SelectionAlpha
 
-### SelectionAlpha & PageSelectionAlpha & SingleSelectionAlpha & EditSelectionAlpha
-**Type:** int.
+Type | Default | Set By UI
+-----|---------|----------
+int | 100 (`Edit`), 0 (others) |
 
 Opacity value (0-255) for foreground highlight color.
 
-### SelectionLineAlpha &  PageSelectionLineAlpha & SingleSelectionLineAlpha & EditSelectionLineAlpha
-**Type:** int.
+#### _SelectionLineAlpha
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 |
 
 Opacity value (0-255) for highlight outline color.
 
-### SelectionUnder & PageSelectionUnder & SingleSelectionUnder & EditSelectionUnder
-**Type:** int, bool.
+#### _SelectionColor
 
-Corresponds to Scintilla's `SCI_INDICSETUNDER`.
+Type | Default | Set By UI
+-----|---------|----------
+str, BGR | Varies (below) |
+
+Condition | Default (RGB)
+----------|--------
+*Multiple invisible* | `#000000`
+Page      | `#000090`
+Single    | `#900000`
+Edit      | `#AAAA00`
+
+Foreground highlight color like `0xFF0000` (blue - not RGB!).
+
+#### _SelectionUnder
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bool | 0 (over) |
+
+Corresponds to Scintilla's [SCI_INDICSETUNDER](http://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETUNDER):
+
+> [...] whether an indicator is drawn under text or over (default).
