@@ -70,7 +70,7 @@ Related settings:
 ### [NEW] Find Next/Previous Word
 Vim-like Edit > Find Next/Previous Word (**Ctrl+[Shift]+8**) commands for quick case-insensitive navigation between highlighted words. It's independent of highlight mode settings and of normal Find/Replace and doesn't affect the latter's state. #38
 
-If there's no selection then these search for word at cursor (or for nearby next/previous word). If there's selection then these search for previously used word (not for selection!).
+If there's no selection then these search for word at cursor (or for nearby next/previous word). If there's selection then these search for previously used word (not for selection!) starting after last selected symbol.
 
 Related settings:
 * `FindWordMatchCase`
@@ -132,7 +132,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 
 ### Find
 * **[NEW]** Find and other commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
-* **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search hits last result in that direction, regardless of the **Wrap around** flag.
+* **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search (Find, Replace or Find Word) hits last result in that direction, regardless of the **Wrap around** flag.
 * Find respects the **Match case** flag even with Cyrillic characters in the search string. #9
 
 ### Go To (Ctrl+G)
@@ -155,7 +155,18 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
 
 ### Line Gutter
 * Default gutter style was changed from `size:-2;fore:#ff0000` to `size:-1`.
-* Gutter is now automatically resized if it can't fit max line number.
+* Gutter is now automatically resized if it can't fit max line number on the following operations:
+  * Reload Settings From Disk
+  * Syntax Scheme...
+  * 2nd Default Schemes...
+  * Customize Schemes...
+  * Preview button in Customize Schemes... dialog
+  * Default Font...
+  * Default lexer setting (**F11**)
+  * HTML lexer setting (**Ctrl+F11**)
+  * XML lexer setting (**Shift+F11**)
+  * Zoom level change (**Ctrl++/-**)
+  * File saving
 
 ### PCRE Support
 Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features. #78 #90 #114
