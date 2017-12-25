@@ -14,6 +14,8 @@ For those of you who are unfamiliar with *Notepad2*:
 
 Some folks use it to replace the standard `Notepad.exe` of Windows. It knows about permissions and will use user-specific INI file if it cannot write INI in the EXE's directory.
 
+**License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
+
 ## Extended Edition Changes
 The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items without this mark are changes (or minor features added) compared to the original *Notepad2*.
 
@@ -408,6 +410,25 @@ http://msdn.microsoft.com/en-us/library/windows/desktop/bb776097(v=vs.85).aspx
 These flags affect how the menu looks like and which commands are available; it's highly dependent on the OS and particular environment. Useful values you may try in case of problems (mainly on Windows XP):
 * `ShellMenuType=16`
 * `ShellMenuType=4`
+
+Bit | Type
+----|-----
+NORMAL | 0x00000000
+DEFAULTONLY | 0x00000001
+VERBSONLY | 0x00000002
+EXPLORE | 0x00000004
+NOVERBS | 0x00000008
+CANRENAME | 0x00000010
+NODEFAULT | 0x00000020
+INCLUDESTATIC | 0x00000040
+ITEMMENU | 0x00000080
+EXTENDEDVERBS | 0x00000100
+DISABLEDVERBS | 0x00000200
+ASYNCVERBSTATE | 0x00000400
+OPTIMIZEFORINVOKE | 0x00000800
+SYNCCASCADEMENU | 0x00001000
+DONOTPICKDEFAULT | 0x00002000
+RESERVED | 0xffff0000
 
 ### WheelScroll
 
