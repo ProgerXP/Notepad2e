@@ -46,7 +46,7 @@ Related settings:
 * See **Current Word Highlighting** section (above).
 
 ### [NEW] Math Evaluation
-In certain cases (such as in current selection - controlled by the `MathEval` setting), the file size group in the status bar is replaced with a recognized math expression's result. Left click on the group toggles the base (bin, oct, dec, hex), right click copies result (as it appears) to the clipboard.
+In certain cases (such as in current selection), the file size group in the status bar is replaced with a recognized math expression's result. Left click on the group toggles the base (bin, oct, dec, hex), right click copies result (as it appears) to the clipboard.
 
 * Selection must be shorter than 4096 symbols.
 * Expression is locale-insensitive and follows English conventions so that comma is a thousands separator (and ignored) and period is a decimal part separator.
@@ -339,7 +339,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 0 |
 
-If **0**, current line is not highlighted if window is inactive (default *Notepad2* behaviour).
+If **0**, current line is stops being highlighted when window is inactive (default *Notepad2* behaviour).
 
 If **1**, highlighting is independent of window focus (always visible if enabled).
 
@@ -349,7 +349,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 1 |
 
-If set, Open File dialog can be submitted even if just a prefix of an existing file's name or a mask was entered.
+If **1**, Open File dialog can be submitted even if just a prefix of an existing file's name or a mask was entered.
 
 ### ScrollYCaretPolicy
 
@@ -364,9 +364,9 @@ Sets vertical margin for commands that can scroll the buffer, including:
 
 Value | Meaning
 ------|--------
-0 | No margin (as in *Notepad2*)
+0 | Margin of 4 extra lines (as in *Notepad2*)
 1 | 33% margin
-2 | 50% margin
+2 | 50% margin (central line)
 
 ### MathEval
 
@@ -411,7 +411,9 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 1 | Settings > Ctrl+Wheel Scroll
 
-Enables scrolling by **Ctrl+Wheel**.
+If **0** then **Ctrl+Wheel** changes zoom level.
+
+If **1** then **Ctrl+Wheel** scrolls the document by entire pages.
 
 ### WheelScrollInterval
 
@@ -419,7 +421,9 @@ Type | Default | Set By UI
 -----|---------|----------
 int, ms | 100 ms |
 
-when using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Necessary because Windows fires a handful of wheel scroll events per one real scroll.
+when using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Edit it if the program skips wheel rotations or is too sensitive.
+
+Necessary because Windows fires a handful of wheel scroll events per one real scroll.
 
 ### MoveCaretOnRightClick
 
@@ -435,7 +439,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 0 | Settings > Ctrl+Arrow Navigation
 
-Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary. #89
+Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary, not punctuation, brackets, etc. #89
 
 ### Current Word Highlighting
 
