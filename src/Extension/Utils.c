@@ -140,13 +140,13 @@ void n2e_LoadINI()
 
 void n2e_SaveINI()
 {
-  IniSetInt(N2E_INI_SECTION, L"HighlightSelection", bHighlightSelection);
-  IniSetInt(N2E_INI_SECTION, L"WheelScroll", bCtrlWheelScroll);
-  IniSetInt(N2E_INI_SECTION, L"WheelScrollInterval", iWheelScrollInterval);
-  IniSetInt(N2E_INI_SECTION, L"CSSSettings", iCSSSettings);
-  IniSetInt(N2E_INI_SECTION, L"ShellMenuType", iShellMenuType);
-  IniSetInt(N2E_INI_SECTION, L"MaxSearchDistance", iMaxSearchDistance / BYTES_IN_KB);
-  IniSetInt(N2E_INI_SECTION, L"OpenDialogByPrefix", bUsePrefixInOpenDialog);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, iMaxSearchDistance / BYTES_IN_KB);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, bUsePrefixInOpenDialog);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
@@ -469,7 +469,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                     wsprintf(mess,
                              L"%s\nFile not found.\n"
                              L"Additionally, no file name starting "
-                             L"with this string exists in this folder\n%s",
+                             L"with this string exists in this folder:\n%s",
                              final_str, dir);
                     MessageBox(hdlg, mess, WC_NOTEPAD2, MB_OK | MB_ICONWARNING);
                   }
