@@ -455,7 +455,7 @@ If **1** then **Ctrl+Wheel** scrolls the document by entire pages.
 
 Type | Default | Set By UI
 -----|---------|----------
-int, ms | 100 ms |
+int, ms | 50 ms |
 
 when using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Edit it if the program skips wheel rotations or is too sensitive.
 
@@ -508,7 +508,7 @@ If **1**, enables both current word highlighting and Edit Mode. Edit Mode doesn'
 
 Type | Default | Set By UI
 -----|---------|----------
-int, KiB | 2 MiB |
+int, KiB | 96 KiB |
 
 Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
 
@@ -516,7 +516,7 @@ Maximum lookahead/behind distance for word highlighting. If too large, navigatio
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 6 (`INDIC_BOX`) |
+int | 7 (`INDIC_ROUNDBOX` - `Page`, `Edit`), 6 (`INDIC_BOX` - others) |
 
 Decoration type. Value **0** disables this condition indication (other settings are ignored) - can be used, for example, to disable special rendering of `Single` occurrence.
 
@@ -554,7 +554,7 @@ INDIC_POINTCHARACTER | 19
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 100 (`Edit`), 0 (others) |
+int | 50 (`Page`, `Edit`), 0 (others) |
 
 Opacity value (0-255) for foreground highlight color.
 
@@ -562,7 +562,7 @@ Opacity value (0-255) for foreground highlight color.
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 0 |
+int | 255 (`Page`, `Edit`), 0 (others) |
 
 Opacity value (0-255) for highlight outline color.
 
@@ -574,10 +574,10 @@ str, BGR | Varies (below) |
 
 Condition | Default (RGB)
 ----------|--------
-*Multiple invisible* | `#000000`
-Page      | `#000090`
+*Multiple invisible* | `#00AA00`
+Page      | `#999900`
 Single    | `#900000`
-Edit      | `#AAAA00`
+Edit      | `#0000FF`
 
 Foreground highlight color like `0xFF0000` (blue - not RGB!).
 
@@ -585,7 +585,7 @@ Foreground highlight color like `0xFF0000` (blue - not RGB!).
 
 Type | Default | Set By UI
 -----|---------|----------
-int, bool | 0 (over) |
+int, bool | 1 (under - `Page`, `Edit`), 0 (over - others) |
 
 Corresponds to Scintilla's [SCI_INDICSETUNDER](http://www.scintilla.org/ScintillaDoc.html#SCI_INDICSETUNDER):
 
