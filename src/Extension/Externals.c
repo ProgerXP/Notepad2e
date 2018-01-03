@@ -4,6 +4,8 @@
 
 int iEncoding = CPI_DEFAULT;
 
+// Code duplication for mEncoding:
+// https://github.com/ProgerXP/Notepad2e/issues/118#issuecomment-353869333
 NP2ENCODING mEncoding[] = {
   { NCP_DEFAULT | NCP_RECODE, 0, "ansi,ansi,ascii,", 61000, L"" },
   { NCP_8BIT | NCP_RECODE, 0, "oem,oem,", 61001, L"" },
