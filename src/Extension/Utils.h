@@ -75,6 +75,7 @@ void n2e_ResetLastRun();
 void n2e_LoadINI();
 void n2e_SaveINI();
 void n2e_Release();
+void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);

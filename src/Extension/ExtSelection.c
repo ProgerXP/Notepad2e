@@ -34,6 +34,7 @@ BOOL bEditSelectionInit = FALSE;
 BOOL bEditSelectionExit = FALSE;
 
 extern BOOL bHighlightLineIfWindowInactive;
+extern long iMaxSearchDistance;
 extern EWordNavigationMode iWordNavigationMode;
 extern HWND hwndMain;
 extern HWND hwndEdit;
@@ -56,7 +57,6 @@ SE_DATA arrEditSelections[N2E_SELECT_MAX_COUNT];
 long iEditSelectionsCount = 0;
 struct Sci_TextRange trEditSelection;
 long iOriginalSelectionLength = 0;
-long iMaxSearchDistance = 2048 * 1024;
 BOOL bEditSelectionWholeWordMode = TRUE;
 BOOL bEditSelectionStrictMode = TRUE;
 char *pEditSelectionOriginalWord = NULL;
@@ -109,18 +109,13 @@ void n2e_EditInit()
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
 
 #define DEFAULT_SECTION 6
+#define EXTENDED_SECTION 7
 
   n2e_EditSelectionInit(L"SelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR,
                         L"SelectionAlpha", 0,
                         L"SelectionLineAlpha", 0,
-                        L"SelectionColor", RGB(0x00, 0x00, 0x00),
+                        L"SelectionColor", RGB(0x00, 0xAA, 0x00),
                         L"SelectionUnder", 0);
-  
-  n2e_EditSelectionInit(L"PageSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_PAGE,
-                        L"PageSelectionAlpha", 0,
-                        L"PageSelectionLineAlpha", 0,
-                        L"PageSelectionColor", RGB(0x00, 0x00, 0x90),
-                        L"PageSelectionUnder", 0);
   
   n2e_EditSelectionInit(L"SingleSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_SINGLE,
                         L"SingleSelectionAlpha", 0,
@@ -128,11 +123,17 @@ void n2e_EditInit()
                         L"SingleSelectionColor", RGB(0x90, 0x00, 0x00),
                         L"SingleSelectionUnder", 0);
 
-  n2e_EditSelectionInit(L"EditSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_EDIT,
-                        L"EditSelectionAlpha", 100,
-                        L"EditSelectionLineAlpha", 0,
-                        L"EditSelectionColor", RGB(0xaa, 0xaa, 0x00),
-                        L"EditSelectionUnder", 0);
+  n2e_EditSelectionInit(L"PageSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_PAGE,
+                        L"PageSelectionAlpha", 50,
+                        L"PageSelectionLineAlpha", 255,
+                        L"PageSelectionColor", RGB(0x99, 0x99, 0x00),
+                        L"PageSelectionUnder", 1);
+
+  n2e_EditSelectionInit(L"EditSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_EDIT,
+                        L"EditSelectionAlpha", 50,
+                        L"EditSelectionLineAlpha", 255,
+                        L"EditSelectionColor", RGB(0x00, 0x00, 0xFF),
+                        L"EditSelectionUnder", 1);
   
   n2e_proc_action = n2e_SelectionKeyAction;
   trEditSelection.lpstrText = 0;

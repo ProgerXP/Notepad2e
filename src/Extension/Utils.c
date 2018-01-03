@@ -28,8 +28,8 @@
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
 
 #define N2E_WHEEL_TIMER_ID  0xFF
-#define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  100
-#define DEFAULT_MAX_SEARCH_DISTANCE_KB  64
+#define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
+#define DEFAULT_MAX_SEARCH_DISTANCE_KB  96
 #define BYTES_IN_KB  1024
 
 HANDLE g_hScintilla = NULL;
@@ -43,8 +43,9 @@ BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
 EWordNavigationMode iWordNavigationMode = 0;
 ELanguageIndicatorMode iShowLanguageInTitle = LIT_HIDE;
-UINT iShellMenuType = 0;
+UINT iShellMenuType = CMF_EXPLORE;
 BOOL bHighlightLineIfWindowInactive = FALSE;
+long iMaxSearchDistance = DEFAULT_MAX_SEARCH_DISTANCE_KB * BYTES_IN_KB;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
@@ -125,7 +126,7 @@ void n2e_LoadINI()
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
   iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
-  iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, CMF_EXPLORE);
+  iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
   bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, bUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
@@ -161,6 +162,12 @@ void n2e_Release()
 {
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
+}
+
+void n2e_Reset()
+{
+  n2e_Release();
+  n2e_Init();
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)

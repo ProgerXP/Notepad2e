@@ -1295,6 +1295,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
         _MsgCreate();
+        n2e_Reset();
         n2e_UpdateWindowTitle(hwnd);
       }
       break;
