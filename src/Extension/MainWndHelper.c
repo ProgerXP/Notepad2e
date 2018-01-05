@@ -18,9 +18,33 @@ WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
 extern HWND hwndMain;
 extern int aWidth[6];
 
+BOOL ScreenToClientRect(const HWND hwnd, LPRECT pRect)
+{
+  if (!pRect)
+  {
+    return FALSE;
+  }
+  POINT ptLeftTop = { pRect->left, pRect->top };
+  POINT ptRightBottom = { pRect->right, pRect->bottom };
+  ScreenToClient(hwnd, &ptLeftTop);
+  ScreenToClient(hwnd, &ptRightBottom);
+  pRect->left = ptLeftTop.x;
+  pRect->top = ptLeftTop.y;
+  pRect->right = ptRightBottom.x;
+  pRect->bottom = ptRightBottom.y;
+  return TRUE;
+}
+
 BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt)
 {
-  ScreenToClient(hwnd, &pt);
+  RECT rectStatus;
+  ScreenToClient(hwndStatus, &pt);
+  if (!GetWindowRect(hwndStatus, &rectStatus)
+      || !ScreenToClientRect(hwndStatus, &rectStatus)
+      || !PtInRect(&rectStatus, pt))
+  {
+    return FALSE;
+  }
   return (pt.x > aWidth[0]) && (pt.x < aWidth[1]);
 }
 
