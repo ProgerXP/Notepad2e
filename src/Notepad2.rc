@@ -599,7 +599,7 @@ BEGIN
     LTEXT           "Notepad 2e",IDC_VERSION,42,7,174,8
     LTEXT           "Copyright © 2004-2011",IDC_COPYRIGHT,42,32,174,8
     LTEXT           "Florian Balmer",IDC_AUTHORNAME,42,55,174,8
-    LTEXT           "Extended Edition © 2013-2017",IDC_EXT,42,81,174,8
+    LTEXT           "Extended Edition © 2013-2018",IDC_EXT,42,81,174,8
     LTEXT           "By Proger_XP and contributors",IDC_BY,42,93,174,8
     LTEXT           "Built on XXX",IDC_TIME,42,121,126,8
     CONTROL         "https://github.com/ProgerXP/Notepad2e",IDC_WEB,"SysLink",WS_TABSTOP,42,105,174,8
