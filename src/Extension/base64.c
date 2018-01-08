@@ -292,19 +292,22 @@ BOOL Base64_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProce
   Base64Data* pData = (Base64Data*)pRA->data;
   assert(pData);
 
+  int iCharsProcessed = 0;
   unsigned char chInput[5] = { 0 };
   unsigned char block[5] = { 0 };
   int pad = 0;
   for (int i = 0; i < _countof(chInput) - 1; ++i)
   {
-    chInput[i] = (unsigned char)TextBuffer_PopChar(&pED->m_tb);
+    if (!TextBuffer_GetLiteralChar(&pED->m_tb, &chInput[i], &iCharsProcessed))
+    {
+      return FALSE;
+    }
     block[i] = pData->dtable[chInput[i]];
     if (chInput[i] == '=')
     {
       pad++;
     }
   }
-
   TextBuffer_PushChar(&pED->m_tbRes, (block[0] << 2) | (block[1] >> 4));
   switch (pad)
   {
@@ -324,7 +327,7 @@ BOOL Base64_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProce
 
   if (piCharsProcessed)
   {
-    (*piCharsProcessed) += _countof(chInput) - 1;
+    (*piCharsProcessed) += iCharsProcessed;
   }
   return TRUE;
 }

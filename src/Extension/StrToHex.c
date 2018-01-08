@@ -3,36 +3,6 @@
 #include "StrToHex.h"
 #include "StringRecoding.h"
 
-#define MIN_VALID_CHAR_CODE 0x21
-
-BOOL TextBuffer_GetHexCharFiltered(TextBuffer* pTB, char* pCh, long* piCharsProcessed)
-{
-  *pCh = MIN_VALID_CHAR_CODE - 1;
-  int charsProcessed = 0;
-  while ((*pCh < MIN_VALID_CHAR_CODE) && TextBuffer_IsPosOKImpl(pTB, 1))
-  {
-    *pCh = TextBuffer_PopChar(pTB);
-    ++charsProcessed;
-    if (piCharsProcessed)
-    {
-      ++(*piCharsProcessed);
-    }
-  }
-  const BOOL res = (*pCh >= MIN_VALID_CHAR_CODE);
-  if (!res)
-  {
-    while (charsProcessed--)
-    {
-      TextBuffer_DecPos(pTB);
-      if (piCharsProcessed)
-      {
-        --(*piCharsProcessed);
-      }
-    }
-  }
-  return res;
-}
-
 BOOL CheckRequiredHexDigitsAvailable(LPCSTR pCurTextOrigin, LPCSTR pCurText, const long iCurTextLength, const long nChars)
 {
   BOOL res = FALSE;
@@ -73,10 +43,10 @@ BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
   if (IsUnicodeEncodingMode())
   {
     char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
-    if (TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded2, piCharsProcessed)
-        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded3, piCharsProcessed)
-        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded4, piCharsProcessed))
+    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, piCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded3, piCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded4, piCharsProcessed))
     {
       const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
@@ -97,8 +67,8 @@ BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
   else
   {
     char chEncoded1, chEncoded2;
-    if (TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetHexCharFiltered(&pED->m_tb, &chEncoded2, piCharsProcessed))
+    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, piCharsProcessed))
     {
       const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);

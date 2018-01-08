@@ -169,6 +169,36 @@ BOOL TextBuffer_PushNonZeroChar(TextBuffer* pTB, const char ch)
   return ch ? TextBuffer_PushChar(pTB, ch) : FALSE;
 }
 
+BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcessed)
+{
+#define MIN_VALID_CHAR_CODE 0x21
+
+  *pCh = MIN_VALID_CHAR_CODE - 1;
+  int charsProcessed = 0;
+  while ((*pCh < MIN_VALID_CHAR_CODE) && TextBuffer_IsPosOKImpl(pTB, 1))
+  {
+    *pCh = TextBuffer_PopChar(pTB);
+    ++charsProcessed;
+    if (piCharsProcessed)
+    {
+      ++(*piCharsProcessed);
+    }
+  }
+  const BOOL res = (*pCh >= MIN_VALID_CHAR_CODE);
+  if (!res)
+  {
+    while (charsProcessed--)
+    {
+      TextBuffer_DecPos(pTB);
+      if (piCharsProcessed)
+      {
+        --(*piCharsProcessed);
+      }
+    }
+  }
+  return res;
+}
+
 BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChars)
 {
   const long iRemainingChars = (pTB->m_iPos < pTB->m_iMaxPos) ? (pTB->m_iMaxPos - pTB->m_iPos) : 0;

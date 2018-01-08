@@ -89,6 +89,7 @@ char TextBuffer_PopChar(TextBuffer* pTB);
 BOOL TextBuffer_PushChar(TextBuffer* pTB, const char ch);
 BOOL TextBuffer_PushHexChar(EncodingData* pED, const unsigned char ch);
 BOOL TextBuffer_PushNonZeroChar(TextBuffer* pTB, const char ch);
+BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcessed);
 
 typedef enum
 {
