@@ -1896,9 +1896,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_CLEARCLIPBOARD, CountClipboardFormats());
   CloseClipboard();
 
-  EnableCmd(hmenu, IDM_EDIT_SORTLINES,
-            SendMessage(hwndEdit, SCI_LINEFROMPOSITION, (WPARAM)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0), 0) -
-            SendMessage(hwndEdit, SCI_LINEFROMPOSITION, (WPARAM)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0), 0) >= 1);
   EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
   EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i);
   EnableCmd(hmenu, IDM_EDIT_JOINLINES, i);

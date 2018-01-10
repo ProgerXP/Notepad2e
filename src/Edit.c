@@ -4474,10 +4474,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
 
-  if (iCurPos == iAnchorPos)
-    return;
-
-  if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+  // [2e]: Alt+O: sort all on no selection #133
+  if ((iCurPos != iAnchorPos) && (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0)))
   {
 
     iRcCurLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
@@ -4499,6 +4497,14 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
     iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
     iSelEnd = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0);
+
+    // [2e]: Alt+O: sort all on no selection #133
+    if (iSelStart == iSelEnd)
+    {
+      iSelStart = 0;
+      iSelEnd = SciCall_GetLength();
+    }
+    // [/2e]
 
     iLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0);
     iSelStart = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
