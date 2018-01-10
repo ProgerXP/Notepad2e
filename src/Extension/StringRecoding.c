@@ -360,6 +360,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     lstrcpy(pRA->statusText, isEncoding ? L"String to Hex..." : L"Hex to String...");
     pRA->iRequiredCharsForEncode = 1;
     pRA->iRequiredCharsForDecode = IsUnicodeEncodingMode() ? 4 : 2;
+    pRA->pGetExpectedResultLength = Hex_GetExpectedResultLength;
     pRA->pIsValidStrSequence = Hex_IsValidSequence;
     pRA->pEncodeMethod = Hex_Encode;
     pRA->pEncodeTailMethod = NULL;
@@ -371,6 +372,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     lstrcpy(pRA->statusText, isEncoding ? L"String to Base64..." : L"Base64 to String...");
     pRA->iRequiredCharsForEncode = 3;
     pRA->iRequiredCharsForDecode = 4;
+    pRA->pGetExpectedResultLength = Base64_GetExpectedResultLength;
     pRA->pIsValidStrSequence = Base64_IsValidSequence;
     pRA->pEncodeMethod = Base64_Encode;
     pRA->pEncodeTailMethod = Base64_EncodeTail;
@@ -384,6 +386,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->iRequiredCharsForDecode = 3;   // specify max correctly encoded sequence length as
                                         // minimal required length to prevent buffer transition problem
                                         // when encoded sequence is splitted between buffers
+    pRA->pGetExpectedResultLength = QP_GetExpectedResultLength;
     pRA->pIsValidStrSequence = QP_IsValidSequence;
     pRA->pEncodeMethod = QP_Encode;
     pRA->pEncodeTailMethod = NULL;
@@ -535,7 +538,8 @@ void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize)
   {
     return;
   }
-  n2e_ShowProgressBarInStatusBar(pRA->statusText, 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
+  n2e_ShowProgressBarInStatusBar(pRA->statusText, 0,
+                                 pRA->pGetExpectedResultLength(pRA->isEncoding, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart));
   BOOL bProcessFailed = FALSE;
   while (StringSource_IsDataPortionAvailable(pSS, &ed))
   {
@@ -721,7 +725,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
   TextBuffer_Clear(&pED->m_tb);
   TextBuffer_Clear(&pED->m_tbRes);
   TextBuffer_Clear(&pED->m_tbTmp);
-  n2e_AdjustProgressBarInStatusBar(pED->m_tr.m_iPositionCurrent, pED->m_tr.m_iSelEnd);
+  n2e_UpdateProgressBarInStatusBar(pED->m_tr.m_iPositionCurrent);
 
   return bRes;
 }

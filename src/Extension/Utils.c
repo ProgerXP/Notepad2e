@@ -817,11 +817,15 @@ void n2e_HideProgressBarInStatusBar()
 void n2e_UpdateProgressBarInStatusBar(const long nCurPos)
 {
   InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
-  InvalidateRect(hwndStatusProgressBar, NULL, FALSE);
+  n2e_ProcessPendingMessages();
 }
 
-void n2e_AdjustProgressBarInStatusBar(const long nCurPos, const long nMaxPos)
+void n2e_ProcessPendingMessages()
 {
-  InlineProgressBarCtrl_SetRange(hwndStatusProgressBar, 0, nMaxPos, 1);
-  n2e_UpdateProgressBarInStatusBar(nCurPos);
+  MSG msg;
+  while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+  {
+    TranslateMessage(&msg);
+    DispatchMessage(&msg);
+  }
 }

@@ -5,9 +5,10 @@ typedef struct TEncodingData EncodingData;
 struct TRecodingAlgorythm;
 typedef struct TRecodingAlgorythm RecodingAlgorythm;
 
+int QP_GetExpectedResultLength(const BOOL isEncoding, const int originalLength);
+BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID QP_InitAlgorythmData(const BOOL isEncoding);
 void QP_ReleaseAlgorythmData(LPVOID pData);
-BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars);
 BOOL QP_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
 BOOL QP_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
 

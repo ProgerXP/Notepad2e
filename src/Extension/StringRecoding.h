@@ -48,6 +48,7 @@ struct TStringSource
 };
 typedef struct TStringSource StringSource;
 
+typedef int(*ExpectedResultLengthMethod)(const BOOL isEncoding, const int originalLength);
 typedef BOOL(*IsValidStrSequence)(EncodingData* pED, const int requiredChars);
 typedef BOOL(*RecodeMethod)(LPVOID pRA, EncodingData* pED, long* piCharsProcessed);
 
@@ -57,6 +58,7 @@ struct TRecodingAlgorythm
   BOOL isEncoding;
   int iRequiredCharsForEncode;
   int iRequiredCharsForDecode;
+  ExpectedResultLengthMethod pGetExpectedResultLength;
   IsValidStrSequence pIsValidStrSequence;
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;

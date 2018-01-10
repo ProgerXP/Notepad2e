@@ -5,6 +5,7 @@ typedef struct TEncodingData EncodingData;
 struct TRecodingAlgorythm;
 typedef struct TRecodingAlgorythm RecodingAlgorythm;
 
+int Hex_GetExpectedResultLength(const BOOL isEncoding, const int originalLength);
 BOOL Hex_IsValidSequence(EncodingData* pED, const int requiredChars);
 BOOL Hex_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
 BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
