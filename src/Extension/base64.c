@@ -183,18 +183,6 @@ BOOL CheckRequiredBase64DigitsAvailable(LPCSTR pCurTextOrigin, LPCSTR pCurText, 
   return res;
 }
 
-int Base64_GetExpectedResultLength(const BOOL isEncoding, const int originalLength)
-{
-  if (isEncoding)
-  {
-    return originalLength * 4 / 3;
-  }
-  else
-  {
-    return originalLength * 3 / 4;
-  }
-}
-
 BOOL Base64_IsValidSequence(EncodingData* pED, const int requiredChars)
 {
   return CheckRequiredBase64DigitsAvailable(pED->m_tb.m_ptr, pED->m_tb.m_ptr + pED->m_tb.m_iPos, pED->m_tb.m_iMaxPos, requiredChars);

@@ -26,7 +26,6 @@ typedef struct TEncodingData EncodingData;
 struct TRecodingAlgorythm;
 typedef struct TRecodingAlgorythm RecodingAlgorythm;
 
-int Base64_GetExpectedResultLength(const BOOL isEncoding, const int originalLength);
 BOOL Base64_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID Base64_InitAlgorythmData(const BOOL isEncoding);
 void Base64_ReleaseAlgorythmData(LPVOID pData);

@@ -97,6 +97,25 @@ void InlineProgressBarCtrl_SetPos(const HWND hwnd, const long nValue)
   SendMessage(hwnd, PBM_SETPOS, nValue, 0);
 }
 
+long InlineProgressBarCtrl_GetPos(const HWND hwnd)
+{
+  if (!IsWindow(hwnd))
+  {
+    return -1;
+  }
+  return SendMessage(hwnd, PBM_GETPOS, 0, 0);
+}
+
+void InlineProgressBarCtrl_IncPos(const HWND hwnd, const long nOffset)
+{
+  if (!IsWindow(hwnd))
+  {
+    return;
+  }
+  SendMessage(hwnd, PBM_SETPOS, InlineProgressBarCtrl_GetPos(hwnd) + nOffset, 0);
+}
+
+
 WCHAR tchProgressBarTaskName[MAX_PATH];
 
 BOOL InlineProgressBarCtrl_Resize(const HWND hwnd)

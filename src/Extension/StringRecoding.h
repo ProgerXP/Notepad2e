@@ -58,7 +58,6 @@ struct TRecodingAlgorythm
   BOOL isEncoding;
   int iRequiredCharsForEncode;
   int iRequiredCharsForDecode;
-  ExpectedResultLengthMethod pGetExpectedResultLength;
   IsValidStrSequence pIsValidStrSequence;
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;

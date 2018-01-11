@@ -669,7 +669,7 @@ void n2e_Grep(void* _lpf, const BOOL grep)
     {
       const int lineIndex = SciCall_LineFromPosition(res);
       const int posStart = SciCall_PositionFromLine(lineIndex);
-      n2e_UpdateProgressBarInStatusBar(maxPos - res);
+      n2e_SetProgressBarPosInStatusBar(maxPos - res);
       if (grep)
       {
         posFrom = SciCall_LineEndPosition(lineIndex);
@@ -814,9 +814,15 @@ void n2e_HideProgressBarInStatusBar()
   }
 }
 
-void n2e_UpdateProgressBarInStatusBar(const long nCurPos)
+void n2e_SetProgressBarPosInStatusBar(const long nCurPos)
 {
   InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
+  n2e_ProcessPendingMessages();
+}
+
+void n2e_IncProgressBarPosInStatusBar(const long nOffset)
+{
+  InlineProgressBarCtrl_IncPos(hwndStatusProgressBar, nOffset);
   n2e_ProcessPendingMessages();
 }
 

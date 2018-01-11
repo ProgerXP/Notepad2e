@@ -3,18 +3,6 @@
 #include "StrToQP.h"
 #include "StringRecoding.h"
 
-int QP_GetExpectedResultLength(const BOOL isEncoding, const int originalLength)
-{
-  if (isEncoding)
-  {
-    return originalLength * 2;
-  }
-  else
-  {
-    return originalLength / 2;
-  }
-}
-
 BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars)
 {
   return TRUE;

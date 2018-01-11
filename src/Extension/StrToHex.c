@@ -22,18 +22,6 @@ BOOL CheckRequiredHexDigitsAvailable(LPCSTR pCurTextOrigin, LPCSTR pCurText, con
   return res;
 }
 
-int Hex_GetExpectedResultLength(const BOOL isEncoding, const int originalLength)
-{
-  if (isEncoding)
-  {
-    return originalLength * 2;
-  }
-  else
-  {
-    return originalLength / 2;
-  }
-}
-
 BOOL Hex_IsValidSequence(EncodingData* pED, const int requiredChars)
 {
   return CheckRequiredHexDigitsAvailable(pED->m_tb.m_ptr, pED->m_tb.m_ptr + pED->m_tb.m_iPos, pED->m_tb.m_iMaxPos, requiredChars);

@@ -8,4 +8,6 @@ BOOL InlineProgressBarCtrl_SetRange(const HWND hwnd, const long nLower, const lo
 int InlineProgressBarCtrl_SetStep(const HWND hwnd, const long nStep);
 void InlineProgressBarCtrl_StepIt(const HWND hwnd);
 void InlineProgressBarCtrl_SetPos(const HWND hwnd, const long nValue);
+long InlineProgressBarCtrl_GetPos(const HWND hwnd);
+void InlineProgressBarCtrl_IncPos(const HWND hwnd, const long nOffset);
 BOOL InlineProgressBarCtrl_Resize(const HWND hwnd);

@@ -47,7 +47,7 @@ extern NP2ENCODING mEncoding[];
 
 void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
 void n2e_HideProgressBarInStatusBar();
-void n2e_UpdateProgressBarInStatusBar(const long nCurPos);
+void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 
 extern WCHAR szIniFile[MAX_PATH];
 

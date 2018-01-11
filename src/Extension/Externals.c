@@ -90,7 +90,7 @@ void n2e_HideProgressBarInStatusBar()
 {
 }
 
-void n2e_UpdateProgressBarInStatusBar(const long nCurPos) 
+void n2e_IncProgressBarPosInStatusBar(const long nOffset) 
 {
 }
 

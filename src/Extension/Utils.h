@@ -106,5 +106,6 @@ void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();
 void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
 void n2e_HideProgressBarInStatusBar();
-void n2e_UpdateProgressBarInStatusBar(const long nCurPos);
+void n2e_SetProgressBarPosInStatusBar(const long nCurPos);
+void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 void n2e_ProcessPendingMessages();
