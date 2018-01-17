@@ -3028,6 +3028,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_JOINLINES:
       BeginWaitCursor();
+      // [2e]: Join Lines/Paragraphs - ignore trailing break #135
+      const int iSelEnd = SciCall_GetSelEnd();
+      const int iSelEndNew = n2e_JoinLines_GetSelEnd(iSelEnd);
+      if (iSelEndNew != iSelEnd)
+      {
+        SciCall_SetSel(SciCall_GetSelStart(), iSelEndNew);
+      }
+      // [/2e]
       SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
       SendMessage(hwndEdit, SCI_LINESJOIN, 0, 0);
       EditJoinLinesEx(hwndEdit);

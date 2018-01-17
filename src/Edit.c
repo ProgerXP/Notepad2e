@@ -4283,6 +4283,8 @@ void EditJoinLinesEx(HWND hwnd)
 
   iLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0);
   iSelStart = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
+  // [2e]: Join Lines/Paragraphs - ignore trailing break #135
+  iSelEnd = n2e_JoinLines_GetSelEnd(iSelEnd);
 
   iSelCount = iSelEnd - iSelStart;
 

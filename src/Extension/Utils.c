@@ -835,3 +835,14 @@ void n2e_ProcessPendingMessages()
     DispatchMessage(&msg);
   }
 }
+
+int n2e_JoinLines_GetSelEnd(int iSelEnd)
+{
+  int iLastLine = SciCall_LineFromPosition(iSelEnd);
+  while ((iLastLine > 0) && (SciCall_PositionFromLine(iLastLine) == iSelEnd))
+  {
+    --iLastLine;
+    iSelEnd = SciCall_LineEndPosition(iLastLine);
+  }
+  return iSelEnd;
+}
