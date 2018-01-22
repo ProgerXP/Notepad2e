@@ -1845,6 +1845,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = lstrlen(szCurFile);
   EnableCmd(hmenu, IDM_FILE_REVERT, i);
   EnableCmd(hmenu, IDM_FILE_LAUNCH, i);
+  EnableCmd(hmenu, IDM_FILE_OPENFOLDER, i);
   EnableCmd(hmenu, IDM_FILE_PROPERTIES, i);
   EnableCmd(hmenu, IDM_FILE_CREATELINK, i);
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
@@ -2313,6 +2314,36 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         ShellExecuteEx(&sei);
       }
       break;
+
+    // [2e]: Open Folder command #136
+    case IDM_FILE_OPENFOLDER: {
+        SHELLEXECUTEINFO sei = { 0 };
+        WCHAR wchParams[MAX_PATH] = L"";
+        int iParamsSize = _countof(wchParams) - 1;
+
+        if (!lstrlen(szCurFile))
+          break;
+
+        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+          break;
+
+        wcscpy_s(wchParams, iParamsSize, L"/select, \"");
+        wcscat_s(wchParams, iParamsSize, szCurFile);
+        wcscat_s(wchParams, iParamsSize, L"\"");
+
+        sei.cbSize = sizeof(SHELLEXECUTEINFO);
+        sei.fMask = 0;
+        sei.hwnd = hwnd;
+        sei.lpVerb = NULL;
+        sei.lpFile = L"explorer.exe";
+        sei.lpParameters = wchParams;
+        sei.lpDirectory = NULL;
+        sei.nShow = SW_SHOWNORMAL;
+
+        ShellExecuteEx(&sei);
+      }
+      break;
+    // [2e]: Open Folder command #136
 
 
     case IDM_FILE_RUN: {

@@ -81,6 +81,7 @@ BEGIN
             MENUITEM "&Empty Window\tAlt+0",        IDM_FILE_NEWWINDOW2
             MENUITEM SEPARATOR
             MENUITEM "Execute &Document\tCtrl+L",   IDM_FILE_LAUNCH
+            MENUITEM "Open &Folder\tCtrl+Alt+L",    IDM_FILE_OPENFOLDER
             MENUITEM "&Shell Menu\tCtrl+Shift+R",   ID_FILE_INVOKESHELLMENU
             MENUITEM "&Open With...\tAlt+L",        IDM_FILE_OPENWITH
             MENUITEM "&Command...\tCtrl+R",         IDM_FILE_RUN
@@ -437,6 +438,7 @@ BEGIN
     "L",            IDM_FILE_LAUNCH,        VIRTKEY, CONTROL, NOINVERT
     "L",            IDM_FILE_OPENWITH,      VIRTKEY, ALT, NOINVERT
     "L",            IDM_VIEW_LONGLINEMARKER, VIRTKEY, SHIFT, CONTROL, NOINVERT
+    "L",            IDM_FILE_OPENFOLDER,    VIRTKEY, CONTROL, ALT, NOINVERT
     "M",            IDM_FILE_BROWSE,        VIRTKEY, CONTROL, NOINVERT
     "M",            IDM_EDIT_MODIFYLINES,   VIRTKEY, ALT, NOINVERT
     "M",            IDM_VIEW_MARGIN,        VIRTKEY, SHIFT, CONTROL, NOINVERT
