@@ -147,7 +147,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 
 ### File > Launch
 * **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. Setting: `ShellMenuType`. #12
-* **[NEW]** File > Launch > Open Folder (**Ctrl+Shift+L**) command that opens Explorer's window with the current file selected. #136
+* **[NEW]** File > Launch > Open Folder (**Ctrl+Alt+L**) command that opens Explorer's window with the current file selected. #136
 * File > Launch > Command (**Ctrl+R**) retains the command string until another file is opened and sets current directory to that of the file. #26
 
 ### Line Selection Hotkeys
