@@ -1548,7 +1548,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
 
   BOOL bIsAppThemed = PrivateIsAppThemed();
 
-  int i, n;
+  int i;
   WCHAR tchDesc[256];
   WCHAR tchIndex[256];
 
@@ -1644,13 +1644,12 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
   pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
   cchIniSection = (int)LocalSize(pIniSection) / sizeof(WCHAR);
   LoadIniSection(L"Toolbar Labels", pIniSection, cchIniSection);
-  n = 1;
   for (i = 0; i < COUNTOF(tbbMainWnd); i++)
   {
     if (tbbMainWnd[i].fsStyle == TBSTYLE_SEP)
       continue;
 
-    wsprintf(tchIndex, L"%02i", n++);
+    wsprintf(tchIndex, L"%02i", tbbMainWnd[i].iBitmap + 1);
 
     if (IniSectionGetString(pIniSection, tchIndex, L"", tchDesc, COUNTOF(tchDesc)))
     {
