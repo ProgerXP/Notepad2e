@@ -253,6 +253,7 @@ Related settings:
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
 * File > Line Endings > Unix has **Alt+F8** hotkey assigned. #44
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
+* Fixed Notepad2 bug in processing `[Toolbar Labels]` section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
 
 ### Undocumented Notepad2 Features
