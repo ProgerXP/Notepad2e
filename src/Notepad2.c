@@ -2343,7 +2343,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         ShellExecuteEx(&sei);
       }
       break;
-    // [2e]: Open Folder command #136
+    // [/2e]
 
 
     case IDM_FILE_RUN: {
