@@ -253,7 +253,7 @@ Related settings:
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
 * File > Line Endings > Unix has **Alt+F8** hotkey assigned. #44
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
-* Fixed Notepad2 bug in processing `[Toolbar Labels]` section. #150
+* Fixed Notepad2 bug in processing `[Toolbar Labels]` INI section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
 
 ### Undocumented Notepad2 Features
@@ -261,6 +261,7 @@ Related settings:
 * Web search: if you set `WebTemplate1` (or `WebTemplate2`) setting in the INI to `https://google.com/search?q=%s` and then press **Ctrl+Shift+1-2** with non-empty selection - you will be navigated to that URL (`%s` replaced with a selection string, not URL-encoded).
 * If Replace's dialog Replace With is `^c` - clipboard contents is used instead of this string.
 * If the program is started with `/B` flag, it enters "Pasteboard mode" where new content on the clipboard is automatically added to the buffer.
+* `[Custom Colors]` INI section is used to fill the "Custom colors" control of Fore/Back color pickers in Customize Schemes. #149
 
 ### Syntax Schemes
 
