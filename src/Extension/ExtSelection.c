@@ -604,7 +604,6 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   bEditSelectionInit = FALSE;
   if (n2e_IsSelectionEditModeOn())
   {
-    SendMessage(hwndEdit, SCI_SETSEL, trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
     SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
     bEditSelectionExit = FALSE;
   }
