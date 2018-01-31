@@ -522,7 +522,7 @@ int | 7 (`INDIC_ROUNDBOX` - `Page`, `Edit`), 6 (`INDIC_BOX` - others) |
 
 Decoration type. Value **0** disables this condition indication (other settings are ignored) - can be used, for example, to disable special rendering of `Single` occurrence.
 
-* For `Edit`, **0** disables indication only - Edit Mode still continues to work.
+* For `Edit` (and other modes), **5** disables indication only - Edit Mode still continues to work. Note that value **0** doesn't disable indication as one might think (see the table below and #146 for the why).
 * If you want to disable highlighting and Edit Mode then use `HighlightSelection` setting as it removes all highlighting overhead.
 * Adjust search distance (performance on large buffers) with `MaxSearchDistance`.
 
