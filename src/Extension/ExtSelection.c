@@ -3,6 +3,7 @@
 #include "CommonUtils.h"
 #include "ExtSelection.h"
 #include "Scintilla.h"
+#include "SciCall.h"
 #include "Helpers.h"
 #include "Trace.h"
 #include "Utils.h"
@@ -604,7 +605,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   bEditSelectionInit = FALSE;
   if (n2e_IsSelectionEditModeOn())
   {
-    if (trEditSelection.chrg.cpMin != trEditSelection.chrg.cpMax)
+    if (SciCall_GetSelStart() == SciCall_GetSelEnd())
     {
       SendMessage(hwndEdit, SCI_SETSEL, trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
     }
