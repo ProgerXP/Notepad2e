@@ -7154,11 +7154,16 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
 BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialDir)
 {
   OPENFILENAME ofn;
-  WCHAR szNewFile[MAX_PATH];
+  WCHAR szNewFile[MAX_PATH] = { 0 };
   WCHAR szFilter[NUMLEXERS * 1024];
   WCHAR tchInitialDir[MAX_PATH] = L"";
 
-  lstrcpy(szNewFile, lpstrFile);
+  // [2e]: Save Copy doesn't work second time #148
+  if (PathFindFileName(lpstrFile) != lpstrFile)
+  {
+    lstrcpy(szNewFile, lpstrFile);
+  }
+  // [/2e]
   Style_GetOpenDlgFilterStr(szFilter, COUNTOF(szFilter));
 
   if (lstrlen(lpstrInitialDir))
