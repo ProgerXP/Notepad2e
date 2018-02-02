@@ -5110,7 +5110,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             {
               char szFind[512], szReplace[512];
               GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
-              // insert empty groups to make any back-references (\1..\9) valid to pass regexp check
+              // [2e]: insert empty groups to make any back-references (\1..\9) valid to pass regexp check #145
               #define FAKE_REGEXP_GROUPS "()()()()()()()()()"
               strcpy(szReplace, FAKE_REGEXP_GROUPS);
               LPSTR szReplaceTail = szReplace + COUNTOF(FAKE_REGEXP_GROUPS) - 1;
