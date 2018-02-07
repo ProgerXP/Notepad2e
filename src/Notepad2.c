@@ -6605,7 +6605,8 @@ void UpdateStatusbar()
   wsprintf(tchLines, L"%i", iLines);
   FormatNumberStr(tchLines);
 
-  iCol = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0) + 1;
+  // [2e]: Increasingly slow to hex/base64/qp #142
+  iCol = (iLines > 1) ? (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0) + 1 : iPos;
   wsprintf(tchCol, L"%i", iCol);
   FormatNumberStr(tchCol);
 

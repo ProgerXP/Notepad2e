@@ -8,6 +8,7 @@ extern int iEncoding;
 #include "Edit.h"
 #include "Utils.h"
 extern NP2ENCODING mEncoding[];
+extern HANDLE g_hScintilla;
 
 #else // ifndef N2E_TESTING
 

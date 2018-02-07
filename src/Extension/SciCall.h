@@ -78,6 +78,7 @@ DeclareSciCallR0(GetLength, GETLENGTH, int);
 DeclareSciCallR0(GetSelStart, GETSELECTIONSTART, int);
 DeclareSciCallR0(GetSelEnd, GETSELECTIONEND, int);
 DeclareSciCallV2(SetSel, SETSEL, int, anchorPos, int, currentPos);
+DeclareSciCallV2(ReplaceSel, REPLACESEL, int, unused, const char*, text);
 DeclareSciCallV1(GotoPos, GOTOPOS, int, position);
 DeclareSciCallV1(GotoLine, GOTOLINE, int, line);
 DeclareSciCallR0(GetCurrentPos, GETCURRENTPOS, int);
@@ -87,12 +88,19 @@ DeclareSciCallR1(LineEndPosition, GETLINEENDPOSITION, int, int, line);
 DeclareSciCallR1(PositionFromLine, POSITIONFROMLINE, int, int, line);
 DeclareSciCallV2(DeleteRange, DELETERANGE, int, start, int, lengthDelete);
 DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, ft);
+DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
+DeclareSciCallR2(GetTextRange, GETTEXTRANGE, int, int, unused, struct Sci_TextRange*, tr);
+
+DeclareSciCallV0(BeginUndoAction, BEGINUNDOACTION);
+DeclareSciCallV0(EndUndoAction, ENDUNDOACTION);
+DeclareSciCallV1(SetSkipUIUpdate, SETSKIPUIUPDATE, int, skipUIUpdate);
 
 //=============================================================================
 //
 //  Scrolling and automatic scrolling
 //
 //
+DeclareSciCallV2(LineScroll, LINESCROLL, int, columns, int, lines);
 DeclareSciCallV0(ScrollCaret, SCROLLCARET);
 DeclareSciCallV2(SetXCaretPolicy, SETXCARETPOLICY, int, caretPolicy, int, caretSlop);
 DeclareSciCallV2(SetYCaretPolicy, SETYCARETPOLICY, int, caretPolicy, int, caretSlop);

@@ -1,4 +1,5 @@
 #include "Externals.h"
+#include  <assert.h>
 
 #ifdef N2E_TESTING
 
@@ -81,6 +82,14 @@ NP2ENCODING mEncoding[] = {
   { NCP_8BIT | NCP_RECODE, 1026, "CP1026,cp1026,csibm1026,ibm1026,", 61071, L"" },
   { NCP_8BIT | NCP_RECODE, 54936, "gb18030,gb18030,", 61072, L"" },
 };
+
+HANDLE g_hScintilla = NULL;
+
+LRESULT WINAPI Scintilla_DirectFunction(HANDLE hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+  assert(0);
+  return 0;
+}
 
 void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
 {

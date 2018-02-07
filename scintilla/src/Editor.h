@@ -258,6 +258,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	WrapPending wrapPending;
 
 	bool convertPastes;
+	bool skipUIUpdate;
 
 	Editor();
 	virtual ~Editor();

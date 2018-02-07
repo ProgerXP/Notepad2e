@@ -3,13 +3,16 @@
 #include "CommonUtils.h"
 #include "Externals.h"
 #include "Scintilla.h"
+#include "SciCall.h"
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
 
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
-int RECODING_BUFFER_SIZE = DEFAULT_RECODING_BUFFER_SIZE;
-int RECODING_BUFFER_SIZE_MAX = DEFAULT_RECODING_BUFFER_SIZE * 10;
+#define DEFAULT_RECODING_BUFFER_SIZE_MAX 5 * 1024 * 1024
+
+int iRecodingBufferSize = DEFAULT_RECODING_BUFFER_SIZE;
+int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 #define HEX_DIGITS_UPPER  "0123456789ABCDEF"
 
@@ -435,21 +438,21 @@ void StringSource_InitFromHWND(StringSource* pSS, const HWND hwnd)
 long StringSource_GetSelectionStart(const StringSource* pSS)
 {
   return pSS->hwnd
-    ? SendMessage(pSS->hwnd, SCI_GETSELECTIONSTART, 0, 0)
+    ? SciCall_GetSelStart()
     : 0;
 }
 
 long StringSource_GetSelectionEnd(const StringSource* pSS)
 {
   return pSS->hwnd
-    ? SendMessage(pSS->hwnd, SCI_GETSELECTIONEND, 0, 0)
+    ? SciCall_GetSelEnd()
     : pSS->iTextLength;
 }
 
 long StringSource_GetLength(const StringSource* pSS)
 {
   return pSS->hwnd
-    ? SendMessage(pSS->hwnd, SCI_GETLENGTH, 0, 0)
+    ? SciCall_GetLength()
     : pSS->iTextLength;
 }
 
@@ -477,7 +480,7 @@ BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, con
     tr.lpstrText = pText;
     if (pSS->hwnd)
     {
-      return SendMessage(pSS->hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr) > 0;
+      return SciCall_GetTextRange(0, &tr) > 0;
     }
     else
     {
@@ -495,10 +498,17 @@ BOOL EncodingSettings_Init(const StringSource* pSS, EncodingData* pED, const BOO
     return FALSE;
   }
   pED->m_bIsEncoding = isEncoding;
-  long iBufferSize = RECODING_BUFFER_SIZE;
-  while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < RECODING_BUFFER_SIZE_MAX))
+  int iBufferSize = iRecodingBufferSize;
+  if (pED->m_tr.m_iSelEnd > iRecodingBufferSizeMax)
   {
-    iBufferSize += RECODING_BUFFER_SIZE;
+    iBufferSize = iRecodingBufferSizeMax;
+  }
+  else
+  {
+    while ((pED->m_tr.m_iSelEnd > iBufferSize * 10) && (iBufferSize < iRecodingBufferSizeMax))
+    {
+      iBufferSize += iRecodingBufferSize;
+    }
   }
   TextBuffer_Init(&pED->m_tb, iBufferSize);
   TextBuffer_Init(&pED->m_tbRes, iBufferSize * 4);
@@ -517,31 +527,31 @@ void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize)
 {
   if (bufferSize > 0)
   {
-    RECODING_BUFFER_SIZE = bufferSize;
-    RECODING_BUFFER_SIZE_MAX = bufferSize;
+    iRecodingBufferSize = bufferSize;
+    iRecodingBufferSizeMax = bufferSize;
   }
   else
   {
-    RECODING_BUFFER_SIZE = DEFAULT_RECODING_BUFFER_SIZE;
-    RECODING_BUFFER_SIZE_MAX = DEFAULT_RECODING_BUFFER_SIZE * 10;
-  }
-  if (pSS->hwnd)
-  {
-    SendMessage(pSS->hwnd, WM_SETREDRAW, (WPARAM)FALSE, 0);
-    SendMessage(pSS->hwnd, SCI_BEGINUNDOACTION, 0, 0);
+    iRecodingBufferSize = DEFAULT_RECODING_BUFFER_SIZE;
+    iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
   }
   struct TEncodingData ed;
   if (!EncodingSettings_Init(pSS, &ed, pRA->isEncoding))
   {
     return;
   }
+  if (pSS->hwnd)
+  {
+    SciCall_SetSkipUIUpdate(1);
+    SciCall_BeginUndoAction();
+  }
   n2e_ShowProgressBarInStatusBar(pRA->statusText, 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
   BOOL bProcessFailed = FALSE;
   while (StringSource_IsDataPortionAvailable(pSS, &ed))
   {
-    if (ed.m_tb.m_iSize < RECODING_BUFFER_SIZE)
+    if (ed.m_tb.m_iSize < iRecodingBufferSize)
     {
-      TextBuffer_Init(&ed.m_tb, RECODING_BUFFER_SIZE);
+      TextBuffer_Init(&ed.m_tb, iRecodingBufferSize);
     }
     if (TextRange_GetNextDataPortion(pSS, &ed.m_tr, &ed.m_tb))
     {
@@ -556,16 +566,19 @@ void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize)
   {
     ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
   }
+  const int iSelStart = ed.m_tr.m_iSelStart;
+  const int iSelEnd = ed.m_tr.m_iSelEnd;
+  EncodingSettings_Free(&ed);
+
   if (pSS->hwnd)
   {
-    SendMessage(pSS->hwnd, SCI_LINESCROLL, -ed.m_tr.m_iSelEnd, 0);
-    SendMessage(pSS->hwnd, SCI_SETSEL, ed.m_tr.m_iSelStart, ed.m_tr.m_iSelEnd);
-    SendMessage(pSS->hwnd, SCI_ENDUNDOACTION, 0, 0);
-    SendMessage(pSS->hwnd, WM_SETREDRAW, (WPARAM)TRUE, 0);
-    InvalidateRect(pSS->hwnd, NULL, FALSE);
+    SciCall_LineScroll(-iSelEnd, 0);
+    SciCall_SetSel(iSelStart, iSelEnd);
+    SciCall_EndUndoAction();
+    SciCall_SetSkipUIUpdate(0);
     UpdateWindow(pSS->hwnd);
   }
-  EncodingSettings_Free(&ed);
+  
   n2e_HideProgressBarInStatusBar();
 }
 
@@ -680,11 +693,11 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
     pED->m_tbRes.m_ptr[pED->m_tbRes.m_iPos] = 0;
     if (pSS->hwnd)
     {
-      SendMessage(pED->m_tr.m_hwnd, SCI_SETSEL, pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
-      SendMessage(pED->m_tr.m_hwnd, SCI_REPLACESEL, 0, (LPARAM)"");
-      SendMessage(pED->m_tr.m_hwnd, SCI_ADDTEXT, (WPARAM)pED->m_tbRes.m_iPos, (LPARAM)pED->m_tbRes.m_ptr);
+      SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
+      SciCall_ReplaceSel(0, "");
+      SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
       pED->m_tr.m_iSelEnd += iCursorOffset;
-      pED->m_tr.m_iPositionCurrent = SendMessage(pED->m_tr.m_hwnd, SCI_GETCURRENTPOS, 0, 0);
+      pED->m_tr.m_iPositionCurrent = SciCall_GetCurrentPos();
       iCursorOffset = 0;
     }
     else

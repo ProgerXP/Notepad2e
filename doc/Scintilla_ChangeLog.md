@@ -457,3 +457,74 @@ void Document::SetWordNavigationMode(const int iMode)
 Move class RESearchRange declaration/implementation from Document.cxx to Document.h
 
 [/**Regexp: confine to single line #90**]
+
+
+[**Increasingly slow to hex/base64/qp #142**]
+
+Add new message SCI_SETSKIPUIUPDATE:
+[scintilla/include/Scintilla.h]
+#define SCI_GETSUBSTYLEBASES 4026
+*#define SCI_SETSKIPUIUPDATE 9000*
+[/scintilla/include/Scintilla.h]
+
+Add corresponding flag to Editor class:
+[scintilla/src/Editor.h]
+    bool convertPastes;
+    *bool skipUIUpdate;*
+[/scintilla/src/Editor.h]
+
+[scintilla/src/Editor.cxx]
+    convertPastes = true;
+    *skipUIUpdate = false;*
+...
+void Editor::RedrawRect(PRectangle rc) {
+    //Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+void Editor::Redraw() {
+    //Platform::DebugPrintf("Redraw all\n");
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+void Editor::InvalidateCaret() {
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
+    *if (skipUIUpdate) {
+        return;
+    }*
+...
+Replace the code in Editor::WndProc() for case SCI_REPLACESEL:
+            SetEmptySelection(sel.MainCaret() + lengthInserted);
+            EnsureCaretVisible();
+with
+            *if (!skipUIUpdate) {
+                    SetEmptySelection(sel.MainCaret() + lengthInserted);
+                    EnsureCaretVisible();
+            }*
+...
+Add next handler to Editor::WndProc():
+    case SCI_SETSKIPUIUPDATE:
+        skipUIUpdate = (wParam != 0);
+        if (!skipUIUpdate) {
+            InvalidateWholeSelection();
+            Redraw();
+        }
+        return skipUIUpdate;
+[/scintilla/src/Editor.cxx]
+[/**Increasingly slow to hex/base64/qp #142**]

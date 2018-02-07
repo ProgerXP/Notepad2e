@@ -184,6 +184,7 @@ Editor::Editor() {
 	foldAutomatic = 0;
 
 	convertPastes = true;
+	skipUIUpdate = false;
 
 	SetRepresentations();
 }
@@ -449,6 +450,9 @@ bool Editor::AbandonPaint() {
 
 void Editor::RedrawRect(PRectangle rc) {
 	//Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
+	if (skipUIUpdate) {
+		return;
+	}
 
 	// Clip the redraw rectangle into the client area
 	PRectangle rcClient = GetClientRectangle();
@@ -472,6 +476,10 @@ void Editor::DiscardOverdraw() {
 
 void Editor::Redraw() {
 	//Platform::DebugPrintf("Redraw all\n");
+	if (skipUIUpdate) {
+		return;
+	}
+
 	PRectangle rcClient = GetClientRectangle();
 	wMain.InvalidateRectangle(rcClient);
 	if (wMargin.GetID())
@@ -596,6 +604,10 @@ void Editor::ThinRectangularRange() {
 }
 
 void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
+	if (skipUIUpdate) {
+		return;
+	}
+
 	if (sel.Count() > 1 || !(sel.RangeMain().anchor == newMain.anchor) || sel.IsRectangular()) {
 		invalidateWholeSelection = true;
 	}
@@ -1384,6 +1396,10 @@ void Editor::ScrollRange(SelectionRange range) {
 }
 
 void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
+	if (skipUIUpdate) {
+		return;
+	}
+
 	SetXYScroll(XYScrollToMakeVisible(SelectionRange(posDrag.IsValid() ? posDrag : sel.RangeMain().caret),
 		static_cast<XYScrollOptions>((useMargin?xysUseMargin:0)|(vert?xysVertical:0)|(horiz?xysHorizontal:0))));
 }
@@ -1431,6 +1447,10 @@ void Editor::CaretSetPeriod(int period) {
 }
 
 void Editor::InvalidateCaret() {
+	if (skipUIUpdate) {
+		return;
+	}
+
 	if (posDrag.IsValid()) {
 		InvalidateRange(posDrag.Position(), posDrag.Position() + 1);
 	} else {
@@ -1690,6 +1710,10 @@ void Editor::RefreshPixMaps(Surface *surfaceWindow) {
 }
 
 void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
+	if (skipUIUpdate) {
+		return;
+	}
+
 	//Platform::DebugPrintf("Paint:%1d (%3d,%3d) ... (%3d,%3d)\n",
 	//	paintingAllText, rcArea.left, rcArea.top, rcArea.right, rcArea.bottom);
 	AllocateGraphics();
@@ -5921,8 +5945,10 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			char *replacement = CharPtrFromSPtr(lParam);
 			const int lengthInserted = pdoc->InsertString(
 				sel.MainCaret(), replacement, istrlen(replacement));
-			SetEmptySelection(sel.MainCaret() + lengthInserted);
-			EnsureCaretVisible();
+			if (!skipUIUpdate) {
+					SetEmptySelection(sel.MainCaret() + lengthInserted);
+					EnsureCaretVisible();
+			}
 		}
 		break;
 
@@ -8106,6 +8132,14 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	case SCI_COUNTCHARACTERS:
 		return pdoc->CountCharacters(static_cast<int>(wParam), static_cast<int>(lParam));
+
+	case SCI_SETSKIPUIUPDATE:
+		skipUIUpdate = (wParam != 0);
+		if (!skipUIUpdate) {
+			InvalidateWholeSelection();
+			Redraw();
+		}
+		return skipUIUpdate;
 
 	default:
 		return DefWndProc(iMessage, wParam, lParam);
