@@ -545,6 +545,47 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
   return take_call;
 }
 
+UINT_PTR CALLBACK n2e_OFNHookSaveProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam)
+{
+  const HWND hPar = GetParent(hdlg);
+  switch (uiMsg)
+  {
+    case WM_NOTIFY:
+      {
+        OFNOTIFY *ofn = (OFNOTIFY *)lParam;
+        NMHDR nm = ofn->hdr;
+        switch (nm.code)
+        {
+          case CDN_FILEOK:
+            if (ofn->lpOFN && ofn->lpOFN->lpstrFile)
+            {
+              WCHAR buf[MAX_PATH] = { 0 };
+              if (CommDlg_OpenSave_GetFilePath(hPar, buf, COUNTOF(buf)) > 0)
+              {
+                WCHAR ext[MAX_PATH] = { 0 };
+                lstrcpy(ext, L".");
+                lstrcat(ext, ofn->lpOFN->lpstrDefExt);
+                PathAddExtension(buf, ext);
+              }
+              if (lstrcmpi(ofn->lpOFN->lpstrFile, buf) == 0)
+              {
+                lstrcpy(ofn->lpOFN->lpstrFile, buf);
+                ofn->lpOFN->dwReserved = TRUE;
+              }
+              return 0;
+            }
+            return 1;
+          default:
+            break;
+        }
+      }
+      break;
+    default:
+      break;
+  }
+  return FALSE;
+}
+
 BOOL n2e_OpenMRULast(LPWSTR fn)
 {
   int i;
@@ -845,4 +886,28 @@ int n2e_JoinLines_GetSelEnd(int iSelEnd)
     iSelEnd = SciCall_LineEndPosition(iLastLine);
   }
   return iSelEnd;
+}
+
+BOOL n2e_RenameFileToTemporary(LPCWSTR szFile, int nMaxTryAttempts, LPWSTR szMaxPathTmpFile)
+{
+  WCHAR szDirectory[MAX_PATH] = { 0 };
+  lstrcpy(szDirectory, szFile);
+  PathRemoveFileSpec(szDirectory);
+  srand(GetTickCount());
+  BOOL bTempNameFound = FALSE;
+  while (--nMaxTryAttempts >= 0)
+  {
+    if (GetTempFileName(szDirectory, L"tmp", rand() + 1, szMaxPathTmpFile)
+        && (GetFileAttributes(szMaxPathTmpFile) == INVALID_FILE_ATTRIBUTES)
+        && (GetLastError() == ERROR_FILE_NOT_FOUND))
+    {
+      bTempNameFound = TRUE;
+      break;
+    }
+  }
+  if (bTempNameFound)
+  {
+    MoveFile(szCurFile, szMaxPathTmpFile);
+  }
+  return bTempNameFound;
 }

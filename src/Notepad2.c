@@ -1848,6 +1848,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_FILE_PROPERTIES, i);
   EnableCmd(hmenu, IDM_FILE_CREATELINK, i);
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
+  // [2e]: File->RenameTo menu item
+  EnableCmd(hmenu, ID_FILE_RENAMETO, i);
   EnableCmd(hmenu, IDM_FILE_READONLY, i);
   CheckCmd(hmenu, IDM_FILE_READONLY, bReadOnly);
   EnableCmd(hmenu, IDM_ENCODING_RECODE, i);
@@ -7007,8 +7009,22 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
     else
       lstrcpy(tchFile, szCurFile);
 
-    if (SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
+    BOOL bOverwritePrompt = FALSE;
+    WCHAR szTmpFile[MAX_PATH] = { 0 };
+    if (SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir, bDeleteOld, &bOverwritePrompt))
     {
+      // [2e]: Rename To fails if new name only differs in char case #140
+      if (bDeleteOld && bOverwritePrompt)
+      {
+        const int nMaxTryAttempts = 10;
+        if (!n2e_RenameFileToTemporary(szCurFile, nMaxTryAttempts, szTmpFile))
+        {
+          DeleteFile(szCurFile);
+          *szTmpFile = 0;
+        }
+        bDeleteOld = FALSE;
+      }
+      // [/2e]
       if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
       {
         n2e_ResetLastRun();
@@ -7019,6 +7035,11 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
             )
         {
           DeleteFile(szCurFile);
+        }
+        // [2e]: Rename To fails if new name only differs in char case #140
+        if (lstrlen(szTmpFile))
+        {
+          DeleteFile(szTmpFile);
         }
         // [/2e]
         if (!bSaveCopy)
@@ -7038,6 +7059,15 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
           PathRemoveFileSpec(tchLastSaveCopyDir);
         }
       }
+      // [2e]: Rename To fails if new name only differs in char case #140
+      else
+      {
+        if (lstrlen(szTmpFile))
+        {
+          MoveFile(szTmpFile, szCurFile);
+        }
+      }
+      // [/2e]
     }
     else
       return FALSE;
@@ -7065,9 +7095,6 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
 
   else if (!bCancelDataLoss)
   {
-    if (lstrlen(szCurFile) != 0)
-      lstrcpy(tchFile, szCurFile);
-
     n2e_UpdateWindowTitle(hwndMain);
 
     MsgBox(MBWARN, IDS_ERR_SAVEFILE, tchFile);
@@ -7152,7 +7179,7 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
 //  SaveFileDlg()
 //
 //
-BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialDir)
+BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialDir, BOOL bRenameTo, LPBOOL pbOverwritePrompt)
 {
   OPENFILENAME ofn;
   WCHAR szNewFile[MAX_PATH] = { 0 };
@@ -7197,8 +7224,17 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   ofn.lpstrFilter = szFilter;
   ofn.lpstrFile = szNewFile;
   ofn.lpstrInitialDir = tchInitialDir;
+  // [2e]: File->RenameTo menu item
+  if (bRenameTo)
+  {
+    ofn.lpstrTitle = L"Rename To";
+  }
+  // [/2e]
   ofn.nMaxFile = MAX_PATH;
-  ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST;
+  // [2e]: Rename To fails if new name only differs in char case #140
+  ofn.lpfnHook = n2e_OFNHookSaveProc;
+  ofn.Flags = OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_DONTADDTORECENT | OFN_PATHMUSTEXIST | OFN_ENABLEHOOK | OFN_EXPLORER;
+  ofn.dwReserved = 0;
   // [2e]: Save/Save To - file extension #17
   LPWSTR oext = PathFindExtensionW(szCurFile);
   LPWSTR oname = PathFindFileNameW(szCurFile);
@@ -7218,6 +7254,10 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   if (GetSaveFileName(&ofn))
   {
     lstrcpyn(lpstrFile, szNewFile, cchFile);
+    if (pbOverwritePrompt)
+    {
+      *pbOverwritePrompt = (ofn.dwReserved != 0);
+    }
     return TRUE;
   }
   else
