@@ -888,26 +888,12 @@ int n2e_JoinLines_GetSelEnd(int iSelEnd)
   return iSelEnd;
 }
 
-BOOL n2e_RenameFileToTemporary(LPCWSTR szFile, int nMaxTryAttempts, LPWSTR szMaxPathTmpFile)
+BOOL n2e_RenameFileToTemporary(LPCWSTR szFile, LPWSTR szMaxPathTmpFile)
 {
   WCHAR szDirectory[MAX_PATH] = { 0 };
   lstrcpy(szDirectory, szFile);
   PathRemoveFileSpec(szDirectory);
-  srand(GetTickCount());
-  BOOL bTempNameFound = FALSE;
-  while (--nMaxTryAttempts >= 0)
-  {
-    if (GetTempFileName(szDirectory, L"tmp", rand() + 1, szMaxPathTmpFile)
-        && (GetFileAttributes(szMaxPathTmpFile) == INVALID_FILE_ATTRIBUTES)
-        && (GetLastError() == ERROR_FILE_NOT_FOUND))
-    {
-      bTempNameFound = TRUE;
-      break;
-    }
-  }
-  if (bTempNameFound)
-  {
-    MoveFile(szCurFile, szMaxPathTmpFile);
-  }
-  return bTempNameFound;
+  return GetTempFileName(szDirectory, L"tmp", 0, szMaxPathTmpFile)
+    ? MoveFileEx(szCurFile, szMaxPathTmpFile, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)
+    : FALSE;
 }

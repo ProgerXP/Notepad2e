@@ -111,4 +111,4 @@ void n2e_SetProgressBarPosInStatusBar(const long nCurPos);
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 void n2e_ProcessPendingMessages();
 int n2e_JoinLines_GetSelEnd(int iSelEnd);
-BOOL n2e_RenameFileToTemporary(LPCWSTR szFile, int nMaxTryAttempts, LPWSTR szMaxPathTmpFile);
+BOOL n2e_RenameFileToTemporary(LPCWSTR szFile, LPWSTR szMaxPathTmpFile);
