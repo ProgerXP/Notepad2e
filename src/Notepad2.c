@@ -7016,7 +7016,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
       // [2e]: Rename To fails if new name only differs in char case #140
       if (bDeleteOld && bOverwritePrompt)
       {
-        if (!n2e_RenameFileToTemporary(szCurFile, szTmpFile))
+        if (!n2e_RenameFileToTemporary(szCurFile, szTmpFile) && lstrlen(szTmpFile))
         {
           DeleteFile(szTmpFile);
           *szTmpFile = 0;
@@ -7039,6 +7039,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
         if (lstrlen(szTmpFile))
         {
           DeleteFile(szTmpFile);
+          *szTmpFile = 0;
         }
         // [/2e]
         if (!bSaveCopy)
