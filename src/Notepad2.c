@@ -1942,6 +1942,10 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_SELTOPREV, i && lstrlenA(efrData.szFind));
   EnableCmd(hmenu, IDM_EDIT_FINDMATCHINGBRACE, i);
   EnableCmd(hmenu, IDM_EDIT_SELTOMATCHINGBRACE, i);
+  // [2e]: Minor: disable Edit Mode menu commands #151
+  EnableCmd(hmenu, ID_EDIT_EDITSELECTION, bHighlightSelection);
+  EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, bHighlightSelection);
+  // [/2e]
   CheckCmd(hmenu, IDM_VIEW_USE2NDDEFAULT, Style_GetUse2ndDefault(hwndEdit));
   CheckCmd(hmenu, IDM_VIEW_WORDWRAP, fWordWrap);
   CheckCmd(hmenu, IDM_VIEW_LONGLINEMARKER, bMarkLongLines);
