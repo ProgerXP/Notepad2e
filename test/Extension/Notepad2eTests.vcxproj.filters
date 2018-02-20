@@ -77,5 +77,11 @@
     <ClCompile Include="..\..\src\Extension\StrToQP.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Extension\tinyexpr\tinyexpr.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="EvalTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
