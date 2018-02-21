@@ -103,6 +103,9 @@ void te_free(te_expr *n) {
 static double pi() {return 3.14159265358979323846;}
 static double e() {return 2.71828182845904523536;}
 
+#pragma function (ceil)
+#pragma function (floor)
+
 static const te_variable functions[] = {
     /* must be in alphabetical order */
     {"abs", fabs,     TE_FUNCTION1 | TE_FLAG_PURE},
