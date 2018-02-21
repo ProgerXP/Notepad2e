@@ -176,7 +176,7 @@ int n2e_SelectionGetWraps(const int beg, const int end)
   return out;
 }
 
-void n2e_HighlightWord(LPCSTR word)
+int n2e_HighlightWord(LPCSTR word)
 {
   int res = 0;
   int cnt = 0;
@@ -360,6 +360,7 @@ void n2e_HighlightWord(LPCSTR word)
     }
   }
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, old, 0);
+  return cnt;
 }
 
 void n2e_SelectionGetWord()
@@ -406,7 +407,11 @@ void n2e_SelectionHighlightTurn()
   if (bHighlightSelection)
   {
     n2e_SelectionGetWord();
-    n2e_HighlightWord(trEditSelection.lpstrText);
+    if ((n2e_HighlightWord(trEditSelection.lpstrText) < 2) && !bHighlightAll)
+    {
+      bHighlightAll = TRUE;
+      n2e_HighlightWord(trEditSelection.lpstrText);
+    }
   }
   else
   {
