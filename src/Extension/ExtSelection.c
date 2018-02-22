@@ -58,6 +58,7 @@ SE_DATA arrEditSelections[N2E_SELECT_MAX_COUNT];
 long iEditSelectionsCount = 0;
 struct Sci_TextRange trEditSelection;
 long iOriginalSelectionLength = 0;
+long iEditSelectionOffest = 0;
 BOOL bEditSelectionWholeWordMode = TRUE;
 BOOL bEditSelectionStrictMode = TRUE;
 char *pEditSelectionOriginalWord = NULL;
@@ -377,6 +378,7 @@ void n2e_SelectionGetWord()
     trEditSelection.chrg.cpMin = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
     trEditSelection.chrg.cpMax = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
     sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
+    iEditSelectionOffest = SciCall_GetCurrentPos();
     bEditSelectionWholeWordMode = FALSE;
     if (sel_len < 1)
     {
@@ -627,12 +629,13 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
     if (mode & SES_REJECT)
     {
       n2e_SelectionProcessChanges(PCM_ROLLBACK);
+      SciCall_SetSel(iEditSelectionOffest, iEditSelectionOffest);
     }
-    /*
-     * skip any selection
-     */
-    const int pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-    SendMessage(hwndEdit, SCI_SETANCHOR, pos, 0);
+    else
+    {
+      const int pos = SciCall_GetCurrentPos();
+      SciCall_SetSel(pos, pos);
+    }
     bEditSelection = FALSE;
     bHighlightAll = TRUE;
 
