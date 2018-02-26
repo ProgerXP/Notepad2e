@@ -1540,8 +1540,10 @@ int Document::NextWordStart(int pos, int delta) {
 				pos--;
 			while (pos > 0)
 			{
+				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
 				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
-				if ((ccPrev == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))
+				if ((ccPrev == CharClassify::ccNewLine)
+					|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
 					break;
 				pos--;
 			}
@@ -1572,7 +1574,8 @@ int Document::NextWordStart(int pos, int delta) {
 			{
 				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
 				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
-				if ((ccCurrent == CharClassify::ccNewLine) || (ccPrev == CharClassify::ccSpace))
+				if ((ccCurrent == CharClassify::ccNewLine)
+					|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
 					break;
 				pos++;
 			}
