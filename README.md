@@ -56,7 +56,7 @@ In certain cases (such as in current selection), the file size group in the stat
 * If result has no fractional part - period and zeros are hidden from the status bar group. Fractional part is discarded if active base is any but decimal.
 * The following symbols are ignored: `, $`. Whitespace is ignored unless it separates operands/operators.
 * If expression contains `=` then the `=` and everything after it is ignored. Useful for checking calculations: `1+2=4` evaluates to 3.
-* Special case: expression with only digits, periods and any ignored symbols (below) is treated as a series of whitespace-separated numbers, which are summed up. For example: `12,3 45.6 $78` = `123+45.6+78` = 246.6. #72
+* Special case: expression with only digits, periods and any ignored symbols (above) is treated as a series of whitespace-separated numbers, which are summed up. For example: `12,3 45.6 $78` = `123+45.6+78` = 246.6. #72
 
 The following expression tokens are recognized:
 * operators: `( ) + - * / ^` (caret works as power)
