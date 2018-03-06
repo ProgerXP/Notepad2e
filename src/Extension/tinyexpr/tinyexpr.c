@@ -326,7 +326,9 @@ int get_alphanum_length(const char *str)
 
 int is_number(const char** pStr, double* pValue)
 {
-  if (is_operation(*pStr[0]) || find_operator(*pStr, get_alphanum_length(*pStr)))
+  if (is_operation(*pStr[0])
+      || find_operator(*pStr, get_alphanum_length(*pStr))
+      || find_builtin(*pStr, get_alphanum_length(*pStr)))
   {
     return 0;
   }

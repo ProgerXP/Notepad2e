@@ -39,6 +39,9 @@ namespace Notepad2eTests
         CEvalTestData("6.7 div 2 mod 2 shl 3 shr 2", 2),
         CEvalTestData("not (15 and 3 or 7 xor 1)", -7),
         CEvalTestData("11b + 11o + 11d + 11h", 40),
+        CEvalTestData("sin 0 + cos 0", 1),
+        CEvalTestData("1e3 1", 1001),
+        CEvalTestData("floor (pi + e)", 5),
       };
 
       for (auto i = 0; i < _countof(data); i++)
