@@ -251,6 +251,7 @@ public:
 	bool tabIndents;
 	bool backspaceUnindents;
 	double durationStyleOneLine;
+	// [2e]: ctrl+arrow behavior toggle #89
 	int wordNavigationMode;
 
 	DecorationList decorations;
@@ -448,6 +449,7 @@ public:
 	int ParaDown(int pos) const;
 	int IndentSize() const { return actualIndentInChars; }
 	int BraceMatch(int position, int maxReStyle);
+	// [2e]: ctrl+arrow behavior toggle #89
 	void SetWordNavigationMode(const int iMode);
 
 private:

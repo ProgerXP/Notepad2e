@@ -974,9 +974,11 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 		moveCaretOnRClick = wParam != 0;
 		break;
 
+	// [2e]: ctrl+arrow behavior toggle #89
 	case SCI_SETWORDNAVIGATIONMODE:
 		pdoc->SetWordNavigationMode((int)wParam);
 		break;
+	// [/2e]
 
 	case SCI_USEPOPUP:
 		displayPopupMenu = wParam != 0;

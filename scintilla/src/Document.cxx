@@ -110,6 +110,7 @@ Document::Document() {
 	tabIndents = true;
 	backspaceUnindents = false;
 	durationStyleOneLine = 0.00001;
+	// [2e]: ctrl+arrow behavior toggle #89
 	wordNavigationMode = 0;
 
 	matchesValid = false;
@@ -1521,6 +1522,7 @@ int Document::ExtendWordSelect(int pos, int delta, bool onlyWordCharacters) {
  */
 int Document::NextWordStart(int pos, int delta) {
 	if (delta < 0) {
+		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -1535,6 +1537,7 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			if (pos > 0)
 				pos--;
@@ -1548,12 +1551,14 @@ int Document::NextWordStart(int pos, int delta) {
 				pos--;
 			}
 			break;
+			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
 			break;
 		}
 	} else {
+		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -1567,6 +1572,7 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			if (pos < Length())
 				++pos;
@@ -1580,6 +1586,7 @@ int Document::NextWordStart(int pos, int delta) {
 				pos++;
 			}
 			break;
+			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
@@ -2291,10 +2298,12 @@ int Document::BraceMatch(int position, int /*maxReStyle*/) {
 	return - 1;
 }
 
+// [2e]: ctrl+arrow behavior toggle #89
 void Document::SetWordNavigationMode(const int iMode)
 {
 	wordNavigationMode = iMode;
 }
+// [/2e]
 
 /**
  * Implementation of RegexSearchBase for the default built-in regular expression engine
