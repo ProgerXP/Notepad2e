@@ -22,6 +22,103 @@ namespace Notepad2eTests
     TEST_METHOD(EvalTests)
     {
       const CEvalTestData data[] = {
+        // original tests from TinyExpr
+        CEvalTestData("1", 1),
+        CEvalTestData("(1)", 1),
+
+        CEvalTestData("pi", 3.14159265358979323846),
+        CEvalTestData("atan(1)*4 - pi", 0),
+        CEvalTestData("e", 2.71828182845904523536),
+
+        CEvalTestData("2+1", 2 + 1),
+        CEvalTestData("(((2+(1))))", 2 + 1),
+        CEvalTestData("3+2", 3 + 2),
+
+        CEvalTestData("3+2+4", 3 + 2 + 4),
+        CEvalTestData("(3+2)+4", 3 + 2 + 4),
+        CEvalTestData("3+(2+4)", 3 + 2 + 4),
+        CEvalTestData("(3+2+4)", 3 + 2 + 4),
+
+        CEvalTestData("3*2*4", 3 * 2 * 4),
+        CEvalTestData("(3*2)*4", 3 * 2 * 4),
+        CEvalTestData("3*(2*4)", 3 * 2 * 4),
+        CEvalTestData("(3*2*4)", 3 * 2 * 4),
+
+        CEvalTestData("3-2-4", 3 - 2 - 4),
+        CEvalTestData("(3-2)-4", (3 - 2) - 4),
+        CEvalTestData("3-(2-4)", 3 - (2 - 4)),
+        CEvalTestData("(3-2-4)", 3 - 2 - 4),
+
+        CEvalTestData("3/2/4", 3.0 / 2.0 / 4.0),
+        CEvalTestData("(3/2)/4", (3.0 / 2.0) / 4.0),
+        CEvalTestData("3/(2/4)", 3.0 / (2.0 / 4.0)),
+        CEvalTestData("(3/2/4)", 3.0 / 2.0 / 4.0),
+
+        CEvalTestData("(3*2/4)", 3.0*2.0 / 4.0),
+        CEvalTestData("(3/2*4)", 3.0 / 2.0*4.0),
+        CEvalTestData("3*(2/4)", 3.0*(2.0 / 4.0)),
+
+        CEvalTestData("asin sin .5", 0.5),
+        CEvalTestData("sin asin .5", 0.5),
+        CEvalTestData("ln exp .5", 0.5),
+        CEvalTestData("exp ln .5", 0.5),
+
+        CEvalTestData("asin sin-.5", -0.5),
+        CEvalTestData("asin sin-0.5", -0.5),
+        CEvalTestData("asin sin -0.5", -0.5),
+        CEvalTestData("asin (sin -0.5)", -0.5),
+        CEvalTestData("asin (sin (-0.5))", -0.5),
+        CEvalTestData("asin sin (-0.5)", -0.5),
+        CEvalTestData("(asin sin (-0.5))", -0.5),
+
+        CEvalTestData("log 1000", 3),
+        CEvalTestData("log 1e3", 3),
+        CEvalTestData("log 1000", 3),
+        CEvalTestData("log 1e3", 3),
+        CEvalTestData("log(1000)", 3),
+        CEvalTestData("log(1e3)", 3),
+        CEvalTestData("log 1.0e3", 3),
+        CEvalTestData("10^5*5e-5", 5),
+
+        CEvalTestData("100^.5+1", 11),
+        CEvalTestData("100 ^.5+1", 11),
+        CEvalTestData("100^+.5+1", 11),
+        CEvalTestData("100^--.5+1", 11),
+        CEvalTestData("100^---+-++---++-+-+-.5+1", 11),
+
+        CEvalTestData("100^-.5+1", 1.1),
+        CEvalTestData("100^---.5+1", 1.1),
+        CEvalTestData("100^+---.5+1", 1.1),
+        CEvalTestData("1e2^+---.5e0+1e0", 1.1),
+        CEvalTestData("--(1e2^(+(-(-(-.5e0))))+1e0)", 1.1),
+
+        CEvalTestData("sqrt 100 + 7", 17),
+        CEvalTestData("sqrt 100 * 7", 70),
+        CEvalTestData("sqrt (100 * 100)", 100),
+
+// Next tests are no longer passed due to added enhancements:
+//         CEvalTestData("1,2", 2),
+//         CEvalTestData("1,2+1", 3),
+//         CEvalTestData("1+1,2+2,2+1", 3),
+//         CEvalTestData("1,2,3", 3),
+//         CEvalTestData("(1,2),3", 3),
+//         CEvalTestData("1,(2,3)", 3),
+//         CEvalTestData("-(1,(2,3))", -3),
+
+        CEvalTestData("2^2", 4),
+
+// TODO? broken methods: functions with 2 arguments separated with comma
+//        CEvalTestData("pow(2,2)", 4),
+//         CEvalTestData("atan2(1,1)", 0.7854),
+//         CEvalTestData("atan2(1,2)", 0.4636),
+//         CEvalTestData("atan2(2,1)", 1.1071),
+//         CEvalTestData("atan2(3,4)", 0.6435),
+//         CEvalTestData("atan2(3+3,4*2)", 0.6435),
+//         CEvalTestData("atan2(3+3,(4*2))", 0.6435),
+//         CEvalTestData("atan2((3+3),4*2)", 0.6435),
+//         CEvalTestData("atan2((3+3),(4*2))", 0.6435),
+
+        // custom tests
         CEvalTestData("1+2+3", 6),
         CEvalTestData("1 2 3", 6),
         CEvalTestData("1\r\n2\r\n3", 6),
