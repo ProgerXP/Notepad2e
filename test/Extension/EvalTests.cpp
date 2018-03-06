@@ -32,7 +32,13 @@ namespace Notepad2eTests
         CEvalTestData("1,2,3+1", 124),
         CEvalTestData("1,2,3 + 1,2 + ,3", 138),
         CEvalTestData("12,3 + 1,2 + ,3", 13.80),
-        
+        CEvalTestData("12,3 45.6 $78", 246.6),
+        CEvalTestData("1,    2    \t\t3", 6),
+        CEvalTestData("(1 + 2) * (4 - 1) / (4 ^ 2)", 0.5625),
+        CEvalTestData("0xF % 2", 1),
+        CEvalTestData("6.7 div 2 mod 2 shl 3 shr 2", 2),
+        CEvalTestData("not (15 and 3 or 7 xor 1)", -7),
+        CEvalTestData("11b + 11o + 11d + 11h", 40),
       };
 
       for (auto i = 0; i < _countof(data); i++)

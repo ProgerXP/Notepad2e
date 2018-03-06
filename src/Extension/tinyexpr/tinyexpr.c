@@ -310,9 +310,23 @@ int is_number_by_radix(const char** pStr, const int radixTest, double* pValue, i
   return 1;
 }
 
+int get_alphanum_length(const char *str)
+{
+  if (str)
+  {
+    const char *start = str;
+    while (isalnum(str[0]))
+    {
+      ++str;
+    }
+    return str - start;
+  }
+  return 0;
+}
+
 int is_number(const char** pStr, double* pValue)
 {
-  if (is_operation(*pStr[0]))
+  if (is_operation(*pStr[0]) || find_operator(*pStr, get_alphanum_length(*pStr)))
   {
     return 0;
   }
