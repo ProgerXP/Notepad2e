@@ -1,6 +1,6 @@
 # Notepad 2e
 
-*Notepad 2e* is a fork of *Notepad2* by Florian Balmer (www.flos-freeware.ch).
+*Notepad 2e* is a fork of *Notepad2* by Florian Balmer (www.flos-freeware.ch), version 4.2.25.
 
 For information about the original project please see `Readme.txt` and `Notepad2.txt`.
 This document describes *2e*-specific features (**e** for **E**xtended).
