@@ -30,6 +30,8 @@ Related settings:
 * `MaxSearchDistance`
 * More - see **Current Word Highlighting** configuration section.
 
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/hili-types.gif)
+
 ### [NEW] Edit Selection
 Allows simultaneous editing of all occurrences of the same string as the selection. Enter the mode with **Ctrl+Tab** (all visible substrings) or **Ctrl+Backtick** (limit substrings to those on the same line). Escape cancels all changes, while Enter or any command that causes cursor to leave the selected block - commits them. #18
 
@@ -46,6 +48,9 @@ print($foo);
 
 Related settings:
 * See **Current Word Highlighting** section (above).
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/ctrl+tab.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/ctrl+backtick.gif)
 
 ### [NEW] Math Evaluation
 In certain cases (such as in current selection), the file size group in the status bar is replaced with a recognized math expression's result. Left click on the group toggles the base (bin, oct, dec, hex), right click copies result (as it appears) to the clipboard.
@@ -66,6 +71,8 @@ The following expression tokens are recognized:
 
 Related settings:
 * `MathEval`
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/math.gif)
 
 ### [NEW] Find Next/Previous Word
 Vim-like Edit > Find Next/Previous Word (**Ctrl+[Shift]+8**) commands for quick case-insensitive navigation between highlighted words. It's independent of highlight mode settings and of normal Find/Replace and doesn't affect the latter's state. #38
@@ -93,8 +100,13 @@ Tab's behaviour is not changed, it still indents to the column. #61
 * Line feeds (`\r` and `\n`) are removed from Search/Replace Strings (can appear after pasting). #70
 * Search and Replace String inputs handle **Ctrl+Backspace** hotkey (delete word before cursor). #121 #50
 
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/grep.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/ungrep.gif)
+
 ### [NEW] Open Previous
 File > Open Previous (**Alt+G**) command lets you toggle between two most recent History files with one keystroke. #8
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-prev.gif)
 
 ### [NEW] Open By Prefix
 Open Dialog allows opening by prefix - so instead of typing the full file name or selecting a file with your mouse you can only type the name's beginning and hit Enter (or click Open) to open the first matching file. #19
@@ -105,6 +117,8 @@ If entered string is a wildcard (e.g. `*.txt`) then the first matching file is o
 
 Related settings:
 * `OpenDialogByPrefix`
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-prefix.gif)
 
 ### [NEW] Open Next/Previous
 File > Open Next/Previous commands allow opening files going before/after current in the currently opened file's directory (this is determined by regular name sorting, it doesn't depend on how Explorer or Open Dialog sorts files). #43
@@ -130,6 +144,8 @@ When saving, if the given new file name ends on period then the file is saved wi
 * Sets **Closing tag** to **Opening tag** if the latter doesn't contain `<` and `>`. Useful when editing certain markup. #24
 * In *Notepad2*, Auto Close HTML corrupts non-Latin tags in UTF-8 buffers - this is fixed. #112
 
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/insert-tag.gif)
+
 ### Find
 * **[NEW]** Find and other commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
 * **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search (Find, Replace or Find Word) hits last result in that direction, regardless of the **Wrap around** flag.
@@ -149,6 +165,9 @@ When saving, if the given new file name ends on period then the file is saved wi
 * **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. Setting: `ShellMenuType`. #12
 * **[NEW]** File > Launch > Open Folder (**Ctrl+Alt+L**) command that opens Explorer's window with the current file selected. #136
 * File > Launch > Command (**Ctrl+R**) retains the command string until another file is opened and sets current directory to that of the file. #26
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/shell-menu.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-folder.gif)
 
 ### Line Selection Hotkeys
 Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Scintilla behaviour that previously caused selection of the entire line. Full line can still be selected with standard **Ctrl+Shift+Space** hotkey, or by clicking on the line number.
@@ -183,14 +202,22 @@ Additionally, old regexp didn't support UTF-8 buffers (only ASCII) - new one doe
 
 These changes make editing Markdown and wiki sources much more pleasant: `[[foo|bar]]`, `**foo bar**`. #37
 
-### Unwrap Commands
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/enclose-sel.gif)
+
+### Wrap/Unwrap Commands
 * **[NEW]** Edit > Block > Unwrap Brackes At Cursor (**Ctrl+Shift+3**) command compliments *Notepad2*'s **Ctrl+3-5**. This command removes brackets of type `( { [ <` around the caret (whichever bracket type appears first). Respects nesting. #39
 * **[NEW]** Edit > Block > Unwrap Quotes At Cursor (**Ctrl+Shift+4**) command compliments *Notepad2*'s **Ctrl+1-2/6**. This command removes matching `" '` (and backtick) around the caret (text is scanned to the left to determine the quote type). Does not account for nesting or escaping. Multiline.
+* Original wrap commands (**Ctrl+1-6**) skip leading/trailing whitespace within the selection.
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/wrap.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/unwrap.gif)
 
 ### Special Commands
 HTML data:
 * **[NEW]** Edit > Special > Strip HTML Tags (**Shift+Alt+X**) command removes `<tags>` inside selection, or if there's none - removes first tag before cursor. #40
 * **[NEW]** Edit > Special > Escape HTML (**Ctrl+Shift+Alt+X**) command turns `< > &` into `&lt; &gt; &amp;` respectively (inside selection or everywhere in the document if selection is empty). #51 #31
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/strip-tags.gif)
 
 Binary data:
 * **[NEW]** Edit > Special > String To Hex and Hex To String (**[Ctrl+]Alt+Shift+A**) operate on the document as a bytestream similarly to PHP's `bin2hex()` and `hex2bin()`. Hex To String ignores whitespace (#123). Output: `616263` for `abc`. #87
@@ -199,6 +226,8 @@ Binary data:
 * Big buffers will see a progress bar in the status bar for the above commands.
 
 **Warning:** if you're saving binary data (e.g. base64-encoding a binary file) make sure to disable both checkboxes in File > Line Endings > Default.
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/qp-b64.gif)
 
 ### [NEW] Ctrl+Wheel Scroll
 Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11
@@ -244,6 +273,8 @@ Window's title reflects current keyboard language, if configured with `TitleLang
 Related settings:
 * `TitleLanguage`
 
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/lang-title.gif)
+
 ### Other Changes
 * Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
@@ -262,6 +293,10 @@ Related settings:
 * If Replace's dialog Replace With is `^c` - clipboard contents is used instead of this string.
 * If the program is started with `/B` flag, it enters "Pasteboard mode" where new content on the clipboard is automatically added to the buffer.
 * `[Custom Colors]` INI section is used to fill the "Custom colors" control of Fore/Back color pickers in Customize Schemes. #149
+
+Demonstrations (rectangular selection, Pasteboard):
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/sort-column.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/pasteboard.gif)
 
 ### Syntax Schemes
 
@@ -471,6 +506,8 @@ int, bool | 1 | Settings > Move Caret On Right Click
 
 If **0** - caret is not moved and selection is not changed on right mouse button click. #54
 
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/no-move-context.gif)
+
 ### WordNavigationMode
 
 Type | Default | Set By UI
@@ -478,6 +515,9 @@ Type | Default | Set By UI
 int, bool | 0 | Settings > Ctrl+Arrow Navigation
 
 Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary, not punctuation, brackets, etc. #89
+
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-accel.gif)
+![](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-std.gif)
 
 ### Current Word Highlighting
 
