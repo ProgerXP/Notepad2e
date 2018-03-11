@@ -134,7 +134,7 @@ When saving, new file's extension is determined first by `DefaultExtension` sett
 When saving, if the given new file name ends on period then the file is saved without extension. Example: enter `Makefile.` to get `Makefile` on disk.
 
 ### File Dialogs
-* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success.
+* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File dialog limitation, it can't be used if new name only differs in character case. #140
 * Open/Save File dialogs now start with the path of last opened file. #22
 * Improved directory locking - in some cases a directory could not be removed even after opening a file in another directory due to Windows' Open Dialog operation. #100
 
@@ -164,7 +164,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 * **[NEW]** File > Launch > Open Folder (**Ctrl+Alt+L**) command that opens Explorer's window with the current file selected. #136
 * File > Launch > Command (**Ctrl+R**) retains the command string until another file is opened and sets current directory to that of the file. #26
 
-![Ctrl+Shift+R - Shell Menu - ](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/shell-menu.gif)
+![Ctrl+Shift+R - Shell Menu](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/shell-menu.gif)
 ![Ctrl+Alt+L - Open Folder](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-folder.gif)
 
 ### Line Selection Hotkeys
