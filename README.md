@@ -7,9 +7,9 @@ This document describes *2e*-specific features (**e** for **E**xtended).
 
 For those of you who are unfamiliar with *Notepad2*:
 
-> ***Notepad2* is a light-weight Scintilla-based text editor for Windows.**
-> It features no tabs, code folding, autocompletion, or other features
-> available in IDEs or more complex editors like Notepad++.
+> ***Notepad2* is a light-weight Scintilla-based text editor for Windows.** <br>
+> It features no tabs, code folding, autocompletion, or other features <br>
+> available in IDEs or more complex editors like Notepad++. <br>
 > It's just 1 EXE file and (optionally) 1 INI file.
 
 Some folks use it to replace the standard `Notepad.exe` of Windows. It knows about permissions and will use user-specific INI file if it cannot write INI in the EXE's directory.
