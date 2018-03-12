@@ -827,6 +827,34 @@ int is_space_or_newline(const unsigned char ch)
   return (isspace(ch) || is_newline(ch)) ? 1 : 0;
 }
 
+typedef struct te_literal_const
+{
+  const char *name;
+  int length;
+} te_literal_const;
+
+static const te_literal_const literal_consts[] = {
+  { "e", 1 },
+  { "pi", 2 },
+};
+
+int is_literal_const(const unsigned char *pch, int* pliteral_length)
+{
+  const int imax = sizeof(literal_consts) / sizeof(te_literal_const);
+  for (int i = 0; i < imax; ++i)
+  {
+    if (strncmp(pch, literal_consts[i].name, literal_consts[i].length) == 0)
+    {
+      if (pliteral_length)
+      {
+        *pliteral_length = literal_consts[i].length;
+      }
+      return 1;
+    }
+  }
+  return 0;
+}
+
 char *te_trimwhitespace(unsigned char *str)
 {
   // Trim leading space
@@ -886,7 +914,22 @@ char *te_prepare(unsigned char *pszSrc)
       *res++ = *src;
       if (onlyDigitsAndDots)
       {
-        onlyDigitsAndDots &= (is_digit_or_dot(*src) || is_space_or_newline(*src));
+        int iConstLength = 0;
+        if (is_literal_const(src, &iConstLength))
+        {
+          for (int i = 0; i < iConstLength-1; ++i)
+          {
+            if (*src)
+            {
+              ++src;
+              *res++ = *src;
+            }
+          }
+        }
+        else
+        {
+          onlyDigitsAndDots &= (is_digit_or_dot(*src) || is_space_or_newline(*src));
+        }
       }
     }
     ++src;

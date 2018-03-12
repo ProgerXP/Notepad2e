@@ -96,27 +96,17 @@ namespace Notepad2eTests
         CEvalTestData("sqrt 100 * 7", 70),
         CEvalTestData("sqrt (100 * 100)", 100),
 
-// Next tests are no longer passed due to added enhancements:
-//         CEvalTestData("1,2", 2),
-//         CEvalTestData("1,2+1", 3),
-//         CEvalTestData("1+1,2+2,2+1", 3),
-//         CEvalTestData("1,2,3", 3),
+        CEvalTestData("1,2", 1.2),
+        CEvalTestData("1,2+1", 2.2),
+        CEvalTestData("1+1,2+2,2+1", 5.4),
+        CEvalTestData("1,2,3", 123),
+
+// Next tests are no longer passed (expressions are not interpretable) due to added enhancements:
 //         CEvalTestData("(1,2),3", 3),
 //         CEvalTestData("1,(2,3)", 3),
 //         CEvalTestData("-(1,(2,3))", -3),
 
         CEvalTestData("2^2", 4),
-
-// TODO? broken methods: functions with 2 arguments separated with comma
-//        CEvalTestData("pow(2,2)", 4),
-//         CEvalTestData("atan2(1,1)", 0.7854),
-//         CEvalTestData("atan2(1,2)", 0.4636),
-//         CEvalTestData("atan2(2,1)", 1.1071),
-//         CEvalTestData("atan2(3,4)", 0.6435),
-//         CEvalTestData("atan2(3+3,4*2)", 0.6435),
-//         CEvalTestData("atan2(3+3,(4*2))", 0.6435),
-//         CEvalTestData("atan2((3+3),4*2)", 0.6435),
-//         CEvalTestData("atan2((3+3),(4*2))", 0.6435),
 
         // custom tests
         CEvalTestData("1+2+3", 6),
@@ -139,6 +129,10 @@ namespace Notepad2eTests
         CEvalTestData("sin 0 + cos 0", 1),
         CEvalTestData("1e3 1", 1001),
         CEvalTestData("floor (pi + e)", 5),
+        CEvalTestData("1e+1 + 1e-1", 10.1),
+        CEvalTestData("1e1 1e 1", 20),
+        CEvalTestData("1 e 1", 2 + 2.71828182845904523536),
+        CEvalTestData("2 pi 2", 4 + 3.14159265358979323846),
       };
 
       for (auto i = 0; i < _countof(data); i++)
