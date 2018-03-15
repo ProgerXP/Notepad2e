@@ -106,20 +106,20 @@ namespace Notepad2eTests
 //         CEvalTestData("1,(2,3)", 3),
 //         CEvalTestData("-(1,(2,3))", -3),
 
-        CEvalTestData("2^2", 4),
+        CEvalTestData("2^3", 8),
 
         // custom tests
         CEvalTestData("1+2+3", 6),
         CEvalTestData("1 2 3", 6),
         CEvalTestData("1\r\n2\r\n3", 6),
         CEvalTestData("\r\n1\r\n\r\n2\r\n3", 6),
-        CEvalTestData("1+2=3", 3),
+        CEvalTestData("1+2=4", 3),
         CEvalTestData("12.34+.1", 12.44),
         CEvalTestData("12,34+,1", 12.44),
         CEvalTestData("1,2,3+1", 124),
         CEvalTestData("1,2,3 + 1,2 + ,3", 138),
         CEvalTestData("12,3 + 1,2 + ,3", 13.80),
-        CEvalTestData("12,3 45.6 $78", 246.6),
+        CEvalTestData("12,3 45.6 $78 10h 0xe", 276.6),
         CEvalTestData("1,    2    \t\t3", 6),
         CEvalTestData("(1 + 2) * (4 - 1) / (4 ^ 2)", 0.5625),
         CEvalTestData("0xF % 2", 1),
@@ -130,9 +130,10 @@ namespace Notepad2eTests
         CEvalTestData("1e3 1", 1001),
         CEvalTestData("floor (pi + e)", 5),
         CEvalTestData("1e+1 + 1e-1", 10.1),
-        CEvalTestData("1e1 1e 1", 20),
-        CEvalTestData("1 e 1", 2 + 2.71828182845904523536),
-        CEvalTestData("2 pi 2", 4 + 3.14159265358979323846),
+
+        // Eval bugs #130: e-specific tests for shortcut operator:
+        CEvalTestData("1e1 1e 1", 20),                      // converted/evaluated to: 1e1+1e+1 => 1*10^1+1*10^1
+        CEvalTestData("1 e 1", 2 + 2.71828182845904523536), // converted/evaluated to: 1+e+1 => 2+exp
       };
 
       for (auto i = 0; i < _countof(data); i++)
