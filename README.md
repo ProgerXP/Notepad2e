@@ -61,7 +61,8 @@ In certain cases (such as in current selection), the file size group in the stat
 * If result has no fractional part - period and zeros are hidden from the status bar group. Fractional part is discarded if active base is any but decimal.
 * The following symbols are ignored: `, $`. Whitespace is ignored unless it separates operands/operators.
 * If expression contains `=` then the `=` and everything after it is ignored. Useful for checking calculations: `1+2=4` evaluates to 3.
-* Special case: expression with only digits, periods and any ignored symbols (above) is treated as a series of whitespace-separated numbers, which are summed up. For example: `12,3 45.6 $78` = `123+45.6+78` = 246.6. #72
+* Special case: expression with only digits (including hex), radix prefix/suffixes, periods and any ignored symbols (above) is treated as a series of whitespace-separated numbers, which are summed up. For example: `12,3 45.6 $78 10h` = `123+45.6+78+16` = 262.6. #72
+ * Attention: don't use `e` symbol by itself in this special case (as in scientific notation or as a const), e.g. `1e2` or `1 e 2` - due to implementation nuances, it may not be processed as expect. But it can be part of a hex number: `eh 0xe` = 28. #130
 
 The following expression tokens are recognized:
 * operators: `( ) + - * / ^` (caret works as power)
@@ -284,6 +285,7 @@ Related settings:
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
 * Fixed Notepad2 bug in processing `[Toolbar Labels]` INI section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
+* Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
 
 ### Undocumented Notepad2 Features
 * Rectangular selection mode is actually supported - hold **Alt** while dragging your mouse to make a selection. This is particularly useful for **Column sort** in Sort Lines (**Alt+O**).
