@@ -83,7 +83,6 @@ void n2e_ExitInstance()
     UnhookWindowsHookEx(hShellHook);
   }
   n2e_Release();
-  n2e_SaveINI();
 }
 
 void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
