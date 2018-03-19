@@ -380,6 +380,7 @@ Add method declaration/implemention to Document class:
 
 int Document::NextWordStart(int pos, int delta) {
 	if (delta < 0) {
+		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -394,25 +395,46 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
-			if (pos > 0)
-				pos--;
-			while (pos > 0)
 			{
-				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
-				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
-				if ((ccPrev == CharClassify::ccNewLine)
-					|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
-					break;
-				pos--;
+				if (pos > 0)
+				{
+					pos--;
+				}
+				bool stopAtCurrentNewLine = false;
+				while ((pos >= 0) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
+				{
+					pos--;
+					stopAtCurrentNewLine = true;
+				}
+				if (stopAtCurrentNewLine)
+				{
+					pos++;
+				}
+				else
+				{
+					CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
+					while (pos > 0)
+					{
+						CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
+						if ((ccPrev == CharClassify::ccNewLine)
+							|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
+							break;
+						pos--;
+						ccCurrent = ccPrev;
+					}
+				}
 			}
 			break;
+			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
 			break;
 		}
 	} else {
+		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -426,19 +448,33 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
-			if (pos < Length())
-				++pos;
-			while (pos < Length())
 			{
-				CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
-				CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
-				if ((ccCurrent == CharClassify::ccNewLine)
-					|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
-					break;
-				pos++;
+				bool stopAtCurrentNewLine = false;
+				while ((pos < Length()) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
+				{
+					pos++;
+					stopAtCurrentNewLine = true;
+				}
+				if (!stopAtCurrentNewLine)
+				{
+					pos++;
+					assert(pos > 0);
+					CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
+					while (pos < Length())
+					{
+						CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
+						if ((ccCurrent == CharClassify::ccNewLine)
+							|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
+							break;
+						pos++;
+						ccPrev = ccCurrent;
+					}
+				}
 			}
 			break;
+			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
