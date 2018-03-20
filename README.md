@@ -12,14 +12,14 @@ For those of you who are unfamiliar with *Notepad2*:
 > available in IDEs or more complex editors like Notepad++. <br>
 > It's just 1 EXE file and (optionally) 1 INI file.
 
-Some folks use it to replace the standard `Notepad.exe` of Windows (more below). It knows about permissions and will use user-specific INI file if it cannot write INI in the EXE's directory.
+Some folks use it to replace the standard `Notepad.exe` of Windows. 
 
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
 
 ## Replacing Windows (XP/7/10) Notepad
-One obvious way is to overwrite all `Notepad.exe`s inside Windows directory. However, this irritates SFC and may not persist across OS updates. #157
+One obvious way is to overwrite all `Notepad.exe`s inside Windows directory. However, this irritates SFC and may not persist across OS updates.
 
-A better way is using `Image File Execution Options`, originally explained [here](http://www.flos-freeware.ch/doc/notepad2-Replacement.html). In short:
+A better way is using `Image File Execution Options`, originally explained [here](http://www.flos-freeware.ch/doc/notepad2-Replacement.html). In short: #157
 
 1. Place `Notepad2e.exe` somewhere. `Program Files (x86)\Notepad2e\` directory is a good place.
 2. Import this registry key:
@@ -30,30 +30,30 @@ Windows Registry Editor Version 5.00
 "Debugger"="\"C:\\Program Files (x86)\\Notepad2e\\Notepad2e.exe\" /z"
 ```
   * If the EXE was put elsewhere, edit the part inside the *second* quotes, and don't forget to double all backslashes - example: `...="\"D:\\Foo\\Bar\\MyN2e.exe\" /z"`
-  * **Attention:** the EXE should not be named `Notepad.exe` (in any char case).
+  * **Attention:** the EXE should not be named `notepad.exe` (in any char case).
 
 Now whenever Windows needs to launch `Notepad.exe` it will launch the EXE you have specified instead.
 
 ## INI File Location
 *This describes the algorithm used in *Notepad2* and this fork. The process is fully Unicode-safe.*
 
-All settings are stored in a single INI file. If the program cannot find it, then default settings are used and their changes are lost when the process exits. To make settings persistent, either put [bin\Notepad2e.ini](https://github.com/ProgerXP/Notepad2e/blob/master/bin/Notepad2e.ini) near the EXE or create one from scratch by pressing **F7** (Settings > Save Settings Now).
+All settings are stored in a single INI file. If the program cannot find it, then default settings are used and changes to them are lost when the process exits. To make settings persistent, either put [bin\Notepad2e.ini](https://github.com/ProgerXP/Notepad2e/blob/master/bin/Notepad2e.ini) near the EXE or create one from scratch by pressing **F7** (Settings > Save Settings Now).
 
 The following locations are checked for an existing INI file, in order:
 
 1. `/f SOME.INI` command-line switch (relative to program's dir, with possible `%env%` vars). `/f0` forces no INI file even when explicitly asked for one (e.g. by **F7**).
 2. `PROGRAM.ini`, where `PROGRAM` is the EXE's name without `.exe` extension, is searched in:
-  a. Program's directory
-  b. `%APPDATA%`
-  c. `%PATH%` 
+  * Program's directory
+  * `%APPDATA%`
+  * `%PATH%` 
 3. Same as above but with `Notepad2.ini` (*Notepad 2e* is a drop-in replacement so its INI file works with *Notepad2* and vice-versa).
 4. If an INI was found, it may be further redirected: its `Notepad2.ini` key from `[Notepad2]` section is read and checked:
-  a. If this key is non-existing or blank, the previously found INI is used
-  b. Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
-  c. Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
-  d. Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
+  * If this key is non-existing or blank, the previously found INI is used
+  * Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
+  * Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
+  * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
 
-If the located INI path ("PATH" below) is a directory rather than a file or it ends with `\` then:
+If the located INI path (`PATH` below) is a directory rather than a file or it ends with `\` then:
 
 1. If `PATH\PROGRAM.ini` exists, it's used as the INI file
 2. Else, if `PATH\Notepad2.ini` exists, it's used as the INI file
@@ -245,7 +245,7 @@ Backreference | Allowed in Search | Allowed in Replace
 `$0` | No - `$` = EOL | Yes - alias `$&`
 `$n` with n > 0 | No | Yes
 
-Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - then use `$0`.
+Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there use `$0`.
 
 ### Enclose Selection (Alt+Q)
 * Skips leading/trailing whitespace within the selection. For example, enclosindg space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
