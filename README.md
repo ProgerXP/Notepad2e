@@ -12,9 +12,54 @@ For those of you who are unfamiliar with *Notepad2*:
 > available in IDEs or more complex editors like Notepad++. <br>
 > It's just 1 EXE file and (optionally) 1 INI file.
 
-Some folks use it to replace the standard `Notepad.exe` of Windows. It knows about permissions and will use user-specific INI file if it cannot write INI in the EXE's directory.
+Some folks use it to replace the standard `Notepad.exe` of Windows (more below). It knows about permissions and will use user-specific INI file if it cannot write INI in the EXE's directory.
 
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
+
+## Replacing Windows (XP/7/10) Notepad
+One obvious way is to overwrite all `Notepad.exe`s inside Windows directory. However, this irritates SFC and may not persist across OS updates. #157
+
+A better way is using `Image File Execution Options`, originally explained [here](http://www.flos-freeware.ch/doc/notepad2-Replacement.html). In short:
+
+1. Place `Notepad2e.exe` somewhere. `Program Files (x86)\Notepad2e\` directory is a good place.
+2. Import this registry key:
+```
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\notepad.exe]
+"Debugger"="\"C:\\Program Files (x86)\\Notepad2e\\Notepad2e.exe\" /z"
+```
+  * If the EXE was put elsewhere, edit the part inside the *second* quotes, and don't forget to double all backslashes - example: `...="\"D:\\Foo\\Bar\\MyN2e.exe\" /z"`
+  * **Attention:** the EXE should not be named `Notepad.exe` (in any char case).
+
+Now whenever Windows needs to launch `Notepad.exe` it will launch the EXE you have specified instead.
+
+## INI File Location
+*This describes the algorithm used in *Notepad2* and this fork. The process is fully Unicode-safe.*
+
+All settings are stored in a single INI file. If the program cannot find it, then default settings are used and their changes are lost when the process exits. To make settings persistent, either put [bin\Notepad2e.ini](https://github.com/ProgerXP/Notepad2e/blob/master/bin/Notepad2e.ini) near the EXE or create one from scratch by pressing **F7** (Settings > Save Settings Now).
+
+The following locations are checked for an existing INI file, in order:
+
+1. `/f SOME.INI` command-line switch (relative to program's dir, with possible `%env%` vars). `/f0` forces no INI file even when explicitly asked for one (e.g. by **F7**).
+2. `PROGRAM.ini`, where `PROGRAM` is the EXE's name without `.exe` extension, is searched in:
+  a. Program's directory
+  b. `%APPDATA%`
+  c. `%PATH%` 
+3. Same as above but with `Notepad2.ini` (*Notepad 2e* is a drop-in replacement so its INI file works with *Notepad2* and vice-versa).
+4. If an INI was found, it may be further redirected: its `Notepad2.ini` key from `[Notepad2]` section is read and checked:
+  a. If this key is non-existing or blank, the previously found INI is used
+  b. Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
+  c. Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
+  d. Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
+
+If the located INI path ("PATH" below) is a directory rather than a file or it ends with `\` then:
+
+1. If `PATH\PROGRAM.ini` exists, it's used as the INI file
+2. Else, if `PATH\Notepad2.ini` exists, it's used as the INI file
+3. Else, `PATH\PROGRAM.ini` is used anyway
+
+Finally, if the INI's parent directory doesn't exist - it's created.
 
 ## Extended Edition Changes
 The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items without this mark are changes (or minor features added) compared to the original *Notepad2*.
@@ -62,7 +107,7 @@ In certain cases (such as in current selection), the file size group in the stat
 * The following symbols are ignored: `, $`. Whitespace is ignored unless it separates operands/operators.
 * If expression contains `=` then the `=` and everything after it is ignored. Useful for checking calculations: `1+2=4` evaluates to 3.
 * Special case: expression with only digits (including hex), radix prefix/suffixes, periods and any ignored symbols (above) is treated as a series of whitespace-separated numbers, which are summed up. For example: `12,3 45.6 $78 10h` = `123+45.6+78+16` = 262.6. #72
- * Attention: don't use `e` symbol by itself in this special case (as in scientific notation or as a const), e.g. `1e2` or `1 e 2` - due to implementation nuances, it may not be processed as expect. But it can be part of a hex number: `eh 0xe` = 28. #130
+  * **Attention:** don't use `e` symbol by itself in this special case (as in scientific notation or as a const), e.g. `1e2` or `1 e 2` - due to implementation nuances, it may not be processed as expect. But it can be part of a hex number: `eh 0xe` = 28. #130
 
 The following expression tokens are recognized:
 * operators: `( ) + - * / ^` (caret works as power)
@@ -187,9 +232,20 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
   * File saving
 
 ### PCRE Support
-Replaced incomplete *Notepad2* regexp implementation with a fully-featured C++11 implementation - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and all other features. #78 #90 #114
+* Replaced incomplete *Notepad2* regexp implementation with a fully-featured Boost regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
+* One particularly useful feature is ability to change character case with new escape codes: `\l` (one next symbol becomes lower-case), `\L` (all following become lower-case), `\u` and `\U` (similar but for upper-case), `\E` (cancels effect of the preceding `\L` and `\U`). Example: replace from `(.)(.)` to `\l\1\u\2`.
+* Original Notepad2's regexp didn't support UTF-8 buffers (only ASCII) - Boost's does. #78
+* Boost was hacked to allow Replace string to contain NUL (`\0`) - normally it truncates the buffer. 
+* **Attention:** there are two kinds of backreferences (`\n` and `$n`) and unlike in PHP they are used differently: #145
 
-Additionally, old regexp didn't support UTF-8 buffers (only ASCII) - new one does.
+Backreference | Allowed in Search | Allowed in Replace
+--------------|-------------------|-------------------
+`\0` | No | No - use `$0` or `$&`
+`\n` with n > 0 | Yes | Yes
+`$0` | No - `$` = EOL | Yes - alias `$&`
+`$n` with n > 0 | No | Yes
+
+Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - then use `$0`.
 
 ### Enclose Selection (Alt+Q)
 * Skips leading/trailing whitespace within the selection. For example, enclosindg space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
@@ -513,7 +569,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 0 | Settings > Ctrl+Arrow Navigation
 
-Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary, not punctuation, brackets, etc. (useful when working with natural language texts, not program code). #89
+Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where only whitespace is considered a word boundary, not punctuation, brackets, etc. (useful when working with natural language texts, not program code). #89 #156
 
 ![Accelerated navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-accel.gif)
 ![Standard navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-std.gif)
