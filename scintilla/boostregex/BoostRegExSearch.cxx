@@ -217,9 +217,8 @@ private:
 	};
 	
 	static wchar_t *utf8ToWchar(const char *utf8);
-	static char    *wcharToUtf8(const wchar_t *w);
-	static char    *stringToCharPtr(const std::string& str);
-	static char    *stringToCharPtr(const std::wstring& str);
+	static char    *stringToCharPtr(const std::string& str, int *lengthRet);
+	static char    *stringToCharPtr(const std::wstring& str, int *lengthRet);
 	
 	EncodingDependent<char,    AnsiDocumentIterator> _ansi;
 	EncodingDependent<wchar_t, UTF8DocumentIterator> _utf8;
@@ -355,9 +354,7 @@ const char *BoostRegexSearch::SubstituteByPosition(Document* doc, const char *te
 
 template <class CharT, class CharacterIterator>
 char *BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::SubstituteByPosition(const char *text, int *length) {
-	char *substituted = stringToCharPtr(_match.format((const CharT*)CharTPtr(text), boost::format_all));
-	*length = static_cast<int>(strlen(substituted));
-	return substituted;
+	return stringToCharPtr(_match.format((const CharT*)CharTPtr(text), boost::format_all), length);
 }
 
 wchar_t *BoostRegexSearch::utf8ToWchar(const char *utf8)
@@ -370,23 +367,22 @@ wchar_t *BoostRegexSearch::utf8ToWchar(const char *utf8)
 	return w;
 }
 
-char *BoostRegexSearch::wcharToUtf8(const wchar_t *w)
+char *BoostRegexSearch::stringToCharPtr(const std::string& str, int *lengthRet)
 {
-	int wcharSize = static_cast<int>(wcslen(w));
-	int charSize = UTF8Length(w, wcharSize);
-	char *c = new char[charSize + 1];
-	UTF8FromUTF16(w, wcharSize, c, charSize);
-	c[charSize] = 0;
-	return c;
-}
-
-char *BoostRegexSearch::stringToCharPtr(const std::string& str)
-{
-	char *charPtr = new char[str.length() + 1];
-	strcpy(charPtr, str.c_str());
+	int length = str.length();
+	char *charPtr = new char[length + 1];
+	memcpy_s(charPtr, length, str.c_str(), length);
+	*lengthRet = length;
 	return charPtr;
 }
-char *BoostRegexSearch::stringToCharPtr(const std::wstring& str)
+
+char *BoostRegexSearch::stringToCharPtr(const std::wstring& str, int *lengthRet)
 {
-	return wcharToUtf8(str.c_str());
+	int wcharSize = str.length();
+	int charSize = UTF8Length(str.c_str(), wcharSize, true);
+	char *c = new char[charSize + 1];
+	UTF8FromUTF16(str.c_str(), wcharSize, c, charSize, true);
+	c[charSize] = 0;
+	*lengthRet = charSize;
+	return c;
 }
