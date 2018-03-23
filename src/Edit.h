@@ -103,7 +103,7 @@ void  EditStripTrailingBlanks(HWND, BOOL);
 void  EditCompressSpaces(HWND);
 void  EditRemoveBlankLines(HWND, BOOL);
 void  EditWrapToColumn(HWND, int);
-void  EditJoinLinesEx(HWND);
+void  EditJoinLinesEx(HWND, BOOL);
 void  EditSortLines(HWND, int);
 void  EditJumpTo(HWND, int, int);
 void  EditSelectEx(HWND, int, int);

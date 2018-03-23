@@ -1,4 +1,5 @@
 #include "Utils.h"
+#include "CommonUtils.h"
 #include "Dialogs.h"
 #include "ExtSelection.h"
 #include "EditHelper.h"
@@ -835,13 +836,52 @@ void n2e_ProcessPendingMessages()
   }
 }
 
-int n2e_JoinLines_GetSelEnd(int iSelEnd)
+int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbResetSelection)
 {
+  int res = iSelEnd;
   int iLastLine = SciCall_LineFromPosition(iSelEnd);
-  while ((iLastLine > 0) && (SciCall_PositionFromLine(iLastLine) == iSelEnd))
+  while ((iLastLine > 0) && (SciCall_PositionFromLine(iLastLine) == res))
   {
     --iLastLine;
-    iSelEnd = SciCall_LineEndPosition(iLastLine);
+    res = SciCall_LineEndPosition(iLastLine);
   }
-  return iSelEnd;
+  if ((iSelStart == iSelEnd) && (res == iSelEnd))
+  {
+    const int iLineCount = SciCall_GetLineCount();
+    int iLine = SciCall_LineFromPosition(iSelStart);
+    BOOL bContinue = TRUE;
+    while (bContinue && (iLine < iLineCount))
+    {
+      ++iLine;
+      struct TextRange tr = { 0 };
+      tr.chrg.cpMin = SciCall_PositionFromLine(iLine);
+      tr.chrg.cpMax = SciCall_LineEndPosition(iLine);
+      const int iLineLength = tr.chrg.cpMax - tr.chrg.cpMin;
+      if (iLineLength > 0)
+      {
+        tr.lpstrText = n2e_Alloc(iLineLength + 1);
+        if (SciCall_GetTextRange(0, &tr) > 0)
+        {
+          int i = 0;
+          while (i < iLineLength)
+          {
+            if (!isspace(tr.lpstrText[i]))
+            {
+              res = tr.chrg.cpMin + i + 1;
+              if (pbResetSelection)
+              {
+                *pbResetSelection = TRUE;
+              }
+              bContinue = FALSE;
+              break;
+            }
+            ++i;
+          }
+        }
+        n2e_Free(tr.lpstrText);
+      }
+    }
+  }
+  return res;
 }
+

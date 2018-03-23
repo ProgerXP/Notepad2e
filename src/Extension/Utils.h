@@ -109,4 +109,4 @@ void n2e_HideProgressBarInStatusBar();
 void n2e_SetProgressBarPosInStatusBar(const long nCurPos);
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 void n2e_ProcessPendingMessages();
-int n2e_JoinLines_GetSelEnd(int iSelEnd);
+int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbResetSelection);
