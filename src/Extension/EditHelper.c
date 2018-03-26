@@ -7,6 +7,7 @@
 #include "ExtSelection.h"
 #include "Notepad2.h"
 #include "resource.h"
+#include "SciCall.h"
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
@@ -22,6 +23,19 @@ extern int bFindWordMatchCase;
 extern int bFindWordWrapAround;
 extern TBBUTTON tbbMainWnd[];
 extern HWND hwndToolbar;
+
+BOOL n2e_JoinLines_InitSelection()
+{
+  BOOL bContinueProcessing = TRUE;
+  const int iSelStart = SciCall_GetSelStart();
+  const int iSelEnd = SciCall_GetSelEnd();
+  const int iSelEndNew = n2e_JoinLines_GetSelEnd(iSelStart, iSelEnd, &bContinueProcessing);
+  if (bContinueProcessing && (iSelEndNew != iSelEnd))
+  {
+    SciCall_SetSel(iSelStart, iSelEndNew);
+  }
+  return bContinueProcessing;
+}
 
 void n2e_StripHTMLTags(const HWND hwnd)
 {

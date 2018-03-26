@@ -4246,7 +4246,7 @@ void EditWrapToColumn(HWND hwnd, int nColumn)
 //
 //  EditJoinLinesEx()
 //
-void EditJoinLinesEx(HWND hwnd, BOOL bResetSelection)
+void EditJoinLinesEx(HWND hwnd)
 {
   char* pszText;
   char* pszJoin;
@@ -4284,7 +4284,7 @@ void EditJoinLinesEx(HWND hwnd, BOOL bResetSelection)
   iLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0);
   iSelStart = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
   // [2e]: Join Lines/Paragraphs - ignore trailing break #135
-  iSelEnd = n2e_JoinLines_GetSelEnd(iSelStart, iSelEnd, &bResetSelection);
+  iSelEnd = n2e_JoinParagraphs_GetSelEnd(iSelStart, iSelEnd);
 
   iSelCount = iSelEnd - iSelStart;
 
@@ -4354,15 +4354,9 @@ void EditJoinLinesEx(HWND hwnd, BOOL bResetSelection)
 
   LocalFree(pszText);
 
-  if (bModified || bResetSelection)
+  if (bModified)
   {
-    if (bResetSelection)
-    {
-      const int iLine = SciCall_LineFromPosition(iSelEnd);
-      iCurPos = SciCall_LineEndPosition(iLine);
-      iAnchorPos = iCurPos;
-    }
-    else if (iAnchorPos > iCurPos)
+    if (iAnchorPos > iCurPos)
     {
       iCurPos = iSelStart;
       iAnchorPos = iSelStart + cchJoin;
@@ -4374,12 +4368,9 @@ void EditJoinLinesEx(HWND hwnd, BOOL bResetSelection)
     }
 
     SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-    if (bModified)
-    {
-      SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iSelStart, 0);
-      SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iSelEnd, 0);
-      SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)cchJoin, (LPARAM)pszJoin);
-    }
+    SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iSelStart, 0);
+    SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iSelEnd, 0);
+    SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)cchJoin, (LPARAM)pszJoin);
     SendMessage(hwnd, SCI_SETSEL, (WPARAM)iAnchorPos, (LPARAM)iCurPos);
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   }

@@ -16,6 +16,7 @@ extern int iWordNavigationMode;
 extern WCHAR wchLastHTMLTag[0xff];
 extern WCHAR wchLastHTMLEndTag[0xff];
 
+BOOL n2e_JoinLines_InitSelection();
 void n2e_StripHTMLTags(const HWND hwnd);
 void n2e_JumpToOffset(const HWND hwnd, const int iNewPos);
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove);

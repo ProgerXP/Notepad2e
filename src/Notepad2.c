@@ -1900,6 +1900,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
   EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i);
+  EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTUPPERCASE, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTLOWERCASE, i);
   EnableCmd(hmenu, IDM_EDIT_INVERTCASE, i);
@@ -3063,25 +3064,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_JOINLINES:
       BeginWaitCursor();
       // [2e]: Join Lines/Paragraphs - ignore trailing break #135
-      BOOL bResetSelection = FALSE;
-      const int iSelStart = SciCall_GetSelStart();
-      const int iSelEnd = SciCall_GetSelEnd();
-      const int iSelEndNew = n2e_JoinLines_GetSelEnd(iSelStart, iSelEnd, &bResetSelection);
-      if (iSelEndNew != iSelEnd)
+      if (n2e_JoinLines_InitSelection())
       {
-        SciCall_SetSel(iSelStart, iSelEndNew);
+        SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
+        SendMessage(hwndEdit, SCI_LINESJOIN, 0, 0);
+        EditJoinLinesEx(hwndEdit);
       }
-      // [/2e]
-      SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
-      SendMessage(hwndEdit, SCI_LINESJOIN, 0, 0);
-      EditJoinLinesEx(hwndEdit, bResetSelection);
       EndWaitCursor();
       break;
 
 
     case IDM_EDIT_JOINLINESEX:
       BeginWaitCursor();
-      EditJoinLinesEx(hwndEdit, FALSE);
+      EditJoinLinesEx(hwndEdit);
       EndWaitCursor();
       break;
 
