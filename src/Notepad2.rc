@@ -1436,6 +1436,9 @@ BEGIN
     IDS_WRITEINI_FAIL       "Error writing settings to configuration file."
     IDS_SETTINGSNOTSAVED    "No existing configuration file was found.\nTo keep your style modifications, save settings now (F7) or go back to scheme configuration (Ctrl+F12) and export your styles."
     IDS_EXPORT_FAIL         "Error exporting style settings to ""%s""."
+    IDS_ERR_SAVEAS          "New file name refers to the same old file. This is not allowed.%s"
+    IDS_ERR_SAVEAS_RENAME_DETAILS
+                            "\n\nIf you were trying to rename it into a different character case, this would not work due to Windows Save File Dialog limitation (#140). To work around this, do two renames using a temporary file name."
 END
 
 STRINGTABLE

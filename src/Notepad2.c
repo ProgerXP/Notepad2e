@@ -7010,14 +7010,23 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
 
     if (SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
     {
-      if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
+      // [2e]: Rename To fails if new name only differs in char case #140
+      if (lstrcmp(szCurFile, tchFile) == 0)
+      {
+        WCHAR tchDescription[MAX_PATH] = { 0 };
+        if (bDeleteOld)
+        {
+          GetString(IDS_ERR_SAVEAS_RENAME_DETAILS, tchDescription, COUNTOF(tchDescription) - 1);
+        }
+        MsgBox(MBINFO, IDS_ERR_SAVEAS, tchDescription);
+        return FALSE;
+      }
+      // [/2e]
+      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
       {
         n2e_ResetLastRun();
         // [2e]: File->RenameTo menu item
-        if (bDeleteOld
-            && lstrlen(szCurFile)
-            && lstrcmp(szCurFile, tchFile)
-            )
+        if (bDeleteOld && lstrlen(szCurFile))
         {
           DeleteFile(szCurFile);
         }
