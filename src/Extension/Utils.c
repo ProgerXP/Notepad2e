@@ -836,7 +836,7 @@ void n2e_ProcessPendingMessages()
   }
 }
 
-int n2e_JoinParagraphs_GetSelEnd(const int iSelStart, const int iSelEnd)
+int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd)
 {
   int res = iSelEnd;
   int iLastLine = SciCall_LineFromPosition(iSelEnd);
@@ -893,8 +893,12 @@ BOOL n2e_IsEmptyLine(const int iLine)
 
 int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing)
 {
-  int res = n2e_JoinParagraphs_GetSelEnd(iSelStart, iSelEnd);
-  if ((iSelStart == iSelEnd) && (res == iSelEnd))
+  int res = iSelEnd;
+  if (iSelStart != iSelEnd)
+  {
+    res = n2e_JoinParagraphs_GetSelEnd(iSelEnd);
+  }
+  else
   {
     const int iLineCount = SciCall_GetLineCount();
     const int iLineStart = SciCall_LineFromPosition(iSelStart);
