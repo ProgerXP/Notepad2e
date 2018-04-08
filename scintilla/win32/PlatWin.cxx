@@ -37,6 +37,7 @@
 #endif
 
 #include "Platform.h"
+#include "PlatWin.h"
 #include "StringCopy.h"
 #include "XPM.h"
 #include "UniConversion.h"
@@ -49,6 +50,32 @@
 #ifndef SPI_GETFONTSMOOTHINGCONTRAST
 #define SPI_GETFONTSMOOTHINGCONTRAST	0x200C
 #endif
+
+static float dpiX = DEFAULT_SCREEN_DPI;
+static float dpiY = DEFAULT_SCREEN_DPI;
+static int dpiFont = DEFAULT_FONT_DPI;
+
+void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+{
+	dpiX = _dpiX;
+	dpiY = _dpiY;
+	dpiFont = _dpiFont;
+}
+
+float GetDpiX()
+{
+	return dpiX;
+}
+
+float GetDpiY()
+{
+	return dpiY;
+}
+
+int GetDpiFont()
+{
+	return dpiFont;
+}
 
 static void *PointerFromWindow(HWND hWnd) {
 	return reinterpret_cast<void *>(::GetWindowLongPtr(hWnd, 0));
@@ -683,11 +710,11 @@ void SurfaceGDI::SetFont(Font &font_) {
 }
 
 int SurfaceGDI::LogPixelsY() {
-	return ::GetDeviceCaps(hdc, LOGPIXELSY);
+	return GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), 72);
+	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
 }
 
 void SurfaceGDI::MoveTo(int x_, int y_) {
@@ -1155,7 +1182,7 @@ SurfaceD2D::SurfaceD2D() :
 
 	pBrush = NULL;
 
-	logPixelsY = 72;
+	logPixelsY = DEFAULT_FONT_DPI;
 	dpiScaleX = 1.0;
 	dpiScaleY = 1.0;
 }
@@ -1184,8 +1211,8 @@ void SurfaceD2D::Release() {
 void SurfaceD2D::SetScale() {
 	HDC hdcMeasure = ::CreateCompatibleDC(NULL);
 	logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
-	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / 96.0f;
-	dpiScaleY = logPixelsY / 96.0f;
+	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
+	dpiScaleY = logPixelsY / GetDpiY();
 	::DeleteDC(hdcMeasure);
 }
 
@@ -1284,7 +1311,7 @@ int SurfaceD2D::LogPixelsY() {
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), 72);
+	return ::MulDiv(points, LogPixelsY(), GetDpiFont());
 }
 
 void SurfaceD2D::MoveTo(int x_, int y_) {

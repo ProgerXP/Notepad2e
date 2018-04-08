@@ -35,6 +35,7 @@
 #include "version.h"
 #include "_version.h"
 #include "Extension/Utils.h"
+#include "Extension/DPIHelper.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -221,6 +222,8 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
         WCHAR wch[256];
@@ -251,6 +254,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
         SendDlgItemMessage(hwnd, IDC_EXT, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -297,11 +301,14 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         MakeBitmapButton(hwnd, IDC_SEARCHEXE, g_hInstance, IDB_OPEN);
         SendDlgItemMessage(hwnd, IDC_COMMANDLINE, EM_LIMITTEXT, MAX_PATH - 1, 0);
         SetDlgItemText(hwnd, IDC_COMMANDLINE, (LPCWSTR)lParam);
         SHAutoComplete(GetDlgItem(hwnd, IDC_COMMANDLINE), SHACF_FILESYSTEM);
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -458,6 +465,8 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 {
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
 
@@ -473,6 +482,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         ListView_SetItemState(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
         MakeBitmapButton(hwnd, IDC_GETOPENWITHDIR, g_hInstance, IDB_OPEN);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -649,6 +659,8 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
 
@@ -664,7 +676,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         ListView_SetItemState(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
 
         MakeBitmapButton(hwnd, IDC_GETFAVORITESDIR, g_hInstance, IDB_OPEN);
-
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -810,6 +822,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     WCHAR *pszName;
 
@@ -820,6 +833,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, MAX_PATH - 1, 0);
       SetDlgItemText(hwnd, 100, pszName);
 
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 
@@ -1009,6 +1023,8 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         SHFILEINFO shfi;
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -1040,6 +1056,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         if (bSaveRecentFiles)
           CheckDlgButton(hwnd, IDC_SAVEMRU, BST_CHECKED);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -1256,12 +1273,15 @@ INT_PTR CALLBACK ChangeNotifyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 {
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG:
       CheckRadioButton(hwnd, 100, 102, 100 + iFileWatchingMode);
       if (bResetFileWatching)
       {
         CheckDlgButton(hwnd, 103, BST_CHECKED);
       }
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
     case WM_COMMAND:
@@ -1322,6 +1342,7 @@ INT_PTR CALLBACK ColumnWrapDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM l
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1330,6 +1351,7 @@ INT_PTR CALLBACK ColumnWrapDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM l
         SetDlgItemInt(hwnd, 100, *piNumber, FALSE);
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 15, 0);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1418,6 +1440,7 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1446,6 +1469,7 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
           (WPARAM)(bShowWordWrapSymbols) ? ((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10 : 0, 0);
         SendDlgItemMessage(hwnd, 103, CB_SETCURSEL, (WPARAM)iWordWrapMode, 0);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1532,6 +1556,7 @@ INT_PTR CALLBACK LongLineSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1545,6 +1570,7 @@ INT_PTR CALLBACK LongLineSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
         else
           CheckRadioButton(hwnd, 101, 102, 102);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1634,6 +1660,7 @@ INT_PTR CALLBACK TabSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1652,6 +1679,7 @@ INT_PTR CALLBACK TabSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         if (bBackspaceUnindents)
           CheckDlgButton(hwnd, 104, BST_CHECKED);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1744,6 +1772,8 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         HBITMAP hbmp;
         HIMAGELIST himl;
@@ -1767,6 +1797,7 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         if (bNoEncodingTags)
           CheckDlgButton(hwnd, IDC_ENCODINGFROMFILEVARS, BST_CHECKED);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -1840,6 +1871,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -1865,6 +1897,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
 
         ListView_SetColumnWidth(hwndLV, 0, LVSCW_AUTOSIZE_USEHEADER);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -2037,6 +2070,8 @@ INT_PTR CALLBACK SelectDefLineEndingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam,
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         int i;
         WCHAR wch[128];
@@ -2059,6 +2094,7 @@ INT_PTR CALLBACK SelectDefLineEndingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam,
         if (bAutoStripBlanks)
           CheckDlgButton(hwnd, IDC_AUTOSTRIPBLANKS, BST_CHECKED);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -2124,6 +2160,8 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG:
       lpib = (LPINFOBOX)lParam;
       SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
@@ -2133,6 +2171,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       if (lpib->bDisableCheckBox)
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
       LocalFree(lpib->lpstrMessage);
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 

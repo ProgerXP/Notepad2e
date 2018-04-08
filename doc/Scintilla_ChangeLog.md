@@ -567,3 +567,108 @@ Add next handler to Editor::WndProc():
         return skipUIUpdate;
 [/scintilla/src/Editor.cxx]
 [/**Increasingly slow to hex/base64/qp #142**]
+
+
+[**DPI awareness #154**]
+
+Add new message SCI_SETDPI:
+[scintilla/include/Scintilla.h]
+#define SCI_SETDPI 9001
+[/scintilla/include/Scintilla.h]
+
+Add message handler and replace some code:
+[scintilla/win32/ScintillaWin.cxx]
+    drtp.dpiX = 96.0;
+    drtp.dpiY = 96.0;
+>>
+    drtp.dpiX = GetDpiX();
+    drtp.dpiY = GetDpiY();
+
+...
+
+        96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+>>
+        GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+
+...
+
+      case SCI_SETDPI:
+        SetDPI(LOWORD(wParam),
+               HIWORD(wParam),
+               MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
+        InvalidateStyleData();
+        RefreshStyleData();
+        return 0;
+
+... 
+
+            drtp.dpiX = 96.0;
+            drtp.dpiY = 96.0;
+>>
+            drtp.dpiX = GetDpiX();
+            drtp.dpiY = GetDpiY();
+[/scintilla/win32/ScintillaWin.cxx]
+
+Add required subroutines:
+[scintilla/win32/PlatWin.h]
+#define DEFAULT_SCREEN_DPI 96
+#define DEFAULT_FONT_DPI 72
+
+void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
+float GetDpiX();
+float GetDpiY();
+int GetDpiFont();
+[/scintilla/win32/PlatWin.h]
+
+[scintilla/win32/PlatWin.cxx]
+static float dpiX = DEFAULT_SCREEN_DPI;
+static float dpiY = DEFAULT_SCREEN_DPI;
+static int dpiFont = DEFAULT_FONT_DPI;
+
+void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+{
+    dpiX = _dpiX;
+    dpiY = _dpiY;
+    dpiFont = _dpiFont;
+}
+
+float GetDpiX()
+{
+    return dpiX;
+}
+
+float GetDpiY()
+{
+    return dpiY;
+}
+
+int GetDpiFont()
+{
+    return dpiFont;
+}
+
+...
+
+int SurfaceGDI::LogPixelsY() {
+    return GetDpiY();
+}
+
+int SurfaceGDI::DeviceHeightFont(int points) {
+    return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
+}
+
+void SurfaceD2D::SetScale() {
+    HDC hdcMeasure = ::CreateCompatibleDC(NULL);
+    logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
+    dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
+    dpiScaleY = logPixelsY / GetDpiY();
+    ::DeleteDC(hdcMeasure);
+}
+
+int SurfaceD2D::DeviceHeightFont(int points) {
+    return ::MulDiv(points, LogPixelsY(), GetDpiFont());
+}
+
+[/scintilla/win32/PlatWin.cxx]
+
+[/**DPI awareness #154**]

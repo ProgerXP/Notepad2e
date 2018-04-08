@@ -561,8 +561,8 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc)
     drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
     drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
     drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-    drtp.dpiX = 96.0;
-    drtp.dpiY = 96.0;
+    drtp.dpiX = GetDpiX();
+    drtp.dpiY = GetDpiY();
     drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
     drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
@@ -610,7 +610,7 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc)
       D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
         D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-        96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+        GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
       D2D1::HwndRenderTargetProperties(hw, size),
       &pRenderTarget);
 #endif
@@ -1983,6 +1983,14 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
       case SCI_ENCODEDFROMUTF8:
         return EncodedFromUTF8(reinterpret_cast<char*>(wParam),
                                reinterpret_cast<char*>(lParam));
+
+      case SCI_SETDPI:
+        SetDPI(LOWORD(wParam),
+               HIWORD(wParam),
+               MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
+        InvalidateStyleData();
+        RefreshStyleData();
+        return 0;
 
       default:
         return ScintillaBase::WndProc(iMessage, wParam, lParam);
@@ -3869,8 +3877,8 @@ LRESULT PASCAL ScintillaWin::CTWndProc(
             drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
             drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
             drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-            drtp.dpiX = 96.0;
-            drtp.dpiY = 96.0;
+            drtp.dpiX = GetDpiX();
+            drtp.dpiY = GetDpiY();
             drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
             drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 

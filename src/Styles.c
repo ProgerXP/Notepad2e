@@ -32,6 +32,7 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
 #include "Extension/Utils.h"
 
@@ -3449,6 +3450,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -3487,6 +3489,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         hFontTitle = CreateFontIndirect(&lf);
         SendDlgItemMessage(hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -3924,6 +3927,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -4004,6 +4008,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         if (bAutoSelect)
           CheckDlgButton(hwnd, IDC_AUTOSELECT, BST_CHECKED);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;

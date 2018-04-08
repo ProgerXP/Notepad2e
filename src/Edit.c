@@ -36,6 +36,7 @@
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
+#include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
 #include "Extension/Utils.h"
 
@@ -4950,6 +4951,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int cchSelection;
@@ -5092,6 +5094,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
         // [/2e]
+
+        DPI_INIT();
       }
       return TRUE;
 
@@ -6025,6 +6029,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 {
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
 
         int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0) + 1;
@@ -6034,6 +6040,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         SendDlgItemMessage(hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
 
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -6171,6 +6178,8 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         LOGFONT lf;
 
@@ -6192,6 +6201,8 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6361,9 +6372,12 @@ INT_PTR CALLBACK EditAlignDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
   static int *piAlignMode;
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         piAlignMode = (int *)lParam;
         CheckRadioButton(hwnd, 100, 104, *piAlignMode + 100);
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6440,12 +6454,15 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
   static PENCLOSESELDATA pdata;
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         pdata = (PENCLOSESELDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6549,6 +6566,8 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
   static PTAGSDATA pdata;
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
@@ -6557,6 +6576,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
         SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return FALSE;
@@ -6622,6 +6642,8 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
   switch (umsg)
   {
+    DPI_CHANGED_HANDLER();
+
     case WM_INITDIALOG: {
         piSortFlags = (int *)lParam;
         if (*piSortFlags & SORT_DESCENDING)
@@ -6669,6 +6691,7 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
           *piSortFlags |= SORT_COLUMN;
           CheckDlgButton(hwnd, 108, BST_CHECKED);
         }
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;

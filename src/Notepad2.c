@@ -36,6 +36,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "SciCall.h"
+#include "Extension/DPIHelper.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
@@ -421,6 +422,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   if (!InitApplication(hInstance))
     return FALSE;
 
+  // [2e]: DPI awareness #154
+  n2e_DPIInitialize();
+
   if (!(hwnd = InitInstance(hInstance, lpCmdLine, nCmdShow)))
     return FALSE;
 
@@ -601,6 +605,9 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
                NULL);
 
   n2e_InitInstance();
+
+  // [2e]: DPI awareness #154
+  n2e_ScintillaDPIInit(hwndMain);
 
   if (wi.max)
     nCmdShow = SW_SHOWMAXIMIZED;
@@ -820,6 +827,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
   switch (umsg)
   {
+    // [2e]: DPI awareness #154
+    case WM_DPICHANGED:
+      n2e_ScintillaDPIUpdate(hwndEdit, wParam);
+      n2e_DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
+      MsgThemeChanged(hwnd, 0, 0);
+      return 0;
+    // [/2e]
+
 
     // Quickly handle painting and sizing messages, found in ScintillaWin.cxx
     // Cool idea, don't know if this has any effect... ;-)
@@ -834,6 +849,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_WINDOWPOSCHANGING:
     case WM_WINDOWPOSCHANGED:
       return DefWindowProc(hwnd, umsg, wParam, lParam);
+
+
+    // [2e]: DPI awareness #154
+    case WM_NCCREATE:
+      n2e_EnableNonClientDpiScaling(hwnd);
+      return (DefWindowProc(hwnd, umsg, wParam, lParam));
+    // [/2e]
 
 
     // [2e]: Edit highlighted word #18
@@ -5215,7 +5237,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           n2e_UpdateWindowTitle(hwnd);
           break;
 
-        // [/2e]: "Scroll margin"-feature
+        // [2e]: "Scroll margin"-feature
         case SCN_CARETMOVED:
           {
             const int iSelPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
