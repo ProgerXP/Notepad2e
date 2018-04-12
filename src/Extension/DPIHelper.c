@@ -2,6 +2,7 @@
 #include "Scintilla.h"
 #include "SciCall.h"
 
+#define PROPERTY_WINDOW_DPI_INITIALIZED L"WindowDPIInitialized"
 #define PROPERTY_WINDOW_DYNAMIC_FONT L"WindowDynamicFont"
 #define PROPERTY_WINDOW_DPI L"WindowDPI"
 #define PROPERTY_WINDOW_POS L"WindowPosition"
@@ -106,14 +107,16 @@ DWORD n2e_GetDPIFromWindow(HWND hwnd)
 
 struct TDPISettings
 {
-  HANDLE hData;
+  HWND hwnd;
+  HDWP hdwp;
   int dpiX, dpiY;
 };
 
-struct TDPISettings DPISettings_FromData(const HANDLE hData, const int dpiX, const int dpiY)
+struct TDPISettings CreateDPISettings(const HWND hwnd, const HDWP hdwp, const int dpiX, const int dpiY)
 {
   struct TDPISettings dpiSettings;
-  dpiSettings.hData = hData;
+  dpiSettings.hwnd = hwnd;
+  dpiSettings.hdwp = hdwp;
   dpiSettings.dpiX = dpiX;
   dpiSettings.dpiY = dpiY;
   return dpiSettings;
@@ -127,19 +130,21 @@ int n2e_GetScaledFontSize(const int fontHeight, const int fontInitialDPI, const 
 BOOL CALLBACK n2e_EnumChildProc_DPIPrepare(HWND hwnd, LPARAM lParam)
 {
   const struct TDPISettings* pDPISettings = (struct TDPISettings*)lParam;
-  const HWND hwndParent = (HWND)pDPISettings->hData;
+  const HWND hwndParent = pDPISettings->hwnd;
+
+  if (GetAncestor(hwnd, GA_PARENT) != hwndParent)
+  {
+    return TRUE;
+  }
 
   RECT rc = { 0 };
   GetWindowRect(hwnd, &rc);
-  POINT ptLeftTop = { rc.left, rc.top };
-  POINT ptRightBottom = { rc.right, rc.bottom };
-  ScreenToClient(hwndParent, &ptLeftTop);
-  ScreenToClient(hwndParent, &ptRightBottom);
+  MapWindowPoints(NULL, hwndParent, (LPPOINT)&rc, 2);
 
   SetProp(hwnd, PROPERTY_WINDOW_DYNAMIC_FONT, (HANDLE)0);
   SetProp(hwnd, PROPERTY_WINDOW_DPI, (HANDLE)MAKEWPARAM(pDPISettings->dpiX, pDPISettings->dpiY));
-  SetProp(hwnd, PROPERTY_WINDOW_POS, (HANDLE)MAKEWPARAM(ptLeftTop.x, ptLeftTop.y));
-  SetProp(hwnd, PROPERTY_WINDOW_SIZE, (HANDLE)MAKEWPARAM(ptRightBottom.x - ptLeftTop.x, ptRightBottom.y - ptLeftTop.y));
+  SetProp(hwnd, PROPERTY_WINDOW_POS, (HANDLE)MAKEWPARAM(rc.left, rc.top));
+  SetProp(hwnd, PROPERTY_WINDOW_SIZE, (HANDLE)MAKEWPARAM(rc.right - rc.left, rc.bottom - rc.top));
 
   int fontSize = 0;
   const HFONT hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
@@ -156,7 +161,7 @@ BOOL CALLBACK n2e_EnumChildProc_DPIPrepare(HWND hwnd, LPARAM lParam)
 
 void n2e_DPIPrepare(const HWND hwnd, const int dpiX, const int dpiY)
 {
-  const struct TDPISettings dpiSettings = DPISettings_FromData(hwnd, dpiX, dpiY);
+  const struct TDPISettings dpiSettings = CreateDPISettings(hwnd, NULL, dpiX, dpiY);
   EnumChildWindows(hwnd, n2e_EnumChildProc_DPIPrepare, (LPARAM)&dpiSettings);
 }
 
@@ -174,11 +179,16 @@ BOOL n2e_IsWindowVisibleByStyle(const HWND hwnd)
   return GetWindowLong(hwnd, GWL_STYLE) & WS_VISIBLE;
 }
 
-void n2e_DPIApply(HWND hwnd, HDWP hWinPosInfo, const int dpiX, const int dpiY)
+BOOL n2e_DPIApply(const HWND hwnd, const HWND hwndParent, HDWP* lpHDWP, const int dpiX, const int dpiY)
 {
   const DWORD dpiInitial = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_DPI);
   const DWORD windowPos = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_POS);
   const DWORD windowSize = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_SIZE);
+
+  if (!dpiInitial || !windowPos || !windowSize)
+  {
+    return FALSE;
+  }
 
   RECT rc = {
     LOWORD(windowPos),
@@ -187,9 +197,9 @@ void n2e_DPIApply(HWND hwnd, HDWP hWinPosInfo, const int dpiX, const int dpiY)
     HIWORD(windowPos) + HIWORD(windowSize)
   };
   rc = n2e_DPIAdjustRect(rc, LOWORD(dpiInitial), HIWORD(dpiInitial), dpiX, dpiY);
-  if (hWinPosInfo)
+  if (lpHDWP && *lpHDWP)
   {
-    DeferWindowPos(hWinPosInfo, hwnd, NULL, rc.left, rc.top,
+    *lpHDWP = DeferWindowPos(*lpHDWP, hwnd, NULL, rc.left, rc.top,
                    rc.right - rc.left, rc.bottom - rc.top,
                    SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE);
   }
@@ -221,12 +231,14 @@ void n2e_DPIApply(HWND hwnd, HDWP hWinPosInfo, const int dpiX, const int dpiY)
       }
     }
   }
+  return TRUE;
 }
 
 BOOL CALLBACK n2e_EnumChildProc_DPIApply(HWND hwnd, LPARAM lParam)
 {
-  const struct TDPISettings* pDPISettings = (struct TDPISettings*)lParam;
-  n2e_DPIApply(hwnd, (HDWP)pDPISettings->hData, pDPISettings->dpiX, pDPISettings->dpiY);
+  struct TDPISettings* pDPISettings = (struct TDPISettings*)lParam;
+  n2e_DPIApply(hwnd, pDPISettings->hwnd, &pDPISettings->hdwp, pDPISettings->dpiX, pDPISettings->dpiY);
+
   return TRUE;
 };
 
@@ -262,8 +274,8 @@ void n2e_DialogDPIInit(HWND hwnd)
   }
 
   HDC hdc = GetDC(hwnd);
-  const WPARAM dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-  const WPARAM dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+  const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+  const int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
   ReleaseDC(hwnd, hdc);
 
   n2e_DPIPrepare(hwnd, dpiX, dpiY);
@@ -273,7 +285,10 @@ void n2e_DialogDPIInit(HWND hwnd)
   const DWORD dpi = n2e_GetDPIFromWindow(hwnd);
 
   rc = n2e_DPIAdjustRect(rc, dpiX, dpiY, LOWORD(dpi), HIWORD(dpi));
-  SendMessage(hwnd, WM_DPICHANGED, dpi, (LPARAM)&rc);
+
+  SetProp(hwnd, PROPERTY_WINDOW_DPI_INITIALIZED, (HANDLE)1);
+
+  n2e_DPIChanged_DlgProcHandler(hwnd, dpi, (LPARAM)&rc);
 }
 
 LRESULT n2e_DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
@@ -287,11 +302,16 @@ LRESULT n2e_DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, c
 
 LRESULT n2e_DPIChanged_DlgProcHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
+  if (GetProp(hwnd, PROPERTY_WINDOW_DPI_INITIALIZED) == 0)
+  {
+    return FALSE;
+  }
+
   n2e_DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
 
-  const struct TDPISettings dpiSettings = DPISettings_FromData(BeginDeferWindowPos(10), LOWORD(wParam), HIWORD(wParam));
+  const struct TDPISettings dpiSettings = CreateDPISettings(hwnd, BeginDeferWindowPos(10), LOWORD(wParam), HIWORD(wParam));
   EnumChildWindows(hwnd, n2e_EnumChildProc_DPIApply, (LPARAM)&dpiSettings);
-  EndDeferWindowPos((HDWP)dpiSettings.hData);
+  EndDeferWindowPos(dpiSettings.hdwp);
 
   InvalidateRect(hwnd, NULL, TRUE);
   UpdateWindow(hwnd);
