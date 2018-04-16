@@ -153,4 +153,4 @@ DeclareSciCallV1(EnsureVisible, ENSUREVISIBLE, int, line);
 //
 //
 DeclareSciCallV2(SetProperty, SETPROPERTY, const char *, key, const char *, value);
-DeclareSciCallV1(SetDPI, SETDPI, WPARAM, dpi);
+DeclareSciCallV1(SetDPI, SETDPI, DWORD, dpi);

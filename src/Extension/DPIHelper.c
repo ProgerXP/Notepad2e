@@ -2,13 +2,6 @@
 #include "Scintilla.h"
 #include "SciCall.h"
 
-#define PROPERTY_WINDOW_DPI_INITIALIZED L"WindowDPIInitialized"
-#define PROPERTY_WINDOW_DYNAMIC_FONT L"WindowDynamicFont"
-#define PROPERTY_WINDOW_DPI L"WindowDPI"
-#define PROPERTY_WINDOW_POS L"WindowPosition"
-#define PROPERTY_WINDOW_SIZE L"WindowSize"
-#define PROPERTY_WINDOW_FONT_SIZE L"WindowFontSize"
-
 #define USER32DLL L"User32.dll"
 #define SHCOREDLL L"Shcore.dll"
 
@@ -77,30 +70,43 @@ BOOL n2e_DPIInitialize()
   return FALSE;
 }
 
-BOOL n2e_EnableNonClientDpiScaling(HWND hwnd)
+BOOL n2e_EnableNonClientDpiScaling(const HWND hwnd)
 {
   return pfnEnableNonClientDpiScaling ? pfnEnableNonClientDpiScaling(hwnd) : FALSE;
 }
 
-BOOL n2e_GetDpiForMonitor(HMONITOR hMonitor, UINT* dpiX, UINT* dpiY)
+BOOL n2e_GetDpiForMonitor(const HMONITOR hMonitor, UINT* dpiX, UINT* dpiY)
 {
   return pfnGetDpiForMonitor ? SUCCEEDED(pfnGetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, dpiX, dpiY)) : FALSE;
 }
 
-DWORD n2e_GetDPIFromMonitor(HMONITOR hMonitor, HWND hwnd)
+DWORD n2e_GetDPIFromWindowHDC(const HWND hwnd)
 {
   int dpiX = USER_DEFAULT_SCREEN_DPI, dpiY = USER_DEFAULT_SCREEN_DPI;
-  if (!n2e_GetDpiForMonitor(hMonitor, &dpiX, &dpiY) && hwnd)
+  if (hwnd)
   {
     const HDC hdc = GetDC(hwnd);
-    dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-    dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-    ReleaseDC(hwnd, hdc);
+    if (hdc)
+    {
+      dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
+      dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
+      ReleaseDC(hwnd, hdc);
+    }
   }
   return MAKELONG(dpiX, dpiY);
 }
 
-DWORD n2e_GetDPIFromWindow(HWND hwnd)
+DWORD n2e_GetDPIFromMonitor(const HMONITOR hMonitor, const HWND hwnd)
+{
+  int dpiX = USER_DEFAULT_SCREEN_DPI, dpiY = USER_DEFAULT_SCREEN_DPI;
+  if (n2e_GetDpiForMonitor(hMonitor, &dpiX, &dpiY))
+  {
+    return MAKELONG(dpiX, dpiY);
+  }
+  return n2e_GetDPIFromWindowHDC(hwnd);
+}
+
+DWORD n2e_GetDPIFromWindow(const HWND hwnd)
 {
   return n2e_GetDPIFromMonitor(MonitorFromWindow(hwnd, MONITOR_DEFAULTTOPRIMARY), hwnd);
 }
@@ -127,7 +133,14 @@ int n2e_GetScaledFontSize(const int fontHeight, const int fontInitialDPI, const 
   return -MulDiv(fontHeight, fontInitialDPI, fontDPI);
 }
 
-BOOL CALLBACK n2e_EnumChildProc_DPIPrepare(HWND hwnd, LPARAM lParam)
+RECT n2e_GetWindowRect(const HWND hwnd)
+{
+  RECT rc = { 0 };
+  GetWindowRect(hwnd, &rc);
+  return rc;
+}
+
+BOOL CALLBACK n2e_EnumChildProc_DPIPrepare(const HWND hwnd, const LPARAM lParam)
 {
   const struct TDPISettings* pDPISettings = (struct TDPISettings*)lParam;
   const HWND hwndParent = pDPISettings->hwnd;
@@ -137,23 +150,21 @@ BOOL CALLBACK n2e_EnumChildProc_DPIPrepare(HWND hwnd, LPARAM lParam)
     return TRUE;
   }
 
-  RECT rc = { 0 };
-  GetWindowRect(hwnd, &rc);
+  RECT rc = n2e_GetWindowRect(hwnd);
   MapWindowPoints(NULL, hwndParent, (LPPOINT)&rc, 2);
 
-  SetProp(hwnd, PROPERTY_WINDOW_DYNAMIC_FONT, (HANDLE)0);
-  SetProp(hwnd, PROPERTY_WINDOW_DPI, (HANDLE)MAKEWPARAM(pDPISettings->dpiX, pDPISettings->dpiY));
-  SetProp(hwnd, PROPERTY_WINDOW_POS, (HANDLE)MAKEWPARAM(rc.left, rc.top));
-  SetProp(hwnd, PROPERTY_WINDOW_SIZE, (HANDLE)MAKEWPARAM(rc.right - rc.left, rc.bottom - rc.top));
+  n2e_SetWindowDynamicFont(hwnd, 0);
+  n2e_SetWindowDPI(hwnd, pDPISettings->dpiX, pDPISettings->dpiY);
+  n2e_SetWindowPosition(hwnd, rc.left, rc.top);
+  n2e_SetWindowSize(hwnd, rc.right - rc.left, rc.bottom - rc.top);
 
-  int fontSize = 0;
   const HFONT hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
   if (hFont)
   {
     LOGFONT lf = { 0 };
     GetObject(hFont, sizeof(LOGFONT), &lf);
-    fontSize = n2e_GetScaledFontSize(lf.lfHeight, DEFAULT_FONT_DPI, pDPISettings->dpiY);
-    SetProp(hwnd, PROPERTY_WINDOW_FONT_SIZE, (HANDLE)fontSize);
+    const int fontSize = n2e_GetScaledFontSize(lf.lfHeight, DEFAULT_FONT_DPI, pDPISettings->dpiY);
+    n2e_SetWindowFontSize(hwnd, fontSize);
   }
 
   return TRUE;
@@ -165,12 +176,12 @@ void n2e_DPIPrepare(const HWND hwnd, const int dpiX, const int dpiY)
   EnumChildWindows(hwnd, n2e_EnumChildProc_DPIPrepare, (LPARAM)&dpiSettings);
 }
 
-RECT n2e_DPIAdjustRect(RECT rc, const int dpiInitialX, const int dpiInitialY, const int dpiX, const int dpiY)
+RECT n2e_DPIAdjustRect(RECT rc, const int dpiXInitial, const int dpiYInitial, const int dpiX, const int dpiY)
 {
-  rc.left = MulDiv(rc.left, dpiX, dpiInitialX);
-  rc.top = MulDiv(rc.top, dpiY, dpiInitialY);
-  rc.right = MulDiv(rc.right, dpiX, dpiInitialX);
-  rc.bottom = MulDiv(rc.bottom, dpiY, dpiInitialY);
+  rc.left = MulDiv(rc.left, dpiX, dpiXInitial);
+  rc.top = MulDiv(rc.top, dpiY, dpiYInitial);
+  rc.right = MulDiv(rc.right, dpiX, dpiXInitial);
+  rc.bottom = MulDiv(rc.bottom, dpiY, dpiYInitial);
   return rc;
 }
 
@@ -181,9 +192,9 @@ BOOL n2e_IsWindowVisibleByStyle(const HWND hwnd)
 
 BOOL n2e_DPIApply(const HWND hwnd, const HWND hwndParent, HDWP* lpHDWP, const int dpiX, const int dpiY)
 {
-  const DWORD dpiInitial = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_DPI);
-  const DWORD windowPos = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_POS);
-  const DWORD windowSize = (DWORD)GetProp(hwnd, PROPERTY_WINDOW_SIZE);
+  const DWORD dpiInitial = n2e_GetWindowDPI(hwnd);
+  const DWORD windowPos = n2e_GetWindowPosition(hwnd);
+  const DWORD windowSize = n2e_GetWindowSize(hwnd);
 
   if (!dpiInitial || !windowPos || !windowSize)
   {
@@ -211,7 +222,7 @@ BOOL n2e_DPIApply(const HWND hwnd, const HWND hwndParent, HDWP* lpHDWP, const in
   }  
 
   const HFONT hFont = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
-  const int fontSizeOriginal = (int)GetProp(hwnd, PROPERTY_WINDOW_FONT_SIZE);
+  const int fontSizeOriginal = n2e_GetWindowFontSize(hwnd);
   if (hFont && (fontSizeOriginal > 0))
   {
     LOGFONT lf = { 0 };
@@ -221,88 +232,109 @@ BOOL n2e_DPIApply(const HWND hwnd, const HWND hwndParent, HDWP* lpHDWP, const in
       const HFONT hFontNew = CreateFontIndirect(&lf);
       if (hFontNew)
       {
-        const HANDLE hDynamicFont = (HANDLE)GetProp(hwnd, PROPERTY_WINDOW_DYNAMIC_FONT);
+        const HANDLE hDynamicFont = n2e_GetWindowDynamicFont(hwnd);
         if (hDynamicFont)
         {
           DeleteObject(hDynamicFont);
         }
         SendMessage(hwnd, WM_SETFONT, (WPARAM)hFontNew, 0);
-        SetProp(hwnd, PROPERTY_WINDOW_DYNAMIC_FONT, (HANDLE)hFontNew);
+        n2e_SetWindowDynamicFont(hwnd, hFontNew);
       }
     }
   }
   return TRUE;
 }
 
-BOOL CALLBACK n2e_EnumChildProc_DPIApply(HWND hwnd, LPARAM lParam)
+BOOL CALLBACK n2e_EnumChildProc_DPIApply(const HWND hwnd, const LPARAM lParam)
 {
   struct TDPISettings* pDPISettings = (struct TDPISettings*)lParam;
   n2e_DPIApply(hwnd, pDPISettings->hwnd, &pDPISettings->hdwp, pDPISettings->dpiX, pDPISettings->dpiY);
-
   return TRUE;
 };
 
-void n2e_ScintillaSetDPI(HWND hwnd, const WPARAM dpi)
-{
-  if (IsWindowsVistaOrGreater())
-  {
-    SciCall_SetDPI(dpi);
-  }
-}
-
-void n2e_ScintillaDPIInit(HWND hwnd)
-{
-  RECT rc = { 0 };
-  GetWindowRect(hwnd, &rc);
-  POINT pt = { rc.left, rc.top };
-  n2e_ScintillaSetDPI(hwnd, n2e_GetDPIFromMonitor(MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY), hwnd));
-}
-
-void n2e_ScintillaDPIUpdate(HWND hwnd, const WPARAM dpi)
-{
-  if (IsWindowsVistaOrGreater())
-  {
-    n2e_ScintillaSetDPI(hwnd, dpi);
-  }
-}
-
-void n2e_DialogDPIInit(HWND hwnd)
+void n2e_ScintillaDPIInit(const HWND hwnd)
 {
   if (!IsWindowsVistaOrGreater())
   {
     return;
   }
+  const RECT rc = n2e_GetWindowRect(hwnd);
+  const POINT pt = { rc.left, rc.top };
+  SciCall_SetDPI(n2e_GetDPIFromMonitor(MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY), hwnd));
+}
 
-  HDC hdc = GetDC(hwnd);
-  const int dpiX = GetDeviceCaps(hdc, LOGPIXELSX);
-  const int dpiY = GetDeviceCaps(hdc, LOGPIXELSY);
-  ReleaseDC(hwnd, hdc);
+void n2e_ScintillaDPIUpdate(const HWND hwnd, const WPARAM dpi)
+{
+  if (!IsWindowsVistaOrGreater())
+  {
+    return;
+  }
+  SciCall_SetDPI(dpi);
+}
 
-  n2e_DPIPrepare(hwnd, dpiX, dpiY);
+void n2e_DialogDPIInit(const HWND hwnd)
+{
+  if (!IsWindowsVistaOrGreater())
+  {
+    return;
+  }
+  n2e_DialogDPIUpdate(hwnd, TRUE);
 
-  RECT rc = { 0 };
-  GetWindowRect(hwnd, &rc);
+  RECT rc = n2e_GetWindowRect(hwnd);
+  const DWORD dpiHDC = n2e_GetDPIFromWindowHDC(hwnd);
   const DWORD dpi = n2e_GetDPIFromWindow(hwnd);
+  n2e_SetWindowDPI(hwnd, LOWORD(dpiHDC), HIWORD(dpiHDC));
+  rc = n2e_DPIAdjustRect(rc, LOWORD(dpiHDC), HIWORD(dpiHDC), LOWORD(dpi), HIWORD(dpi));
 
-  rc = n2e_DPIAdjustRect(rc, dpiX, dpiY, LOWORD(dpi), HIWORD(dpi));
-
-  SetProp(hwnd, PROPERTY_WINDOW_DPI_INITIALIZED, (HANDLE)1);
-
+  n2e_SetWindowDPIInitialized(hwnd, TRUE);
   n2e_DPIChanged_DlgProcHandler(hwnd, dpi, (LPARAM)&rc);
+}
+
+void n2e_DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC)
+{
+  if (!IsWindowsVistaOrGreater() || n2e_GetWindowSkipDPIResize(hwnd))
+  {
+    return;
+  }
+
+  const DWORD dpi = bDPIFromHDC ? n2e_GetDPIFromWindowHDC(hwnd) : n2e_GetDPIFromWindow(hwnd);
+  n2e_DPIPrepare(hwnd, LOWORD(dpi), HIWORD(dpi));
+}
+
+void n2e_DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam)
+{
+  const DWORD dpiInitial = n2e_GetWindowDPI(hwnd);
+  if (!dpiInitial || !IsWindowsVistaOrGreater())
+  {
+    return;
+  }
+  LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
+  const DWORD dpi = n2e_GetDPIFromWindow(hwnd);
+  RECT rc = {
+    0,
+    0,
+    lpmmi->ptMinTrackSize.x,
+    lpmmi->ptMinTrackSize.y
+  };
+  rc = n2e_DPIAdjustRect(rc, LOWORD(dpiInitial), HIWORD(dpiInitial), LOWORD(dpi), HIWORD(dpi));
+  lpmmi->ptMinTrackSize.x = rc.right;
+  lpmmi->ptMinTrackSize.y = rc.bottom;
 }
 
 LRESULT n2e_DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
 {
+  n2e_SetWindowSkipDPIResize(hwnd, TRUE);
   LPCRECT lpRect = (LPCRECT)lParam;
   SetWindowPos(hwnd, NULL, lpRect->left, lpRect->top,
                 lpRect->right - lpRect->left, lpRect->bottom - lpRect->top,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW | SWP_FRAMECHANGED);
+  n2e_SetWindowSkipDPIResize(hwnd, FALSE);
   return 0;
 }
 
-LRESULT n2e_DPIChanged_DlgProcHandler(HWND hwnd, WPARAM wParam, LPARAM lParam)
+LRESULT n2e_DPIChanged_DlgProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
 {
-  if (GetProp(hwnd, PROPERTY_WINDOW_DPI_INITIALIZED) == 0)
+  if (!n2e_GetWindowDPIInitialized(hwnd))
   {
     return FALSE;
   }
