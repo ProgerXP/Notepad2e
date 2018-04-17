@@ -5065,6 +5065,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               CheckDlgButton(hwnd, IDC_FINDCLOSE, BST_CHECKED);
           }
         }
+
+        N2E_DPI_INIT();
+
         if (!bSwitchedFindReplace)
         {
           if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
@@ -5094,8 +5097,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
         // [/2e]
-
-        N2E_DPI_INIT();
       }
       return TRUE;
 

@@ -207,7 +207,18 @@ BOOL n2e_DPIApply(const HWND hwnd, const HWND hwndParent, HDWP* lpHDWP, const in
     LOWORD(windowPos) + LOWORD(windowSize),
     HIWORD(windowPos) + HIWORD(windowSize)
   };
-  rc = n2e_DPIAdjustRect(rc, LOWORD(dpiInitial), HIWORD(dpiInitial), dpiX, dpiY);
+  const BOOL isSizeGripCtrl = (GetWindowLongPtr(hwnd, GWL_STYLE) & SBS_SIZEGRIP);
+  if (isSizeGripCtrl)
+  {
+    GetClientRect(hwndParent, &rc);
+    const int iSizeGrip = GetSystemMetrics(SM_CXHTHUMB);
+    rc.left = rc.right - iSizeGrip;
+    rc.top = rc.bottom - iSizeGrip;
+  }
+  else
+  {
+    rc = n2e_DPIAdjustRect(rc, LOWORD(dpiInitial), HIWORD(dpiInitial), dpiX, dpiY);
+  }
   if (lpHDWP && *lpHDWP)
   {
     *lpHDWP = DeferWindowPos(*lpHDWP, hwnd, NULL, rc.left, rc.top,
