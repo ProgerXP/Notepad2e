@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Scintilla.h"
 #include "Edit.h"
+#include "Utils.h"
 
 #define ICON_FIND_OK 9
 #define ICON_FIND_FAILED 26
@@ -9,10 +10,11 @@
 
 extern BOOL bUsePrefixInOpenDialog;
 extern BOOL bHighlightSelection;
+extern ESaveOnLoseFocus iSaveOnLoseFocus;
 extern BOOL bCtrlWheelScroll;
 extern BOOL bMoveCaretOnRightClick;
-extern int iEvaluateMathExpression;
-extern int iWordNavigationMode;
+extern EExpressionEvaluationMode iEvaluateMathExpression;
+extern EWordNavigationMode iWordNavigationMode;
 extern WCHAR wchLastHTMLTag[0xff];
 extern WCHAR wchLastHTMLEndTag[0xff];
 

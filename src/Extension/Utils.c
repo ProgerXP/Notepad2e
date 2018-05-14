@@ -13,6 +13,7 @@
 #include "Trace.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
+#define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
 #define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
 #define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
 #define INI_SETTING_CSS_SETTINGS L"CSSSettings"
@@ -39,6 +40,7 @@ BOOL bWheelTimerActive = FALSE;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
 BOOL bUsePrefixInOpenDialog = TRUE;
+ESaveOnLoseFocus iSaveOnLoseFocus = SLF_DISABLED;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_DISABLED;
@@ -120,9 +122,24 @@ void n2e_ResetLastRun()
   *wchLastRun = 0;
 }
 
+void n2e_ResetSaveOnLoseFocus()
+{
+  static BOOL bSkipFirstReset = TRUE;
+  if (bSkipFirstReset)
+  {
+    bSkipFirstReset = FALSE;
+    return;
+  }
+  if (iSaveOnLoseFocus == SLF_ENABLED_UNTIL_NEW_FILE)
+  {
+    iSaveOnLoseFocus = SLF_DISABLED;
+  }
+}
+
 void n2e_LoadINI()
 {
   bHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
   iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
@@ -142,6 +159,7 @@ void n2e_LoadINI()
 void n2e_SaveINI()
 {
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);

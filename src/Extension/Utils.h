@@ -18,6 +18,13 @@ typedef enum
 
 typedef enum
 {
+	SLF_DISABLED = 0,
+	SLF_ENABLED = 1,
+	SLF_ENABLED_UNTIL_NEW_FILE = 2,
+} ESaveOnLoseFocus;
+
+typedef enum
+{
   PNM_FILENAMEONLY = 0,
   PNM_FILENAMEFIRST = 1,
   PNM_FULLPATH = 2
@@ -72,6 +79,7 @@ void n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 void n2e_SetLastRun(LPCWSTR arg);
 void n2e_ResetLastRun();
+void n2e_ResetSaveOnLoseFocus();
 void n2e_LoadINI();
 void n2e_SaveINI();
 void n2e_Release();

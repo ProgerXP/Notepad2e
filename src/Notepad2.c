@@ -863,8 +863,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       if (!wParam)
       {
         n2e_SelectionEditStop(SES_APPLY);
+        // [2e]: Save on deactivate #164
+        static BOOL bSaveInProgress = FALSE;
+        if ((iSaveOnLoseFocus != SLF_DISABLED) && !bSaveInProgress)
+        {
+          bSaveInProgress = TRUE;
+          FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
+          bSaveInProgress = FALSE;
+        }
       }
       break;
+    // [/2e]
 
 
     case WM_MOUSEACTIVATE:
@@ -1874,6 +1883,13 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, ID_FILE_RENAMETO, i);
   EnableCmd(hmenu, IDM_FILE_READONLY, i);
   CheckCmd(hmenu, IDM_FILE_READONLY, bReadOnly);
+
+  // [2e]: Save on deactivate #164
+  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_DISABLED, iSaveOnLoseFocus == SLF_DISABLED);
+  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_ENABLED, iSaveOnLoseFocus == SLF_ENABLED);
+  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE, iSaveOnLoseFocus == SLF_ENABLED_UNTIL_NEW_FILE);
+  // [/2e]
+
   EnableCmd(hmenu, IDM_ENCODING_RECODE, i);
   if (mEncoding[iEncoding].uFlags & NCP_UNICODE_REVERSE)
     i = IDM_ENCODING_UNICODEREV;
@@ -2165,6 +2181,21 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         n2e_UpdateWindowTitle(hwnd);
       }
       break;
+
+
+    // [2e]: Save on deactivate #164
+    case ID_SAVEONLOSEFOCUS_DISABLED:
+      iSaveOnLoseFocus = SLF_DISABLED;
+      break;
+
+    case ID_SAVEONLOSEFOCUS_ENABLED:
+      iSaveOnLoseFocus = SLF_ENABLED;
+      break;
+
+    case ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE:
+      iSaveOnLoseFocus = SLF_ENABLED_UNTIL_NEW_FILE;
+      break;
+    // [/2e]
 
 
     case IDM_FILE_BROWSE: {
@@ -6806,6 +6837,8 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     // [2e]: Match indicator
     n2e_ResetFindIcon();
     n2e_ResetLastRun();
+    // [2e]: Save on deactivate #164
+    n2e_ResetSaveOnLoseFocus();
 
     return TRUE;
   }
@@ -6947,6 +6980,8 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     // [2e]: Match indicator
     n2e_ResetFindIcon();
     n2e_ResetLastRun();
+    // [2e]: Save on deactivate #164
+    n2e_ResetSaveOnLoseFocus();
   }
 
   return (fSuccess);

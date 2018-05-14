@@ -73,7 +73,13 @@ BEGIN
         MENUITEM "Save &As...\tF6",             IDM_FILE_SAVEAS
         MENUITEM "&Rename To...\tAlt+F6",       ID_FILE_RENAMETO
         MENUITEM "Save &Copy...\tCtrl+F6",      IDM_FILE_SAVECOPY
-        MENUITEM "&Read Only",                  IDM_FILE_READONLY
+        MENUITEM "&Read-Only",                  IDM_FILE_READONLY
+        POPUP "Save On Lose &Focus"
+        BEGIN
+            MENUITEM "&Disabled",                   ID_SAVEONLOSEFOCUS_DISABLED
+            MENUITEM "&Enabled",                    ID_SAVEONLOSEFOCUS_ENABLED
+            MENUITEM "E&nabled until a new file is opened", ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE
+        END
         MENUITEM SEPARATOR
         POPUP "&Launch"
         BEGIN
