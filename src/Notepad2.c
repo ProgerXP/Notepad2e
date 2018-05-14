@@ -6612,8 +6612,12 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
   // [2e]: Save on exit and History #101
-  CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_ALL);
-  EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL));
+  const BOOL bCommandEnabled = IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL);
+  EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, bCommandEnabled);
+  if (bCommandEnabled)
+  {
+    CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_ALL);
+  }
   // [/2e]
 }
 
