@@ -5538,7 +5538,7 @@ void LoadSettings()
   bMarkLongLines = IniSectionGetInt(pIniSection, L"MarkLongLines", 0);
   if (bMarkLongLines) bMarkLongLines = 1;
 
-  iLongLinesLimit = IniSectionGetInt(pIniSection, L"LongLinesLimit", 72);
+  iLongLinesLimit = IniSectionGetInt(pIniSection, L"LongLinesLimit", 80);
   iLongLinesLimit = max(min(iLongLinesLimit, 4096), 0);
   iLongLinesLimitG = iLongLinesLimit;
 
