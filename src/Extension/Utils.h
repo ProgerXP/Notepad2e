@@ -18,6 +18,13 @@ typedef enum
 
 typedef enum
 {
+  UPO_DISABLED = 0,
+  UPO_AUTO = 1,
+  UPO_ENABLED = 2
+} EUsePrefixInOpenDialog;
+
+typedef enum
+{
 	SLF_DISABLED = 0,
 	SLF_ENABLED = 1,
 	SLF_ENABLED_UNTIL_NEW_FILE = 2,

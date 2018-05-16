@@ -39,7 +39,8 @@ UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
-BOOL bUsePrefixInOpenDialog = TRUE;
+EUsePrefixInOpenDialog iUsePrefixInOpenDialog = UPO_DISABLED;
+BOOL bUsePrefixInOpenDialog = FALSE;
 ESaveOnLoseFocus iSaveOnLoseFocus = SLF_DISABLED;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
@@ -145,7 +146,7 @@ void n2e_LoadINI()
   iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
-  bUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, bUsePrefixInOpenDialog);
+  iUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, iUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   bFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
@@ -154,6 +155,39 @@ void n2e_LoadINI()
   iEvaluateMathExpression = IniGetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+
+  if (iUsePrefixInOpenDialog != UPO_AUTO)
+  {
+    bUsePrefixInOpenDialog = (iUsePrefixInOpenDialog != UPO_DISABLED);
+  }
+  else
+  {
+    bUsePrefixInOpenDialog = TRUE;
+
+    extern BOOL IsWindows10OrGreater();
+    if (IsWindows10OrGreater())
+    {
+      HKEY hKey;
+      if (SUCCEEDED(RegOpenKey(HKEY_CURRENT_USER,
+                               L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoComplete",
+                               &hKey)))
+      {
+        DWORD dwType = REG_SZ;
+        WCHAR wchValue[MAX_PATH] = { 0 };
+        DWORD cbValue = sizeof(wchValue);
+        if (SUCCEEDED(RegQueryValueEx(hKey,
+                                      L"Append Completion",
+                                      NULL,
+                                      &dwType,
+                                      (LPBYTE)&wchValue,
+                                      &cbValue)))
+        {
+          bUsePrefixInOpenDialog = (StrStrI(wchValue, L"yes") != wchValue);
+        }
+        RegCloseKey(hKey);
+      }
+    }
+  }
 }
 
 void n2e_SaveINI()
@@ -165,7 +199,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, iMaxSearchDistance / BYTES_IN_KB);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, bUsePrefixInOpenDialog);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, iUsePrefixInOpenDialog);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);

@@ -51,6 +51,20 @@ BOOL IsWindowsVistaOrGreater()
   return bWindowsVistaOrGreater;
 }
 
+BOOL IsWindows10OrGreater()
+{
+#define _WIN32_WINNT_WIN10                  0x0A00
+
+  static BOOL bInitialized = FALSE;
+  static BOOL bWindows10OrGreater = FALSE;
+  if (!bInitialized)
+  {
+    bWindows10OrGreater = IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0);
+    bInitialized = TRUE;
+  }
+  return bWindows10OrGreater;
+}
+
 BOOL n2e_DPIInitialize()
 {
   if (IsWindowsVistaOrGreater())
