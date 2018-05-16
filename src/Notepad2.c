@@ -866,7 +866,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         n2e_SelectionEditStop(SES_APPLY);
         // [2e]: Save on deactivate #164
         static BOOL bSaveInProgress = FALSE;
-        if ((iSaveOnLoseFocus != SLF_DISABLED) && !bSaveInProgress && IsWindowVisible(hwnd))
+        if (bModified && (iSaveOnLoseFocus != SLF_DISABLED)
+            && !bSaveInProgress && IsWindowVisible(hwnd))
         {
           bSaveInProgress = TRUE;
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
