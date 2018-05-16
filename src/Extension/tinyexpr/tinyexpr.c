@@ -800,11 +800,6 @@ void te_print(const te_expr *n) {
     pn(n, 0);
 }
 
-int is_filtered(const unsigned char ch)
-{
-  return ((ch == '$') || (ch == ',')) ? 1 : 0;
-}
-
 int is_digit_or_dot(const unsigned char ch)
 {
   return (isxdigit(ch)
@@ -845,92 +840,107 @@ char *te_trimwhitespace(unsigned char *str)
   return str;
 }
 
-char *te_prepare(unsigned char *pszSrc)
+unsigned char *remove_chars(unsigned char *pszSrc, const unsigned char *pszCharsToSkip)
 {
-  char* pEqualsPos = strchr(pszSrc, '=');
-  if (pEqualsPos)
+  unsigned char* pszRes = malloc(strlen(pszSrc) + 1);
+  unsigned char *pszCurrent = pszRes;
+  unsigned char *pszTest = pszSrc;
+  while (*pszTest)
   {
-    *pEqualsPos = 0x0;
-  }
-  pszSrc = te_trimwhitespace(pszSrc);
-  char *pszTemp = malloc(strlen(pszSrc) + 1);
-  char *src = pszSrc;
-  char *res = pszTemp;
-
-  // convert ',' to '.' if possible
-  if (strchr(src, '.') == 0)
-  {
-    const int iSizeInBytes = strlen(src) + 1;
-    char *test = malloc(iSizeInBytes);
-    strcpy_s(test, iSizeInBytes, src);
-    char *next = test;
-    while (next = strchr(next, ','))
+    if (!strchr(pszCharsToSkip, *pszTest))
     {
-      *next = '.';
+      *pszCurrent++ = *pszTest;
     }
-    double exprValue = 0.0;
-    if (is_valid_expression(test, 0, &exprValue))
-    {
-      strcpy_s(src, iSizeInBytes, test);
-    }
-    free(test);
+    ++pszTest;
   }
+  *pszCurrent++ = 0x0;
+  return pszRes;
+}
 
-  src = pszSrc;
-  int onlyDigitsAndDots = 1;
-  // filter characters to temporary string
-  while (*src)
+unsigned char *replace_char(unsigned char *pszSrc, const unsigned char chFrom, const unsigned char chTo)
+{
+  unsigned char *pszTest = pszSrc;
+  while (*pszTest)
   {
-    if (!is_filtered(*src))
+    if (*pszTest == chFrom)
     {
-      *res++ = *src;
-      if (onlyDigitsAndDots)
+      *pszTest = chTo;
+    }
+    ++pszTest;
+  }
+  return pszSrc;
+}
+
+// convert to a single line, insert + between numbers
+unsigned char *apply_digits_and_dots(unsigned char *pszSrc)
+{
+  unsigned char *pszTest = pszSrc;
+  char prevChar = 0x0;
+  while (*pszTest)
+  {
+    if (is_space_or_newline(*pszTest))
+    {
+      if (!is_space_or_newline(prevChar))
       {
-        onlyDigitsAndDots &= (is_digit_or_dot(*src) || is_space_or_newline(*src));
-      }
-    }
-    ++src;
-  }
-  *res = 0x0;
-
-  src = pszSrc;
-  res = pszTemp;
-  // check if string contains only digits, dots
-  if (onlyDigitsAndDots)
-  {
-    char prevChar = 0x0;
-    while (*res)
-    {
-      if (is_space_or_newline(*res))
-      {
-        if (!is_space_or_newline(prevChar))
-        {
-          prevChar = *res;
-          *res = '+';
-        }
-        else
-        {
-          prevChar = *res;
-          *res = ' ';
-        }
+        prevChar = *pszTest;
+        *pszTest = '+';
       }
       else
       {
-        prevChar = *res;
+        prevChar = *pszTest;
+        *pszTest = ' ';
       }
-      ++res;
     }
+    else
+    {
+      prevChar = *pszTest;
+    }
+    ++pszTest;
+  }
+  return pszSrc;
+}
+
+char *te_prepare(unsigned char *pszSrc)
+{
+  unsigned char *pszEqualsPos = strchr(pszSrc, '=');
+  if (pszEqualsPos)
+  {
+    *pszEqualsPos = 0x0;
+  }
+  pszSrc = te_trimwhitespace(pszSrc);
+
+  // convert ',' to '.' if possible
+  if (!strchr(pszSrc, '.'))
+  {
+    unsigned char *pszTest = replace_char(remove_chars(pszSrc, "$"), ',', '.');
+    double exprValue = 0.0;
+    if (is_valid_expression(pszTest, 0, &exprValue))
+    {
+      strcpy_s(pszSrc, strlen(pszTest) + 1, pszTest);
+    }
+    free(pszTest);
   }
 
-  src = pszSrc;
-  res = pszTemp;
-  // copy back to source string
-  while (*res)
+  int onlyDigitsAndDots = 1;
+  unsigned char *pszTest = remove_chars(pszSrc, "$,");
+  strcpy_s(pszSrc, strlen(pszTest) + 1, pszTest);
+  free(pszTest);
+
+  pszTest = pszSrc;
+  while (*pszTest)
   {
-    *src++ = *res++;
+    if (onlyDigitsAndDots)
+    {
+      onlyDigitsAndDots &= (is_digit_or_dot(*pszTest) || is_space_or_newline(*pszTest));
+    }
+    ++pszTest;
   }
-  *src = 0x0;
-  free(pszTemp);
+
+  if (onlyDigitsAndDots)
+  {
+    pszSrc = apply_digits_and_dots(pszSrc);
+  }
+
   return pszSrc;
 }
 

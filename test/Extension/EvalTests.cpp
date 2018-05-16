@@ -134,6 +134,8 @@ namespace Notepad2eTests
         // Eval bugs #130: e-specific tests for shortcut operator:
         CEvalTestData("1e1 1e 1", 20),                      // converted/evaluated to: 1e1+1e+1 => 1*10^1+1*10^1
         CEvalTestData("1 e 1", 2 + 2.71828182845904523536), // converted/evaluated to: 1+e+1 => 2+exp
+
+        CEvalTestData("12345$ / 1,01", 12222.77227722772),
       };
 
       for (auto i = 0; i < _countof(data); i++)
@@ -142,7 +144,7 @@ namespace Notepad2eTests
         double exprValue = 0.0;
         if (is_valid_expression((unsigned char*)info.source.c_str(), 1, &exprValue))
         {
-          Assert::AreEqual(info.result, exprValue);
+          Assert::AreEqual(info.result, exprValue, 0.000000001);
         }
         else
         {
