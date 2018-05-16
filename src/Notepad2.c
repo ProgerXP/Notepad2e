@@ -90,7 +90,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {16, IDT_FILE_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {18, IDT_FILE_SAVECOPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
-    {27, IDT_BINARY_SAVE_OPTIONS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {27, IDT_BINARY_SAFE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {19, IDT_EDIT_CLEAR, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {20, IDT_FILE_PRINT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {21, IDT_FILE_OPENFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -5063,7 +5063,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     // [2e]: Binary Save Options button #170
-    case IDT_BINARY_SAVE_OPTIONS:
+    case IDT_BINARY_SAFE_SAVE:
       if (bFixLineEndings || bAutoStripBlanks)
       {
         bFixLineEndings = FALSE;
@@ -6638,7 +6638,7 @@ void UpdateToolbar()
     CheckTool(IDT_SETTINGS_SAVE_ON_EXIT, nSaveSettingsMode == SSM_ALL);
   }
   // [2e]: Binary Save Options button #170
-  CheckTool(IDT_BINARY_SAVE_OPTIONS, !bFixLineEndings && !bAutoStripBlanks);
+  CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
   // [/2e]
 }
 

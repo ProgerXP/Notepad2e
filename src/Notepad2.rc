@@ -1384,7 +1384,7 @@ BEGIN
     IDT_FILE_OPEN_NEXT      "Open Next"
     IDT_FILE_OPEN_PREV      "Open Previous"
     IDT_SETTINGS_SAVE_ON_EXIT "Save Settings On Exit"
-    IDT_BINARY_SAVE_OPTIONS "Binary Save Options"
+    IDT_BINARY_SAFE_SAVE    "Binary-Safe Save"
 END
 
 STRINGTABLE
