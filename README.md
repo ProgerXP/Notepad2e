@@ -34,6 +34,8 @@ Windows Registry Editor Version 5.00
 
 Now whenever Windows needs to launch `Notepad.exe` it will launch the EXE you have specified instead.
 
+To undo, replace last line above with `"Debugger"=-` and import the key.
+
 ## INI File Location
 *This describes the algorithm used in *Notepad2* and this fork. The process is fully Unicode-safe.*
 
@@ -43,15 +45,15 @@ The following locations are checked for an existing INI file, in order:
 
 1. `/f SOME.INI` command-line switch (relative to program's dir, with possible `%env%` vars). `/f0` forces no INI file even when explicitly asked for one (e.g. by **F7**).
 2. `PROGRAM.ini`, where `PROGRAM` is the EXE's name without `.exe` extension, is searched in:
-  * Program's directory
-  * `%APPDATA%`
-  * `%PATH%` 
+    * Program's directory
+    * `%APPDATA%`
+    * `%PATH%` 
 3. Same as above but with `Notepad2.ini` (*Notepad 2e* is a drop-in replacement so its INI file works with *Notepad2* and vice-versa).
 4. If an INI was found, it may be further redirected: its `Notepad2.ini` key from `[Notepad2]` section is read and checked:
-  * If this key is non-existing or blank, the previously found INI is used
-  * Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
-  * Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
-  * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
+    * If this key is non-existing or blank, the previously found INI is used
+    * Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
+    * Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
+    * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
 
 If the located INI path (`PATH` below) is a directory rather than a file or it ends with `\` then:
 
@@ -160,14 +162,31 @@ File > Open Previous (**Alt+G**) command lets you toggle between two most recent
 ### [NEW] Open By Prefix
 Open Dialog allows opening by prefix - so instead of typing the full file name or selecting a file with your mouse you can only type the name's beginning and hit Enter (or click Open) to open the first matching file. #19
 
-If entered string is a wildcard (e.g. `*.txt`) then the first matching file is opened. This overrides standard Windows behaviour when the file list would be filtered instead of opening a file.
-
 **Note:** prefix cannot match one of reserved file system names such as `NUL` and `CON` (case-insensitive).
+
+Users of Windows 7 and above are advised to enable Explorer autocompletion instead, which offers a similar experience in other system dialogs: #165
+
+```
+Windows Registry Editor Version 5.00
+
+[HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete]
+"Append Completion"="yes"
+```
 
 Related settings:
 * `OpenDialogByPrefix`
 
 ![Open by prefix](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-prefix.gif)
+
+### [NEW] Save On Lose Focus
+File > Save On Lose Focus submenu allows automatic saving of the document when program's window loses focus, similarly to Vim's `au FocusLost * :wa`. Saving doesn't occur if any of these is true: #164
+
+* current document is unsaved (*Untitled*) or not modified
+* window is not visible 
+* a child window is opened (e.g. an Open dialog or Tab Settings)
+
+Related settings:
+* `SaveOnLoseFocus`
 
 ### [NEW] Open Next/Previous
 File > Open Next/Previous commands allow opening files going before/after current in the currently opened file's directory (this is determined by regular name sorting, it doesn't depend on how Explorer or Open Dialog sorts files). #43
@@ -180,7 +199,7 @@ When saving, new file's extension is determined first by `DefaultExtension` sett
 When saving, if the given new file name ends on period then the file is saved without extension. Example: enter `Makefile.` to get `Makefile` on disk.
 
 ### File Dialogs
-* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File dialog limitation, it can't be used if new name only differs in character case. #140
+* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File dialog limitation, it can't be used if new name only differs in character case (an error appears if this is detected). #140
 * Open/Save File dialogs now start with the path of last opened file. #22
 * Improved directory locking - in some cases a directory could not be removed even after opening a file in another directory due to Windows' Open Dialog operation. #100
 
@@ -209,6 +228,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 * **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. Setting: `ShellMenuType`. #12
 * **[NEW]** File > Launch > Open Folder (**Ctrl+Alt+L**) command that opens Explorer's window with the current file selected. #136
 * File > Launch > Command (**Ctrl+R**) retains the command string until another file is opened and sets current directory to that of the file. #26
+* **[NEW]** File > Elevate allows obtaining admin permissions without restarting the program (checked if already elevated, otherwise call it to elevate). #166
 
 ![Ctrl+Shift+R - Shell Menu](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/shell-menu.gif)
 ![Ctrl+Alt+L - Open Folder](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-folder.gif)
@@ -234,6 +254,7 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
 ### PCRE Support
 * Replaced incomplete *Notepad2* regexp implementation with a fully-featured Boost regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
 * One particularly useful feature is ability to change character case with new escape codes: `\l` (one next symbol becomes lower-case), `\L` (all following become lower-case), `\u` and `\U` (similar but for upper-case), `\E` (cancels effect of the preceding `\L` and `\U`). Example: replace from `(.)(.)` to `\l\1\u\2`.
+* An ICU version is available, which adds Unicode support to Boost regexps, allowing `\U` and others to work on non-ASCII symbols. #162
 * Original Notepad2's regexp didn't support UTF-8 buffers (only ASCII) - Boost's does. #78
 * Boost was hacked to allow Replace string to contain NUL (`\0`) - normally it truncates the buffer. 
 * **Attention:** there are two kinds of backreferences (`\n` and `$n`) and unlike in PHP they are used differently: #145
@@ -279,8 +300,7 @@ Binary data:
 * **[NEW]** Edit > Special > QP Encode and QP Decode (**[Ctrl+]Alt+Shift+Q**) operate on the document as a bytestream similarly to PHP's `quoted_printable_encode()` and `quoted_printable_decode()`. Output: `ab=3Dc` for `ab=c`. See [RFC2045, Section 6.7](http://www.faqs.org/rfcs/rfc2045) (this format is typically used in vCards and MIME). #124
 * **[NEW]** Edit > Special > Base64 Encode and Base64 Decode (**[Ctrl+]Alt+Shift+W**) operate on the document as a bytestream similarly to PHP's `base64_encode()` and `base64_decode()`. Base64 Decode ignores whitespace. Output: `YWJj` for `abc`. #122
 * Big buffers will see a progress bar in the status bar for the above commands.
-
-**Warning:** if you're saving binary data (e.g. base64-encoding a binary file) make sure to disable both checkboxes in File > Line Endings > Default.
+* **Warning:** when saving binary data (e.g. a base64-encoded binary file) disable both checkboxes in File > Line Endings > Default, or saved content may be altered. Binary-Safe Save toolbar button does this for you. #170
 
 ![Encode/Decode Quoted-Printable/Base64](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/qp-b64.gif)
 
@@ -314,7 +334,8 @@ When file is re-coded (File > Encoding menu items) caret position and selection 
 Go To Last Change (**Ctrl+Shift+Z**) command moves caret to the position of last Undo action. Useful when making a change, scrolling to confirm something and then navigating back to continue. #6
 
 ### Join Lines
-Join Lines and Join Paragraphs (**Ctrl+[Shift+]J**) adjust selection's end so that it doesn't include trailing line break(s). #135
+* Join Lines and Join Paragraphs (**Ctrl+[Shift+]J**) adjust selection's end before the operation so that it doesn't include trailing line break(s). #135
+* **[NEW]** On empty selection, Join Lines replaces nearest right-side line break and whitespace around it with a single space and moves the caret after it. This is similar to doing Join Lines + Compress Whitespace on the selection, and to Vim's **J**. #160
 
 ### Setting Commands
 * **[NEW]** Replace Settings in All Instances command makes all other instances reload the INI from disk. Useful if you have dozens of *Notepad2* windows open and need to change settings in one of them and have them saved (normally when an instance quits it overwrites the INI with its own settings). With this command you can do Save Settings Now, then Replace to ensure your new settings are not overwritten. #5
@@ -334,14 +355,20 @@ Related settings:
 * Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
 * Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are simply inserted into a focused input instead of replacing its value. #119
-* Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
+* **[NEW]** Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
 * "Accelerated" navigation mode for **Ctrl+Arrow** (like in Windows Notepad) that skips punctuation and other characters. Setting: `WordNavigationMode`.
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
 * File > Line Endings > Unix has **Alt+F8** hotkey assigned. #44
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
+* **[NEW]** DPI awareness - proper font scaling with crisp texts without Windows fallback mechanism. #154
 * Fixed Notepad2 bug in processing `[Toolbar Labels]` INI section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
 * Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
+* Changed defaults: #167
+
+Setting | Old Value | New Value
+--------|-----------|----------
+Long Line | 72 | 80
 
 ### Undocumented Notepad2 Features
 * Rectangular selection mode is actually supported - hold **Alt** while dragging your mouse to make a selection. This is particularly useful for **Column sort** in Sort Lines (**Alt+O**).
@@ -452,9 +479,17 @@ If **1**, highlighting is independent of window focus (always visible if enabled
 
 Type | Default | Set By UI
 -----|---------|----------
-int, bool | 1 |
+int | 1 |
 
-If **1**, Open File dialog can be submitted even if just a prefix of an existing file's name or a mask was entered.
+Indicates if Open File dialog can be submitted even if just a prefix of an existing file's name was entered.
+
+Windows 7+ have a registry preference that enables autocompletion in various places (Win+R, Open/Save dialogs, Explorer windows, etc.). Its effect on Open File dialogs is similar to this *Notepad 2e* feature. Enabling both doesn't cause any trouble but it makes more sense to have only one of them active. #165
+
+Value | Meaning
+------|--------
+0 | Don't enable, use native Windows behaviour
+1 | Enable unless Explorer autocompletion is enabled 
+2 | Always enable
 
 ### ScrollYCaretPolicy
 
@@ -477,21 +512,21 @@ Value | Meaning
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 0 | Settings > Evaluate Math Expressions
+int | 1 | Settings > Evaluate Math Expressions
 
 Controls math expression evaluation. #88
 
 Value | Meaning
 ------|--------
 0 | No evaluation (as in *Notepad2*)
-1 | Evaluate selection (if it's a valid expression)
-2 | Evaluate selection or, if empty - entire current line (if valid)
+1 | Evaluate selection or, if empty - entire current line (if valid)
+2 | Evaluate selection only (if it's a valid expression)
 
 ### TitleLanguage
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 0 | Settings > Window Title Display
+int | 2 | Settings > Window Title Display
 
 Controls keyboard language display in window's title.
 
@@ -539,7 +574,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, bool | 1 | Settings > Ctrl+Wheel Scroll
 
-If **0** then **Ctrl+Wheel** changes zoom level.
+If **0** then **Ctrl+Wheel** changes zoom level (*Notepad2* behaviour).
 
 If **1** then **Ctrl+Wheel** scrolls the document by entire pages.
 
@@ -608,6 +643,20 @@ Type | Default | Set By UI
 int, KiB | 96 KiB |
 
 Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
+
+#### SaveOnLoseFocus
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 | File > Save On Lose Focus
+
+Controls if current document is saved when window loses focus, except under certain conditions.
+
+Value | Meaning
+------|--------
+0 | Don't save
+1 | Save
+2 | Save; when new file is opened or created, reset the setting to **0**
 
 #### _SelectionType
 
