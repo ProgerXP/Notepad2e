@@ -183,7 +183,7 @@ File > Save On Lose Focus submenu allows automatic saving of the document when p
 
 * current document is unsaved (*Untitled*) or not modified
 * window is not visible 
-* a child window is opened (e.g. an Open dialog or Tab Settings)
+* a child window is opened (e.g. an Open File dialog or Tab Settings)
 
 Related settings:
 * `SaveOnLoseFocus`
@@ -364,7 +364,7 @@ Related settings:
 * Fixed Notepad2 bug in processing `[Toolbar Labels]` INI section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
 * Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
-* Changed defaults: #167
+* Changed *Notepad2* defaults: #167
 
 Setting | Old Value | New Value
 --------|-----------|----------
@@ -519,7 +519,7 @@ Controls math expression evaluation. #88
 Value | Meaning
 ------|--------
 0 | No evaluation (as in *Notepad2*)
-1 | Evaluate selection or, if empty - entire current line (if valid)
+1 | Evaluate selection or, if empty - entire current line (if it's a valid expression)
 2 | Evaluate selection only (if it's a valid expression)
 
 ### TitleLanguage
@@ -609,6 +609,20 @@ Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where o
 ![Accelerated navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-accel.gif)
 ![Standard navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-std.gif)
 
+### SaveOnLoseFocus
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 0 | File > Save On Lose Focus
+
+Controls if current document is saved when window loses focus, except under certain conditions.
+
+Value | Meaning
+------|--------
+0 | Don't save
+1 | Save
+2 | Save, and when a new file is opened or created, reset this setting to **0**
+
 ### Current Word Highlighting
 
 Settings in this section that begin with `_` have variations depending on highlighting conditions; all variations have the same format and meaning but may have different default values and apply in different situations.
@@ -643,20 +657,6 @@ Type | Default | Set By UI
 int, KiB | 96 KiB |
 
 Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
-
-#### SaveOnLoseFocus
-
-Type | Default | Set By UI
------|---------|----------
-int | 0 | File > Save On Lose Focus
-
-Controls if current document is saved when window loses focus, except under certain conditions.
-
-Value | Meaning
-------|--------
-0 | Don't save
-1 | Save
-2 | Save; when new file is opened or created, reset the setting to **0**
 
 #### _SelectionType
 
