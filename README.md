@@ -72,6 +72,8 @@ Word under cursor is highlighted in one of 3 modes: #27 #1
 2. Two or more occurrences but all are visible on the screen.
 3. Multiple occurrences with some hidden under the scrollbar.
 
+**Warning:** when word wrapping is enabled, highlighting assumes that entire bottom line is visible even if it has invisible sublines (wrapped continuations).
+
 Related settings:
 * `HighlightSelection`
 * `MaxSearchDistance`
@@ -92,6 +94,8 @@ Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and a
 $foo = "foo";
 print($foo);
 ```
+
+**Warning:** when word wrapping is enabled, highlighting assumes that entire bottom line is visible even if it has invisible sublines (wrapped continuations), thus you might be editing occurrences on those sublines without seeing them.
 
 Related settings:
 * See **Current Word Highlighting** section (above).
