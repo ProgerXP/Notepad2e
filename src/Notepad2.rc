@@ -320,7 +320,7 @@ BEGIN
         BEGIN
             MENUITEM "&Disabled",                   ID_SETTINGS_EVAL_DISABLED
             MENUITEM "Current &Selection",          ID_SETTINGS_EVAL_SELECTION
-            MENUITEM "Current &Line",               ID_SETTINGS_EVAL_LINE
+            MENUITEM "Current Selection or &Line",  ID_SETTINGS_EVAL_LINE
         END
         POPUP "&Ctrl+Arrow Navigation"
         BEGIN
