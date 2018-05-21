@@ -4954,6 +4954,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
     N2E_DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
+
+        N2E_DPI_INIT();
+
         int cchSelection;
         char *lpszSelection;
         char *lpsz;
@@ -5065,8 +5068,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               CheckDlgButton(hwnd, IDC_FINDCLOSE, BST_CHECKED);
           }
         }
-
-        N2E_DPI_INIT();
 
         if (!bSwitchedFindReplace)
         {
