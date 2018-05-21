@@ -11,6 +11,7 @@
 #include "SciCall.h"
 #include "Notepad2.h"
 #include "Trace.h"
+#include "VersionHelper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -39,7 +40,7 @@ UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
-EUsePrefixInOpenDialog iUsePrefixInOpenDialog = UPO_DISABLED;
+EUsePrefixInOpenDialog iUsePrefixInOpenDialog = UPO_AUTO;
 BOOL bUsePrefixInOpenDialog = FALSE;
 ESaveOnLoseFocus iSaveOnLoseFocus = SLF_DISABLED;
 BOOL bCtrlWheelScroll = TRUE;
@@ -163,9 +164,7 @@ void n2e_LoadINI()
   else
   {
     bUsePrefixInOpenDialog = TRUE;
-
-    extern BOOL IsWindows10OrGreater();
-    if (IsWindows10OrGreater())
+    if (IsWindows7OrGreater())
     {
       HKEY hKey;
       if (SUCCEEDED(RegOpenKey(HKEY_CURRENT_USER,

@@ -1,6 +1,7 @@
 #include "DPIHelper.h"
 #include "Scintilla.h"
 #include "SciCall.h"
+#include "VersionHelper.h"
 
 #define USER32DLL L"User32.dll"
 #define SHCOREDLL L"Shcore.dll"
@@ -21,49 +22,6 @@ GetDpiForMonitorProc pfnGetDpiForMonitor;
 
 static HMODULE hUser32Module = NULL;
 static HMODULE hSHCOREModule = NULL;
-
-BOOL IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
-{
-  OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-  DWORDLONG        const dwlConditionMask = VerSetConditionMask(
-    VerSetConditionMask(
-      VerSetConditionMask(
-        0, VER_MAJORVERSION, VER_GREATER_EQUAL),
-      VER_MINORVERSION, VER_GREATER_EQUAL),
-    VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
-
-  osvi.dwMajorVersion = wMajorVersion;
-  osvi.dwMinorVersion = wMinorVersion;
-  osvi.wServicePackMajor = wServicePackMajor;
-
-  return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
-}
-
-BOOL IsWindowsVistaOrGreater()
-{
-  static BOOL bInitialized = FALSE;
-  static BOOL bWindowsVistaOrGreater = FALSE;
-  if (!bInitialized)
-  {
-    bWindowsVistaOrGreater = IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
-    bInitialized = TRUE;
-  }
-  return bWindowsVistaOrGreater;
-}
-
-BOOL IsWindows10OrGreater()
-{
-#define _WIN32_WINNT_WIN10                  0x0A00
-
-  static BOOL bInitialized = FALSE;
-  static BOOL bWindows10OrGreater = FALSE;
-  if (!bInitialized)
-  {
-    bWindows10OrGreater = IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN10), LOBYTE(_WIN32_WINNT_WIN10), 0);
-    bInitialized = TRUE;
-  }
-  return bWindows10OrGreater;
-}
 
 BOOL n2e_DPIInitialize()
 {
