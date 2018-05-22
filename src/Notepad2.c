@@ -59,6 +59,7 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
+BOOL      bFileSaveInProgress = FALSE;
 
 #define NUMTOOLBITMAPS  28
 #define NUMINITIALTOOLS 25
@@ -865,12 +866,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       {
         n2e_SelectionEditStop(SES_APPLY);
         // [2e]: Save on deactivate #164
-        static BOOL bFileSaveInProgress = FALSE;
-        if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && lstrlen(szCurFile) && !bFileSaveInProgress)
+        if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
+            && lstrlen(szCurFile) && !bFileSaveInProgress)
         {
-          bFileSaveInProgress = TRUE;
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
-          bFileSaveInProgress = FALSE;
         }
       }
       break;
@@ -7018,7 +7017,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 //  FileSave()
 //
 //
-BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
+BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
 {
   WCHAR tchFile[MAX_PATH];
   BOOL fSuccess = FALSE;
@@ -7168,6 +7167,15 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bD
   return (fSuccess);
 }
 
+
+BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
+{
+  BOOL res = FALSE;
+  bFileSaveInProgress = TRUE;
+  res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, bSaveCopy, bDeleteOld);
+  bFileSaveInProgress = FALSE;
+  return res;
+}
 
 //=============================================================================
 //
