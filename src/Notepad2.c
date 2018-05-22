@@ -867,7 +867,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         // [2e]: Save on deactivate #164
         if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && lstrlen(szCurFile))
         {
-          bModified = FALSE;
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
         }
       }
