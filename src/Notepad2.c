@@ -59,6 +59,7 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
+// [2e]: Save on deactivate #164
 BOOL      bFileSaveInProgress = FALSE;
 
 #define NUMTOOLBITMAPS  28
@@ -7170,11 +7171,13 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
 
 BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
 {
+  // [2e]: Save on deactivate #164
   BOOL res = FALSE;
   bFileSaveInProgress = TRUE;
   res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, bSaveCopy, bDeleteOld);
   bFileSaveInProgress = FALSE;
   return res;
+  // [/2e]
 }
 
 //=============================================================================
