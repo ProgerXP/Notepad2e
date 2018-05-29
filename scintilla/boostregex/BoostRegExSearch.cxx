@@ -259,9 +259,10 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 		const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
 		search._compileFlags = 
 			regex_constants::ECMAScript
-			| (caseSensitive ? 0 : regex_constants::icase);
+			| (caseSensitive ? 0 : regex_constants::icase)
+			| regex_constants::no_except;
 		search._regexString = regexString;
-    search._boostRegexFlags = regex_constants::match_default;
+		search._boostRegexFlags = regex_constants::match_default;
 		
 		Match match =
 			isUtf8 ? _utf8.FindText(search)
@@ -306,7 +307,14 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 		search._boostRegexFlags = search.isLineStart(lineRange.start)
 			? search._boostRegexFlags & ~regex_constants::match_not_bol
 			: search._boostRegexFlags |  regex_constants::match_not_bol;
-		found = boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
+		try
+		{
+			found = boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
+		}
+		catch (...)
+		{
+			found = false;
+		}
 		if (found) {
 			const int  position = _match[0].first.pos();
 			const int  length   = _match[0].second.pos() - position;
