@@ -43,8 +43,9 @@ BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bChec
 void n2e_EditFindReplaceUpdateCheckboxes(const HWND hwnd, const UINT nCtrlID);
 void n2e_EditFindReplaceInitialUpdateCheckboxes(const HWND hwnd);
 
-BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd);
-BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo);
+BOOL n2e_IsSubclassedEdit(const HWND hwnd);
+BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit);
+BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo);
 BOOL n2e_SubclassOpenDialog(const HWND hwnd);
 
 BOOL n2e_IsValidClosingTagA(LPCSTR pTag);

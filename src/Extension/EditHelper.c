@@ -898,42 +898,64 @@ void remove_char(char* str, char c)
   *pw = '\0';
 }
 
+BOOL n2e_FilteredPasteFromClipboard(const HWND hwnd)
+{
+  char *pClip = EditGetClipboardText(hwndEdit);
+  if (pClip)
+  {
+    remove_char(pClip, '\r');
+    remove_char(pClip, '\n');
+    const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
+    const int textLength = MultiByteToWideChar(codePage, 0, pClip, -1, NULL, 0);
+    LPWSTR pWideText = LocalAlloc(LPTR, textLength * 2);
+    MultiByteToWideChar(codePage, 0, pClip, -1, pWideText, textLength);
+    SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
+    LocalFree(pWideText);
+    LocalFree(pClip);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+BOOL n2e_CheckWindowClassName(const HWND hwnd, LPCWSTR lpwstrClassname)
+{
+  WCHAR wchClassName[MAX_PATH];
+  RealGetWindowClass(hwnd, wchClassName, _countof(wchClassName));
+  return (_wcsicmp(wchClassName, lpwstrClassname) == 0);
+}
+
 #define PROPERTY_ORIGINAL_WINDOW_PROC L"OriginalWindowProc"
+
+LRESULT n2e_FilterClipboardEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (uMsg)
+  {
+    case WM_PASTE:
+      n2e_FilteredPasteFromClipboard(hwnd);
+      return 0;
+    default:
+      break;
+  }
+  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+}
 
 LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch (uMsg)
   {
     case WM_PASTE:
+      if (n2e_FilteredPasteFromClipboard(hwnd))
       {
-        char *pClip = EditGetClipboardText(hwndEdit);
-        if (pClip)
+        DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
+        HWND hParent = GetParent(hwnd);
+        if (n2e_CheckWindowClassName(hParent, WC_COMBOBOX))
         {
-          remove_char(pClip, '\r');
-          remove_char(pClip, '\n');
-
-          const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
-          const int textLength = MultiByteToWideChar(codePage, 0, pClip, -1, NULL, 0);
-          LPWSTR pWideText = LocalAlloc(LPTR, textLength * 2);
-          MultiByteToWideChar(codePage, 0, pClip, -1, pWideText, textLength);
-          SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
-          LocalFree(pWideText);
-          LocalFree(pClip);
-
-          DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
-          HWND hParent = GetParent(hwnd);
-          WCHAR wchClassName[MAX_PATH];
-          RealGetWindowClass(hParent, wchClassName, _countof(wchClassName));
-          if (_wcsicmp(wchClassName, WC_COMBOBOX) == 0)
-          {
-            dwControlID = GetWindowLong(hParent, GWL_ID);
-            hParent = GetParent(hParent);
-          }
-          PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
-          return 0;
+          dwControlID = GetWindowLong(hParent, GWL_ID);
+          hParent = GetParent(hParent);
         }
+        PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
       }
-      break;
+      return 0;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -999,18 +1021,37 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
   return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
 }
 
-BOOL n2e_IsSubclassedEditInCombo(const HWND hwnd)
+BOOL n2e_IsSubclassedEdit(const HWND hwnd)
 {
   return GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC) != 0;
 }
 
-BOOL n2e_SubclassEditInCombo(const HWND hwnd, const UINT idCombo)
+BOOL n2e_SubclassEditImpl(const HWND hwnd, LONG_PTR pEditProc)
 {
-  HWND hwndCombo = GetDlgItem(hwnd, idCombo);
-  HWND hwndEdit = FindWindowEx(hwndCombo, NULL, WC_EDIT, NULL);
-  if (hwndEdit && !n2e_IsSubclassedEditInCombo(hwndEdit))
+  assert(pEditProc);
+  if (hwnd && !n2e_IsSubclassedEdit(hwnd))
   {
-    SetProp(hwndEdit, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwndEdit, GWLP_WNDPROC, (LONG_PTR)n2e_FindEditWndProc));
+    SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)pEditProc));
+    return TRUE;
+  }
+  return FALSE;
+}
+
+BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit)
+{
+  const HWND hwndEditCtrl = GetDlgItem(hwnd, idEdit);
+  return n2e_CheckWindowClassName(hwndEditCtrl, WC_EDIT)
+          ? n2e_SubclassEditImpl(hwndEditCtrl, (LONG_PTR)n2e_FilterClipboardEditWndProc)
+          : FALSE;
+}
+
+BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo)
+{
+  const HWND hwndCombo = GetDlgItem(hwnd, idCombo);
+  const HWND hwndEditCtrl = FindWindowEx(hwndCombo, NULL, WC_EDIT, NULL);
+  if (hwndEditCtrl && !n2e_IsSubclassedEdit(hwndEditCtrl))
+  {
+    n2e_SubclassEditImpl(hwndEditCtrl, (LONG_PTR)n2e_FindEditWndProc);
     return TRUE;
   }
   return FALSE;

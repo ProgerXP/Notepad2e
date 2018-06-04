@@ -5095,8 +5095,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         // [2e]: Match indicator
         n2e_ResetFindIcon();
         // [2e]: Ctrl+H: Replace input behaviour #121
-        n2e_SubclassEditInCombo(hwnd, IDC_FINDTEXT);
-        n2e_SubclassEditInCombo(hwnd, IDC_REPLACETEXT);
+        n2e_SubclassFindEditInCombo(hwnd, IDC_FINDTEXT);
+        n2e_SubclassFindEditInCombo(hwnd, IDC_REPLACETEXT);
         // [/2e]
       }
       return TRUE;
@@ -6203,6 +6203,11 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+
+        // [2e]: Remove line breaks from Alt+M #173
+        n2e_EnableClipboardFiltering(hwnd, 100);
+        n2e_EnableClipboardFiltering(hwnd, 101);
+        // [/2e]
 
         N2E_DPI_INIT();
         CenterDlgInParent(hwnd);
