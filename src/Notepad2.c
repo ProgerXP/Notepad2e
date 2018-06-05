@@ -861,6 +861,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     // [/2e]
 
 
+    // [2e]: Save on deactivate #164
+    case WM_ACTIVATE:
+      n2e_OnActivateMainWindow(wParam, lParam);
+      break;
+    // [/2e]
+
+
     // [2e]: Edit highlighted word #18
     case WM_ACTIVATEAPP:
       if (!wParam)
@@ -868,7 +875,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         n2e_SelectionEditStop(SES_APPLY);
         // [2e]: Save on deactivate #164
         if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
-            && lstrlen(szCurFile) && !bFileSaveInProgress)
+            && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
         }

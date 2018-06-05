@@ -152,3 +152,24 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
   }
   return FALSE;
 }
+
+BOOL bIsModalDialogOnTop = FALSE;
+
+BOOL n2e_IsModalDialogOnTop()
+{
+  return bIsModalDialogOnTop;
+}
+
+BOOL n2e_IsModalDialog(const HWND hwnd)
+{
+  extern INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam);
+
+  return n2e_CheckWindowClassName(hwnd, L"#32770")
+    && (GetWindowLongPtr(hwnd, GWL_STYLE) & DS_MODALFRAME)
+    && (GetWindowLongPtr(hwnd, DWLP_DLGPROC) != EditFindReplaceDlgProcW);
+}
+
+void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam)
+{
+  bIsModalDialogOnTop = (wParam == WA_INACTIVE) ? n2e_IsModalDialog((HWND)lParam) : FALSE;
+}
