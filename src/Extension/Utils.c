@@ -12,6 +12,7 @@
 #include "Notepad2.h"
 #include "Trace.h"
 #include "VersionHelper.h"
+#include "ProcessElevationUtils.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -213,6 +214,7 @@ void n2e_Release()
 {
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
+  n2e_FinalizeIPC();
 }
 
 void n2e_Reset()

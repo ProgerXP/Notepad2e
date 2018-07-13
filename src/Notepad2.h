@@ -113,7 +113,7 @@ void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
 
 void LoadSettings();
 void SaveSettings(BOOL);
-void ParseCommandLine();
+BOOL ParseCommandLine();
 void LoadFlags();
 int  CheckIniFile(LPWSTR, LPCWSTR);
 int  CheckIniFileRedirect(LPWSTR, LPCWSTR);

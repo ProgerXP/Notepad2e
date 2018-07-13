@@ -38,6 +38,7 @@
 #include "Extension/ExtSelection.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
+#include "Extension/ProcessElevationUtils.h"
 #include "Extension/Utils.h"
 
 
@@ -1436,7 +1437,7 @@ BOOL EditSaveFile(
 
   *pbCancelDataLoss = FALSE;
 
-  hFile = CreateFile(pszFile,
+  hFile = n2e_CreateFile(pszFile,
                      GENERIC_WRITE,
                      FILE_SHARE_READ | FILE_SHARE_WRITE,
                      NULL,
@@ -1452,7 +1453,7 @@ BOOL EditSaveFile(
     if (dwAttributes != INVALID_FILE_ATTRIBUTES)
     {
       dwAttributes = dwAttributes & (FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM);
-      hFile = CreateFile(pszFile,
+      hFile = n2e_CreateFile(pszFile,
                          GENERIC_WRITE,
                          FILE_SHARE_READ | FILE_SHARE_WRITE,
                          NULL,
@@ -1483,7 +1484,7 @@ BOOL EditSaveFile(
 
   if (cbData == 0)
   {
-    bWriteSuccess = SetEndOfFile(hFile);
+    bWriteSuccess = n2e_SetEndOfFile(hFile);
     dwLastIOError = GetLastError();
   }
 
@@ -1494,7 +1495,7 @@ BOOL EditSaveFile(
       LPWSTR lpDataWide;
       int    cbDataWide;
 
-      SetEndOfFile(hFile);
+      n2e_SetEndOfFile(hFile);
 
       lpDataWide = GlobalAlloc(GPTR, cbData * 2 + 16);
       cbDataWide = MultiByteToWideChar(CP_UTF8, 0, lpData, cbData, lpDataWide, (int)GlobalSize(lpDataWide) / sizeof(WCHAR));
@@ -1502,15 +1503,15 @@ BOOL EditSaveFile(
       if (mEncoding[iEncoding].uFlags & NCP_UNICODE_BOM)
       {
         if (mEncoding[iEncoding].uFlags & NCP_UNICODE_REVERSE)
-          WriteFile(hFile, (LPCVOID) "\xFE\xFF", 2, &dwBytesWritten, NULL);
+          n2e_WriteFile(hFile, (LPCVOID) "\xFE\xFF", 2, &dwBytesWritten, NULL);
         else
-          WriteFile(hFile, (LPCVOID) "\xFF\xFE", 2, &dwBytesWritten, NULL);
+          n2e_WriteFile(hFile, (LPCVOID) "\xFF\xFE", 2, &dwBytesWritten, NULL);
       }
 
       if (mEncoding[iEncoding].uFlags & NCP_UNICODE_REVERSE)
         _swab((char *)lpDataWide, (char *)lpDataWide, cbDataWide * sizeof(WCHAR));
 
-      bWriteSuccess = WriteFile(hFile, lpDataWide, cbDataWide * sizeof(WCHAR), &dwBytesWritten, NULL);
+      bWriteSuccess = n2e_WriteFile(hFile, lpDataWide, cbDataWide * sizeof(WCHAR), &dwBytesWritten, NULL);
       dwLastIOError = GetLastError();
 
       GlobalFree(lpDataWide);
@@ -1519,12 +1520,12 @@ BOOL EditSaveFile(
 
     else if (mEncoding[iEncoding].uFlags & NCP_UTF8)
     {
-      SetEndOfFile(hFile);
+      n2e_SetEndOfFile(hFile);
 
       if (mEncoding[iEncoding].uFlags & NCP_UTF8_SIGN)
-        WriteFile(hFile, (LPCVOID) "\xEF\xBB\xBF", 3, &dwBytesWritten, NULL);
+        n2e_WriteFile(hFile, (LPCVOID) "\xEF\xBB\xBF", 3, &dwBytesWritten, NULL);
 
-      bWriteSuccess = WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
+      bWriteSuccess = n2e_WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
       dwLastIOError = GetLastError();
 
       GlobalFree(lpData);
@@ -1562,8 +1563,8 @@ BOOL EditSaveFile(
 
       if (!bCancelDataLoss || InfoBox(MBOKCANCEL, L"MsgConv3", IDS_ERR_UNICODE2) == IDOK)
       {
-        SetEndOfFile(hFile);
-        bWriteSuccess = WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
+        n2e_SetEndOfFile(hFile);
+        bWriteSuccess = n2e_WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
         dwLastIOError = GetLastError();
       }
       else
@@ -1577,14 +1578,14 @@ BOOL EditSaveFile(
 
     else
     {
-      SetEndOfFile(hFile);
-      bWriteSuccess = WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
+      n2e_SetEndOfFile(hFile);
+      bWriteSuccess = n2e_WriteFile(hFile, lpData, cbData, &dwBytesWritten, NULL);
       dwLastIOError = GetLastError();
       GlobalFree(lpData);
     }
   }
 
-  CloseHandle(hFile);
+  n2e_CloseHandle(hFile);
 
   if (bWriteSuccess)
   {

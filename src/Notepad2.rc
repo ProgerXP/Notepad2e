@@ -120,6 +120,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Propert&ies...",              IDM_FILE_PROPERTIES
         MENUITEM "Create &Desktop Link",        IDM_FILE_CREATELINK
+        MENUITEM "&Elevate",                    IDM_FILE_ELEVATE
         MENUITEM SEPARATOR
         POPUP "&Favorites"
         BEGIN
@@ -1446,6 +1447,7 @@ BEGIN
     IDS_ERR_SAVEAS          "New file name refers to the same old file. This is not allowed.%s"
     IDS_ERR_SAVEAS_RENAME_DETAILS
                             "\n\nIf you were trying to rename it into a different character case, this would not work due to Windows Save File Dialog limitation (#140). To work around this, do two renames using a temporary file name."
+    IDS_ERR_ELEVATE         "Failed to run elevated instance."
 END
 
 STRINGTABLE
