@@ -31,8 +31,15 @@ BOOL Event_Init(Event *pEvent, LPCWSTR lpName, const BOOL bOpenExisting)
   {
     return FALSE;
   }
+  if (Event_IsOK(pEvent))
+  {
+    Event_Free(pEvent);
+  }
   ZeroMemory(pEvent, sizeof(Event));
-  lstrcpy(pEvent->name, lpName);
+  if (lpName)
+  {
+    lstrcpyn(pEvent->name, lpName, CSTRLEN(pEvent->name));
+  }
   pEvent->handle = bOpenExisting
     ? OpenEvent(EVENT_ALL_ACCESS, FALSE, pEvent->name)
     : n2e_CreateEvent(pEvent->name);

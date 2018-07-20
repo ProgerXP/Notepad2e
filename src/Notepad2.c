@@ -1346,6 +1346,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     // [/2e]
 
 
+    // [2e]: Process elevation #166
+    case WM_IPC_INTERRUPTED: {
+        SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDM_FILE_ELEVATE, 1), (LPARAM)TRUE);
+      };
+      break;
+    // [/2e]
+
     default:
       if (umsg == msgTaskbarCreated)
       {
@@ -1893,11 +1900,11 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_FILE_CREATELINK, i);
   // [2e]: Process elevation #166
   n2e_SetUACIcon(hmenu, IDM_FILE_ELEVATE);
-  EnableCmd(hmenu, IDM_FILE_ELEVATE, IsWindowsVistaOrGreater() && !fIsElevated && !n2e_IsElevatedMode());
-  if (fIsElevated || n2e_IsElevatedMode())
+  if (!IsWindowsVistaOrGreater() || fIsElevated)
   {
-    CheckCmd(hmenu, IDM_FILE_ELEVATE, TRUE);
+    EnableCmd(hmenu, IDM_FILE_ELEVATE, FALSE);
   }
+  CheckCmd(hmenu, IDM_FILE_ELEVATE, fIsElevated || n2e_IsElevatedMode());
   // [/2e]
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
   // [2e]: File->RenameTo menu item
@@ -2517,14 +2524,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Process elevation #166
     case IDM_FILE_ELEVATE:
-      if (n2e_RunElevatedInstance())
-      {
-        MsgInitMenu(hwnd, (WPARAM)GetMenu(hwnd), 0);
-      }
-      else
-      {
-        MsgBox(MBWARN, IDS_ERR_ELEVATE);
-      }
+      n2e_SwitchElevation(lParam == 0);
       break;
     // [/2e]
 
@@ -6038,7 +6038,7 @@ BOOL ParseCommandLine()
         {
           return FALSE;
         }
-        n2e_IPCClientProc(pidServerProcess);
+        n2e_IPC_ClientProc(pidServerProcess);
         return FALSE;
       }
       // [/2e]
@@ -7151,7 +7151,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
         return FALSE;
       }
       // [/2e]
-      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
+      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)
+                          // [2e]: Process elevation #166
+                          || n2e_IPC_FileIO(tchFile, n2e_GetFileHeaderLength(iEncoding) + SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0)))
       {
         n2e_ResetLastRun();
         // [2e]: File->RenameTo menu item
@@ -7183,14 +7185,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   else
-    fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
-
-  // [2e]: Process elevation #166
-  if (!fSuccess && n2e_IsIPCInitialized())
-  {
-    fSuccess = n2e_IPCServerProc(szCurFile, n2e_GetFileHeaderLength(iEncoding) + SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
-  }
-  // [/2e]
+    fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
+               // [2e]: Process elevation #166
+               || n2e_IPC_FileIO(szCurFile, n2e_GetFileHeaderLength(iEncoding) + SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
 
   if (fSuccess)
   {

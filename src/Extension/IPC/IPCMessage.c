@@ -8,7 +8,7 @@ BOOL IPCMessage_Init(IPCMessage* pIPCMessage, LPCWSTR filename, LONGLONG size)
     return FALSE;
   }
   ZeroMemory(pIPCMessage, sizeof(IPCMessage));
-  lstrcpy(pIPCMessage->filename, filename);
+  lstrcpyn(pIPCMessage->filename, filename, CSTRLEN(pIPCMessage->filename));
   pIPCMessage->size = size;
   return TRUE;
 }

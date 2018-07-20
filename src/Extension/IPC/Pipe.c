@@ -20,8 +20,12 @@ BOOL Pipe_Init(Pipe *pPipe, LPCWSTR lpName, LPCWSTR lpEventName, const BOOL bOpe
   {
     return FALSE;
   }
+  if (Pipe_IsOK(pPipe))
+  {
+    Pipe_Free(pPipe);
+  }
   ZeroMemory(pPipe, sizeof(Pipe));
-  lstrcpy(pPipe->name, lpName);
+  lstrcpyn(pPipe->name, lpName, CSTRLEN(pPipe->name));
   Event_Init(&pPipe->event, lpEventName, bOpenExisting);
   pPipe->handle = !bOpenExisting
     ? CreateNamedPipe(lpName,

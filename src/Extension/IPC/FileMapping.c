@@ -34,8 +34,12 @@ BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, LPCWSTR lpEvent
   {
     return FALSE;
   }
+  if (FileMapping_IsOK(pFileMapping))
+  {
+    FileMapping_Free(pFileMapping);
+  }
   ZeroMemory(pFileMapping, sizeof(FileMapping));
-  lstrcpy(pFileMapping->name, lpName);
+  lstrcpyn(pFileMapping->name, lpName, CSTRLEN(pFileMapping->name));
   Event_Init(&pFileMapping->event, lpEventName, bOpenExisting);
 
   return FileMapping_IsOK(pFileMapping);
@@ -108,6 +112,7 @@ BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
   {
     return FALSE;
   }
+  FileMapping_FlushViewOfFile(pFileMapping);
   FileMapping_UnmapViewOfFile(pFileMapping);
   if (pFileMapping->handle)
   {
@@ -173,6 +178,16 @@ BOOL FileMapping_UnmapViewOfFile(FileMapping *pFileMapping)
   return FALSE;
 }
 
+BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping)
+{
+  BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping);
+  if (!FileMapping_IsOK(pFileMapping))
+  {
+    return FALSE;
+  }
+  return pFileMapping->lpData && FlushViewOfFile(pFileMapping->lpData, pFileMapping->iBufferSize);
+}
+
 BOOL FileMapping_Read(FileMapping *pFileMapping, LPBYTE pBuffer, const DWORD count)
 {
   if (!FileMapping_IsOK(pFileMapping))
@@ -208,6 +223,7 @@ BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, DWORD count)
     DWORD sizeDest = FileMapping_BufferAvailable(pFileMapping);
     if (sizeDest == 0)
     {
+      FileMapping_FlushViewOfFile(pFileMapping);
       FileMapping_UnmapViewOfFile(pFileMapping);
       if (!FileMapping_MapViewOfFile(pFileMapping))
       {

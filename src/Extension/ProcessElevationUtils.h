@@ -6,12 +6,12 @@ BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
 BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bSlave);
 BOOL n2e_FinalizeIPC();
 
-BOOL n2e_IPCServerProc(LPCWSTR lpFilename, const LONGLONG size);
-BOOL n2e_IPCClientProc(const DWORD pidServerProcess);
+BOOL n2e_IPC_FileIO(LPCWSTR lpFilename, const LONGLONG size);
+BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess);
 
 BOOL n2e_IsIPCInitialized();
 BOOL n2e_IsElevatedMode();
-BOOL n2e_RunElevatedInstance();
+BOOL n2e_SwitchElevation(const BOOL bResetIPCID);
 
 HANDLE n2e_CreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
                       DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,  HANDLE hTemplateFile);

@@ -74,6 +74,7 @@ typedef enum
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
+#define WM_IPC_INTERRUPTED (WM_USER + 0x100)
 #define N2E_MAX_PATH_N_CMD_LINE MAX_PATH + 40
 
 extern ECSSSettingsMode iCSSSettings;

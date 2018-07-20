@@ -335,8 +335,10 @@
     <ClCompile Include="src\Extension\IPC\FileMapping.c" />
     <ClCompile Include="src\Extension\IPC\IPCMessage.c" />
     <ClCompile Include="src\Extension\IPC\Pipe.c" />
+    <ClCompile Include="src\Extension\IPC\Thread.c" />
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\ProcessElevationUtils.c" />
+    <ClCompile Include="src\Extension\Shell32Helper.c" />
     <ClCompile Include="src\Extension\StringRecoding.c" />
     <ClCompile Include="src\Extension\StrToBase64.c" />
     <ClCompile Include="src\Extension\StrToHex.c">
@@ -429,9 +431,11 @@
     <ClInclude Include="src\Extension\IPC\FileMapping.h" />
     <ClInclude Include="src\Extension\IPC\IPCMessage.h" />
     <ClInclude Include="src\Extension\IPC\Pipe.h" />
+    <ClInclude Include="src\Extension\IPC\Thread.h" />
     <ClInclude Include="src\Extension\MainWndHelper.h" />
     <ClInclude Include="src\Extension\ProcessElevationUtils.h" />
     <ClInclude Include="src\Extension\SciCall.h" />
+    <ClInclude Include="src\Extension\Shell32Helper.h" />
     <ClInclude Include="src\Extension\stdafx.h" />
     <ClInclude Include="src\Extension\StringRecoding.h" />
     <ClInclude Include="src\Extension\StrToBase64.h" />
