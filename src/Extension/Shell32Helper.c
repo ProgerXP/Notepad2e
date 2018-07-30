@@ -25,9 +25,5 @@ BOOL n2e_Shell32Initialize()
 
 HRESULT n2e_SHGetStockIconInfo(enum SHSTOCKICONID siid, UINT uFlags, SHSTOCKICONINFO *psii)
 {
-  if (!hShell32Module)
-  {
-    n2e_Shell32Initialize();
-  }
   return pfnSHGetStockIconInfo ? pfnSHGetStockIconInfo(siid, uFlags, psii) : E_FAIL;
 }

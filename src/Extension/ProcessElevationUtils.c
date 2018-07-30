@@ -43,13 +43,13 @@ BOOL n2e_IsElevatedMode()
 DWORD GenerateIPCID()
 {
   srand(GetTickCount());
-  return rand() % 65535;
+  return rand() % 65536;
 }
 
 LPCWSTR toString(const DWORD value)
 {
-  static wchar_t wchBuffer[10];
-  _itow_s(value, wchBuffer, sizeof(wchBuffer), 10);
+  static wchar_t wchBuffer[12];
+  _itow_s(value, wchBuffer, COUNTOF(wchBuffer), 10);
   return wchBuffer;
 }
 
@@ -249,24 +249,24 @@ BOOL n2e_IPC_ServerProc(LPCWSTR filename, const LONGLONG size)
     return res;
   }
   FileMapping_Reset(&fileMapping);
-  res = IPCMessage_Init(&ipcm, filename, size)
-        && IPCMessage_SetRequest(&ipcm)
-        && IPCMessage_Write(&ipcm, &pipe);
+  res = IPCMessage_Init(&ipcm, filename, size, IPCC_OPEN_FILE_MAPPING) && IPCMessage_Write(&ipcm, &pipe);
   if (res)
   {
     res = FALSE;
     HANDLE handles[] = { FileMapping_GetWaitHandle(&fileMapping), Pipe_GetWaitHandle(&pipe) };
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
-      case WAIT_OBJECT_0:
+      case WAIT_OBJECT_0:     // created file mapping
         res = TRUE;
         break;
-      case WAIT_OBJECT_0 + 1:
+      case WAIT_OBJECT_0 + 1: // received IPC message with error code
         if (IPCMessage_Read(&ipcm, &pipe))
         {
-          if (ipcm.size == 0)
+          if ((size == 0) && (size == ipcm.size))
           {
-            res = TRUE;   // expected error for empty file mapping
+            res = TRUE;       // 1. Expected destination file size is 0
+                              // 2. File mapping always failed for empty files
+                              // 3. Treat this failure as success (no data is required to be written)
           }
           else
           {
@@ -281,11 +281,11 @@ BOOL n2e_IPC_ServerProc(LPCWSTR filename, const LONGLONG size)
   if (res)
   {
     res = FALSE;
-    IPCMessage_SetResponse(&ipcm);
     if (ipcm.size == 0)
     {
-      IPCMessage_Write(&ipcm, &pipe);
-      res = FileMapping_Close(&fileMapping, -1);
+      IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
+      res = IPCMessage_Write(&ipcm, &pipe)
+            && FileMapping_Close(&fileMapping, -1);
     }
     else if (FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, TRUE)
              && FileMapping_MapViewOfFile(&fileMapping))
@@ -297,12 +297,12 @@ BOOL n2e_IPC_ServerProc(LPCWSTR filename, const LONGLONG size)
       BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 
       res = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
-      ipcm.size = fileMapping.iDataSize;
 
-      FileMapping_UnmapViewOfFile(&fileMapping);
-      IPCMessage_Write(&ipcm, &pipe);
-      FileMapping_Close(&fileMapping, fileMapping.iDataSize);
-      res = TRUE;
+      res &= FileMapping_UnmapViewOfFile(&fileMapping);
+      ipcm.size = fileMapping.iDataSize;
+      IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
+      res &= IPCMessage_Write(&ipcm, &pipe);
+      res &= FileMapping_Close(&fileMapping, fileMapping.iDataSize);
     }
   }
   return res;
@@ -327,7 +327,7 @@ BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
         if (IPCMessage_Read(&ipcm, &pipe))  // process IPC message
         {
           BOOL bSuccess = FALSE;
-          if (IPCMessage_IsRequest(&ipcm))
+          if (IPCMessage_IsOpenFileMappingCommand(&ipcm))
           {
             if ((lstrlen(ipcm.filename) > 0)
                  && FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, FALSE))
@@ -339,7 +339,7 @@ BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
               IPCMessage_SetError(&ipcm, FileMapping_GetError(&fileMapping));
             }
           }
-          else if (IPCMessage_IsResponse(&ipcm))
+          else if (IPCMessage_IsCloseFileMappingCommand(&ipcm))
           {
             if (FileMapping_Close(&fileMapping, ipcm.size))
             {
@@ -352,7 +352,7 @@ BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
           }
           if (!bSuccess)
           {
-            IPCMessage_Write(&ipcm, &pipe);
+            IPCMessage_Write(&ipcm, &pipe); // respond with IPC message on failure
           }
         }
         break;

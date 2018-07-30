@@ -1,3 +1,4 @@
+#include "stdafx.h"
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
@@ -13,6 +14,7 @@
 #include "Trace.h"
 #include "VersionHelper.h"
 #include "ProcessElevationUtils.h"
+#include "Shell32Helper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -103,6 +105,7 @@ void n2e_Init()
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_ResetLastRun();
   n2e_EditInit();
+  n2e_Shell32Initialize();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
