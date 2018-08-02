@@ -61,7 +61,6 @@ HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
 // [2e]: Save on deactivate #164
 BOOL      bFileSaveInProgress = FALSE;
-BOOL      bSkipNextSaveOnDeactivateApp = FALSE;
 
 #define NUMTOOLBITMAPS  28
 #define NUMINITIALTOOLS 25
@@ -876,11 +875,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         n2e_SelectionEditStop(SES_APPLY);
         // [2e]: Save on deactivate #164
         if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
-            && lstrlen(szCurFile) && !bFileSaveInProgress && !bSkipNextSaveOnDeactivateApp && !n2e_IsModalDialogOnTop())
+            && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
         }
-        bSkipNextSaveOnDeactivateApp = FALSE;
       }
       break;
     // [/2e]
@@ -2280,7 +2278,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int x, y, cx, cy, imax;
         WCHAR tch[64];
 
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if (bSaveBeforeRunningTools
+            && (LOWORD(wParam) != IDM_FILE_NEWWINDOW2)      // [2e]: Disable save prompt for some Launch commands #176
+            && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         GetModuleFileName(NULL, szModuleName, COUNTOF(szModuleName));
@@ -2346,9 +2346,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         sei.lpDirectory = g_wchWorkingDirectory;
         sei.nShow = SW_SHOWNORMAL;
 
-        // [2e]: Disable save prompt for some Launch commands #176
-        bSkipNextSaveOnDeactivateApp = (LOWORD(wParam) == IDM_FILE_NEWWINDOW2);
-
         ShellExecuteEx(&sei);
       }
       break;
@@ -2394,9 +2391,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (!lstrlen(szCurFile))
           break;
 
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
-          break;
-
         wcscpy_s(wchParams, iParamsSize, L"/select, \"");
         wcscat_s(wchParams, iParamsSize, szCurFile);
         wcscat_s(wchParams, iParamsSize, L"\"");
@@ -2409,9 +2403,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         sei.lpParameters = wchParams;
         sei.lpDirectory = NULL;
         sei.nShow = SW_SHOWNORMAL;
-
-        // [2e]: Disable save prompt for some Launch commands #176
-        bSkipNextSaveOnDeactivateApp = TRUE;
 
         ShellExecuteEx(&sei);
       }
