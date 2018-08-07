@@ -2,17 +2,28 @@
 #include <AclAPI.h>
 #include <assert.h>
 
+void FileMapping_ResetError(FileMapping *pFileMapping)
+{
+  if (FileMapping_IsOK(pFileMapping))
+  {
+    pFileMapping->error = 0;
+  }
+}
+
 DWORD FileMapping_GetError(const FileMapping *pFileMapping)
 {
-  return pFileMapping->error;
+  return FileMapping_IsOK(pFileMapping) ? pFileMapping->error : 0;
 }
 
 void FileMapping_SaveError(FileMapping *pFileMapping)
 {
-  const DWORD dwError = GetLastError();
-  if (dwError)
+  if (FileMapping_IsOK(pFileMapping))
   {
-    pFileMapping->error = dwError;
+    const DWORD dwError = GetLastError();
+    if (dwError && !pFileMapping->error)
+    {
+      pFileMapping->error = dwError;
+    }
   }
 }
 
@@ -68,7 +79,7 @@ BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 s
   {
     pFileMapping->file = CreateFile(lpFile,
                                     GENERIC_READ | GENERIC_WRITE,
-                                    FILE_SHARE_READ | FILE_SHARE_WRITE,
+                                    0,
                                     NULL,
                                     OPEN_ALWAYS,
                                     0,
@@ -83,16 +94,16 @@ BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 s
     {
       pFileMapping->handle = CreateFileMapping(pFileMapping->file, NULL, PAGE_READWRITE,
                                                HIDWORD(size), LODWORD(size), pFileMapping->name);
-    }
-    if (pFileMapping->handle)
-    {
-      SetSecurityInfo(pFileMapping->handle, SE_KERNEL_OBJECT,
-                      DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
-                      NULL, NULL, NULL, NULL);
-    }
-    else
-    {
-      FileMapping_SaveError(pFileMapping);
+      if (pFileMapping->handle)
+      {
+        SetSecurityInfo(pFileMapping->handle, SE_KERNEL_OBJECT,
+                        DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION,
+                        NULL, NULL, NULL, NULL);
+      }
+      else
+      {
+        FileMapping_SaveError(pFileMapping);
+      }
     }
   }
   else
@@ -103,7 +114,7 @@ BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 s
       FileMapping_SaveError(pFileMapping);
     }
   }
-  return pFileMapping->handle != NULL;
+  return (!bOpenExisting && (size == 0)) || (pFileMapping->handle != NULL);
 }
 
 BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
@@ -112,8 +123,14 @@ BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
   {
     return FALSE;
   }
-  FileMapping_FlushViewOfFile(pFileMapping);
-  FileMapping_UnmapViewOfFile(pFileMapping);
+  if (pFileMapping->lpData && !FileMapping_FlushViewOfFile(pFileMapping))
+  {
+    FileMapping_SaveError(pFileMapping);
+  }
+  if (pFileMapping->lpData && !FileMapping_UnmapViewOfFile(pFileMapping))
+  {
+    FileMapping_SaveError(pFileMapping);
+  }
   if (pFileMapping->handle)
   {
     CloseHandle(pFileMapping->handle);
@@ -124,7 +141,10 @@ BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
     if (size >= 0)
     {
       LONG hiDWORD = HIDWORD(size);
-      SetFilePointer(pFileMapping->file, LODWORD(size), &hiDWORD, FILE_BEGIN);
+      if (INVALID_SET_FILE_POINTER == SetFilePointer(pFileMapping->file, LODWORD(size), &hiDWORD, FILE_BEGIN))
+      {
+        FileMapping_SaveError(pFileMapping);
+      }
       if (!SetEndOfFile(pFileMapping->file))
       {
         FileMapping_SaveError(pFileMapping);
@@ -180,7 +200,6 @@ BOOL FileMapping_UnmapViewOfFile(FileMapping *pFileMapping)
 
 BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping)
 {
-  BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping);
   if (!FileMapping_IsOK(pFileMapping))
   {
     return FALSE;

@@ -20,24 +20,33 @@ extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern HWND  hwndMain;
 BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
 
+BOOL bElevationEnabled = FALSE;
 BOOL bIPCInitialized = FALSE;
 BOOL bIsClientMode = FALSE;
 DWORD dwIPCID = 0;
 
+Event eventIPCReset;
+Event eventIPCResult;
 Event eventIPCServerReset;
 Event eventIPCClientInitialized;
-Pipe pipe;
+Pipe pipeServer;
+Pipe pipeClient;
 FileMapping fileMapping;
-Thread threadProcessWatcher;
+Thread threadIPCServerWorker;
 
 BOOL n2e_IsIPCIDParam(LPCWSTR lpParam)
 {
   return (StrCmpNI(lpParam, IPCID_PARAM, CSTRLEN(IPCID_PARAM)) == 0);
 }
 
+BOOL n2e_IsElevatedModeEnabled()
+{
+  return bElevationEnabled;
+}
+
 BOOL n2e_IsElevatedMode()
 {
-  return IsWindowsVistaOrGreater() && n2e_IsIPCInitialized();
+  return IsWindowsVistaOrGreater() && n2e_IsElevatedModeEnabled();
 }
 
 DWORD GenerateIPCID()
@@ -76,24 +85,42 @@ void ReloadMainMenu()
 }
 
 #define IPC_RESET_EVENT_NAME  L"Global\\ipc_reset_event"
+#define IPC_SERVER_EVENT_NAME  L"Global\\ipc_server_event"
 #define IPC_START_EVENT_NAME  L"Global\\ipc_start_event"
-#define PIPE_NAME  L"\\\\.\\pipe\\ipc"
-#define PIPE_EVENT_NAME L"Global\\pipe_event"
+#define PIPE_SERVER_NAME  L"\\\\.\\pipe\\ipc_server"
+#define PIPE_SERVER_EVENT_NAME L"Global\\pipe_server_event"
+#define PIPE_CLIENT_NAME  L"\\\\.\\pipe\\ipc_client"
+#define PIPE_CLIENT_EVENT_NAME L"Global\\pipe_client_event"
 #define FILEMAPPING_NAME L"Global\\filemapping"
 #define FILEMAPPING_EVENT_NAME L"Global\\filemapping_event"
 
 BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
 {
-  n2e_FinalizeIPC();
+  n2e_FinalizeIPC(FALSE);
 
   bIsClientMode = bClientMode;
   dwIPCID = idIPC;
 
-  Event_Init(&eventIPCServerReset, getObjectName(IPC_RESET_EVENT_NAME, toString(dwIPCID)), bIsClientMode);
+  if (!bIsClientMode)
+  {
+    if (!Event_GetWaitHandle(&eventIPCReset))
+    {
+      Event_Init(&eventIPCReset, NULL, FALSE);
+    }
+    if (!Event_GetWaitHandle(&eventIPCResult))
+    {
+      Event_Init(&eventIPCResult, NULL, FALSE);
+    }
+  }
+  Event_Init(&eventIPCServerReset, getObjectName(IPC_SERVER_EVENT_NAME, toString(dwIPCID)), bIsClientMode);
   Event_Init(&eventIPCClientInitialized, getObjectName(IPC_START_EVENT_NAME, toString(dwIPCID)), bIsClientMode);
-  Pipe_Init(&pipe,
-            getObjectName(PIPE_NAME, toString(dwIPCID)),
-            getObjectName2(PIPE_EVENT_NAME, toString(dwIPCID)),
+  Pipe_Init(&pipeServer,
+            getObjectName(PIPE_SERVER_NAME, toString(dwIPCID)),
+            getObjectName2(PIPE_SERVER_EVENT_NAME, toString(dwIPCID)),
+            bIsClientMode);
+  Pipe_Init(&pipeClient,
+            getObjectName(PIPE_CLIENT_NAME, toString(dwIPCID)),
+            getObjectName2(PIPE_CLIENT_EVENT_NAME, toString(dwIPCID)),
             bIsClientMode);
   FileMapping_Init(&fileMapping,
                    getObjectName(FILEMAPPING_NAME, toString(dwIPCID)),
@@ -101,9 +128,11 @@ BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
                    bIsClientMode);
   
   const BOOL res = dwIPCID
+    && (bIsClientMode || (Event_IsOK(&eventIPCReset) && Event_IsOK(&eventIPCResult)))
     && Event_IsOK(&eventIPCServerReset)
     && Event_IsOK(&eventIPCClientInitialized)
-    && Pipe_IsOK(&pipe)
+    && Pipe_IsOK(&pipeServer)
+    && Pipe_IsOK(&pipeClient)
     && FileMapping_IsOK(&fileMapping);
 
   if (res && bIsClientMode)
@@ -114,123 +143,176 @@ BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
   return res;
 }
 
-BOOL n2e_FinalizeIPC()
+BOOL n2e_FinalizeIPC(const BOOL bFreeAll)
 {
   bIPCInitialized = FALSE;
 
   if (!bIsClientMode)
   {
     Event_Set(&eventIPCServerReset);
+    if (bFreeAll)
+    {
+      Event_Free(&eventIPCReset);
+      Event_Free(&eventIPCResult);
+    }
   }
   Event_Free(&eventIPCServerReset);
   Event_Free(&eventIPCClientInitialized);
-  Pipe_Free(&pipe);
+  Pipe_Free(&pipeServer);
+  Pipe_Free(&pipeClient);
   FileMapping_Free(&fileMapping);
-  if (GetCurrentThreadId() != threadProcessWatcher.id)
+  if (GetCurrentThreadId() != threadIPCServerWorker.id)
   {
-    Thread_Free(&threadProcessWatcher);
+    Thread_Free(&threadIPCServerWorker);
   }
   return TRUE;
 }
 
-unsigned __stdcall IPCServerThreadProc(LPVOID param)
+BOOL RunElevatedInstance(HANDLE* phElevatedProcess)
+{
+  BOOL res = FALSE;
+  LPWSTR lpCmdLine = GetCommandLine();
+
+  STARTUPINFO si = { 0 };
+  SHELLEXECUTEINFO sei = { 0 };
+
+  if (lstrlen(lpCmdLine) > 0)
+  {
+    const int iMaxCmdLength = lstrlen(lpCmdLine) + 25;
+    LPWSTR lpCmdLineNew = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
+    lstrcpyn(lpCmdLineNew, lpCmdLine, iMaxCmdLength);
+    lstrcat(lpCmdLineNew, L" /" IPCID_PARAM);
+    lstrcat(lpCmdLineNew, toString(GetCurrentProcessId()));
+    lstrcat(lpCmdLineNew, L",");
+    lstrcat(lpCmdLineNew, toString(dwIPCID));
+
+    ZeroMemory(&si, sizeof(STARTUPINFO));
+    si.cb = sizeof(STARTUPINFO);
+    GetStartupInfo(&si);
+
+    LPWSTR lpArg1 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
+    LPWSTR lpArg2 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
+    ExtractFirstArgument(lpCmdLineNew, lpArg1, lpArg2);
+
+    ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
+    sei.cbSize = sizeof(SHELLEXECUTEINFO);
+    sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | /*SEE_MASK_NOZONECHECKS*/0x00800000;
+
+    sei.hwnd = GetForegroundWindow();
+    sei.lpVerb = L"runas";
+    sei.lpFile = lpArg1;
+    sei.lpParameters = lpArg2;
+    sei.lpDirectory = g_wchWorkingDirectory;
+    sei.nShow = SW_HIDE;
+
+    res = ShellExecuteEx(&sei) && sei.hProcess;
+
+    n2e_Free(lpArg1);
+    n2e_Free(lpArg2);
+    n2e_Free(lpCmdLineNew);
+  }
+  if (res)
+  {
+    if (phElevatedProcess)
+    {
+      *phElevatedProcess = sei.hProcess;
+    }
+  }
+  return res;
+}
+
+void CloseProcessHandle(HANDLE* pHandle)
+{
+  if (*pHandle)
+  {
+    CloseHandle(*pHandle);
+    *pHandle = NULL;
+  }
+}
+
+void n2e_InitIPC(const BOOL bResetIPC)
+{
+  const int nMaxAttempts = 10;
+  int i = 0;
+  while (i++ < nMaxAttempts)
+  {
+    const DWORD ipc = (!bResetIPC && (i == 1)) ? dwIPCID : GenerateIPCID();
+    if (n2e_InitializeIPC(ipc, FALSE))
+    {
+      break;
+    }
+  }
+}
+
+BOOL AddHandle(HANDLE* pHandles, int* pHandleCount, const HANDLE handle)
+{
+  if (handle)
+  {
+    pHandles[*pHandleCount] = handle;
+    (*pHandleCount)++;
+    return TRUE;
+  }
+  return FALSE;
+}
+
+unsigned __stdcall IPCServerWorkerThreadProc(LPVOID param)
 {
   Thread* pThread = (Thread*)param;
-  LPWSTR lpCmdLine = GetCommandLine();
-  if (pThread && (lstrlen(lpCmdLine) > 0))
+  if (pThread)
   {
-    const BOOL bResetIPC = (BOOL)pThread->param;
-    const int nMaxAttempts = 10;
-    int i = 0;
-    while (i++ < nMaxAttempts)
+    BOOL res = TRUE;
+    BOOL bShowErrorPrompt = TRUE;
+    HANDLE hClientProcess = NULL;
+    n2e_InitIPC((BOOL)pThread->param);
+    Event_Set(&eventIPCReset);
+    while (res)
     {
-      const DWORD ipc = (!bResetIPC && (i == 1)) ? dwIPCID : GenerateIPCID();
-      if (n2e_InitializeIPC(ipc, FALSE))
+      HANDLE handles[5] = { 0 };
+      int iHandleCount = 0;
+      AddHandle(handles, &iHandleCount, Event_GetWaitHandle(&eventIPCReset))
+        && AddHandle(handles, &iHandleCount, Event_GetWaitHandle(&pThread->event))
+        && AddHandle(handles, &iHandleCount, Event_GetWaitHandle(&eventIPCClientInitialized))
+        && AddHandle(handles, &iHandleCount, hClientProcess);
+      switch (WaitForMultipleObjects(iHandleCount, handles, FALSE, INFINITE))
       {
-        break;
+        case WAIT_OBJECT_0:     // reset IPC
+          n2e_InitIPC(TRUE);
+          CloseProcessHandle(&hClientProcess);
+          if (RunElevatedInstance(&hClientProcess))
+          {
+            bShowErrorPrompt = FALSE;
+          }
+          else
+          {
+            n2e_FinalizeIPC(FALSE);
+            Event_Set(&eventIPCResult);
+            if (bShowErrorPrompt)
+            {
+              bElevationEnabled = FALSE;
+              res = FALSE;      // first attempt failed, break
+              continue;
+            }
+          }
+          break;
+        case WAIT_OBJECT_0 + 1: // force thread quit
+          res = FALSE;
+          break;
+        case WAIT_OBJECT_0 + 2: // IPC initialized
+          Event_Set(&eventIPCResult);
+          break;
+        case WAIT_OBJECT_0 + 3: // client process quit
+          n2e_FinalizeIPC(FALSE);
+          CloseProcessHandle(&hClientProcess);
+          break;
+        case WAIT_TIMEOUT:
+        default:
+          break;
       }
     }
-
-    BOOL res = FALSE;
-    if (n2e_IsIPCInitialized())
+    CloseProcessHandle(&hClientProcess);
+    n2e_FinalizeIPC(FALSE);
+    if (bShowErrorPrompt)
     {
-      const int iMaxCmdLength = lstrlen(lpCmdLine) + 25;
-      LPWSTR lpCmdLineNew = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-      lstrcpyn(lpCmdLineNew, lpCmdLine, iMaxCmdLength);
-      lstrcat(lpCmdLineNew, L" /" IPCID_PARAM);
-      lstrcat(lpCmdLineNew, toString(GetCurrentProcessId()));
-      lstrcat(lpCmdLineNew, L",");
-      lstrcat(lpCmdLineNew, toString(dwIPCID));
-
-      STARTUPINFO si = { 0 };
-      ZeroMemory(&si, sizeof(STARTUPINFO));
-      si.cb = sizeof(STARTUPINFO);
-      GetStartupInfo(&si);
-
-      LPWSTR lpArg1 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-      LPWSTR lpArg2 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-      ExtractFirstArgument(lpCmdLineNew, lpArg1, lpArg2);
-
-      SHELLEXECUTEINFO sei = { 0 };
-      ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
-      sei.cbSize = sizeof(SHELLEXECUTEINFO);
-      sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | /*SEE_MASK_NOZONECHECKS*/0x00800000;
-
-      sei.hwnd = GetForegroundWindow();
-      sei.lpVerb = L"runas";
-      sei.lpFile = lpArg1;
-      sei.lpParameters = lpArg2;
-      sei.lpDirectory = g_wchWorkingDirectory;
-      sei.nShow = SW_HIDE;
-
-      res = ShellExecuteEx(&sei) && sei.hProcess;
-      const HANDLE hClientProcess = sei.hProcess;
-
-      if (res)
-      {
-        HANDLE handles[] = { Event_GetWaitHandle(&eventIPCClientInitialized), Event_GetWaitHandle(&pThread->event), hClientProcess };
-        switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
-        {
-          case WAIT_OBJECT_0:     // IPC initialized
-            break;
-          case WAIT_OBJECT_0 + 1: // force thread quit by server
-          case WAIT_OBJECT_0 + 2: // client process quit
-            res = FALSE;
-            break;
-          default:
-            res = FALSE;
-            break;
-        }
-      }
-
-      n2e_Free(lpArg1);
-      n2e_Free(lpArg2);
-      n2e_Free(lpCmdLineNew);
-
-      if (res)
-      {
-        ReloadMainMenu();
-        HANDLE handles[] = { Event_GetWaitHandle(&pThread->event), hClientProcess };
-        switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
-        {
-          case WAIT_OBJECT_0:     // force thread quit by server
-            break;
-          case WAIT_OBJECT_0 + 1: // client process quit
-            PostMessage(hwndMain, WM_IPC_INTERRUPTED, 0, 0);
-            break;
-          default:
-            break;
-        }
-      }
-      if (hClientProcess)
-      {
-        CloseHandle(hClientProcess);
-      }
-    }
-    if (!res)
-    {
-      n2e_FinalizeIPC();
-      ReloadMainMenu();
       MsgBox(MBWARN, IDS_ERR_ELEVATE);
     }
   }
@@ -238,133 +320,143 @@ unsigned __stdcall IPCServerThreadProc(LPVOID param)
 }
 
 IPCMessage ipcm = { 0 };
-
 extern DWORD dwLastIOError;
-
-BOOL n2e_IPC_ServerProc(LPCWSTR filename, const LONGLONG size)
-{
-  BOOL res = FALSE;
-  if (!n2e_IsIPCInitialized())
-  {
-    return res;
-  }
-  FileMapping_Reset(&fileMapping);
-  res = IPCMessage_Init(&ipcm, filename, size, IPCC_OPEN_FILE_MAPPING) && IPCMessage_Write(&ipcm, &pipe);
-  if (res)
-  {
-    res = FALSE;
-    HANDLE handles[] = { FileMapping_GetWaitHandle(&fileMapping), Pipe_GetWaitHandle(&pipe) };
-    switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
-    {
-      case WAIT_OBJECT_0:     // created file mapping
-        res = TRUE;
-        break;
-      case WAIT_OBJECT_0 + 1: // received IPC message with error code
-        if (IPCMessage_Read(&ipcm, &pipe))
-        {
-          if ((size == 0) && (size == ipcm.size))
-          {
-            res = TRUE;       // 1. Expected destination file size is 0
-                              // 2. File mapping always failed for empty files
-                              // 3. Treat this failure as success (no data is required to be written)
-          }
-          else
-          {
-            dwLastIOError = ipcm.error;
-          }
-        }
-        break;
-      default:
-        break;
-    }
-  }
-  if (res)
-  {
-    res = FALSE;
-    if (ipcm.size == 0)
-    {
-      IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
-      res = IPCMessage_Write(&ipcm, &pipe)
-            && FileMapping_Close(&fileMapping, -1);
-    }
-    else if (FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, TRUE)
-             && FileMapping_MapViewOfFile(&fileMapping))
-    {
-      extern WCHAR szCurFile[MAX_PATH + 40];
-      extern int iEncoding;
-      extern int iEOLMode;
-      BOOL bCancelDataLoss = FALSE;
-      BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
-
-      res = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
-
-      res &= FileMapping_UnmapViewOfFile(&fileMapping);
-      ipcm.size = fileMapping.iDataSize;
-      IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
-      res &= IPCMessage_Write(&ipcm, &pipe);
-      res &= FileMapping_Close(&fileMapping, fileMapping.iDataSize);
-    }
-  }
-  return res;
-}
 
 BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
 {
-  BOOL res = FALSE;
+  BOOL res = TRUE;
   HANDLE hServerProc = OpenProcess(SYNCHRONIZE, FALSE, pidServerProcess);
-  while (!res)
+  while (res)
   {
-    HANDLE handles[] = { hServerProc, Event_GetWaitHandle(&eventIPCServerReset), Pipe_GetWaitHandle(&pipe) };
+    HANDLE handles[] = { hServerProc, Event_GetWaitHandle(&eventIPCServerReset), Pipe_GetWaitHandle(&pipeServer) };
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
       case WAIT_OBJECT_0:                   // server process quit
       case WAIT_OBJECT_0 + 1:               // IPC reset 
-        CloseHandle(hServerProc);
-        hServerProc = NULL;
-        res = TRUE;
+        res = FALSE;
         break;
       case WAIT_OBJECT_0 + 2:
-        if (IPCMessage_Read(&ipcm, &pipe))  // process IPC message
+        if (IPCMessage_Read(&ipcm, &pipeServer))  // process IPC message
         {
-          BOOL bSuccess = FALSE;
           if (IPCMessage_IsOpenFileMappingCommand(&ipcm))
           {
+            FileMapping_ResetError(&fileMapping);
             if ((lstrlen(ipcm.filename) > 0)
-                 && FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, FALSE))
+                && FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, FALSE))
             {
-              bSuccess = FileMapping_Set(&fileMapping);
-            }
-            if (!bSuccess)
-            {
-              IPCMessage_SetError(&ipcm, FileMapping_GetError(&fileMapping));
+              FileMapping_Set(&fileMapping);
             }
           }
           else if (IPCMessage_IsCloseFileMappingCommand(&ipcm))
           {
-            if (FileMapping_Close(&fileMapping, ipcm.size))
-            {
-              bSuccess = TRUE;
-            }
-            else
-            {
-              IPCMessage_SetError(&ipcm, FileMapping_GetError(&fileMapping));
-            }
+            FileMapping_ResetError(&fileMapping);
+            FileMapping_Close(&fileMapping, ipcm.size);
           }
-          if (!bSuccess)
-          {
-            IPCMessage_Write(&ipcm, &pipe); // respond with IPC message on failure
-          }
+          IPCMessage_SetError(&ipcm, FileMapping_GetError(&fileMapping));
+          IPCMessage_Write(&ipcm, &pipeClient);
         }
         break;
       default:
         break;
     }
   }
+  CloseProcessHandle(&hServerProc);
   return res;
+}
+
+BOOL n2e_IPC_ServerProc(LPCWSTR lpFilename, const LONGLONG size)
+{
+  extern HWND  hwndEdit;
+  extern WCHAR szCurFile[MAX_PATH + 40];
+  extern int iEncoding;
+  extern int iEOLMode;
+  BOOL bCancelDataLoss = FALSE;
+  BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
+
+  BOOL res = n2e_IsIPCInitialized();
+  BOOL bIOResult = FALSE;
+  if (!res)
+  {
+    return res;
+  }
+  FileMapping_Reset(&fileMapping);
+  res = IPCMessage_Init(&ipcm, lpFilename, size, IPCC_OPEN_FILE_MAPPING) && IPCMessage_Write(&ipcm, &pipeServer);
+  int nRemainingIPCMessages = 1;
+  while (res)
+  {
+    HANDLE handles[] = { Pipe_GetWaitHandle(&pipeClient), FileMapping_GetWaitHandle(&fileMapping) };
+    switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
+    {
+      case WAIT_OBJECT_0:   // process IPC message
+        if (IPCMessage_Read(&ipcm, &pipeClient))
+        {
+          --nRemainingIPCMessages;
+          if (ipcm.error || (nRemainingIPCMessages == 0))
+          {
+            dwLastIOError = ipcm.error;
+            res = FALSE;
+          }
+        }
+        break;
+      case WAIT_OBJECT_0 + 1: // created file mapping
+        if (ipcm.size == 0)
+        {
+          SendMessage(hwndEdit, SCI_SETSAVEPOINT, 0, 0);
+          bIOResult = TRUE;
+          IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
+          FileMapping_ResetError(&fileMapping);
+          bIOResult = IPCMessage_Write(&ipcm, &pipeServer) && FileMapping_Close(&fileMapping, -1);
+          ++nRemainingIPCMessages;
+        }
+        else if (FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, TRUE)
+                 && FileMapping_MapViewOfFile(&fileMapping))
+        {
+          bIOResult = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
+
+          bIOResult &= FileMapping_UnmapViewOfFile(&fileMapping);
+          ipcm.size = fileMapping.iDataSize;
+          IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
+          bIOResult &= IPCMessage_Write(&ipcm, &pipeServer);
+          FileMapping_ResetError(&fileMapping);
+          bIOResult &= FileMapping_Close(&fileMapping, fileMapping.iDataSize);
+          ++nRemainingIPCMessages;
+        }
+        else
+        {
+          dwLastIOError = FileMapping_GetError(&fileMapping);
+          res = FALSE;
+        }
+        break;
+      default:
+        break;
+    }
+  }
+  return bIOResult;
 }
 
 BOOL n2e_IPC_FileIO(LPCWSTR lpFilename, const LONGLONG size)
 {
+  BOOL res = FALSE;
+  if (!n2e_IsElevatedModeEnabled())
+  {
+    return res;
+  }
+  res = n2e_IsIPCInitialized();
+  if (!res)
+  {
+    // reset IPC and wait for result
+    Event_Reset(&eventIPCResult);
+    Event_Set(&eventIPCReset);
+    MSG msg = { 0 };
+    while ((msg.message != WM_QUIT) && !Event_Wait(&eventIPCResult, 0))
+    {
+      while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) > 0)
+      {
+        TranslateMessage(&msg);
+        DispatchMessage(&msg);
+      }
+    }
+  }
   return n2e_IPC_ServerProc(lpFilename, size);
 }
 
@@ -373,7 +465,7 @@ HANDLE n2e_CreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMo
 {
   if (FileMapping_IsOpened(&fileMapping))
   {
-    return (HANDLE)1; // fake file handler
+    return (HANDLE)TRUE; // fake file handler
   }
   else
   {
@@ -424,15 +516,17 @@ BOOL n2e_IsIPCInitialized()
 
 BOOL n2e_SwitchElevation(const BOOL bResetIPC)
 {
-  if (bResetIPC && n2e_IsIPCInitialized() && Thread_IsOK(&threadProcessWatcher))
+  if (n2e_IsElevatedModeEnabled())
   {
-    n2e_FinalizeIPC();
+    bElevationEnabled = FALSE;
+    n2e_FinalizeIPC(FALSE);
     ReloadMainMenu();
     return TRUE;
   }
   else
   {
-    return Thread_Init(&threadProcessWatcher, (TThreadProc)IPCServerThreadProc, (LPVOID)bResetIPC);
+    bElevationEnabled = TRUE;
+    return Thread_Init(&threadIPCServerWorker, (TThreadProc)IPCServerWorkerThreadProc, (LPVOID)bResetIPC);
   }
 }
 

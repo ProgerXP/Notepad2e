@@ -1346,13 +1346,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     // [/2e]
 
 
-    // [2e]: Process elevation #166
-    case WM_IPC_INTERRUPTED: {
-        SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDM_FILE_ELEVATE, 1), (LPARAM)TRUE);
-      };
-      break;
-    // [/2e]
-
     default:
       if (umsg == msgTaskbarCreated)
       {
@@ -2524,7 +2517,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Process elevation #166
     case IDM_FILE_ELEVATE:
-      n2e_SwitchElevation(lParam == 0);
+      n2e_SwitchElevation(TRUE);
       break;
     // [/2e]
 

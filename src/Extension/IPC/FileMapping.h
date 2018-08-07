@@ -21,6 +21,7 @@ struct TFileMapping
 };
 typedef struct TFileMapping FileMapping;
 
+void FileMapping_ResetError(FileMapping *pFileMapping);
 DWORD FileMapping_GetError(const FileMapping *pFileMapping);
 void FileMapping_SaveError(FileMapping *pFileMapping);
 BOOL FileMapping_IsOK(const FileMapping *pFileMapping);

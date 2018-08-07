@@ -4,12 +4,13 @@
 
 BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
 BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bSlave);
-BOOL n2e_FinalizeIPC();
+BOOL n2e_FinalizeIPC(const BOOL bFreeAll);
 
 BOOL n2e_IPC_FileIO(LPCWSTR lpFilename, const LONGLONG size);
 BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess);
 
 BOOL n2e_IsIPCInitialized();
+BOOL n2e_IsElevatedModeEnabled();
 BOOL n2e_IsElevatedMode();
 BOOL n2e_SwitchElevation(const BOOL bResetIPCID);
 
