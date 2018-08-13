@@ -93,7 +93,7 @@ typedef struct np2params {
 
 
 //==== Reuse Window Lock Timeout ==============================================
-#define REUSEWINDOWLOCKTIMEOUT 1000
+#define REUSEWINDOWLOCKTIMEOUT 250
 
 
 //==== Function Declarations ==================================================
