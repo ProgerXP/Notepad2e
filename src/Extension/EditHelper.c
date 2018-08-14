@@ -1112,7 +1112,7 @@ LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 BOOL n2e_SubclassOpenDialog(const HWND hwnd)
 {
-  SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (long)n2e_OpenDialogWndProc));
+  SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)n2e_OpenDialogWndProc));
   return TRUE;
 }
 

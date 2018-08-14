@@ -131,7 +131,7 @@ extern "C"
 
     HMENU h_menu = CreatePopupMenu();
     pContextMenu->QueryContextMenu(h_menu, 0, 1, 0x7FFF, iShellMenuType);
-    WNDPROC OldWndProc = NULL;
+    LONG_PTR OldWndProc = NULL;
 
     OSVERSIONINFOEX osvi;
     ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
@@ -143,8 +143,8 @@ extern "C"
     N2E_TRACE_PLAIN("win version %d (%d - %d) . XP ? : %d", WINVER, osvi.dwMajorVersion, osvi.dwMinorVersion, !bIsWindowsXPorLater);
     if (iMenuType > 1)  // only version 2 and 3 supports menu messages
     {
-      OldWndProc = (WNDPROC)SetWindowLong(hwndParent,
-                                          GWL_WNDPROC, (DWORD)HookWndProc);
+      OldWndProc = SetWindowLongPtr(hwndParent,
+                                          GWLP_WNDPROC, (LONG_PTR)HookWndProc);
       if (iMenuType == 2)
       {
         g_IContext2 = (LPCONTEXTMENU2)pContextMenu;
@@ -164,7 +164,7 @@ extern "C"
     Invoke(iCmd, pContextMenu, hwndParent, path);
     if (OldWndProc)
     {
-      SetWindowLong(hwndParent, GWL_WNDPROC, (DWORD)OldWndProc);
+      SetWindowLongPtr(hwndParent, GWLP_WNDPROC, OldWndProc);
     }
     pContextMenu->Release();
     return TRUE;
