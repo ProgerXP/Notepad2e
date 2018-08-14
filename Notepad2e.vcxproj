@@ -58,8 +58,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(BOOST_ROOT);$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PrecompiledHeader>
-      </PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
     </ClCompile>
     <Link>
@@ -247,9 +246,7 @@
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\StringRecoding.c" />
     <ClCompile Include="src\Extension\StrToBase64.c" />
-    <ClCompile Include="src\Extension\StrToHex.c">
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-    </ClCompile>
+    <ClCompile Include="src\Extension\StrToHex.c" />
     <ClCompile Include="src\Extension\StrToQP.c" />
     <ClCompile Include="src\Extension\tinyexpr\tinyexpr.c" />
     <ClCompile Include="src\Extension\Trace.c" />
