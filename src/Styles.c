@@ -3228,7 +3228,7 @@ void Style_SetStyles(HWND hwnd, int iStyle, LPCWSTR lpszStyle)
   {
     char mch[256] = "Lucida Console";
     if (fIsConsolasAvailable || lstrcmpi(tch, L"Consolas"))
-      WideCharToMultiByte(CP_ACP, 0, tch, -1, mch, COUNTOF(mch), NULL, NULL);
+      WideCharToMultiByte(CP_UTF8, 0, tch, -1, mch, COUNTOF(mch), NULL, NULL);
     SendMessage(hwnd, SCI_STYLESETFONT, iStyle, (LPARAM)mch);
   }
 
