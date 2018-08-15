@@ -23,7 +23,7 @@
 #define VERSION_FILEVERSION_SHORT    L"4.2.25"
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2011"
-#ifdef _M_AMD64
+#ifdef _WIN64
 #define VERSION_FILEDESCRIPTION      L"Notepad 2e x64"
 #else
 #define VERSION_FILEDESCRIPTION      L"Notepad 2e"
