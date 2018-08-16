@@ -9,9 +9,9 @@ for x86:
 for x64:  
 "b2 address-model=64 architecture=x86 runtime-link=static link=static --with-regex --stagedir=stage/x64"  
 6. Copy next files created in %BOOST_ROOT%\\stage\\(x86|x64)\\lib to %BOOST_ROOT%\\stage\\lib:  
-x86:  
+for x86:  
 libboost_regex-vc141-mt-s-x32-1_68.lib  
 libboost_regex-vc141-mt-sgd-x32-1_68.lib  
-x64:  
+for x64:  
 libboost_regex-vc141-mt-s-x64-1_68.lib  
 libboost_regex-vc141-mt-sgd-x64-1_68.lib   
