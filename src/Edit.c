@@ -3707,6 +3707,8 @@ void EditPadWithSpaces(HWND hwnd, BOOL bSkipEmpty, BOOL bNoUndoGroup)
     }
     if (!bNoUndoGroup)
       SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+
+    LocalFree(pmszPadStr);
   }
 
   if (!bIsRectangular &&
