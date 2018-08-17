@@ -507,7 +507,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                   PathRemoveFileSpec(dir);
                 }
               }
-              SetWindowLong(hdlg, DWL_MSGRESULT, 1);
+              SetWindowLongPtr(hdlg, DWLP_MSGRESULT, 1);
               N2E_TRACE("OFN OK '%S' ", buf);
               if (len)
               {
@@ -542,7 +542,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                     lstrcpy(ofn->lpOFN->lpstrFile, out);
                   }
                   N2E_TRACE("OFN final result (%S) ", out);
-                  SetWindowLong(hdlg, DWL_MSGRESULT, 0);
+                  SetWindowLongPtr(hdlg, DWLP_MSGRESULT, 0);
                   take_call = FALSE;
                   return 1;
                 }
@@ -590,7 +590,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
       if (file_ok == uiMsg)
       {
         N2E_TRACE("custom OK");
-        SetWindowLong(hdlg, DWL_MSGRESULT, take_call);
+        SetWindowLongPtr(hdlg, DWLP_MSGRESULT, take_call);
       }
   }
   return take_call;
