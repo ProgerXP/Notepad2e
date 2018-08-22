@@ -315,7 +315,7 @@ int get_alphanum_length(const char *str)
   if (str)
   {
     const char *start = str;
-    while (isalnum(str[0]))
+    while (isalnum((unsigned char)str[0]))
     {
       ++str;
     }
