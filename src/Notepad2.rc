@@ -1336,7 +1336,7 @@ END
 // RTF
 //
 
-IDR_ABOUT_3RD_PARTY     RTF                     "C:\\Work\\git\\Notepad2e\\res\\About3rdParty.rtf"
+IDR_ABOUT_3RD_PARTY     RTF                     "..\\res\\About3rdParty.rtf"
 
 
 /////////////////////////////////////////////////////////////////////////////
