@@ -350,6 +350,7 @@ BEGIN
     POPUP "&?"
     BEGIN
         MENUITEM "&About...\tF1",               IDM_HELP_ABOUT
+        MENUITEM "3rd Party Code...",           IDM_HELP_ABOUT_3RD_PARTY
     END
 END
 
@@ -1072,6 +1073,16 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,127,24,50,14
 END
 
+IDD_ABOUT_3RD_PARTY DIALOGEX 0, 0, 339, 141
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "3rd Party Code"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,282,119,50,14
+    ICON            IDR_MAINWND,-1,7,7,20,20
+    CONTROL         "",IDC_RICHEDIT,"RichEdit20W",ES_MULTILINE | ES_READONLY | WS_BORDER | WS_VSCROLL | WS_TABSTOP,42,7,290,109
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1307,8 +1318,25 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 67
     END
+
+    IDD_ABOUT_3RD_PARTY, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 332
+        VERTGUIDE, 42
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 133
+    END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// RTF
+//
+
+IDR_ABOUT_3RD_PARTY     RTF                     "C:\\Work\\git\\Notepad2e\\res\\About3rdParty.rtf"
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -248,6 +248,7 @@ WIN32_FIND_DATA fdCurFile;
 UINT      msgTaskbarCreated = 0;
 
 HMODULE   hModUxTheme = NULL;
+HMODULE   hModRichEdit = NULL;  // [2e]: Attribution menu command #181
 
 EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, NULL };
 UINT cpLastFind = 0;
@@ -416,6 +417,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   msgTaskbarCreated = RegisterWindowMessage(L"TaskbarCreated");
 
   hModUxTheme = LoadLibrary(L"uxtheme.dll");
+  // [2e]: Attribution menu command #181
+  hModRichEdit = LoadLibrary(L"RICHED20.DLL");
 
   Scintilla_RegisterClasses(hInstance);
 
@@ -459,6 +462,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   if (hModUxTheme)
     FreeLibrary(hModUxTheme);
+
+  // [2e]: Attribution menu command #181
+  if (hModRichEdit)
+    FreeLibrary(hModRichEdit);
 
   OleUninitialize();
 
@@ -4306,6 +4313,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT),
                       hwnd, AboutDlgProc);
       break;
+
+
+    // [2e]: Attribution menu command #181
+    case IDM_HELP_ABOUT_3RD_PARTY:
+      ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT_3RD_PARTY),
+                      hwnd, About3rdPartyDlgProc);
+      break;
+    // [/2e]
+
+
     case CMD_ESCAPE:
       // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())

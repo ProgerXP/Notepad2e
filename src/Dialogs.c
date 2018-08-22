@@ -292,6 +292,47 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 }
 
 
+// [2e]: Attribution menu command #181
+INT_PTR CALLBACK About3rdPartyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (umsg)
+  {
+    N2E_DPI_CHANGED_HANDLER();
+
+    case WM_INITDIALOG: {
+      n2e_InitAbout3rdPartyText(GetDlgItem(hwnd, IDC_RICHEDIT));
+      N2E_DPI_INIT();
+      CenterDlgInParent(hwnd);
+    }
+    return TRUE;
+
+    case WM_NOTIFY: {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+      case EN_LINK:
+        if (pnmhdr->idFrom == IDC_RICHEDIT) {
+          n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
+        }
+        break;
+      }
+     }
+     break;
+
+  case WM_COMMAND:
+    switch (LOWORD(wParam))
+    {
+    case IDOK:
+    case IDCANCEL:
+      EndDialog(hwnd, IDOK);
+      break;
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+// [/2e]
+
 
 //=============================================================================
 //

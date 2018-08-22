@@ -30,6 +30,7 @@ int  MsgBox(int, UINT, ...);
 void DisplayCmdLineHelp();
 BOOL GetDirectory(HWND, int, LPWSTR, LPCWSTR, BOOL);
 INT_PTR CALLBACK AboutDlgProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK About3rdPartyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam);
 void RunDlg(HWND, LPCWSTR);
 BOOL OpenWithDlg(HWND, LPCWSTR);
 BOOL FavoritesDlg(HWND, LPWSTR);

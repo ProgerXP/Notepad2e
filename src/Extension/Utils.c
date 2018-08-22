@@ -975,3 +975,85 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
   }
   return res;
 }
+
+LPCWSTR LoadAbout3rdPartyText(int* pLength)
+{
+  static HRSRC hRes = NULL;
+  static HGLOBAL hGlob = NULL;
+  static LPCWSTR lpRTF = NULL;
+  if (!hRes)
+  {
+    hRes = FindResource(g_hInstance, MAKEINTRESOURCE(IDR_ABOUT_3RD_PARTY), L"RTF");
+  }
+  if (hRes && !hGlob)
+  {
+    hGlob = LoadResource(g_hInstance, hRes);
+  }
+  if (hGlob && !lpRTF)
+  {
+    lpRTF = (LPCWSTR)LockResource(hGlob);
+  }
+  if (pLength)
+  {
+    *pLength = hRes ? SizeofResource(g_hInstance, hRes) : 0;
+  }
+  return lpRTF;
+}
+
+struct TRTFData
+{
+  LPCWSTR lpData;
+  LONG nLength;
+  LONG nOffset;
+};
+typedef struct TRTFData RTFData;
+
+RTFData rtfData = { 0 };
+
+DWORD CALLBACK EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+{
+  RTFData* prtfData = (RTFData*)dwCookie;
+  if (prtfData->nLength < cb)
+  {
+    *pcb = prtfData->nLength;
+    memcpy(pbBuff, (LPCSTR)prtfData->lpData, *pcb);
+  }
+  else
+  {
+    *pcb = cb;
+    memcpy(pbBuff, (LPCSTR)(prtfData->lpData + prtfData->nOffset), *pcb);
+    prtfData->nOffset += cb;
+  }
+  return 0;
+}
+
+void n2e_InitAbout3rdPartyText(const HWND hwndRichedit)
+{
+  SendMessage(hwndRichedit, EM_SETEVENTMASK, 0,
+    SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK);
+  SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);
+
+  if (!rtfData.lpData)
+  {
+    rtfData.lpData = LoadAbout3rdPartyText(&rtfData.nLength);
+  }
+  rtfData.nOffset = 0;
+
+  EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, EditStreamCallBack };
+  SendMessage(hwndRichedit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+  SendMessage(hwndRichedit, EM_SETTARGETDEVICE, (WPARAM)NULL, 0);
+}
+
+void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
+{
+  if (pENLink->msg == WM_LBUTTONUP)
+  {
+    LPWSTR pUrl = (LPWSTR)n2e_Alloc(pENLink->chrg.cpMax - pENLink->chrg.cpMin + 1);
+    TEXTRANGE tr = { pENLink->chrg, pUrl };
+    if (SendMessage(hwndRichedit, EM_GETTEXTRANGE, 0, (LPARAM)&tr) > 0)
+    {
+      ShellExecute(GetParent(hwndRichedit), L"open", pUrl, NULL, NULL, SW_SHOWNORMAL);
+    }
+    n2e_Free(pUrl);
+  }
+}

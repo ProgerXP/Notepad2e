@@ -864,5 +864,6 @@
     <None Include="src\Extension\printtime.bat">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="res\About3rdParty.rtf" />
   </ItemGroup>
 </Project>
