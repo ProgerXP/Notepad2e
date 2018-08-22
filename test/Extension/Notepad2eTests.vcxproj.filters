@@ -68,9 +68,6 @@
     <ClCompile Include="..\..\src\Extension\Externals.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Extension\base64.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\Extension\StringRecoding.c">
       <Filter>Source Files</Filter>
     </ClCompile>
