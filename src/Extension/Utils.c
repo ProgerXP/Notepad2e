@@ -11,6 +11,7 @@
 #include "SciCall.h"
 #include "Notepad2.h"
 #include "Trace.h"
+#include "Subclassing.h"
 #include "VersionHelper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
@@ -976,6 +977,15 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
   return res;
 }
 
+LRESULT CALLBACK n2e_About3rdPartyRicheditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  if (uMsg == WM_GETDLGCODE)
+  {
+    return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam) & ~DLGC_HASSETSEL;
+  }
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
 LPCWSTR LoadAbout3rdPartyText(int* pLength)
 {
   static HRSRC hRes = NULL;
@@ -1029,6 +1039,8 @@ DWORD CALLBACK EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LO
 
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit)
 {
+  n2e_SubclassWindow(hwndRichedit, n2e_About3rdPartyRicheditWndProc);
+
   SendMessage(hwndRichedit, EM_SETEVENTMASK, 0,
     SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK);
   SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);

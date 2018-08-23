@@ -303,6 +303,9 @@
     <ClInclude Include="scintilla\boostregex\UTF8DocumentIterator.h">
       <Filter>scintilla\boostregexp</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\Subclassing.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -811,6 +814,9 @@
     </ClCompile>
     <ClCompile Include="scintilla\boostregex\UTF8DocumentIterator.cxx">
       <Filter>scintilla\boostregexp</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\Subclassing.c">
+      <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

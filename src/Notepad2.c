@@ -42,6 +42,7 @@
 #include "Extension/ExtSelection.h"
 #include "Extension/MainWndHelper.h"
 #include "Extension/InlineProgressBarCtrl.h"
+#include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
 
 
@@ -444,7 +445,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
     {
       // [2e]: Ctrl+H: Replace input behaviour #121
-      if (n2e_IsSubclassedEdit(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
+      if (n2e_IsSubclassedWindow(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
         continue;
       if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
         continue;

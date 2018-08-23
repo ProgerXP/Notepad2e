@@ -11,6 +11,7 @@
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
+#include "Subclassing.h"
 #include "Trace.h"
 #include "Utils.h"
 
@@ -924,9 +925,7 @@ BOOL n2e_CheckWindowClassName(const HWND hwnd, LPCWSTR lpwstrClassname)
   return (_wcsicmp(wchClassName, lpwstrClassname) == 0);
 }
 
-#define PROPERTY_ORIGINAL_WINDOW_PROC L"OriginalWindowProc"
-
-LRESULT n2e_FilterClipboardEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK n2e_FilterClipboardEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch (uMsg)
   {
@@ -936,10 +935,10 @@ LRESULT n2e_FilterClipboardEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
     default:
       break;
   }
-  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch (uMsg)
   {
@@ -1018,30 +1017,14 @@ LRESULT n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
     default:
       break;
   }
-  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
-}
-
-BOOL n2e_IsSubclassedEdit(const HWND hwnd)
-{
-  return GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC) != 0;
-}
-
-BOOL n2e_SubclassEditImpl(const HWND hwnd, LONG_PTR pEditProc)
-{
-  assert(pEditProc);
-  if (hwnd && !n2e_IsSubclassedEdit(hwnd))
-  {
-    SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)pEditProc));
-    return TRUE;
-  }
-  return FALSE;
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit)
 {
   const HWND hwndEditCtrl = GetDlgItem(hwnd, idEdit);
   return n2e_CheckWindowClassName(hwndEditCtrl, WC_EDIT)
-          ? n2e_SubclassEditImpl(hwndEditCtrl, (LONG_PTR)n2e_FilterClipboardEditWndProc)
+          ? n2e_SubclassWindow(hwndEditCtrl, n2e_FilterClipboardEditWndProc)
           : FALSE;
 }
 
@@ -1049,9 +1032,9 @@ BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo)
 {
   const HWND hwndCombo = GetDlgItem(hwnd, idCombo);
   const HWND hwndEditCtrl = FindWindowEx(hwndCombo, NULL, WC_EDIT, NULL);
-  if (hwndEditCtrl && !n2e_IsSubclassedEdit(hwndEditCtrl))
+  if (hwndEditCtrl && !n2e_IsSubclassedWindow(hwndEditCtrl))
   {
-    n2e_SubclassEditImpl(hwndEditCtrl, (LONG_PTR)n2e_FindEditWndProc);
+    n2e_SubclassWindow(hwndEditCtrl, n2e_FindEditWndProc);
     return TRUE;
   }
   return FALSE;
@@ -1059,7 +1042,7 @@ BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo)
 
 extern WCHAR last_selected[MAX_PATH];
 
-LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   switch (uMsg)
   {
@@ -1107,13 +1090,12 @@ LRESULT n2e_OpenDialogWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     default:
       break;
   }
-  return CallWindowProc((WNDPROC)GetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC), hwnd, uMsg, wParam, lParam);
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
 BOOL n2e_SubclassOpenDialog(const HWND hwnd)
 {
-  SetProp(hwnd, PROPERTY_ORIGINAL_WINDOW_PROC, (HANDLE)SetWindowLongPtr(hwnd, GWLP_WNDPROC, (LONG_PTR)n2e_OpenDialogWndProc));
-  return TRUE;
+  return n2e_SubclassWindow(hwnd, n2e_OpenDialogWndProc);
 }
 
 const WCHAR* _left_braces = L"<{([";
