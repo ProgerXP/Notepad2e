@@ -26,6 +26,8 @@
 #include "AnsiDocumentIterator.h"
 #include "BoostRegexSearch.h"
 #include <boost/regex.hpp>
+#include <boost/regex/icu.hpp>
+#include <iostream>
 #define CP_UTF8 65001
 #define SC_CP_UTF8 65001
 
@@ -164,7 +166,7 @@ private:
 	
 	class CharTPtr { // Automatically translatable from utf8 to wchar_t*, if required, with allocation and deallocation on destruction; char* is not deallocated.
 	public:
-		CharTPtr(const char* ptr) : _charPtr(ptr), _wcharPtr(NULL) {}
+		CharTPtr(const char* ptr) : _charPtr(ptr), _wcharPtr(NULL), _char32Ptr(NULL) {}
 		~CharTPtr() {
 			delete[] _wcharPtr;
 		}
@@ -176,9 +178,16 @@ private:
 				_wcharPtr = utf8ToWchar(_charPtr);
 			return _wcharPtr;
 		}
+    operator const UChar32*()
+    {
+      if (_char32Ptr == NULL)
+        _char32Ptr = utf8ToUchar32(_charPtr);
+      return _char32Ptr;
+    }
 	private:
 		const char* _charPtr;
 		wchar_t* _wcharPtr;
+    UChar32* _char32Ptr;
 	};
 
 	template <class CharT, class CharacterIterator>
@@ -192,9 +201,13 @@ private:
 		Match FindTextImpl(SearchParameters& search);
 
 	public:
-		typedef CharT Char;
-		typedef basic_regex<CharT> Regex;
+		//typedef CharT Char;
+		//typedef basic_regex<CharT> Regex;
+    typedef CharT Char;
+    //typedef basic_regex<UChar32, icu_regex_traits> Regex;
+    typedef boost::u32regex Regex;
 		typedef match_results<CharacterIterator> MatchResults;
+    //typedef boost::u32match MatchResults;
 		
 		MatchResults _match;
 	private:
@@ -217,11 +230,14 @@ private:
 	};
 	
 	static wchar_t *utf8ToWchar(const char *utf8);
+  static UChar32 *utf8ToUchar32(const char *utf8);
 	static char    *stringToCharPtr(const std::string& str, int *lengthRet);
 	static char    *stringToCharPtr(const std::wstring& str, int *lengthRet);
+  static char    *stringToCharPtr(const std::basic_string<UChar32, std::char_traits<UChar32>, std::allocator<UChar32>>& str, int *lengthRet);
 	
-	EncodingDependent<char,    AnsiDocumentIterator> _ansi;
-	EncodingDependent<wchar_t, UTF8DocumentIterator> _utf8;
+	//EncodingDependent<char,    AnsiDocumentIterator> _ansi;
+	//EncodingDependent<wchar_t, UTF8DocumentIterator> _utf8;
+  EncodingDependent<UChar32, UTF32DocumentIterator> _utf32;
 	
 	char *_substituted;
 	
@@ -259,14 +275,13 @@ long BoostRegexSearch::FindText(Document* doc, int startPosition, int endPositio
 		const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
 		search._compileFlags = 
 			regex_constants::ECMAScript
-			| (caseSensitive ? 0 : regex_constants::icase)
-			| regex_constants::no_except;
+			| (caseSensitive ? 0 : regex_constants::icase);
 		search._regexString = regexString;
-		search._boostRegexFlags = regex_constants::match_default;
+    search._boostRegexFlags = regex_constants::match_default;
 		
-		Match match =
-			isUtf8 ? _utf8.FindText(search)
-			       : _ansi.FindText(search);
+    Match match = _utf32.FindText(search);
+// 			isUtf8 ? _utf8.FindText(search)
+// 			       : _ansi.FindText(search);
 		
 		if (match.found())
 		{
@@ -307,14 +322,7 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 		search._boostRegexFlags = search.isLineStart(lineRange.start)
 			? search._boostRegexFlags & ~regex_constants::match_not_bol
 			: search._boostRegexFlags |  regex_constants::match_not_bol;
-		try
-		{
-			found = boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
-		}
-		catch (...)
-		{
-			found = false;
-		}
+		found = boost::regex_search<CharacterIterator>(itStart, itEnd, _match, _regex, search._boostRegexFlags);
 		if (found) {
 			const int  position = _match[0].first.pos();
 			const int  length   = _match[0].second.pos() - position;
@@ -332,7 +340,8 @@ void BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::compileRegex
 {
 	if (_lastCompileFlags != compileFlags || _lastRegexString != regex)
 	{
-		_regex = Regex(CharTPtr(regex), static_cast<regex_constants::syntax_option_type>(compileFlags));
+    //_regex = Regex(CharTPtr(regex), static_cast<regex_constants::syntax_option_type>(compileFlags));
+    _regex = make_u32regex(regex, static_cast<regex_constants::syntax_option_type>(compileFlags));
 		_lastRegexString = regex;
 		_lastCompileFlags = compileFlags;
 	}
@@ -354,15 +363,16 @@ bool BoostRegexSearch::SearchParameters::isLineEnd(int position)
 
 const char *BoostRegexSearch::SubstituteByPosition(Document* doc, const char *text, int *length) {
 	delete[] _substituted;
-	_substituted = (doc->CodePage() == SC_CP_UTF8)
-		? _utf8.SubstituteByPosition(text, length)
-		: _ansi.SubstituteByPosition(text, length);
+  _substituted = _utf32.SubstituteByPosition(text, length);
+//     (doc->CodePage() == SC_CP_UTF8)
+// 		? _utf8.SubstituteByPosition(text, length)
+// 		: _ansi.SubstituteByPosition(text, length);
 	return _substituted;
 }
 
 template <class CharT, class CharacterIterator>
 char *BoostRegexSearch::EncodingDependent<CharT, CharacterIterator>::SubstituteByPosition(const char *text, int *length) {
-	return stringToCharPtr(_match.format((const CharT*)CharTPtr(text), boost::format_all), length);
+	return stringToCharPtr(_match.format((const UChar32*)CharTPtr(text), boost::format_all, _regex), length);
 }
 
 wchar_t *BoostRegexSearch::utf8ToWchar(const char *utf8)
@@ -373,6 +383,21 @@ wchar_t *BoostRegexSearch::utf8ToWchar(const char *utf8)
 	UTF16FromUTF8(utf8, utf8Size, w, wcharSize + 1);
 	w[wcharSize] = 0;
 	return w;
+}
+
+UChar32 *BoostRegexSearch::utf8ToUchar32(const char *utf8)
+{
+   //size_t utf8Size = strlen(utf8);
+   int len = strlen(utf8) + 1;
+   UChar32 *ws = new UChar32[len];
+   size_t outLen = UTF32FromUTF8(utf8, strlen(utf8), reinterpret_cast<unsigned int *>(&ws[0]), len);
+   ws[outLen] = 0;
+   return ws;
+//   size_t wcharSize = UTF16Length(utf8, utf8Size);
+//   wchar_t *w = new wchar_t[wcharSize + 1];
+//   UTF16FromUTF8(utf8, utf8Size, w, wcharSize + 1);
+//   w[wcharSize] = 0;
+//   return w;
 }
 
 char *BoostRegexSearch::stringToCharPtr(const std::string& str, int *lengthRet)
@@ -393,4 +418,20 @@ char *BoostRegexSearch::stringToCharPtr(const std::wstring& str, int *lengthRet)
 	c[charSize] = 0;
 	*lengthRet = charSize;
 	return c;
+}
+
+char *BoostRegexSearch::stringToCharPtr(const std::basic_string<UChar32, std::char_traits<UChar32>, std::allocator<UChar32>>& str, int *lengthRet)
+{
+  std::string s;
+  icu::UnicodeString us = icu::UnicodeString::fromUTF32(str.c_str(), str.length());
+  us.toUTF8String(s);
+  const int charSize = s.length();
+  char *c = new char[charSize + 1];
+  for (int i = 0; i < charSize; ++i)
+  {
+    c[i] = s[i];
+  }
+  c[charSize] = 0;
+  *lengthRet = charSize;
+  return c;
 }
