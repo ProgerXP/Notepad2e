@@ -306,6 +306,9 @@
     <ClInclude Include="src\Extension\Subclassing.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="scintilla\boostregex\UTF32DocumentIterator.h">
+      <Filter>scintilla\boostregexp</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
