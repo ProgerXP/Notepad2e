@@ -120,7 +120,7 @@ C:\Program Files\boost\boost_1_68_0> b2 address-model=32 link=static runtime-lin
 ```
 Output folder for compiled static regex libary is `C:\Program Files\boost\boost_1_68_0\stage\86\lib`.
 
-## VII. Create ICU regex static library
+## VIII. Create ICU regex static library
 1. Copy boost regex lib `libboost_regex-vc141-mt-s-x32-1_68.lib` to `C:\Program Files\boost\boost_1_68_0\stage\lib`
 2. Copy ICU libs from `C:\\icu\\dist\\lib` to `C:\Program Files\boost\boost_1_68_0\stage\lib`
 3. Open *x86 VS2017 xXX Native Tools Command Prompt* and switch to `C:\Program Files\boost\boost_1_68_0\stage\lib`
