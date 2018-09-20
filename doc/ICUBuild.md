@@ -30,7 +30,8 @@ Open the *x86 VS2017 xXX Native Tools Command Prompt*.
 ## IV. Patch ICU source code
 Now ICU sources need to be patched to support Windows XP.
 1. Patch ICU file `icu4c\source\common\putil.cpp`:
-```#if U_PLATFORM_HAS_WINUWP_API == 0
+```
+#if U_PLATFORM_HAS_WINUWP_API == 0
     // If not a Universal Windows App, we'll need user default language.
     // Vista and above should use Locale Names instead of LCIDs
     int length = GetUserDefaultLocaleName(windowsLocale, UPRV_LENGTHOF(windowsLocale));
@@ -66,7 +67,7 @@ change to:
         DEBUG_CXXFLAGS='-Zi -MTd'
         DEBUG_LDFLAGS='-DEBUG'
 ```
-3. Patch `icu4c\source\config\mh-cygwin-msvc':
+3. Patch `icu4c\source\config\mh-cygwin-msvc`:
 ```
 LINK.c=		LINK.EXE -subsystem:console $(LDFLAGS)
 LINK.cc=	LINK.EXE -subsystem:console $(LDFLAGS)
