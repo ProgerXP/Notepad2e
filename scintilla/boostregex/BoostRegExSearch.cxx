@@ -213,7 +213,8 @@ private:
 		const char *_regexString;
 		int _compileFlags;
 		regex_constants::match_flag_type _boostRegexFlags;
-		SearchParameters(Document* doc, int startPosition, int endPosition) : _document(doc), _resr(doc, startPosition, endPosition) {}
+		bool _reverseSearchFlag;
+		SearchParameters(Document* doc, int startPosition, int endPosition) : _document(doc), _resr(doc, startPosition, endPosition), _reverseSearchFlag(false) {}
 	};
 	
 	static wchar_t *utf8ToWchar(const char *utf8);
@@ -300,8 +301,11 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 {
 	bool found = false;
 	// Line by line.
+	Range lineRangeCurrent(0);
 	for (int line = search._resr.lineRangeStart; line != search._resr.lineRangeBreak; line += search._resr.increment) {
 		const Range lineRange = search._resr.LineRange(line);
+		lineRangeCurrent = lineRange;
+
 		CharacterIterator itStart(search._document, lineRange.start, lineRange.end);
 		CharacterIterator itEnd(search._document, lineRange.end, lineRange.end);
 		search._boostRegexFlags = search.isLineStart(lineRange.start)
@@ -322,7 +326,40 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 		}
 	}
 	if (found)
-		return Match(search._document, _match[0].first.pos(), _match[0].second.pos());
+	{
+		const Match defaultResult = Match(search._document, _match[0].first.pos(), _match[0].second.pos());
+		if (search._resr.increment < 0)
+		{
+			if (!search._reverseSearchFlag)
+			{
+				SearchParameters searchNew = search;
+				searchNew._reverseSearchFlag = true;
+				searchNew._resr.endPos = _match[0].second.pos();
+				searchNew._resr.startPos = lineRangeCurrent.end;
+				searchNew._resr.lineRangeEnd = searchNew._resr.lineRangeStart;
+				searchNew._resr.lineRangeBreak = searchNew._resr.lineRangeEnd + search._resr.increment;
+
+				Match res = defaultResult;
+				Match resPrev = res;
+				while (!res.isEmpty())
+				{
+					resPrev = res;
+
+					if (searchNew._resr.endPos >= searchNew._resr.startPos)
+						break;
+
+					res = FindTextImpl(searchNew);
+
+					if (res.isEmpty())
+						break;
+
+					searchNew._resr.endPos = res.endPosition();
+				}
+				return resPrev;
+			}
+		}
+		return defaultResult;
+	}
 	else
 		return Match();
 }
