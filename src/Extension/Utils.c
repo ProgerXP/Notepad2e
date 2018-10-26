@@ -13,6 +13,7 @@
 #include "Trace.h"
 #include "Subclassing.h"
 #include "VersionHelper.h"
+#include "Externals.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -1068,4 +1069,9 @@ void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
     }
     n2e_Free(pUrl);
   }
+}
+
+BOOL n2e_IsUnicodeEncodingMode()
+{
+  return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
 }

@@ -12,6 +12,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Notepad2eTests", "test\Exte
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug ICU|x64 = Debug ICU|x64
+		Debug ICU|x86 = Debug ICU|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release ICU|x64 = Release ICU|x64
@@ -20,6 +22,10 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug ICU|x64.ActiveCfg = Debug ICU|x64
+		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug ICU|x64.Build.0 = Debug ICU|x64
+		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug ICU|x86.ActiveCfg = Debug ICU|Win32
+		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug ICU|x86.Build.0 = Debug ICU|Win32
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug|x64.ActiveCfg = Debug|x64
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug|x64.Build.0 = Debug|x64
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Debug|x86.ActiveCfg = Debug|Win32
@@ -31,6 +37,8 @@ Global
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Release|x64.Build.0 = Release|x64
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Release|x86.ActiveCfg = Release|Win32
 		{B69A8C7E-A22D-45DA-9997-2D1403C7AEE8}.Release|x86.Build.0 = Release|Win32
+		{A3852498-51BF-4A24-B720-F69D2E5E6403}.Debug ICU|x64.ActiveCfg = Debug ICU|x64
+		{A3852498-51BF-4A24-B720-F69D2E5E6403}.Debug ICU|x86.ActiveCfg = Debug ICU|Win32
 		{A3852498-51BF-4A24-B720-F69D2E5E6403}.Debug|x64.ActiveCfg = Debug|x64
 		{A3852498-51BF-4A24-B720-F69D2E5E6403}.Debug|x64.Build.0 = Debug|x64
 		{A3852498-51BF-4A24-B720-F69D2E5E6403}.Debug|x86.ActiveCfg = Debug|Win32

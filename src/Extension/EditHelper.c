@@ -24,6 +24,8 @@ extern int bFindWordMatchCase;
 extern int bFindWordWrapAround;
 extern TBBUTTON tbbMainWnd[];
 extern HWND hwndToolbar;
+extern HWND hwndMain;
+extern HWND hDlgFindReplace;
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -1350,4 +1352,27 @@ int n2e_GetExpressionTextRange(int* piStart, int* piEnd)
       break;
   }
   return *piEnd - *piStart;
+}
+
+BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
+{
+#ifndef ICU_BUILD
+  return TRUE;
+#else
+  if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || (iEncoding == CPI_UTF8))
+    return TRUE;
+
+  if (InfoBox(MBYESNO, L"MsgICURegexWarning", IDS_WARN_ICU_REGEX) != IDYES)
+    return FALSE;
+
+  SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_ENCODING_UTF8, 1), 0);
+
+  const BOOL res = n2e_IsUnicodeEncodingMode() || (iEncoding == CPI_UTF8);
+  if (res)
+  {
+    const UINT uCPEdit = (UINT)SendMessage(lpefr->hwnd, SCI_GETCODEPAGE, 0, 0);
+    GetDlgItemTextA2W(uCPEdit, hDlgFindReplace, IDC_FINDTEXT, lpefr->szFind, COUNTOF(lpefr->szFind));
+  }
+  return res;
+#endif
 }

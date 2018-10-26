@@ -5483,6 +5483,10 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   if (!lstrlenA(lpefr->szFind))
     return FALSE;
 
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
+    return FALSE;
+
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
@@ -5769,6 +5773,10 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   BOOL bRegexStartOrEndOfLine;
 
   if (!lstrlenA(lpefr->szFind))
+    return FALSE;
+
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
   // Show wait cursor...

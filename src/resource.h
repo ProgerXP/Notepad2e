@@ -454,6 +454,7 @@
 #define IDS_EXPORT_FAIL                 50040
 #define IDS_ERR_SAVEAS                  50041
 #define IDS_ERR_SAVEAS_RENAME_DETAILS   50042
+#define IDS_WARN_ICU_REGEX              50043
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects

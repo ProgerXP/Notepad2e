@@ -1474,6 +1474,7 @@ BEGIN
     IDS_ERR_SAVEAS          "New file name refers to the same old file. This is not allowed.%s"
     IDS_ERR_SAVEAS_RENAME_DETAILS
                             "\n\nIf you were trying to rename it into a different character case, this would not work due to Windows Save File Dialog limitation (#140). To work around this, do two renames using a temporary file name."
+    IDS_WARN_ICU_REGEX      L"Regular expressions in Notepad 2e-ICU can only work on Unicode buffers. Convert this file to UTF-8?\r\n\r\nNon-ICU versions of Notepad 2e do not have this limitation."
 END
 
 STRINGTABLE
