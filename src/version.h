@@ -23,12 +23,21 @@
 #define VERSION_FILEVERSION_SHORT    L"4.2.25"
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2011"
-#ifdef _WIN64
-#define VERSION_FILEDESCRIPTION      L"Notepad 2e x64"
+#ifdef ICU_BUILD
+#define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e-ICU"
 #else
-#define VERSION_FILEDESCRIPTION      L"Notepad 2e"
+#define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e"
 #endif
+#ifdef _WIN64
+#define VERSION_FILEDESCRIPTION      VERSION_FILEDESCRIPTION_BASE L" x64"
+#else
+#define VERSION_FILEDESCRIPTION      VERSION_FILEDESCRIPTION_BASE
+#endif
+#ifdef ICU_BUILD
+#define VERSION_INTERNALNAME         L"Notepad2e-ICU"
+#else
 #define VERSION_INTERNALNAME         L"Notepad2e"
+#endif
 #define VERSION_ORIGINALFILENAME     L"Notepad2.exe"
 #define VERSION_AUTHORNAME           L"Florian Balmer"
 #define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"

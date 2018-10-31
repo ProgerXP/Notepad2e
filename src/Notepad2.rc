@@ -8,6 +8,16 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <winres.h>
+
+STRINGTABLE
+BEGIN
+#ifdef ICU_BUILD
+IDS_APPTITLE            "Notepad 2e-ICU"
+#else
+IDS_APPTITLE            "Notepad 2e"
+#endif
+END
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1346,7 +1356,6 @@ IDR_ABOUT_3RD_PARTY     RTF                     "..\\res\\About3rdParty.rtf"
 
 STRINGTABLE
 BEGIN
-    IDS_APPTITLE            "Notepad 2e"
     IDS_APPTITLE_ELEVATED   "%s (Administrator)"
     IDS_APPTITLE_PASTEBOARD "Notepad 2e (Paste Board)"
     IDS_UNTITLED            "Untitled"
@@ -1943,7 +1952,17 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include <winres.h>\0"
+    "#include <winres.h>\r\n"
+    "\r\n"
+    "STRINGTABLE\r\n"
+    "BEGIN\r\n"
+    "#ifdef ICU_BUILD\r\n"
+    "IDS_APPTITLE            ""Notepad 2e-ICU""\r\n"
+    "#else\r\n"
+    "IDS_APPTITLE            ""Notepad 2e""\r\n"
+    "#endif\r\n"
+    "END\r\n"
+    "\0"
 END
 
 3 TEXTINCLUDE 
