@@ -11,6 +11,7 @@
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
+#include "StringRecoding.h"
 #include "Subclassing.h"
 #include "Trace.h"
 #include "Utils.h"

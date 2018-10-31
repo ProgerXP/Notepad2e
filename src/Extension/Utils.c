@@ -1070,8 +1070,3 @@ void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
     n2e_Free(pUrl);
   }
 }
-
-BOOL n2e_IsUnicodeEncodingMode()
-{
-  return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
-}

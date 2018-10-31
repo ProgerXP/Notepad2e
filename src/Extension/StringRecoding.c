@@ -18,6 +18,11 @@ int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 BOOL bBreakOnError = TRUE;
 
+BOOL n2e_IsUnicodeEncodingMode()
+{
+  return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
+}
+
 BOOL Is8BitEncodingMode()
 {
   return (mEncoding[iEncoding].uFlags & NCP_8BIT);

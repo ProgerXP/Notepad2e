@@ -129,4 +129,3 @@ int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd);
 int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing);
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit);
 void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink);
-BOOL n2e_IsUnicodeEncodingMode();
