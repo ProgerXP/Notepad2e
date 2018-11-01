@@ -18,13 +18,13 @@
 Open the *x86 VS2017 xXX Native Tools Command Prompt*.
 
 ## II. Download prerequisites/sources
-1. Get boost sources: `boost_1_68_0.zip ` (http://www.boost.org/users/download/)
-2. Get ICU sources: `icu-master.zip` (http://site.icu-project.org/repository)
+1. Get boost sources: `boost_1_68_0.zip` (http://www.boost.org/users/download/)
+2. Get ICU sources, commit `55ecf77306e2f73ddced8d8e6deb510dfbffd94e`: [icu-55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip](https://github.com/unicode-org/icu/archive/55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip) (https://github.com/unicode-org/icu)
 
 ## III. Set up the build directory
 1. Unzip `boost_1_68_0.zip`, e.g. to `C:\\Program Files\\boost`
 2. Setup BOOST_ROOT environment variable to the boost destination path, e.g. `C:\\Program Files\\boost\\boost_1_68_0`
-3. Unzip `icu-master.zip`, e.g. to `C:\\icu`
+3. Unzip `icu-55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip`, e.g. to `C:\\icu`
 4. Setup ICU_ROOT environment variable to the ICU destination path, e.g. `C:\\icu\\dist` (`dist` is output subfolder for ICU build)
 
 ## IV. Patch ICU source code
@@ -43,7 +43,7 @@ change to:
     int length = GetLocaleInfoW(LOCALE_USER_DEFAULT, LOCALE_SNAME, windowsLocale, UPRV_LENGTHOF(windowsLocale));
 #else
 ```
-2. Patch `icu4c\runConfigureICU` file:
+2. Patch `icu4c\source\runConfigureICU` file:
 ```
         THE_OS="Windows with Cygwin"
         THE_COMP="Microsoft Visual C++"
@@ -63,8 +63,8 @@ change to:
         CXX=cl; export CXX
         RELEASE_CFLAGS='-Gy -MT /D_USING_V110_SDK71_'
         RELEASE_CXXFLAGS='-Gy -MT /D_USING_V110_SDK71_'
-        DEBUG_CFLAGS='-Zi -MTd'
-        DEBUG_CXXFLAGS='-Zi -MTd'
+        DEBUG_CFLAGS='-Zi -MTd /D_USING_V110_SDK71_'
+        DEBUG_CXXFLAGS='-Zi -MTd /D_USING_V110_SDK71_'
         DEBUG_LDFLAGS='-DEBUG'
 ```
 3. Patch `icu4c\source\config\mh-cygwin-msvc`:
@@ -116,6 +116,10 @@ change to:
 ```
 2. Run command:
 ```
+C:\Program Files\boost\boost_1_68_0> bootstrap.bat
+```
+3. Run command:
+```
 C:\Program Files\boost\boost_1_68_0> b2 address-model=32 link=static runtime-link=static --with-regex --stagedir=stage/86 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH="C:\icu\dist" -sICU_LINK="/LIBPATH:C:\icu\dist\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
 ```
 Output folder for compiled static regex libary is `C:\Program Files\boost\boost_1_68_0\stage\86\lib`.
@@ -123,9 +127,9 @@ Output folder for compiled static regex libary is `C:\Program Files\boost\boost_
 ## VIII. Create ICU regex static library
 1. Copy boost regex lib `libboost_regex-vc141-mt-s-x32-1_68.lib` to `C:\Program Files\boost\boost_1_68_0\stage\lib`
 2. Copy ICU libs from `C:\\icu\\dist\\lib` to `C:\Program Files\boost\boost_1_68_0\stage\lib`
-3. Open *x86 VS2017 xXX Native Tools Command Prompt* and switch to `C:\Program Files\boost\boost_1_68_0\stage\lib`
+3. Open *x86 VS2017 xXX Native Tools Command Prompt* and navigate to `C:\Program Files\boost\boost_1_68_0\stage\lib`
 4. Merge required libs into single `icuregex.lib` file:
-C:\Program Files\boost\boost_1_68_0\stage\lib> lib /OUT:icuregex.lib libboost_regex-vc141-mt-s-x32-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
+C:\Program Files\boost\boost_1_68_0\stage\lib> lib /OUT:icuregex86.lib libboost_regex-vc141-mt-s-x32-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
 
 ## IX. Compile Notepad2e
 1. Open Notepad2e project with VS2017
