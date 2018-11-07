@@ -7,8 +7,6 @@
 2. Cygwin with the following installed:
 * bash
 * GNU make
-* ar
-* ranlib
 
 ### Setup
 1. Install Visual Studio 2017 (15.7.6+).
@@ -22,11 +20,11 @@ Open the *x86 VS2017 xXX Native Tools Command Prompt*.
 2. Get ICU sources, commit `55ecf77306e2f73ddced8d8e6deb510dfbffd94e`: [icu-55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip](https://github.com/unicode-org/icu/archive/55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip) (https://github.com/unicode-org/icu)
 
 ## III. Set up the build directory
-1. Unzip `boost_1_68_0.zip`, e.g. to `C:\\Program Files\\boost`
-2. Rename `C:\\Program Files\\boost\\boost_1_68_0` to `C:\\Program Files\\boost\\boost_1_68_0_icu`
-3. Setup BOOST_ROOT_ICU environment variable to the boost destination path, e.g. `C:\\Program Files\\boost\\boost_1_68_0_icu`
-4. Unzip `icu-55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip`, e.g. to `C:\\icu`
-5. Setup ICU_ROOT environment variable to the ICU destination path, e.g. `C:\\icu\\dist` (`dist` is output subfolder for ICU build)
+1. Unzip `boost_1_68_0.zip`, e.g. to `C:\Program Files\boost`
+2. Rename `C:\Program Files\boost\boost_1_68_0` to `C:\Program Files\boost\boost_1_68_0_icu`
+3. Setup BOOST_ROOT_ICU environment variable to the boost destination path, e.g. `C:\Program Files\boost\boost_1_68_0_icu`
+4. Unzip `icu-55ecf77306e2f73ddced8d8e6deb510dfbffd94e.zip`, e.g. to `C:\icu`
+5. Setup ICU_ROOT environment variable to the ICU destination path, e.g. `C:\icu\dist` (`dist` is output subfolder for ICU build)
 
 ## IV. Patch ICU source code
 Now ICU sources need to be patched to support Windows XP.
@@ -82,11 +80,11 @@ LINK.cc=	LINK.EXE -subsystem:console,5.01 $(LDFLAGS)
 ## V. Build ICU library
 1. Open *x86 VS2017 xXX Native Tools Command Prompt* and switch to the ICU directory:
 ```
-> cd C:\icu\icu4c\source
+> cd %ICU_ROOT%\..\icu4c\source
 ```
 2. Run command:
 ```
-C:\icu\icu4c\source> bash runConfigureICU Cygwin/MSVC -prefix=/cygdrive/c/icu/dist --enable-static --disable-shared --enable-release --disable-debug
+C:\icu\icu4c\source> bash -exec "ICU_ROOT_UNIX=$(cygpath -u ${ICU_ROOT});bash runConfigureICU Cygwin/MSVC -prefix=${ICU_ROOT_UNIX} --enable-static --disable-shared --enable-release --disable-debug"
 ```
 3. Run command:
 ```
@@ -121,16 +119,18 @@ C:\Program Files\boost\boost_1_68_0_icu> bootstrap.bat
 ```
 3. Run command:
 ```
-C:\Program Files\boost\boost_1_68_0_icu> b2 address-model=32 link=static runtime-link=static --with-regex --stagedir=stage/86 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH="C:\icu\dist" -sICU_LINK="/LIBPATH:C:\icu\dist\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
+C:\Program Files\boost\boost_1_68_0_icu> b2 address-model=32 link=static runtime-link=static --with-regex --stagedir=stage/86 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH=%ICU_ROOT% -sICU_LINK="/LIBPATH:%ICU_ROOT%\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
 ```
-Output folder for compiled static regex libary is `C:\Program Files\boost\boost_1_68_0_icu\stage\86\lib`.
+Output folder for compiled static regex libary is `%BOOST_ROOT_ICU%\stage\86\lib`.
 
 ## VIII. Create ICU regex static library
-1. Copy boost regex lib `libboost_regex-vc141-mt-s-x32-1_68.lib` to `C:\Program Files\boost\boost_1_68_0_icu\stage\lib`
-2. Copy ICU libs from `C:\\icu\\dist\\lib` to `C:\Program Files\boost\boost_1_68_0_icu\stage\lib`
-3. Open *x86 VS2017 xXX Native Tools Command Prompt* and navigate to `C:\Program Files\boost\boost_1_68_0_icu\stage\lib`
+1. Copy boost regex lib `libboost_regex-vc141-mt-s-x32-1_68.lib` to `%BOOST_ROOT_ICU%\stage\lib`
+2. Copy ICU libs from `%ICU_ROOT%\lib` to `%BOOST_ROOT_ICU%\stage\lib`
+3. Open *x86 VS2017 xXX Native Tools Command Prompt* and navigate to `%BOOST_ROOT_ICU%\stage\lib`
 4. Merge required libs into single `icuregex86.lib` file:
+```
 C:\Program Files\boost\boost_1_68_0_icu\stage\lib> lib /OUT:icuregex86.lib libboost_regex-vc141-mt-s-x32-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
+```
 
 ## IX. Compile Notepad2e
 1. Open Notepad2e project with VS2017
