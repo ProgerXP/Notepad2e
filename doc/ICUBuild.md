@@ -1,5 +1,7 @@
 # Building Notepad2e with ICU support (International Components for Unicode, http://site.icu-project.org/)
 
+In this text, xXX means x86 or x64 depending on the required build version.
+
 ## I. Set up compiler
 
 ### Requirements
@@ -13,7 +15,7 @@
 2. Install Cygwin, install next packages: bash, GNU make, ar, ranlib 
 
 ### Command prompt
-Open the *x86 VS2017 xXX Native Tools Command Prompt*.
+Open the *xXX Native Tools Command Prompt for VS 2017*.
 
 ## II. Download prerequisites/sources
 1. Get boost sources: `boost_1_68_0.zip` (http://www.boost.org/users/download/)
@@ -72,13 +74,19 @@ LINK.c=		LINK.EXE -subsystem:console $(LDFLAGS)
 LINK.cc=	LINK.EXE -subsystem:console $(LDFLAGS)
 ```
 change to:
+* For **x86**:
 ```
 LINK.c=		LINK.EXE -subsystem:console,5.01 $(LDFLAGS)
 LINK.cc=	LINK.EXE -subsystem:console,5.01 $(LDFLAGS)
 ```
+* For **x64**:
+```
+LINK.c=		LINK.EXE -subsystem:console,5.02 $(LDFLAGS)
+LINK.cc=	LINK.EXE -subsystem:console,5.02 $(LDFLAGS)
+```
 
 ## V. Build ICU library
-1. Open *x86 VS2017 xXX Native Tools Command Prompt* and switch to the ICU directory:
+1. Open *xXX Native Tools Command Prompt for VS 2017* and switch to the ICU directory:
 ```
 > cd %ICU_ROOT%\..\icu4c\source
 ```
@@ -90,7 +98,7 @@ C:\icu\icu4c\source> bash -exec "ICU_ROOT_UNIX=$(cygpath -u ${ICU_ROOT});bash ru
 ```
 C:\icu\icu4c\source> make && make install
 ```
-Output folder for compiled static libraries and required include headers is ICU_ROOT folder (`C:\\icu\\dist`)
+Output folder for compiled static libraries and required include headers is ICU_ROOT folder (`C:\icu\dist`)
 
 ## VI. Patch boost source code
 1. Patch file `boost_1_68_0_icu\libs\regex\build\jamfile.v2`:
@@ -109,7 +117,7 @@ change to:
 ```
 
 ## VII. Build boost regex
-1. Open *x86 VS2017 xXX Native Tools Command Prompt* and switch to the boost directory:
+1. Open *xXX Native Tools Command Prompt for VS 2017* and switch to the boost directory:
 ```
 > cd %BOOST_ROOT_ICU%
 ```
@@ -118,21 +126,31 @@ change to:
 C:\Program Files\boost\boost_1_68_0_icu> bootstrap.bat
 ```
 3. Run command:
+* For **x86**:
 ```
-C:\Program Files\boost\boost_1_68_0_icu> b2 address-model=32 link=static runtime-link=static --with-regex --stagedir=stage/86 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH=%ICU_ROOT% -sICU_LINK="/LIBPATH:%ICU_ROOT%\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
+C:\Program Files\boost\boost_1_68_0_icu> b2 address-model=32 link=static runtime-link=static --with-regex --stagedir=stage/x86 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH=%ICU_ROOT% -sICU_LINK="/LIBPATH:%ICU_ROOT%\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
 ```
-Output folder for compiled static regex libary is `%BOOST_ROOT_ICU%\stage\86\lib`.
+* For **x64**:
+```
+C:\Program Files\boost\boost_1_68_0_icu> b2 address-model=64 architecture=x86 link=static runtime-link=static --with-regex --stagedir=stage/x64 define=_USING_V110_SDK71_=1 define=U_STATIC_IMPLEMENTATION=1 -sHAVE_ICU=1 -sICU_PATH=%ICU_ROOT% -sICU_LINK="/LIBPATH:%ICU_ROOT%\lib sicuucd.lib sicudtd.lib sicuind.lib sicuiod.lib sicutud.lib advapi32.lib" --disable-debug --enable-release
+```
+Output folder for compiled static boost regex libary is `%BOOST_ROOT_ICU%\stage\xXX\lib`.
 
 ## VIII. Create ICU regex static library
-1. Copy boost regex lib `libboost_regex-vc141-mt-s-x32-1_68.lib` to `%BOOST_ROOT_ICU%\stage\lib`
-2. Copy ICU libs from `%ICU_ROOT%\lib` to `%BOOST_ROOT_ICU%\stage\lib`
-3. Open *x86 VS2017 xXX Native Tools Command Prompt* and navigate to `%BOOST_ROOT_ICU%\stage\lib`
-4. Merge required libs into single `icuregex86.lib` file:
+1. Copy ICU libs from `%ICU_ROOT%\lib` to `%BOOST_ROOT_ICU%\stage\xXX\lib`
+2. Open *xXX Native Tools Command Prompt for VS 2017* and navigate to `%BOOST_ROOT_ICU%\stage\xXX\lib`
+3. Merge required libs into single library:
+* For **x86**:
 ```
-C:\Program Files\boost\boost_1_68_0_icu\stage\lib> lib /OUT:icuregex86.lib libboost_regex-vc141-mt-s-x32-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
+C:\Program Files\boost\boost_1_68_0_icu\stage\x86\lib> lib /OUT:icuregex86.lib libboost_regex-vc141-mt-s-x32-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
 ```
+* For **x64**:
+```
+C:\Program Files\boost\boost_1_68_0_icu\stage\x64\lib> lib /OUT:icuregex64.lib libboost_regex-vc141-mt-s-x64-1_68.lib sicudt.lib sicuin.lib sicuuc.lib
+```
+4. Copy boost regex lib `libboost_regex-vc141-mt-s-xXX-1_68.lib` and ICU lib `icuregexXX.lib` to `%BOOST_ROOT_ICU%\stage\lib`
 
 ## IX. Compile Notepad2e
 1. Open Notepad2e project with VS2017
-2. Switch to `Release ICU` - `x86` configuration
+2. Switch to `Release ICU` - `xXX` configuration
 3. Build solution
