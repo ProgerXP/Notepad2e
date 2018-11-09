@@ -48,6 +48,7 @@ BEGIN
       VALUE "InternalName",     VERSION_INTERNALNAME
       VALUE "LegalCopyright",   VERSION_LEGALCOPYRIGHT_LONG
       VALUE "OriginalFilename", VERSION_ORIGINALFILENAME
+      VALUE "Comments",         VERSION_COMMIT
     END
   END
   BLOCK "VarFileInfo"

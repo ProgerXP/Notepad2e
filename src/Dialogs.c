@@ -250,6 +250,11 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         wchar_t szText[MAX_PATH] = { 0 };
         if (GetString(IDS_APPTITLE, szText, COUNTOF(szText)-1))
         {
+          StrCatBuff(szText, L" (R", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_FILEVERSION_SHORT, COUNTOF(szText));
+          StrCatBuff(szText, L", ", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_COMMIT, COUNTOF(szText));
+          StrCatBuff(szText, L")", COUNTOF(szText));
           SetWindowText(hwnd, szText);
           SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETTEXT, 0, (LPARAM)szText);
         }
