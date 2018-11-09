@@ -50,4 +50,4 @@
 #define VERSION_EXT_VERSION          L"Extended Edition © 2013-2018"
 #define VERSION_EXT_BY               L"By Proger_XP and contributors"
 #define VERSION_EXT_PAGE             L"https://github.com/ProgerXP/Notepad2e"
-#define VERSION_COMMIT               L"abcdef1"
+#define VERSION_COMMIT               L"6c3f5ac"
