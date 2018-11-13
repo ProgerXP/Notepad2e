@@ -12,7 +12,7 @@ In this text, xXX means x86 or x64 depending on the required build version.
 
 ### Setup
 1. Install Visual Studio 2017 (15.7.6+).
-2. Install Cygwin, install next packages: bash, GNU make, ar, ranlib 
+2. Install Cygwin, install next packages: bash, GNU make
 
 ### Command prompt
 Open the *xXX Native Tools Command Prompt for VS 2017*.
