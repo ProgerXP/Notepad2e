@@ -341,7 +341,7 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
 //
 BOOL bFreezeAppTitle = FALSE;
 
-BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsPasteBoard, BOOL bIsElevated, UINT uIDUntitled,
                     LPCWSTR lpszFile, enum EPathNameFormat nPathNameFormat, BOOL bModified,
                     UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
@@ -363,6 +363,14 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
   if (!GetString(uIDAppName, szAppName, COUNTOF(szAppName)) ||
       !GetString(uIDUntitled, szUntitled, COUNTOF(szUntitled)))
     return FALSE;
+
+  // [2e]: Build info #195
+  if (bIsPasteBoard)
+  {
+    FormatString(szElevatedAppName, COUNTOF(szElevatedAppName), IDS_APPTITLE_PASTEBOARD, szAppName);
+    StrCpyN(szAppName, szElevatedAppName, COUNTOF(szAppName));
+  }
+  // [/2e]
 
   if (bIsElevated)
   {

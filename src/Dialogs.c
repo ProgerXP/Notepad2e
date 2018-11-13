@@ -251,7 +251,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         if (GetString(IDS_APPTITLE, szText, COUNTOF(szText)-1))
         {
           StrCatBuff(szText, L" (R", COUNTOF(szText));
-          StrCatBuff(szText, VERSION_FILEVERSION_SHORT, COUNTOF(szText));
+          StrCatBuff(szText, VERSION_FILEVERSION_BUILD_STRING, COUNTOF(szText));
           StrCatBuff(szText, L", ", COUNTOF(szText));
           StrCatBuff(szText, VERSION_COMMIT, COUNTOF(szText));
           StrCatBuff(szText, L")", COUNTOF(szText));

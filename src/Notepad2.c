@@ -784,7 +784,6 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   {
     bLastCopyFromMe = TRUE;
     hwndNextCBChain = SetClipboardViewer(hwndMain);
-    uidsAppTitle = IDS_APPTITLE_PASTEBOARD;
     n2e_UpdateWindowTitle(hwndMain);
     bLastCopyFromMe = FALSE;
 
