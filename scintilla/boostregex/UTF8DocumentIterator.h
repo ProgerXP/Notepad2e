@@ -1,7 +1,5 @@
-﻿#ifndef UTF8DOCUMENTITERATOR_H_3452843291318441149
-#define UTF8DOCUMENTITERATOR_H_3452843291318441149
+﻿#pragma once
 
-#include <stdlib.h>
 #include <iterator>
 #include <vector>
 #include "Platform.h"
@@ -15,6 +13,9 @@
 #include "CaseFolder.h"
 #include <Scintilla.h>
 #include <Document.h>
+
+void ReadCharacterFromUTF8(Document* _doc, const int _pos, const int _end,
+	wchar_t* _character, int& _characterIndex, int& _utf8Length, int& _utf16Length);
 
 class UTF8DocumentIterator : public std::iterator<std::bidirectional_iterator_tag, wchar_t>
 {
@@ -136,8 +137,10 @@ public:
         }
 
 private:
-		void readCharacter();
-
+		void readCharacter()
+		{
+			ReadCharacterFromUTF8(m_doc, m_pos, m_end, m_character, m_characterIndex, m_utf8Length, m_utf16Length);
+		}
 
         bool ended() const
         {
@@ -151,7 +154,4 @@ private:
 		int m_utf8Length;
 		int m_utf16Length;
         Document* m_doc;
-		static const unsigned char m_firstByteMask[];
 };
-
-#endif // UTF8DOCUMENTITERATOR_H_3452843291318441149

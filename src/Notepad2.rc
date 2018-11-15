@@ -8,6 +8,13 @@
 // Generated from the TEXTINCLUDE 2 resource.
 //
 #include <winres.h>
+#include "version.h"
+
+STRINGTABLE
+BEGIN
+IDS_APPTITLE           VERSION_FILEDESCRIPTION
+END
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1346,9 +1353,8 @@ IDR_ABOUT_3RD_PARTY     RTF                     "..\\res\\About3rdParty.rtf"
 
 STRINGTABLE
 BEGIN
-    IDS_APPTITLE            "Notepad 2e"
     IDS_APPTITLE_ELEVATED   "%s (Administrator)"
-    IDS_APPTITLE_PASTEBOARD "Notepad 2e (Paste Board)"
+    IDS_APPTITLE_PASTEBOARD "%s (Paste Board)"
     IDS_UNTITLED            "Untitled"
     IDS_TITLEEXCERPT        """%s"""
     IDS_READONLY            "(Read Only)"
@@ -1474,6 +1480,7 @@ BEGIN
     IDS_ERR_SAVEAS          "New file name refers to the same old file. This is not allowed.%s"
     IDS_ERR_SAVEAS_RENAME_DETAILS
                             "\n\nIf you were trying to rename it into a different character case, this would not work due to Windows Save File Dialog limitation (#140). To work around this, do two renames using a temporary file name."
+    IDS_WARN_ICU_REGEX      L"Regular expressions in Notepad 2e-ICU can only work on Unicode buffers. Convert this file to UTF-8?\r\n\r\nNon-ICU versions of Notepad 2e do not have this limitation."
 END
 
 STRINGTABLE
@@ -1942,7 +1949,14 @@ END
 
 2 TEXTINCLUDE 
 BEGIN
-    "#include <winres.h>\0"
+    "#include <winres.h>\r\n"
+    "#include ""version.h""\r\n"
+    "\r\n"
+    "STRINGTABLE\r\n"
+    "BEGIN\r\n"
+    "IDS_APPTITLE           VERSION_FILEDESCRIPTION\r\n"
+    "END\r\n"
+    "\0"
 END
 
 3 TEXTINCLUDE 

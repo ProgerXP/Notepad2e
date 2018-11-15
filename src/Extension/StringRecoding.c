@@ -18,7 +18,7 @@ int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 BOOL bBreakOnError = TRUE;
 
-BOOL IsUnicodeEncodingMode()
+BOOL n2e_IsUnicodeEncodingMode()
 {
   return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
 }
@@ -214,7 +214,7 @@ BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChar
 
 void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
 {
-  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
+  if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = n2e_Alloc(cbDataWide);
@@ -296,7 +296,7 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, l
 void TextBuffer_NormalizeAfterDecode(RecodingAlgorythm* pRA, TextBuffer* pTB)
 {
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
-  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
+  if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     LPSTR lpData = n2e_Alloc(pTB->m_iPos * 2 + 16);
     const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos / sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
@@ -362,7 +362,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
   case ERT_HEX:
     lstrcpy(pRA->statusText, isEncoding ? L"String to Hex..." : L"Hex to String...");
     pRA->iRequiredCharsForEncode = 1;
-    pRA->iRequiredCharsForDecode = IsUnicodeEncodingMode() ? 4 : 2;
+    pRA->iRequiredCharsForDecode = n2e_IsUnicodeEncodingMode() ? 4 : 2;
     pRA->pIsValidStrSequence = Hex_IsValidSequence;
     pRA->pEncodeMethod = Hex_Encode;
     pRA->pEncodeTailMethod = NULL;
@@ -708,7 +708,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
                 pED->m_tbRes.m_ptr, length);
       pSS->iResultLength += length;
     }
-    if (pED->m_bIsEncoding && IsUnicodeEncodingMode())
+    if (pED->m_bIsEncoding && n2e_IsUnicodeEncodingMode())
     {
       if (pED->m_tr.m_iExpectedProcessedChars)
       {

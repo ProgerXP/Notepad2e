@@ -40,7 +40,7 @@ BOOL Hex_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
 
 BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
-  if (IsUnicodeEncodingMode())
+  if (n2e_IsUnicodeEncodingMode())
   {
     char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
     if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, piCharsProcessed)

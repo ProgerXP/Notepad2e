@@ -22,6 +22,7 @@
     <ProjectGuid>{A3852498-51BF-4A24-B720-F69D2E5E6403}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Notepad2eTests</RootNamespace>
+    <WindowsTargetPlatformVersion>7.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Label="Configuration">
@@ -54,12 +55,15 @@
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;../../src/;../../scintilla/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>N2E_TESTING;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>N2E_TESTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
     </ClCompile>
@@ -89,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Extension\CommonUtils.h" />
+    <ClInclude Include="..\..\src\Extension\Externals.h" />
     <ClInclude Include="..\..\src\Extension\StringRecoding.h" />
     <ClInclude Include="..\..\src\Extension\StrToBase64.h" />
     <ClInclude Include="..\..\src\Extension\StrToHex.h" />

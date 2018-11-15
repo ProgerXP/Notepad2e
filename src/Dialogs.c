@@ -246,6 +246,20 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         if (hFontTitle)
           DeleteObject(hFontTitle);
 
+        // [2e]: Boost regex and Cyrillic #162 (ICU build)
+        wchar_t szText[MAX_PATH] = { 0 };
+        if (GetString(IDS_APPTITLE, szText, COUNTOF(szText)-1))
+        {
+          StrCatBuff(szText, L" (R", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_FILEVERSION_BUILD_STRING, COUNTOF(szText));
+          StrCatBuff(szText, L", ", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_COMMIT, COUNTOF(szText));
+          StrCatBuff(szText, L")", COUNTOF(szText));
+          SetWindowText(hwnd, szText);
+          SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETTEXT, 0, (LPARAM)szText);
+        }
+        // [/2e]
+
         if (NULL == (hFontTitle = (HFONT)SendDlgItemMessage(hwnd, IDC_VERSION, WM_GETFONT, 0, 0)))
           hFontTitle = GetStockObject(DEFAULT_GUI_FONT);
         GetObject(hFontTitle, sizeof(LOGFONT), &lf);

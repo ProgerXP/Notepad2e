@@ -68,7 +68,7 @@ struct TRecodingAlgorythm
 };
 typedef struct TRecodingAlgorythm RecodingAlgorythm;
 
-BOOL IsUnicodeEncodingMode();
+BOOL n2e_IsUnicodeEncodingMode();
 BOOL Is8BitEncodingMode();
 BOOL IsReverseUnicodeEncodingMode();
 BOOL IsHexDigit(const unsigned char ch);

@@ -13,6 +13,7 @@
 #include "Trace.h"
 #include "Subclassing.h"
 #include "VersionHelper.h"
+#include "Externals.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -64,6 +65,7 @@ extern WCHAR szTitleExcerpt[128];
 extern int iPathNameFormat;
 extern WCHAR szCurFile[MAX_PATH + 40];
 extern UINT uidsAppTitle;
+extern int flagPasteBoard;
 extern BOOL fIsElevated;
 extern BOOL bModified;
 extern int iEncoding;
@@ -792,7 +794,7 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
 
 void n2e_UpdateWindowTitle(const HWND hwnd)
 {
-  SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+  SetWindowTitle(hwnd, uidsAppTitle, flagPasteBoard, fIsElevated, IDS_UNTITLED, szCurFile,
                  iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                  IDS_READONLY, bReadOnly, szTitleExcerpt);
 }
