@@ -76,7 +76,7 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
   }
   if (nCode == HSHELL_LANGUAGE)
   {
-    PostMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
+    SendMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
   }
   return 0;
 }
