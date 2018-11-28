@@ -697,7 +697,7 @@ int, bitfield | 8192 |
 
 If **0**, perform full URL encoding/decoding per RFC 3986.
 
-If **non-0**, call (UrlEscape)[https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea] with those flags. Default value sets `URL_ESCAPE_SEGMENT_ONLY`, preserving *Notepad2*'s behaviour.
+If **non-0**, call [UrlEscape](https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea) with those flags. Default value sets `URL_ESCAPE_SEGMENT_ONLY`, preserving *Notepad2*'s behaviour.
 
 #### _SelectionType
 
