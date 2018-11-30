@@ -75,7 +75,7 @@ BEGIN
         MENUITEM "Open...\tCtrl+O",             IDM_FILE_OPEN
         MENUITEM "Open Next (&1)",              ID_FILE_OPEN__NEXT
         MENUITEM "Open Previous (&2)",          ID_FILE_OPEN__PREVIOUS
-        MENUITEM "Re&vert\tF5",                 IDM_FILE_REVERT
+        MENUITEM "Revert\tF5",                  IDM_FILE_REVERT
         MENUITEM "Save\tCtrl+S",                IDM_FILE_SAVE
         MENUITEM "Save As...\tF6",              IDM_FILE_SAVEAS
         MENUITEM "Rename To...\tAlt+F6",        ID_FILE_RENAMETO
