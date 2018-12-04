@@ -1,5 +1,4 @@
 #include "IPCMessage.h"
-#include "Pipe.h"
 
 BOOL IPCMessage_Init(IPCMessage* pIPCMessage, LPCWSTR filename, LONGLONG size, const EIPCCommand command)
 {
@@ -53,7 +52,7 @@ BOOL IPCMessage_Read(IPCMessage* pIPC, Pipe* pPipe)
   return Pipe_Read(pPipe, (LPBYTE)pIPC, sizeof(IPCMessage));
 }
 
-BOOL IPCMessage_Write(IPCMessage* pIPC, Pipe* pPipe)
+BOOL IPCMessage_Write(IPCMessage* pIPC, Pipe* pPipe, Event *pEvent)
 {
-  return Pipe_Write(pPipe, (LPBYTE)pIPC, sizeof(IPCMessage));
+  return Pipe_Write(pPipe, pEvent, (LPBYTE)pIPC, sizeof(IPCMessage));
 }

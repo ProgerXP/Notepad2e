@@ -4,17 +4,10 @@
 
 BOOL Pipe_IsOK(const Pipe *pPipe)
 {
-  return pPipe && pPipe->handle
-    && (pPipe->handle != INVALID_HANDLE_VALUE)
-    && Event_IsOK(&pPipe->event);
+  return pPipe && pPipe->handle && (pPipe->handle != INVALID_HANDLE_VALUE);
 }
 
-HANDLE Pipe_GetWaitHandle(const Pipe *pPipe)
-{
-  return Pipe_IsOK(pPipe) ? Event_GetWaitHandle(&pPipe->event) : NULL;
-}
-
-BOOL Pipe_Init(Pipe *pPipe, LPCWSTR lpName, LPCWSTR lpEventName, const BOOL bOpenExisting)
+BOOL Pipe_Init(Pipe *pPipe, LPCWSTR lpName, const BOOL bOpenExisting)
 {
   if (!pPipe)
   {
@@ -26,7 +19,6 @@ BOOL Pipe_Init(Pipe *pPipe, LPCWSTR lpName, LPCWSTR lpEventName, const BOOL bOpe
   }
   ZeroMemory(pPipe, sizeof(Pipe));
   lstrcpyn(pPipe->name, lpName, CSTRLEN(pPipe->name));
-  Event_Init(&pPipe->event, lpEventName, bOpenExisting);
   pPipe->handle = !bOpenExisting
     ? CreateNamedPipe(lpName,
                       PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE,
@@ -73,7 +65,6 @@ BOOL Pipe_Free(Pipe *pPipe)
     }
     pPipe->connected = FALSE;
   }
-  Event_Free(&pPipe->event);
   if (pPipe->handle)
   {
     CloseHandle(pPipe->handle);
@@ -92,7 +83,7 @@ BOOL Pipe_Read(Pipe *pPipe, LPBYTE pBuffer, const UINT count)
   return ReadFile(pPipe->handle, pBuffer, count, &dwRead, NULL) && (dwRead == count);
 }
 
-BOOL Pipe_Write(Pipe *pPipe, LPCBYTE pBuffer, const UINT count)
+BOOL Pipe_Write(Pipe *pPipe, Event *pEvent, LPCBYTE pBuffer, const UINT count)
 {
   if (!Pipe_IsOK(pPipe))
   {
@@ -110,7 +101,10 @@ BOOL Pipe_Write(Pipe *pPipe, LPCBYTE pBuffer, const UINT count)
   DWORD dwWritten = 0;
   if (WriteFile(pPipe->handle, pBuffer, count, &dwWritten, NULL) && (dwWritten == count))
   {
-    Event_Set(&pPipe->event);
+    if (pEvent)
+    {
+      Event_Set(pEvent);
+    }
     return TRUE;
   }
 

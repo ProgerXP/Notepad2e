@@ -31,6 +31,8 @@ Event eventIPCServerReset;
 Event eventIPCClientInitialized;
 Event eventIPCClientQuit;
 Pipe pipe;
+Event eventPipeServer;
+Event eventPipeClient;
 FileMapping fileMapping;
 Thread threadIPCServerWorker;
 
@@ -88,7 +90,8 @@ void ReloadMainMenu()
 #define IPC_SERVER_EVENT_NAME  L"Global\\ipc_server_event"
 #define IPC_START_EVENT_NAME  L"Global\\ipc_start_event"
 #define PIPE_NAME  L"\\\\.\\pipe\\ipc"
-#define PIPE_EVENT_NAME L"Global\\pipe_event"
+#define EVENT_PIPE_SERVER_NAME L"Global\\pipe_server_event"
+#define EVENT_PIPE_CLIENT_NAME L"Global\\pipe_client_event"
 #define FILEMAPPING_NAME L"Global\\filemapping"
 #define FILEMAPPING_EVENT_NAME L"Global\\filemapping_event"
 
@@ -118,8 +121,10 @@ BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
   Event_Init(&eventIPCClientInitialized, getObjectName(IPC_START_EVENT_NAME, toString(dwIPCID)), bIsClientMode);
   Pipe_Init(&pipe,
             getObjectName(PIPE_NAME, toString(dwIPCID)),
-            getObjectName2(PIPE_EVENT_NAME, toString(dwIPCID)),
             bIsClientMode);
+  Event_Init(&eventPipeServer, getObjectName2(EVENT_PIPE_SERVER_NAME, toString(dwIPCID)), bIsClientMode);
+  Event_Init(&eventPipeClient, getObjectName2(EVENT_PIPE_CLIENT_NAME, toString(dwIPCID)), bIsClientMode);
+
   FileMapping_Init(&fileMapping,
                    getObjectName(FILEMAPPING_NAME, toString(dwIPCID)),
                    getObjectName2(FILEMAPPING_EVENT_NAME, toString(dwIPCID)),
@@ -130,6 +135,8 @@ BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
     && Event_IsOK(&eventIPCServerReset)
     && Event_IsOK(&eventIPCClientInitialized)
     && Pipe_IsOK(&pipe)
+    && Event_IsOK(&eventPipeServer)
+    && Event_IsOK(&eventPipeClient)
     && FileMapping_IsOK(&fileMapping);
 
   if (res && bIsClientMode)
@@ -157,6 +164,8 @@ BOOL n2e_FinalizeIPC(const BOOL bFreeAll)
   Event_Free(&eventIPCServerReset);
   Event_Free(&eventIPCClientInitialized);
   Pipe_Free(&pipe);
+  Event_Free(&eventPipeServer);
+  Event_Free(&eventPipeClient);
   FileMapping_Free(&fileMapping);
   if (GetCurrentThreadId() != threadIPCServerWorker.id)
   {
@@ -328,7 +337,7 @@ BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
   HANDLE hServerProc = OpenProcess(SYNCHRONIZE, FALSE, pidServerProcess);
   while (res)
   {
-    HANDLE handles[] = { hServerProc, Event_GetWaitHandle(&eventIPCServerReset), Pipe_GetWaitHandle(&pipe) };
+    HANDLE handles[] = { hServerProc, Event_GetWaitHandle(&eventIPCServerReset), Event_GetWaitHandle(&eventPipeClient) };
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
       case WAIT_OBJECT_0:                   // server process quit
@@ -353,7 +362,7 @@ BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess)
             FileMapping_Close(&fileMapping, ipcm.size);
           }
           IPCMessage_SetError(&ipcm, FileMapping_GetError(&fileMapping));
-          IPCMessage_Write(&ipcm, &pipe);
+          IPCMessage_Write(&ipcm, &pipe, &eventPipeServer);
         }
         break;
       default:
@@ -380,11 +389,11 @@ BOOL n2e_IPC_ServerProc(LPCWSTR lpFilename, const LONGLONG size)
     return res;
   }
   FileMapping_Reset(&fileMapping);
-  res = IPCMessage_Init(&ipcm, lpFilename, size, IPCC_OPEN_FILE_MAPPING) && IPCMessage_Write(&ipcm, &pipe);
+  res = IPCMessage_Init(&ipcm, lpFilename, size, IPCC_OPEN_FILE_MAPPING) && IPCMessage_Write(&ipcm, &pipe, &eventPipeClient);
   int nRemainingIPCMessages = 1;
   while (res && (nRemainingIPCMessages > 0))
   {
-    HANDLE handles[] = { Event_GetWaitHandle(&eventIPCClientQuit), Pipe_GetWaitHandle(&pipe) };
+    HANDLE handles[] = { Event_GetWaitHandle(&eventIPCClientQuit), Event_GetWaitHandle(&eventPipeServer) };
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
       case WAIT_OBJECT_0:   // client process quit
@@ -408,7 +417,7 @@ BOOL n2e_IPC_ServerProc(LPCWSTR lpFilename, const LONGLONG size)
               bIOResult = TRUE;
               IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
               FileMapping_ResetError(&fileMapping);
-              bIOResult = IPCMessage_Write(&ipcm, &pipe) && FileMapping_Close(&fileMapping, -1);
+              bIOResult = IPCMessage_Write(&ipcm, &pipe, &eventPipeClient) && FileMapping_Close(&fileMapping, -1);
               ++nRemainingIPCMessages;
             }
             else if (FileMapping_Open(&fileMapping, ipcm.filename, ipcm.size, TRUE)
@@ -419,7 +428,7 @@ BOOL n2e_IPC_ServerProc(LPCWSTR lpFilename, const LONGLONG size)
               bIOResult &= FileMapping_UnmapViewOfFile(&fileMapping);
               ipcm.size = fileMapping.iDataSize;
               IPCMessage_SetCommand(&ipcm, IPCC_CLOSE_FILE_MAPPING);
-              bIOResult &= IPCMessage_Write(&ipcm, &pipe);
+              bIOResult &= IPCMessage_Write(&ipcm, &pipe, &eventPipeClient);
               FileMapping_ResetError(&fileMapping);
               bIOResult &= FileMapping_Close(&fileMapping, fileMapping.iDataSize);
               ++nRemainingIPCMessages;

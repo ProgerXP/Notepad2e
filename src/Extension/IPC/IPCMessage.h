@@ -1,5 +1,6 @@
 #pragma once
 #include <wtypes.h>
+#include "Event.h"
 #include "Pipe.h"
 
 typedef enum
@@ -24,4 +25,4 @@ BOOL IPCMessage_IsCloseFileMappingCommand(IPCMessage* pIPCMessage);
 BOOL IPCMessage_SetCommand(IPCMessage* pIPCMessage, const EIPCCommand command);
 BOOL IPCMessage_SetError(IPCMessage* pIPCMessage, const DWORD error);
 BOOL IPCMessage_Read(IPCMessage* pIPC, Pipe* pPipe);
-BOOL IPCMessage_Write(IPCMessage* pIPC, Pipe* pPipe);
+BOOL IPCMessage_Write(IPCMessage* pIPC, Pipe* pPipe, Event *pEvent);
