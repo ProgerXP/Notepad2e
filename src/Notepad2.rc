@@ -81,7 +81,7 @@ BEGIN
         MENUITEM "Rename To...\tAlt+F6",        ID_FILE_RENAMETO
         MENUITEM "Save Copy...\tCtrl+F6",       IDM_FILE_SAVECOPY
         MENUITEM "&Read-Only",                  IDM_FILE_READONLY
-        POPUP "Save On &Lose Focus"
+        POPUP "Save On Lose Fo&cus"
         BEGIN
             MENUITEM "&Disabled",                   ID_SAVEONLOSEFOCUS_DISABLED
             MENUITEM "&Enabled",                    ID_SAVEONLOSEFOCUS_ENABLED
@@ -155,7 +155,7 @@ BEGIN
         MENUITEM "Clear Clipboar&d",            IDM_EDIT_CLEARCLIPBOARD
         MENUITEM "Select All\tCtrl+A",          IDM_EDIT_SELECTALL
         MENUITEM SEPARATOR
-        POPUP "L&ines"
+        POPUP "&Lines"
         BEGIN
             MENUITEM "Move &Up\tCtrl+Shift+Up",     IDM_EDIT_MOVELINEUP
             MENUITEM "&Move Down\tCtrl+Shift+Down", IDM_EDIT_MOVELINEDOWN
@@ -237,12 +237,12 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "C&har To C Hex\tCtrl+Alt+X",  IDM_EDIT_CHAR2HEX
             MENUITEM "C Hex To Cha&r\tCtrl+Alt+C",  IDM_EDIT_HEX2CHAR
-            MENUITEM "St&ring To Hex\tAlt+Shift+A", IDM_EDIT_STRING2HEX
-            MENUITEM "Hex To Stri&ng\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
-            MENUITEM "&Base64 Encode\tAlt+Shift+W", IDM_EDIT_BASE64ENCODE
-            MENUITEM "B&ase64 Decode\tCtrl+Alt+Shift+W", IDM_EDIT_BASE64DECODE
-            MENUITEM "&QP Encode\tAlt+Shift+Q",     IDM_EDIT_QPENCODE
-            MENUITEM "Q&P Decode\tCtrl+Alt+Shift+Q", IDM_EDIT_QPDECODE
+            MENUITEM "String To Hex\tAlt+Shift+A",  IDM_EDIT_STRING2HEX
+            MENUITEM "Hex To String\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
+            MENUITEM "Base64 Encode\tAlt+Shift+W",  IDM_EDIT_BASE64ENCODE
+            MENUITEM "Base64 Decode\tCtrl+Alt+Shift+W", IDM_EDIT_BASE64DECODE
+            MENUITEM "QP Encode\tAlt+Shift+Q",      IDM_EDIT_QPENCODE
+            MENUITEM "QP Decode\tCtrl+Alt+Shift+Q", IDM_EDIT_QPDECODE
             MENUITEM SEPARATOR
             MENUITEM "&Find Matching Brace\tCtrl+B", IDM_EDIT_FINDMATCHINGBRACE
             MENUITEM "&Select To Matching Brace\tCtrl+Shift+B", IDM_EDIT_SELTOMATCHINGBRACE
@@ -357,7 +357,7 @@ BEGIN
     POPUP "&?"
     BEGIN
         MENUITEM "&About...\tF1",               IDM_HELP_ABOUT
-        MENUITEM "3rd Party Code...",           IDM_HELP_ABOUT_3RD_PARTY
+        MENUITEM "&3rd Party Code...",          IDM_HELP_ABOUT_3RD_PARTY
     END
 END
 
