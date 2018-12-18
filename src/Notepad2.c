@@ -1963,8 +1963,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS2, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES2, i);
-  EnableCmd(hmenu, IDM_EDIT_URLENCODE, i);
-  EnableCmd(hmenu, IDM_EDIT_URLDECODE, i);
+  // [2e]: Url encode issue #189
+  EnableCmd(hmenu, IDM_EDIT_URLENCODE, (iUrlEncodeMode == UEM_LEGACY) ? i : i3);
+  EnableCmd(hmenu, IDM_EDIT_URLDECODE, (iUrlEncodeMode == UEM_LEGACY) ? i : i3);
   EnableCmd(hmenu, IDM_EDIT_ESCAPECCHARS, i);
   EnableCmd(hmenu, IDM_EDIT_UNESCAPECCHARS, i);
   EnableCmd(hmenu, IDM_EDIT_CHAR2HEX, i);
@@ -3396,14 +3397,30 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_URLENCODE:
       BeginWaitCursor();
-      EditURLEncode(hwndEdit);
+      // [2e]: Url encode issue #189
+      if (iUrlEncodeMode == UEM_LEGACY)
+      {
+        EditURLEncode(hwndEdit);
+      }
+      else
+      {
+        n2e_EditString2URL(hwndEdit);
+      }
       EndWaitCursor();
       break;
 
 
     case IDM_EDIT_URLDECODE:
       BeginWaitCursor();
-      EditURLDecode(hwndEdit);
+      // [2e]: Url encode issue #189
+      if (iUrlEncodeMode == UEM_LEGACY)
+      {
+        EditURLDecode(hwndEdit);
+      }
+      else
+      {
+        n2e_EditURL2String(hwndEdit);
+      }
       EndWaitCursor();
       break;
 

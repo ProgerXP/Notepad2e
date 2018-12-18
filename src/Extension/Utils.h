@@ -67,6 +67,12 @@ typedef enum
 
 typedef enum
 {
+  UEM_LEGACY = 0,
+  UEM_IMPROVED = 1,
+} EUrlEncodeMode;
+
+typedef enum
+{
   SCP_LEGACY = 0,
   SCP_THIRD = 1,
   SCP_HALF = 2

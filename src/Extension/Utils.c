@@ -31,6 +31,7 @@
 #define INI_SETTING_MATH_EVAL L"MathEval"
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
+#define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
@@ -48,7 +49,8 @@ ESaveOnLoseFocus iSaveOnLoseFocus = SLF_DISABLED;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_LINE;
-EWordNavigationMode iWordNavigationMode = 0;
+EWordNavigationMode iWordNavigationMode = WNM_STANDARD;
+EUrlEncodeMode iUrlEncodeMode = UEM_LEGACY;
 ELanguageIndicatorMode iShowLanguageInTitle = LIT_SHOW_NON_US;
 UINT iShellMenuType = CMF_EXPLORE;
 BOOL bHighlightLineIfWindowInactive = FALSE;
@@ -159,6 +161,7 @@ void n2e_LoadINI()
   iEvaluateMathExpression = IniGetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 
   if (iUsePrefixInOpenDialog != UPO_AUTO)
   {
@@ -210,6 +213,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 }
 
 void n2e_Release()

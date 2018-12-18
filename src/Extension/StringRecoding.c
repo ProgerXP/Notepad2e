@@ -7,6 +7,7 @@
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
+#include "StrToURL.h"
 
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
 #define DEFAULT_RECODING_BUFFER_SIZE_MAX 5 * 1024 * 1024
@@ -394,6 +395,17 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pDecodeTailMethod = QP_Decode; // use regular decode proc for tail
     pRA->data = QP_InitAlgorythmData(pRA->isEncoding);
     return TRUE;
+	case ERT_URL:
+		lstrcpy(pRA->statusText, isEncoding ? L"String to URL..." : L"URL to String...");
+		pRA->iRequiredCharsForEncode = 1;
+		pRA->iRequiredCharsForDecode = 3;
+		pRA->pIsValidStrSequence = URL_IsValidSequence;
+		pRA->pEncodeMethod = URL_Encode;
+		pRA->pEncodeTailMethod = NULL;
+		pRA->pDecodeMethod = URL_Decode;
+		pRA->pDecodeTailMethod = URL_Decode;
+		pRA->data = NULL;
+		return TRUE;
   default:
     assert(FALSE);
     return FALSE;
@@ -411,6 +423,8 @@ BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA)
     return TRUE;
   case ERT_QP:
     QP_ReleaseAlgorythmData(pRA->data);
+    return TRUE;
+  case ERT_URL:
     return TRUE;
   default:
     assert(FALSE);

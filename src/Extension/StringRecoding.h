@@ -1,7 +1,7 @@
 #pragma once
 #include <wtypes.h>
 
-#define MAX_TEST_STRING_LENGTH 1400000  // must be greater than the size of the largest file test\data\Extension\TestFile*.txt
+#define MAX_TEST_STRING_LENGTH 1500000  // must be greater than the size of the largest file test\data\Extension\TestFile*.txt
 
 extern int RECODING_BUFFER_SIZE;
 extern int RECODING_BUFFER_SIZE_MAX;
@@ -97,6 +97,7 @@ typedef enum
   ERT_HEX,
   ERT_BASE64,
   ERT_QP,
+  ERT_URL
 } ERecodingType;
 
 BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding);

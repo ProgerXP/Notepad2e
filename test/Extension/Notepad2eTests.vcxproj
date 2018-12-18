@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\src\Extension\StrToBase64.h" />
     <ClInclude Include="..\..\src\Extension\StrToHex.h" />
     <ClInclude Include="..\..\src\Extension\StrToQP.h" />
+    <ClInclude Include="..\..\src\Extension\StrToURL.h" />
     <ClInclude Include="..\..\src\Extension\Trace.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
@@ -122,6 +123,9 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StrToQP.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToURL.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\tinyexpr\tinyexpr.c">

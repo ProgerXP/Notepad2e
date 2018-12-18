@@ -15,6 +15,7 @@ extern BOOL bCtrlWheelScroll;
 extern BOOL bMoveCaretOnRightClick;
 extern EExpressionEvaluationMode iEvaluateMathExpression;
 extern EWordNavigationMode iWordNavigationMode;
+extern EUrlEncodeMode iUrlEncodeMode;
 extern WCHAR wchLastHTMLTag[0xff];
 extern WCHAR wchLastHTMLEndTag[0xff];
 
@@ -37,6 +38,8 @@ void n2e_EditString2Base64(const HWND hwnd);
 void n2e_EditBase642String(const HWND hwnd);
 void n2e_EditString2QP(const HWND hwnd);
 void n2e_EditQP2String(const HWND hwnd);
+void n2e_EditString2URL(const HWND hwnd);
+void n2e_EditURL2String(const HWND hwnd);
 
 void n2e_SaveCheckboxes(const HWND hwnd);
 BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);

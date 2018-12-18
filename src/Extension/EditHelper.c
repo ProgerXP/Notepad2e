@@ -11,6 +11,7 @@
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
+#include "StrToURL.h"
 #include "StringRecoding.h"
 #include "Subclassing.h"
 #include "Trace.h"
@@ -797,6 +798,24 @@ void n2e_EditQP2String(const HWND hwnd)
     return;
   }
   DecodeQPToStr(hwnd);
+}
+
+void n2e_EditString2URL(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  EncodeStrToURL(hwnd);
+}
+
+void n2e_EditURL2String(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  DecodeURLToStr(hwnd);
 }
 
 LPCWSTR GetControlIDAsString(const UINT nCtrlID)
