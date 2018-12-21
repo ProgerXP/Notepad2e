@@ -2,12 +2,12 @@
 
 struct TEncodingData;
 typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorythm;
-typedef struct TRecodingAlgorythm RecodingAlgorythm;
+struct TRecodingAlgorithm;
+typedef struct TRecodingAlgorithm RecodingAlgorithm;
 
 BOOL Hex_IsValidSequence(EncodingData* pED, const int requiredChars);
-BOOL Hex_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
-BOOL Hex_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
+BOOL Hex_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
+BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
 
 #ifdef __cplusplus
 extern "C" { // C-Declarations

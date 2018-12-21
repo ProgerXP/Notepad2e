@@ -5,7 +5,7 @@
 #include "StringRecoding.h"
 
 extern StringSource ss = { 0 };
-extern RecodingAlgorythm ra = { 0 };
+extern RecodingAlgorithm ra = { 0 };
 
 static const unsigned char base64_table[65] =
         "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -36,7 +36,7 @@ BOOL Base64_IsValidSequence(EncodingData* pED, const int requiredChars)
 
 static Base64Data b64data = { 0 };
 
-LPVOID Base64_InitAlgorythmData(const BOOL isEncoding)
+LPVOID Base64_InitAlgorithmData(const BOOL isEncoding)
 {
   if (!isEncoding)
   {
@@ -58,7 +58,7 @@ LPVOID Base64_InitAlgorythmData(const BOOL isEncoding)
   }
 }
 
-void Base64_ReleaseAlgorythmData(LPVOID pData)
+void Base64_ReleaseAlgorithmData(LPVOID pData)
 {
 }
 
@@ -71,7 +71,7 @@ long Base64_GetEncodedCharLength(unsigned char ch)
   return 1;
 }
 
-BOOL Base64_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL Base64_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   unsigned char chInput[4] = { 0 };
   for (int i = 0; i < _countof(chInput) - 1; ++i)
@@ -102,7 +102,7 @@ BOOL Base64_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProce
   return TRUE;
 }
 
-BOOL Base64_EncodeTail(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL Base64_EncodeTail(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   long iCharsProcessed = 0;
   unsigned char chInput[4] = { 0 };
@@ -133,7 +133,7 @@ BOOL Base64_EncodeTail(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsP
   return TRUE;
 }
 
-BOOL Base64_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL Base64_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   Base64Data* pData = (Base64Data*)pRA->data;
   assert(pData);
@@ -181,10 +181,10 @@ BOOL Base64_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProce
 LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_BASE64, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
@@ -192,26 +192,26 @@ LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encodin
 LPCSTR DecodeBase64ToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_BASE64, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
 void EncodeStrToBase64(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_BASE64, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }
 
 void DecodeBase64ToStr(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_BASE64, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }

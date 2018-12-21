@@ -127,7 +127,7 @@ BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars)
   return pTB->m_iPos <= pTB->m_iSize - 1 - requiredChars;
 }
 
-BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorythm* pRA)
+BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA)
 {
   return TextBuffer_IsPosOKImpl(pTB, pRA->iRequiredCharsForEncode);
 }
@@ -213,7 +213,7 @@ BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChar
   return FALSE;
 }
 
-void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
+void TextBuffer_NormalizeBeforeEncode(RecodingAlgorithm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
 {
   if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
@@ -294,7 +294,7 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, l
   }
 }
 
-void TextBuffer_NormalizeAfterDecode(RecodingAlgorythm* pRA, TextBuffer* pTB)
+void TextBuffer_NormalizeAfterDecode(RecodingAlgorithm* pRA, TextBuffer* pTB)
 {
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
   if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
@@ -354,7 +354,7 @@ BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, str
   return FALSE;
 }
 
-BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding)
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding)
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
@@ -380,7 +380,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = Base64_EncodeTail;
     pRA->pDecodeMethod = Base64_Decode;
     pRA->pDecodeTailMethod = NULL;
-    pRA->data = Base64_InitAlgorythmData(pRA->isEncoding);
+    pRA->data = Base64_InitAlgorithmData(pRA->isEncoding);
     return TRUE;
   case ERT_QP:
     lstrcpy(pRA->statusText, isEncoding ? L"String to QP..." : L"QP to String...");
@@ -393,7 +393,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = QP_Decode;
     pRA->pDecodeTailMethod = QP_Decode; // use regular decode proc for tail
-    pRA->data = QP_InitAlgorythmData(pRA->isEncoding);
+    pRA->data = QP_InitAlgorithmData(pRA->isEncoding);
     return TRUE;
 	case ERT_URL:
 		lstrcpy(pRA->statusText, isEncoding ? L"String to URL..." : L"URL to String...");
@@ -412,17 +412,17 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
   }
 }
 
-BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA)
+BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA)
 {
   switch (pRA->recodingType)
   {
   case ERT_HEX:
     return TRUE;
   case ERT_BASE64:
-    Base64_ReleaseAlgorythmData(pRA->data);
+    Base64_ReleaseAlgorithmData(pRA->data);
     return TRUE;
   case ERT_QP:
-    QP_ReleaseAlgorythmData(pRA->data);
+    QP_ReleaseAlgorithmData(pRA->data);
     return TRUE;
   case ERT_URL:
     return TRUE;
@@ -537,7 +537,7 @@ void EncodingSettings_Free(EncodingData* pED)
   TextBuffer_Free(&pED->m_tbTmp);
 }
 
-void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize)
+void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
 {
   if (bufferSize > 0)
   {
@@ -608,7 +608,7 @@ long UTF8StringLength(LPCSTR text)
 }
 
 
-BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, EncodingData* pED)
+BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, EncodingData* pED)
 {
   BOOL bRes = TRUE;
   long iCursorOffset = 0;

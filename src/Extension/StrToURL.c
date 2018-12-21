@@ -19,7 +19,7 @@ BOOL IsURLChar(TextBuffer* pTB, const unsigned char ch)
     || (ch == '-') || (ch == '_') || (ch == '.') || (ch == '~'));
 }
 
-BOOL URL_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL URL_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
   int iCharsProcessed = 0;
@@ -41,7 +41,7 @@ BOOL URL_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
   return TRUE;
 }
 
-BOOL URL_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL URL_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const char ch = TextBuffer_PopChar(&pED->m_tb);
   unsigned char chNext = TextBuffer_GetChar(&pED->m_tb);
@@ -79,15 +79,15 @@ BOOL URL_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcesse
 }
 
 static StringSource ss = { 0 };
-static RecodingAlgorythm ra = { 0 };
+static RecodingAlgorithm ra = { 0 };
 
 LPCSTR EncodeStringToURL(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_URL, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
@@ -95,26 +95,26 @@ LPCSTR EncodeStringToURL(LPCSTR text, const int textLength, const int encoding, 
 LPCSTR DecodeURLToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_URL, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
 void EncodeStrToURL(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_URL, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }
 
 void DecodeURLToStr(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_URL, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }

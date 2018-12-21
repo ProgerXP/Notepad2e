@@ -52,7 +52,7 @@ typedef int(*ExpectedResultLengthMethod)(const BOOL isEncoding, const int origin
 typedef BOOL(*IsValidStrSequence)(EncodingData* pED, const int requiredChars);
 typedef BOOL(*RecodeMethod)(LPVOID pRA, EncodingData* pED, long* piCharsProcessed);
 
-struct TRecodingAlgorythm
+struct TRecodingAlgorithm
 {
   enum ERecodingType recodingType;
   BOOL isEncoding;
@@ -66,7 +66,7 @@ struct TRecodingAlgorythm
   wchar_t statusText[MAX_PATH];
   LPVOID data;
 };
-typedef struct TRecodingAlgorythm RecodingAlgorythm;
+typedef struct TRecodingAlgorithm RecodingAlgorithm;
 
 BOOL n2e_IsUnicodeEncodingMode();
 BOOL Is8BitEncodingMode();
@@ -82,7 +82,7 @@ BOOL TextBuffer_Free(TextBuffer* pTB);
 BOOL TextBuffer_Update(TextBuffer* pTB, LPSTR ptr, const int iSize);
 BOOL TextBuffer_GetTailLength(TextBuffer* pTB);
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars);
-BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorythm* pRA);
+BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA);
 void TextBuffer_IncPos(TextBuffer* pTB);
 void TextBuffer_DecPos(TextBuffer* pTB);
 char TextBuffer_GetChar(TextBuffer* pTB);
@@ -100,8 +100,8 @@ typedef enum
   ERT_URL
 } ERecodingType;
 
-BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding);
-BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA);
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding);
+BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);
 
 void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength);
 void StringSource_InitFromHWND(StringSource* pSS, const HWND hwnd);
@@ -111,5 +111,5 @@ long StringSource_GetLength(const StringSource* pSS);
 long StringSource_IsDataPortionAvailable(const StringSource* pSS, EncodingData* pED);
 BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long iEnd);
 
-void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize);
-BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, EncodingData* pED);
+void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize);
+BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, EncodingData* pED);
