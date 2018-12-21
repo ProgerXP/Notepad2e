@@ -227,9 +227,6 @@ BEGIN
             MENUITEM "Line Comment (&Toggle)\tCtrl+Q", IDM_EDIT_LINECOMMENT
             MENUITEM "Stream &Comment\tCtrl+Shift+Q", IDM_EDIT_STREAMCOMMENT
             MENUITEM SEPARATOR
-            MENUITEM "URL &Encode\tCtrl+Shift+E",   IDM_EDIT_URLENCODE
-            MENUITEM "URL &Decode\tCtrl+Alt+Shift+E", IDM_EDIT_URLDECODE
-            MENUITEM SEPARATOR
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
             MENUITEM "Str&ip HTML Tags\tShift+Alt+X", IDM_EDIT_STRIP_HTML_TAGS
@@ -237,18 +234,26 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "C&har To C Hex\tCtrl+Alt+X",  IDM_EDIT_CHAR2HEX
             MENUITEM "C Hex To Cha&r\tCtrl+Alt+C",  IDM_EDIT_HEX2CHAR
-            MENUITEM "String To Hex\tAlt+Shift+A",  IDM_EDIT_STRING2HEX
-            MENUITEM "Hex To String\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
-            MENUITEM "Base64 Encode\tAlt+Shift+W",  IDM_EDIT_BASE64ENCODE
-            MENUITEM "Base64 Decode\tCtrl+Alt+Shift+W", IDM_EDIT_BASE64DECODE
-            MENUITEM "QP Encode\tAlt+Shift+Q",      IDM_EDIT_QPENCODE
-            MENUITEM "QP Decode\tCtrl+Alt+Shift+Q", IDM_EDIT_QPDECODE
             MENUITEM SEPARATOR
             MENUITEM "&Find Matching Brace\tCtrl+B", IDM_EDIT_FINDMATCHINGBRACE
             MENUITEM "&Select To Matching Brace\tCtrl+Shift+B", IDM_EDIT_SELTOMATCHINGBRACE
             MENUITEM SEPARATOR
             MENUITEM "Select To Ne&xt\tF2",         IDM_EDIT_SELTONEXT
             MENUITEM "Select To Pre&vious\tShift+F2", IDM_EDIT_SELTOPREV
+        END
+        POPUP "&Encode"
+        BEGIN
+            MENUITEM "URL &Encode\tCtrl+Shift+E",   IDM_EDIT_URLENCODE
+            MENUITEM "URL &Decode\tCtrl+Alt+Shift+E", IDM_EDIT_URLDECODE
+            MENUITEM SEPARATOR
+            MENUITEM "String To Hex\tAlt+Shift+A",  IDM_EDIT_STRING2HEX
+            MENUITEM "Hex To String\tCtrl+Alt+Shift+A", IDM_EDIT_HEX2STRING
+            MENUITEM SEPARATOR
+            MENUITEM "Base64 Encode\tAlt+Shift+W",  IDM_EDIT_BASE64ENCODE
+            MENUITEM "Base64 Decode\tCtrl+Alt+Shift+W", IDM_EDIT_BASE64DECODE
+            MENUITEM SEPARATOR
+            MENUITEM "QP Encode\tAlt+Shift+Q",      IDM_EDIT_QPENCODE
+            MENUITEM "QP Decode\tCtrl+Alt+Shift+Q", IDM_EDIT_QPDECODE
         END
         MENUITEM SEPARATOR
         MENUITEM "Find...\tCtrl+F",             IDM_EDIT_FIND
