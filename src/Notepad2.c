@@ -2875,12 +2875,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             iWordStart = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iPos, FALSE);
             iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
-            if (iWordStart != iWordEnd)
+            // [2e]: Always select closest word #205
+            const int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0);
+            const int iLineEndPos = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLine, 0);
+            while ((iWordStart == iWordEnd) && (iWordStart < iLineEndPos))
             {
-              SendMessage(hwndEdit, SCI_SETSEL, iWordStart, iWordEnd);
+              iWordStart = (int)SendMessage(hwndEdit, SCI_WORDSTARTPOSITION, iWordEnd + 1, TRUE);
+              iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
             }
+            // [/2e]
           }
-          else
+          if (iWordStart != iWordEnd)
           {
             SendMessage(hwndEdit, SCI_SETSEL, iWordStart, iWordEnd);
           }
