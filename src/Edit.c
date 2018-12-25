@@ -5742,6 +5742,8 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
       bSuppressNotFound = TRUE;
   }
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   if (iPos != -1)
     EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
@@ -5868,6 +5870,8 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   if (iCount)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   // Remove wait cursor
   EndWaitCursor();
 
@@ -6020,6 +6024,8 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   }
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   // Remove wait cursor
   EndWaitCursor();
 
