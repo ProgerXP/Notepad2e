@@ -229,6 +229,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "Esca&pe C Chars\tCtrl+Alt+E", IDM_EDIT_ESCAPECCHARS
             MENUITEM "&Unescape C Chars\tCtrl+Alt+R", IDM_EDIT_UNESCAPECCHARS
+            MENUITEM SEPARATOR
             MENUITEM "Str&ip HTML Tags\tShift+Alt+X", IDM_EDIT_STRIP_HTML_TAGS
             MENUITEM "Escape HTML Ta&gs\tCtrl+Alt+Shift+X", ID_SPECIAL_ESCAPEHTML
             MENUITEM SEPARATOR
