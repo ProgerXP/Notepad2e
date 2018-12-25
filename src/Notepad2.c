@@ -6696,11 +6696,13 @@ void UpdateStatusbar()
   int iLines;
   int iCol;
   int iSel;
+  int iSelLines;
   WCHAR tchLn[32];
   WCHAR tchLines[32];
   WCHAR tchCol[32];
   WCHAR tchCols[32];
   WCHAR tchSel[32];
+  WCHAR tchSelLines[32];
   WCHAR tchDocPos[256];
 
   int iBytes;
@@ -6734,15 +6736,25 @@ void UpdateStatusbar()
     wsprintf(tchCols, L"%i", iLongLinesLimit);
     FormatNumberStr(tchCols);
   }
+
+  // [2e]: Show line count for selection #204
+  iSelLines = SciCall_LineFromPosition(SciCall_GetSelEnd())
+              - SciCall_LineFromPosition(SciCall_GetSelStart())
+              + 1;
+  wsprintf(tchSelLines, L"%i", iSelLines);
+  FormatNumberStr(tchSelLines);
+  lstrcpy(tchSel, tchSelLines);
+
   if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0))
   {
     iSel = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-    wsprintf(tchSel, L"%i", iSel);
-    FormatNumberStr(tchSel);
+    wsprintf(tchSelLines, L"%i", iSel);
+    FormatNumberStr(tchSelLines);
+    lstrcat(tchSel, L" : ");
+    lstrcat(tchSel, tchSelLines);
   }
-  else
-    lstrcpy(tchSel, L"--");
-
+  // [/2e]
+  
   if (!bMarkLongLines)
     FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS, tchLn, tchLines, tchCol, tchSel);
   else
