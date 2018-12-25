@@ -2517,7 +2517,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Process elevation #166
     case IDM_FILE_ELEVATE:
-      n2e_SwitchElevation(TRUE);
+      n2e_SwitchElevation();
       break;
     // [/2e]
 
@@ -6025,13 +6025,13 @@ BOOL ParseCommandLine()
       // [2e]: Process elevation #166
       else if (n2e_IsIPCIDParam(lp1))
       {
-        DWORD pidServerProcess = 0, idIPC = 0;
-        if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d,%d", &pidServerProcess, &idIPC) == 0)
+        DWORD pidParentProcess = 0, idIPC = 0;
+        if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d,%d", &pidParentProcess, &idIPC) == 0)
             || !n2e_InitializeIPC(idIPC, TRUE))
         {
           return FALSE;
         }
-        n2e_IPC_ClientProc(pidServerProcess);
+        n2e_ChildProcess_FileIOHandler(pidParentProcess);
         return FALSE;
       }
       // [/2e]
@@ -7146,7 +7146,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
       // [/2e]
       else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)
                           // [2e]: Process elevation #166
-                          || n2e_IPC_FileIO(tchFile, n2e_GetFileHeaderLength(iEncoding) + SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0)))
+                          || n2e_ParentProcess_ElevatedFileIO(tchFile, n2e_GetFileHeaderLength(iEncoding) + SciCall_GetLength()))
       {
         n2e_ResetLastRun();
         // [2e]: File->RenameTo menu item
@@ -7180,7 +7180,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   else
     fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
                // [2e]: Process elevation #166
-               || n2e_IPC_FileIO(szCurFile, n2e_GetFileHeaderLength(iEncoding) + SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
+               || n2e_ParentProcess_ElevatedFileIO(szCurFile, n2e_GetFileHeaderLength(iEncoding) + SciCall_GetLength());
 
   if (fSuccess)
   {

@@ -217,7 +217,7 @@ void n2e_Release()
 {
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
-  n2e_FinalizeIPC(TRUE);
+  n2e_FinalizeIPC();
 }
 
 void n2e_Reset()

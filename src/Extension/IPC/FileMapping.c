@@ -31,17 +31,35 @@ BOOL FileMapping_IsOK(const FileMapping *pFileMapping)
 {
   return pFileMapping
     && (lstrlen(pFileMapping->name) > 0)
-    && Event_IsOK(&pFileMapping->event);
+    && Event_IsOK(&pFileMapping->eventTryCreate)
+    && Event_IsOK(&pFileMapping->eventCreated)
+    && Event_IsOK(&pFileMapping->eventTryClose)
+    && Event_IsOK(&pFileMapping->eventClosed);
 }
 
-HANDLE FileMapping_GetWaitHandle(const FileMapping *pFileMapping)
+HANDLE FileMapping_GetTryCreateHandle(const FileMapping *pFileMapping)
 {
-  return FileMapping_IsOK(pFileMapping) ? Event_GetWaitHandle(&pFileMapping->event) : NULL;
+  return FileMapping_IsOK(pFileMapping) ? Event_GetWaitHandle(&pFileMapping->eventTryCreate) : NULL;
 }
 
-BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, LPCWSTR lpEventName, const BOOL bOpenExisting)
+HANDLE FileMapping_GetCreatedHandle(const FileMapping *pFileMapping)
 {
-  if (!pFileMapping || !lpName || !lpEventName)
+  return FileMapping_IsOK(pFileMapping) ? Event_GetWaitHandle(&pFileMapping->eventCreated) : NULL;
+}
+
+HANDLE FileMapping_GetTryCloseHandle(const FileMapping *pFileMapping)
+{
+  return FileMapping_IsOK(pFileMapping) ? Event_GetWaitHandle(&pFileMapping->eventTryClose) : NULL;
+}
+
+HANDLE FileMapping_GetClosedHandle(const FileMapping *pFileMapping)
+{
+  return FileMapping_IsOK(pFileMapping) ? Event_GetWaitHandle(&pFileMapping->eventClosed) : NULL;
+}
+
+BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, const BOOL bOpenExisting)
+{
+  if (!pFileMapping || !lpName)
   {
     return FALSE;
   }
@@ -51,7 +69,21 @@ BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, LPCWSTR lpEvent
   }
   ZeroMemory(pFileMapping, sizeof(FileMapping));
   lstrcpyn(pFileMapping->name, lpName, CSTRLEN(pFileMapping->name));
-  Event_Init(&pFileMapping->event, lpEventName, bOpenExisting);
+  pFileMapping->file = INVALID_HANDLE_VALUE;
+
+  WCHAR eventName[MAX_PATH] = { 0 };
+  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcat(eventName, L"-EventTryCreate");
+  Event_Init(&pFileMapping->eventTryCreate, &eventName[0], bOpenExisting);
+  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcat(eventName, L"-EventCreated");
+  Event_Init(&pFileMapping->eventCreated, &eventName[0], bOpenExisting);
+  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcat(eventName, L"-EventTryClose");
+  Event_Init(&pFileMapping->eventTryClose, &eventName[0], bOpenExisting);
+  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcat(eventName, L"-EventClosed");
+  Event_Init(&pFileMapping->eventClosed, &eventName[0], bOpenExisting);
 
   return FileMapping_IsOK(pFileMapping);
 }
@@ -59,13 +91,37 @@ BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, LPCWSTR lpEvent
 BOOL FileMapping_Free(FileMapping *pFileMapping)
 {
   FileMapping_Close(pFileMapping, -1);
-  Event_Free(&pFileMapping->event);
+  Event_Free(&pFileMapping->eventTryCreate);
+  Event_Free(&pFileMapping->eventCreated);
+  Event_Free(&pFileMapping->eventTryClose);
+  Event_Free(&pFileMapping->eventClosed);
+  return TRUE;
+}
+
+BOOL FileMapping_TryCreate(FileMapping *pFileMapping)
+{
+  if (!FileMapping_IsOK(pFileMapping))
+  {
+    return FALSE;
+  }
+  Event_Set(&pFileMapping->eventTryCreate);
+  return TRUE;
+}
+
+BOOL FileMapping_TryClose(FileMapping *pFileMapping)
+{
+  if (!FileMapping_IsOK(pFileMapping))
+  {
+    return FALSE;
+  }
+  FileMapping_Close(pFileMapping, -1);      // release handles
+  Event_Set(&pFileMapping->eventTryClose);
   return TRUE;
 }
 
 BOOL FileMapping_IsOpened(const FileMapping *pFileMapping)
 {
-  return FileMapping_IsOK(pFileMapping) && (pFileMapping->file || pFileMapping->handle);
+  return FileMapping_IsOK(pFileMapping) && ((pFileMapping->file != INVALID_HANDLE_VALUE) || pFileMapping->handle);
 }
 
 BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 size, const BOOL bOpenExisting)
@@ -77,18 +133,21 @@ BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 s
   FileMapping_Close(pFileMapping, -1);
   if (!bOpenExisting)
   {
-    pFileMapping->file = CreateFile(lpFile,
-                                    GENERIC_READ | GENERIC_WRITE,
-                                    0,
-                                    NULL,
-                                    OPEN_ALWAYS,
-                                    0,
-                                    NULL);
-    if (pFileMapping->file == INVALID_HANDLE_VALUE)
+    if (lstrlen(lpFile))
     {
-      FileMapping_SaveError(pFileMapping);
-      FileMapping_Close(pFileMapping, -1);
-      return FALSE;
+      pFileMapping->file = CreateFile(lpFile,
+                                      GENERIC_READ | GENERIC_WRITE,
+                                      0,
+                                      NULL,
+                                      OPEN_ALWAYS,
+                                      0,
+                                      NULL);
+      if (pFileMapping->file == INVALID_HANDLE_VALUE)
+      {
+        FileMapping_SaveError(pFileMapping);
+        FileMapping_Close(pFileMapping, -1);
+        return FALSE;
+      }
     }
     if (size != 0)
     {
@@ -114,11 +173,17 @@ BOOL FileMapping_Open(FileMapping *pFileMapping, LPCWSTR lpFile, const __int64 s
       FileMapping_SaveError(pFileMapping);
     }
   }
-  return (!bOpenExisting && (size == 0)) || (pFileMapping->handle != NULL);
+  const BOOL bResult = (!bOpenExisting && (size == 0)) || (pFileMapping->handle != NULL);
+  if (bResult && !bOpenExisting)
+  {
+    Event_Set(&pFileMapping->eventCreated);
+  }
+  return bResult;
 }
 
 BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
 {
+  BOOL res = TRUE;
   if (!FileMapping_IsOK(pFileMapping))
   {
     return FALSE;
@@ -126,17 +191,19 @@ BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
   if (pFileMapping->lpData && !FileMapping_FlushViewOfFile(pFileMapping))
   {
     FileMapping_SaveError(pFileMapping);
+    res = FALSE;
   }
   if (pFileMapping->lpData && !FileMapping_UnmapViewOfFile(pFileMapping))
   {
     FileMapping_SaveError(pFileMapping);
+    res = FALSE;
   }
   if (pFileMapping->handle)
   {
     CloseHandle(pFileMapping->handle);
     pFileMapping->handle = NULL;
   }
-  if (pFileMapping->file)
+  if (pFileMapping->file != INVALID_HANDLE_VALUE)
   {
     if (size >= 0)
     {
@@ -144,18 +211,24 @@ BOOL FileMapping_Close(FileMapping *pFileMapping, const __int64 size)
       if (INVALID_SET_FILE_POINTER == SetFilePointer(pFileMapping->file, LODWORD(size), &hiDWORD, FILE_BEGIN))
       {
         FileMapping_SaveError(pFileMapping);
+        res = FALSE;
       }
       if (!SetEndOfFile(pFileMapping->file))
       {
         FileMapping_SaveError(pFileMapping);
+        res = FALSE;
       }
     }
     CloseHandle(pFileMapping->file);
-    pFileMapping->file = NULL;
+    pFileMapping->file = INVALID_HANDLE_VALUE;
   }
   pFileMapping->iFileOffset = 0;
   pFileMapping->iDataSize = 0;
-  return TRUE;
+  if (res && (size >= 0))
+  {
+    Event_Set(&pFileMapping->eventClosed);
+  }
+  return res;
 }
 
 BOOL FileMapping_MapViewOfFile(FileMapping *pFileMapping)
@@ -164,7 +237,7 @@ BOOL FileMapping_MapViewOfFile(FileMapping *pFileMapping)
   {
     return FALSE;
   }
-  pFileMapping->lpData = MapViewOfFile(pFileMapping->handle, FILE_MAP_WRITE,
+  pFileMapping->lpData = MapViewOfFile(pFileMapping->handle, FILE_MAP_WRITE | FILE_MAP_READ,
                                        HIDWORD(pFileMapping->iFileOffset), 
                                        LODWORD(pFileMapping->iFileOffset), 0);
   pFileMapping->lpDataCurrent = pFileMapping->lpData;
@@ -207,16 +280,6 @@ BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping)
   return pFileMapping->lpData && FlushViewOfFile(pFileMapping->lpData, pFileMapping->iBufferSize);
 }
 
-BOOL FileMapping_Read(FileMapping *pFileMapping, LPBYTE pBuffer, const DWORD count)
-{
-  if (!FileMapping_IsOK(pFileMapping))
-  {
-    return FALSE;
-  }
-  DWORD dwRead = 0;
-  return ReadFile(pFileMapping->handle, pBuffer, count, &dwRead, NULL) && (dwRead == count);
-}
-
 DWORD FileMapping_BufferAvailable(FileMapping *pFileMapping)
 {
   if (!FileMapping_IsOK(pFileMapping))
@@ -228,7 +291,7 @@ DWORD FileMapping_BufferAvailable(FileMapping *pFileMapping)
     : 0;
 }
 
-BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, DWORD count)
+BOOL FileMapping_TransferData(FileMapping *pFileMapping, LPBYTE pBuffer, DWORD count, const BOOL bFromFileMapping)
 {
   if (!FileMapping_IsOK(pFileMapping)
       || !pFileMapping->lpData
@@ -236,7 +299,7 @@ BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, DWORD count)
   {
     return FALSE;
   }
-    
+
   while (count > 0)
   {
     DWORD sizeDest = FileMapping_BufferAvailable(pFileMapping);
@@ -252,7 +315,14 @@ BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, DWORD count)
       assert(sizeDest > 0);
     }
     const size_t sizeCopy = min(sizeDest, count);
-    memcpy_s(pFileMapping->lpDataCurrent, sizeCopy, pBuffer, sizeCopy);
+    if (bFromFileMapping)
+    {
+      memcpy_s(pBuffer, sizeCopy, pFileMapping->lpDataCurrent, sizeCopy);
+    }
+    else
+    {
+      memcpy_s(pFileMapping->lpDataCurrent, sizeCopy, pBuffer, sizeCopy);
+    }
     pFileMapping->iDataSize += sizeCopy;
     pFileMapping->lpDataCurrent += sizeCopy;
 
@@ -262,29 +332,12 @@ BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, DWORD count)
   return TRUE;
 }
 
-BOOL FileMapping_Reset(FileMapping *pFileMapping)
+BOOL FileMapping_Read(FileMapping *pFileMapping, LPBYTE pBuffer, const DWORD count)
 {
-  if (!FileMapping_IsOK(pFileMapping))
-  {
-    return FALSE;
-  }
-  return Event_Reset(&pFileMapping->event);
+  return FileMapping_TransferData(pFileMapping, pBuffer, count, TRUE);
 }
 
-BOOL FileMapping_Set(FileMapping *pFileMapping)
+BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, const DWORD count)
 {
-  if (!FileMapping_IsOK(pFileMapping))
-  {
-    return FALSE;
-  }
-  return Event_Set(&pFileMapping->event);
-}
-
-BOOL FileMapping_Wait(FileMapping *pFileMapping, const UINT nDelay)
-{
-  if (!FileMapping_IsOK(pFileMapping))
-  {
-    return FALSE;
-  }
-  return Event_Wait(&pFileMapping->event, nDelay);
+  return FileMapping_TransferData(pFileMapping, (LPBYTE)pBuffer, count, FALSE);
 }

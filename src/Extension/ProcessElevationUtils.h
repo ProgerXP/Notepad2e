@@ -3,16 +3,15 @@
 #define IPCID_PARAM L"IPCID="
 
 BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
-BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bSlave);
-BOOL n2e_FinalizeIPC(const BOOL bFreeAll);
-
-BOOL n2e_IPC_FileIO(LPCWSTR lpFilename, const LONGLONG size);
-BOOL n2e_IPC_ClientProc(const DWORD pidServerProcess);
-
-BOOL n2e_IsIPCInitialized();
 BOOL n2e_IsElevatedModeEnabled();
 BOOL n2e_IsElevatedMode();
-BOOL n2e_SwitchElevation(const BOOL bResetIPCID);
+BOOL n2e_SwitchElevation();
+
+BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode);
+BOOL n2e_FinalizeIPC();
+
+BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size);
+BOOL n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess);
 
 HANDLE n2e_CreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,
                       DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes,  HANDLE hTemplateFile);
