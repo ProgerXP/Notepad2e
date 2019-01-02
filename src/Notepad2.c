@@ -274,6 +274,7 @@ int   iAlignMode = 0;
 
 BOOL      fIsElevated = FALSE;
 WCHAR     wchWndClass[16] = WC_NOTEPAD2;
+BOOL      fExpandEnvVariables = FALSE;
 
 HINSTANCE g_hInstance;
 UINT16    g_uWinVer;
@@ -6041,6 +6042,15 @@ void ParseCommandLine()
         else
           flagUseSystemMRU = 1;
       }
+      // [2e]: Don't interpret %envvars% in pathname when opening file #193
+      else if (StrCmpNI(lp1, L"expandenv=", CSTRLEN(L"expandenv=")) == 0)
+      {
+        WCHAR wch[8];
+        StrCpyN(wch, lp1 + CSTRLEN(L"expandenv="), COUNTOF(wch));
+        StrTrim(wch, L" ");
+        fExpandEnvVariables = (_wtoi(wch) != 0);
+      }
+      // [/2e]
 
       else switch (*CharUpper(lp1))
       {

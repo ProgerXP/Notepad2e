@@ -33,6 +33,8 @@
 #include "Extension/Utils.h"
 
 
+extern BOOL fExpandEnvVariables;
+
 //=============================================================================
 //
 //  Manipulation of (cached) ini file sections
@@ -1018,7 +1020,8 @@ void PathRelativeToApp(
       lstrcpyn(wchPath, lpszSrc, COUNTOF(wchPath));
   }
 
-  if (bUnexpandEnv)
+  // [2e]: Don't interpret %envvars% in pathname when opening file #193
+  if (bUnexpandEnv && fExpandEnvVariables)
   {
     if (!PathUnExpandEnvStrings(wchPath, wchResult, COUNTOF(wchResult)))
       lstrcpyn(wchResult, wchPath, COUNTOF(wchResult));
@@ -1468,8 +1471,9 @@ void PathFixBackslashes(LPWSTR lpsz)
 void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 {
   WCHAR szBuf[312];
-
-  if (ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
+	
+  // [2e]: Don't interpret %envvars% in pathname when opening file #193
+  if (fExpandEnvVariables && ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
     lstrcpyn(lpSrc, szBuf, dwSrc);
 }
 
