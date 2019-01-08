@@ -24,3 +24,4 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam);
 BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int bufferSize);
 BOOL n2e_IsModalDialogOnTop();
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam);
+void n2e_SetUACIcon(const HMENU hMenu, const UINT nItem);

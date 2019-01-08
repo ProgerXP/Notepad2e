@@ -6025,13 +6025,13 @@ BOOL ParseCommandLine()
       // [2e]: Process elevation #166
       else if (n2e_IsIPCIDParam(lp1))
       {
-        DWORD pidParentProcess = 0, idIPC = 0;
-        if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d,%d", &pidParentProcess, &idIPC) == 0)
-            || !n2e_InitializeIPC(idIPC, TRUE))
+        DWORD idIPC = 0;
+        if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d", &idIPC) == 0)
+            || !n2e_InitializeIPC(FALSE, idIPC))
         {
           return FALSE;
         }
-        n2e_ChildProcess_FileIOHandler(pidParentProcess);
+        n2e_ChildProcess_FileIOHandler(idIPC);
         return FALSE;
       }
       // [/2e]

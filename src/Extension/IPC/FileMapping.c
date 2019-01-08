@@ -72,16 +72,16 @@ BOOL FileMapping_Init(FileMapping *pFileMapping, LPCWSTR lpName, const BOOL bOpe
   pFileMapping->file = INVALID_HANDLE_VALUE;
 
   WCHAR eventName[MAX_PATH] = { 0 };
-  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcpyn(eventName, lpName, CSTRLEN(eventName));
   lstrcat(eventName, L"-EventTryCreate");
   Event_Init(&pFileMapping->eventTryCreate, &eventName[0], bOpenExisting);
-  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcpyn(eventName, lpName, CSTRLEN(eventName));
   lstrcat(eventName, L"-EventCreated");
   Event_Init(&pFileMapping->eventCreated, &eventName[0], bOpenExisting);
-  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcpyn(eventName, lpName, CSTRLEN(eventName));
   lstrcat(eventName, L"-EventTryClose");
   Event_Init(&pFileMapping->eventTryClose, &eventName[0], bOpenExisting);
-  lstrcpyn(eventName, lpName, wcslen(lpName));
+  lstrcpyn(eventName, lpName, CSTRLEN(eventName));
   lstrcat(eventName, L"-EventClosed");
   Event_Init(&pFileMapping->eventClosed, &eventName[0], bOpenExisting);
 
@@ -251,6 +251,7 @@ BOOL FileMapping_MapViewOfFile(FileMapping *pFileMapping)
       return TRUE;
     }
   }
+  FileMapping_SaveError(pFileMapping);
   return FALSE;
 }
 
@@ -277,7 +278,15 @@ BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping)
   {
     return FALSE;
   }
-  return pFileMapping->lpData && FlushViewOfFile(pFileMapping->lpData, pFileMapping->iBufferSize);
+  if (pFileMapping->lpData)
+  {
+    if (FlushViewOfFile(pFileMapping->lpData, pFileMapping->iBufferSize))
+    {
+      return TRUE;
+    }
+    FileMapping_SaveError(pFileMapping);
+  }
+  return FALSE;
 }
 
 DWORD FileMapping_BufferAvailable(FileMapping *pFileMapping)
@@ -305,9 +314,9 @@ BOOL FileMapping_TransferData(FileMapping *pFileMapping, LPBYTE pBuffer, DWORD c
     DWORD sizeDest = FileMapping_BufferAvailable(pFileMapping);
     if (sizeDest == 0)
     {
-      FileMapping_FlushViewOfFile(pFileMapping);
-      FileMapping_UnmapViewOfFile(pFileMapping);
-      if (!FileMapping_MapViewOfFile(pFileMapping))
+      if (!FileMapping_FlushViewOfFile(pFileMapping)
+          || !FileMapping_UnmapViewOfFile(pFileMapping)
+          || !FileMapping_MapViewOfFile(pFileMapping))
       {
         return FALSE;
       }

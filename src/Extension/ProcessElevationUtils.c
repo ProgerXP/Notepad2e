@@ -1,22 +1,14 @@
 #include "stdafx.h"
 #include "ProcessElevationUtils.h"
 #include "CommonUtils.h"
-#include "Resource.h"
-#include "Dialogs.h"
-#include "VersionHelper.h"
-#include "IPC/FileMapping.h"
 #include "Externals.h"
-#include "Shell32Helper.h"
+#include "IPC/FileMapping.h"
+#include "VersionHelper.h"
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
 #define CSTRLEN(s)  (COUNTOF(s)-1)
 
-extern WCHAR g_wchWorkingDirectory[MAX_PATH];
-extern HWND  hwndMain;
-BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
-
 BOOL bElevationEnabled = FALSE;
-BOOL bIsClientMode = FALSE;
 DWORD dwIPCID = 0;
 
 #define FILEMAPPING_IPCDATA_NAME L"Global\\filemapping_ipcdata"
@@ -48,12 +40,6 @@ BOOL n2e_IsElevatedMode()
   return IsWindowsVistaOrGreater() && n2e_IsElevatedModeEnabled();
 }
 
-void ReloadMainMenu()
-{
-  extern HWND hwndMain;
-  PostMessage(hwndMain, WM_INITMENU, (WPARAM)GetMenu(hwndMain), 0);
-}
-
 void CloseProcessHandle(HANDLE* pHandle)
 {
   if (*pHandle)
@@ -65,50 +51,34 @@ void CloseProcessHandle(HANDLE* pHandle)
 
 BOOL n2e_SwitchElevation()
 {
-  if (n2e_IsElevatedModeEnabled())
-  {
-    bElevationEnabled = FALSE;
-    if (n2e_IsChildProcessOK())
-    {
-      TerminateProcess(hChildProcess, 0);
-      CloseProcessHandle(&hChildProcess);
-    }
-    n2e_FinalizeIPC();
-    ReloadMainMenu();
-    return TRUE;
-  }
-  else
-  {
-    bElevationEnabled = TRUE;
-    return n2e_RunChildProcess();
-  }
+  bElevationEnabled = !n2e_IsElevatedModeEnabled();
+  return bElevationEnabled
+          ? n2e_RunChildProcess()
+          : n2e_FinalizeIPC();
 }
 
-LPCWSTR toString(const DWORD value)
+void lstrcatdword(LPWSTR lpstr, const DWORD value)
 {
-  static wchar_t wchBuffer[12];
-  _itow_s(value, wchBuffer, COUNTOF(wchBuffer), 10);
-  return wchBuffer;
+  wchar_t wchBuffer[12];
+  _itow_s(value, wchBuffer, CSTRLEN(wchBuffer), 10);
+  lstrcat(lpstr, wchBuffer);
 }
 
-LPCWSTR getObjectName(LPCWSTR lpPrefix, LPCWSTR lpPostfix)
+LPCWSTR formatObjectName(LPCWSTR lpPrefix, const DWORD dwPostfix)
 {
   static wchar_t wchName[MAX_PATH];
-  lstrcpyn(wchName, lpPrefix, CSTRLEN(wchName) - lstrlen(lpPostfix));
-  lstrcat(wchName, lpPostfix);
+  lstrcpyn(wchName, lpPrefix, CSTRLEN(wchName));
+  lstrcatdword(wchName, dwPostfix);
   return wchName;
 }
 
-LPCWSTR getObjectName2(LPCWSTR lpPrefix, LPCWSTR lpPostfix)
-{
-  static wchar_t wchName[MAX_PATH];
-  lstrcpyn(wchName, lpPrefix, CSTRLEN(wchName) - lstrlen(lpPostfix));
-  lstrcat(wchName, lpPostfix);
-  return wchName;
-}
+extern DWORD dwLastIOError;
 
 BOOL n2e_RunElevatedInstance(HANDLE* phElevatedProcess)
 {
+  extern WCHAR g_wchWorkingDirectory[MAX_PATH];
+  BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
+
   BOOL res = FALSE;
   LPWSTR lpCmdLine = GetCommandLine();
 
@@ -121,9 +91,7 @@ BOOL n2e_RunElevatedInstance(HANDLE* phElevatedProcess)
     LPWSTR lpCmdLineNew = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
     lstrcpyn(lpCmdLineNew, lpCmdLine, iMaxCmdLength);
     lstrcat(lpCmdLineNew, L" /" IPCID_PARAM);
-    lstrcat(lpCmdLineNew, toString(GetCurrentProcessId()));
-    lstrcat(lpCmdLineNew, L",");
-    lstrcat(lpCmdLineNew, toString(dwIPCID));
+    lstrcatdword(lpCmdLineNew, GetCurrentProcessId());
 
     ZeroMemory(&si, sizeof(STARTUPINFO));
     si.cb = sizeof(STARTUPINFO);
@@ -157,62 +125,46 @@ BOOL n2e_RunElevatedInstance(HANDLE* phElevatedProcess)
       *phElevatedProcess = sei.hProcess;
     }
   }
+  else
+  {
+    dwLastIOError = GetLastError();
+  }
   return res;
 }
 
-DWORD GenerateIPCID()
+BOOL n2e_InitializeIPC(const BOOL bInitParent, const DWORD dwID)
 {
-  srand(GetTickCount());
-  return rand() % 65536;
+  n2e_FinalizeIPC();
+  dwIPCID = dwID;
+  FileMapping_Init(&fileMapping,
+                   formatObjectName(FILEMAPPING_NAME, dwIPCID),
+                   !bInitParent);
+  FileMapping_Init(&fileMappingIPCData,
+                   formatObjectName(FILEMAPPING_IPCDATA_NAME, dwIPCID),
+                   !bInitParent);
+  return dwIPCID && FileMapping_IsOK(&fileMapping) && FileMapping_IsOK(&fileMappingIPCData);
 }
 
 BOOL n2e_FinalizeIPC()
 {
+  if (n2e_IsChildProcessOK())
+  {
+    TerminateProcess(hChildProcess, 0);
+  }
+  if (hChildProcess)
+  {
+    CloseProcessHandle(&hChildProcess);
+  }
   FileMapping_Free(&fileMappingIPCData);
   FileMapping_Free(&fileMapping);
   return TRUE;
 }
 
-BOOL n2e_InitializeIPC(const DWORD idIPC, const BOOL bClientMode)
-{
-  n2e_FinalizeIPC();
-
-  bIsClientMode = bClientMode;
-  dwIPCID = idIPC;
-
-  FileMapping_Init(&fileMapping,
-                   getObjectName(FILEMAPPING_NAME, toString(dwIPCID)),
-                   bIsClientMode);
-
-  FileMapping_Init(&fileMappingIPCData,
-                  getObjectName(FILEMAPPING_IPCDATA_NAME, toString(dwIPCID)),
-                  bIsClientMode);
- 
-  return dwIPCID && FileMapping_IsOK(&fileMapping) && FileMapping_IsOK(&fileMappingIPCData);
-}
-
-BOOL n2e_InitIPC(const BOOL bResetIPC)
-{
-  const int nMaxAttempts = 10;
-  int i = 0;
-  while (i++ < nMaxAttempts)
-  {
-    const DWORD ipc = (!bResetIPC && (i == 1)) ? dwIPCID : GenerateIPCID();
-    if (n2e_InitializeIPC(ipc, FALSE))
-    {
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 BOOL n2e_RunChildProcess()
 {
-  hChildProcess = NULL;
-  return n2e_InitIPC(TRUE) && n2e_RunElevatedInstance(&hChildProcess);
+  return n2e_InitializeIPC(TRUE, GetCurrentProcessId()) && n2e_RunElevatedInstance(&hChildProcess);
 }
 
-extern DWORD dwLastIOError;
 struct TIPCData
 {
   WCHAR wchFileName[MAX_PATH];
@@ -220,12 +172,18 @@ struct TIPCData
 };
 typedef struct TIPCData IPCData;
 
-BOOL n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess)
+void n2e_ChildProcess_Exit(const DWORD dwExitCode, HANDLE hParentProcess)
 {
-  BOOL res = TRUE;
+  CloseProcessHandle(&hParentProcess);
+  n2e_FinalizeIPC();
+  ExitProcess(dwExitCode);
+}
+
+void n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess)
+{
   IPCData ipcData = { 0 };
   HANDLE hParentProcess = OpenProcess(SYNCHRONIZE, FALSE, pidParentProcess);
-  while (res)
+  while (1)
   {
     HANDLE handles[] = {
                          hParentProcess,
@@ -237,12 +195,12 @@ BOOL n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess)
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
       case WAIT_OBJECT_0:         // parent process quit
-        ExitProcess(0);
-        return 0;
+        n2e_ChildProcess_Exit(0, hParentProcess);
+        return;
       case WAIT_OBJECT_0 + 1:     // create IPC data filemapping
         if (!FileMapping_Open(&fileMappingIPCData, NULL, sizeof(ipcData), FALSE))
         {
-          ExitProcess(FileMapping_GetError(&fileMappingIPCData));
+          n2e_ChildProcess_Exit(FileMapping_GetError(&fileMappingIPCData), hParentProcess);
         }
         break;
       case WAIT_OBJECT_0 + 2:     // close IPC data filemapping
@@ -250,27 +208,26 @@ BOOL n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess)
             || !FileMapping_Read(&fileMappingIPCData, (LPBYTE)&ipcData, sizeof(ipcData))
             || !FileMapping_UnmapViewOfFile(&fileMappingIPCData))
         {
-          ExitProcess(FileMapping_GetError(&fileMappingIPCData));
+          n2e_ChildProcess_Exit(FileMapping_GetError(&fileMappingIPCData), hParentProcess);
         }
         FileMapping_Close(&fileMappingIPCData, sizeof(ipcData));
         break;
       case WAIT_OBJECT_0 + 3:     // create filemapping
         if (!FileMapping_Open(&fileMapping, &ipcData.wchFileName[0], ipcData.llFileSize, FALSE))
         {
-          ExitProcess(FileMapping_GetError(&fileMapping));
+          n2e_ChildProcess_Exit(FileMapping_GetError(&fileMapping), hParentProcess);
         }
         break;
       case WAIT_OBJECT_0 + 4:     // close filemapping
         if (!FileMapping_Close(&fileMapping, ipcData.llFileSize))
         {
-          ExitProcess(FileMapping_GetError(&fileMapping));
+          n2e_ChildProcess_Exit(FileMapping_GetError(&fileMapping), hParentProcess);
         }
         break;
       default:
         break;
     }
   }
-  return res;
 }
 
 DWORD n2e_GetChildProcessQuitCode()
@@ -301,21 +258,22 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
   {
     if (!n2e_RunChildProcess() || !n2e_IsChildProcessOK())
     {
-      dwLastIOError = n2e_GetChildProcessQuitCode(hChildProcess);
-      CloseProcessHandle(&hChildProcess);
+      if (hChildProcess)
+      {
+        dwLastIOError = n2e_GetChildProcessQuitCode(hChildProcess);
+        CloseProcessHandle(&hChildProcess);
+      }
       return FALSE;
     }
   }
 
-  MSG msg = { 0 };
   IPCData ipcData = { 0 };
   wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, wcslen(lpFilename));
   ipcData.llFileSize = size;
 
-  BOOL bContinueWait = TRUE;
-
+  BOOL bContinue = TRUE;
   FileMapping_TryCreate(&fileMappingIPCData);
-  while (bContinueWait)
+  while (bContinue)
   {
     HANDLE handles[] = {
                           hChildProcess,
@@ -326,54 +284,52 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
                        };
     switch (WaitForMultipleObjects(COUNTOF(handles), handles, FALSE, INFINITE))
     {
-    case WAIT_OBJECT_0:       // client process quit
-      dwLastIOError = n2e_GetChildProcessQuitCode(hChildProcess);
-      CloseProcessHandle(&hChildProcess);
-      bResult = FALSE;
-      bContinueWait = FALSE;
-      break;
-    case WAIT_OBJECT_0 + 1:   // IPC data filemapping created
-      if (!FileMapping_Open(&fileMappingIPCData, NULL, sizeof(ipcData), TRUE)
-          || !FileMapping_MapViewOfFile(&fileMappingIPCData)
-          || !FileMapping_Write(&fileMappingIPCData, (LPBYTE)&ipcData, sizeof(ipcData))
-          || !FileMapping_UnmapViewOfFile(&fileMappingIPCData)
-          || !FileMapping_TryClose(&fileMappingIPCData))
-      {
-        TerminateProcess(hChildProcess, FileMapping_GetError(&fileMappingIPCData));
-      }
-      break;
-    case WAIT_OBJECT_0 + 2:   // IPC data filemapping closed
-      FileMapping_TryCreate(&fileMapping);
-      break;
-    case WAIT_OBJECT_0 + 3:   // filemapping created
-      if (size == 0)
-      {
-        SendMessage(hwndEdit, SCI_SETSAVEPOINT, 0, 0);
-        FileMapping_TryClose(&fileMapping);
-      }
-      else if (FileMapping_Open(&fileMapping, lpFilename, size, TRUE)
-               && FileMapping_MapViewOfFile(&fileMapping))
-      {
-        if (!FileIO(FALSE, lpFilename, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE))
+      case WAIT_OBJECT_0:       // client process quit
+        dwLastIOError = n2e_GetChildProcessQuitCode(hChildProcess);
+        bContinue = FALSE;
+        break;
+      case WAIT_OBJECT_0 + 1:   // IPC data filemapping created
+        if (!FileMapping_Open(&fileMappingIPCData, NULL, sizeof(ipcData), TRUE)
+            || !FileMapping_MapViewOfFile(&fileMappingIPCData)
+            || !FileMapping_Write(&fileMappingIPCData, (LPBYTE)&ipcData, sizeof(ipcData))
+            || !FileMapping_UnmapViewOfFile(&fileMappingIPCData)
+            || !FileMapping_TryClose(&fileMappingIPCData))
         {
-          TerminateProcess(hChildProcess, GetLastError());
+          TerminateProcess(hChildProcess, FileMapping_GetError(&fileMappingIPCData));
         }
-        if (FileMapping_UnmapViewOfFile(&fileMapping))
+        break;
+      case WAIT_OBJECT_0 + 2:   // IPC data filemapping closed
+        FileMapping_TryCreate(&fileMapping);
+        break;
+      case WAIT_OBJECT_0 + 3:   // filemapping created
+        if (size == 0)
         {
+          SendMessage(hwndEdit, SCI_SETSAVEPOINT, 0, 0);
           FileMapping_TryClose(&fileMapping);
         }
-      }
-      else
-      {
-        TerminateProcess(hChildProcess, FileMapping_GetError(&fileMapping));
-      }
-      break;
-    case WAIT_OBJECT_0 + 4:   // filemapping closed
-      bResult = TRUE;
-      bContinueWait = FALSE;
-      break;
-    default:
-      break;
+        else if (FileMapping_Open(&fileMapping, lpFilename, size, TRUE)
+                 && FileMapping_MapViewOfFile(&fileMapping))
+        {
+          if (!FileIO(FALSE, lpFilename, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE))
+          {
+            TerminateProcess(hChildProcess, GetLastError());
+          }
+          if (FileMapping_UnmapViewOfFile(&fileMapping))
+          {
+            FileMapping_TryClose(&fileMapping);
+          }
+        }
+        else
+        {
+          TerminateProcess(hChildProcess, FileMapping_GetError(&fileMapping));
+        }
+        break;
+      case WAIT_OBJECT_0 + 4:   // filemapping closed
+        bResult = TRUE;
+        bContinue = FALSE;
+        break;
+      default:
+        break;
     }
   }
   return bResult;
@@ -445,60 +401,4 @@ int n2e_GetFileHeaderLength(const int iEncoding)
     }
   }
   return 0;
-}
-
-HBITMAP ConvertIconToBitmap(const HICON hIcon, const int cx, const int cy)
-{
-  HDC hScreenDC = GetDC(NULL);
-  HBITMAP hbmpTmp = CreateCompatibleBitmap(hScreenDC, cx, cy);
-  HDC hMemDC = CreateCompatibleDC(hScreenDC);
-  HBITMAP hOldBmp = SelectObject(hMemDC, hbmpTmp);
-  DrawIconEx(hMemDC, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL);
-  SelectObject(hMemDC, hOldBmp);
-
-  HBITMAP hDibBmp = (HBITMAP)CopyImage((HANDLE)hbmpTmp, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_CREATEDIBSECTION);
-
-  DeleteObject(hbmpTmp);
-  DeleteDC(hMemDC);
-  ReleaseDC(NULL, hScreenDC);
-
-  return hDibBmp;
-}
-
-void n2e_SetUACIcon(HMENU hMenu, UINT nItem)
-{
-  static BOOL bInitialized = FALSE;
-  if (bInitialized)
-  {
-    return;
-  }
-
-#define IDI_SHIELD          32518
-
-  if (IsWindowsVistaOrGreater())
-  {
-    const int cx = GetSystemMetrics(SM_CYMENU) - 4;
-    const int cy = cx;
-
-    HICON hIconShield = NULL;
-    SHSTOCKICONINFO sii = { 0 };
-    sii.cbSize = sizeof(sii);
-    if (SUCCEEDED(n2e_SHGetStockIconInfo(SIID_SHIELD, SHGFI_ICON | SHGFI_SMALLICON, &sii)))
-    {
-      hIconShield = sii.hIcon;
-    }
-    if (!hIconShield)
-    {
-      hIconShield = LoadImage(NULL, (LPCWSTR)IDI_SHIELD, IMAGE_ICON, cx, cy, LR_SHARED);
-    }
-    if (hIconShield)
-    {
-      MENUITEMINFO mii = { 0 };
-      mii.cbSize = sizeof(mii);
-      mii.fMask = MIIM_BITMAP;
-      mii.hbmpItem = ConvertIconToBitmap(hIconShield, cx, cy);
-      SetMenuItemInfo(hMenu, nItem, FALSE, &mii);
-    }
-  }
-  bInitialized = TRUE;
 }

@@ -44,4 +44,3 @@ BOOL FileMapping_UnmapViewOfFile(FileMapping *pFileMapping);
 BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping);
 BOOL FileMapping_Read(FileMapping *pFileMapping, LPBYTE pBuffer, const DWORD count);
 BOOL FileMapping_Write(FileMapping *pFileMapping, LPCBYTE pBuffer, const DWORD count);
-
