@@ -645,7 +645,12 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
     }
     return 0;
   }
-  return  i > 0 && lstrcmp(fn, szCurFile);
+  if (i > 0 && lstrcmp(fn, szCurFile))
+  {
+    MRU_Add(pFileMRU, fn);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void n2e_GetLastDir(LPTSTR out)

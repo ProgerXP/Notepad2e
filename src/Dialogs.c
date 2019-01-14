@@ -1229,16 +1229,26 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                           SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
             lvi.iImage = shfi.iIcon;
 
-            for (i = 0; i < MRU_Enum(pFileMRU, 0, NULL, 0); i++)
+            // [2e]: History dialog: focus second item on show #209
+            const int iCount = MRU_Enum(pFileMRU, 0, NULL, 0);
+            int iOpenedItem = -1;
+            for (i = 0; i < iCount; i++)
             {
               MRU_Enum(pFileMRU, i, tch, COUNTOF(tch));
               PathAbsoluteFromApp(tch, NULL, 0, TRUE);
               lvi.iItem = i;
               lvi.pszText = tch;
               ListView_InsertItem(GetDlgItem(hwnd, IDC_FILEMRU), &lvi);
+              if ((iOpenedItem < 0) && (lstrcmp(tch, szCurFile) == 0))
+              {
+                iOpenedItem = i;
+              }
             }
-
-            ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVIS_FOCUSED, LVIS_FOCUSED);
+            const int iSelectedItem = ((iCount > 1) && (iOpenedItem >= 0))
+                                     ? (iOpenedItem < iCount - 1) ? iOpenedItem + 1 : 0                          
+                                     : 0;
+            ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), iSelectedItem, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+            // [/2e]
             ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVSCW_AUTOSIZE_USEHEADER);
 
             CreateThread(NULL, 0, FileMRUIconThread, (LPVOID)lpit, 0, &dwtid);
