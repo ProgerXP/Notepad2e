@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "ProcessElevationUtils.h"
-#include "CommonUtils.h"
 #include "Externals.h"
 #include "IPC/FileMapping.h"
 #include "VersionHelper.h"
@@ -64,7 +63,7 @@ void lstrcatdword(LPWSTR lpstr, const DWORD value)
   lstrcat(lpstr, wchBuffer);
 }
 
-LPCWSTR formatObjectName(LPCWSTR lpPrefix, const DWORD dwPostfix)
+LPCWSTR FormatObjectName(LPCWSTR lpPrefix, const DWORD dwPostfix)
 {
   static wchar_t wchName[MAX_PATH];
   lstrcpyn(wchName, lpPrefix, CSTRLEN(wchName));
@@ -72,64 +71,38 @@ LPCWSTR formatObjectName(LPCWSTR lpPrefix, const DWORD dwPostfix)
   return wchName;
 }
 
-extern DWORD dwLastIOError;
-
-BOOL n2e_RunElevatedInstance(HANDLE* phElevatedProcess)
+HANDLE n2e_RunElevatedInstance()
 {
-  extern WCHAR g_wchWorkingDirectory[MAX_PATH];
-  BOOL ExtractFirstArgument(LPCWSTR, LPWSTR, LPWSTR);
-
-  BOOL res = FALSE;
-  LPWSTR lpCmdLine = GetCommandLine();
-
-  STARTUPINFO si = { 0 };
-  SHELLEXECUTEINFO sei = { 0 };
-
-  if (lstrlen(lpCmdLine) > 0)
+  int iNumArgs = 0;
+  LPWSTR* lpCmdLineArgs = NULL;
+  if ((lstrlen(GetCommandLine()) > 0)
+      && (lpCmdLineArgs = CommandLineToArgvW(GetCommandLine(), &iNumArgs))
+      && (iNumArgs > 0))
   {
-    const int iMaxCmdLength = lstrlen(lpCmdLine) + 25;
-    LPWSTR lpCmdLineNew = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-    lstrcpyn(lpCmdLineNew, lpCmdLine, iMaxCmdLength);
-    lstrcat(lpCmdLineNew, L" /" IPCID_PARAM);
-    lstrcatdword(lpCmdLineNew, GetCurrentProcessId());
+    WCHAR wchParams[MAX_PATH] = { 0 };
+    lstrcat(wchParams, L"/" IPCID_PARAM);
+    lstrcatdword(wchParams, GetCurrentProcessId());
 
-    ZeroMemory(&si, sizeof(STARTUPINFO));
-    si.cb = sizeof(STARTUPINFO);
-    GetStartupInfo(&si);
-
-    LPWSTR lpArg1 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-    LPWSTR lpArg2 = n2e_Alloc(sizeof(WCHAR) * iMaxCmdLength);
-    ExtractFirstArgument(lpCmdLineNew, lpArg1, lpArg2);
-
-    ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
+    SHELLEXECUTEINFO sei = { 0 };
     sei.cbSize = sizeof(SHELLEXECUTEINFO);
     sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | /*SEE_MASK_NOZONECHECKS*/0x00800000;
-
     sei.hwnd = GetForegroundWindow();
     sei.lpVerb = L"runas";
-    sei.lpFile = lpArg1;
-    sei.lpParameters = lpArg2;
-    sei.lpDirectory = g_wchWorkingDirectory;
+    sei.lpFile = lpCmdLineArgs[0];
+    sei.lpParameters = wchParams;
     sei.nShow = SW_HIDE;
-
-    res = ShellExecuteEx(&sei) && sei.hProcess;
-
-    n2e_Free(lpArg1);
-    n2e_Free(lpArg2);
-    n2e_Free(lpCmdLineNew);
-  }
-  if (res)
-  {
-    if (phElevatedProcess)
+    if (ShellExecuteEx(&sei) && sei.hProcess)
     {
-      *phElevatedProcess = sei.hProcess;
+      LocalFree(lpCmdLineArgs);
+      return sei.hProcess;
     }
   }
-  else
+  if (lpCmdLineArgs)
   {
-    dwLastIOError = GetLastError();
+    LocalFree(lpCmdLineArgs);
   }
-  return res;
+  dwLastIOError = GetLastError();
+  return NULL;
 }
 
 BOOL n2e_InitializeIPC(const BOOL bInitParent, const DWORD dwID)
@@ -137,10 +110,10 @@ BOOL n2e_InitializeIPC(const BOOL bInitParent, const DWORD dwID)
   n2e_FinalizeIPC();
   dwIPCID = dwID;
   FileMapping_Init(&fileMapping,
-                   formatObjectName(FILEMAPPING_NAME, dwIPCID),
+                   FormatObjectName(FILEMAPPING_NAME, dwIPCID),
                    !bInitParent);
   FileMapping_Init(&fileMappingIPCData,
-                   formatObjectName(FILEMAPPING_IPCDATA_NAME, dwIPCID),
+                   FormatObjectName(FILEMAPPING_IPCDATA_NAME, dwIPCID),
                    !bInitParent);
   return dwIPCID && FileMapping_IsOK(&fileMapping) && FileMapping_IsOK(&fileMappingIPCData);
 }
@@ -162,7 +135,7 @@ BOOL n2e_FinalizeIPC()
 
 BOOL n2e_RunChildProcess()
 {
-  return n2e_InitializeIPC(TRUE, GetCurrentProcessId()) && n2e_RunElevatedInstance(&hChildProcess);
+  return n2e_InitializeIPC(TRUE, GetCurrentProcessId()) && (hChildProcess = n2e_RunElevatedInstance());
 }
 
 struct TIPCData
@@ -240,19 +213,11 @@ DWORD n2e_GetChildProcessQuitCode()
   return 0;
 }
 
-extern HWND  hwndEdit;
-extern int iEncoding;
-extern int iEOLMode;
-
 BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
 {
-  BOOL bCancelDataLoss = FALSE;
-  BOOL bResult = FALSE;
-  BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
-
   if (!n2e_IsElevatedModeEnabled())
   {
-    return bResult;
+    return FALSE;
   }
   if (!hChildProcess || !n2e_IsChildProcessOK())
   {
@@ -271,9 +236,8 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
   wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, wcslen(lpFilename));
   ipcData.llFileSize = size;
 
-  BOOL bContinue = TRUE;
   FileMapping_TryCreate(&fileMappingIPCData);
-  while (bContinue)
+  while (1)
   {
     HANDLE handles[] = {
                           hChildProcess,
@@ -286,8 +250,7 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
     {
       case WAIT_OBJECT_0:       // client process quit
         dwLastIOError = n2e_GetChildProcessQuitCode(hChildProcess);
-        bContinue = FALSE;
-        break;
+        return FALSE;
       case WAIT_OBJECT_0 + 1:   // IPC data filemapping created
         if (!FileMapping_Open(&fileMappingIPCData, NULL, sizeof(ipcData), TRUE)
             || !FileMapping_MapViewOfFile(&fileMappingIPCData)
@@ -310,6 +273,7 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
         else if (FileMapping_Open(&fileMapping, lpFilename, size, TRUE)
                  && FileMapping_MapViewOfFile(&fileMapping))
         {
+          BOOL bCancelDataLoss = FALSE;
           if (!FileIO(FALSE, lpFilename, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE))
           {
             TerminateProcess(hChildProcess, GetLastError());
@@ -325,14 +289,12 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
         }
         break;
       case WAIT_OBJECT_0 + 4:   // filemapping closed
-        bResult = TRUE;
-        bContinue = FALSE;
-        break;
+        return TRUE;
       default:
         break;
     }
   }
-  return bResult;
+  return FALSE;
 }
 
 HANDLE n2e_CreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition,

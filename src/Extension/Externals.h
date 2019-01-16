@@ -1,7 +1,12 @@
 #pragma once
+#include <wtypes.h>
 #include "Scintilla.h"
 
+extern HWND hwndEdit;
 extern int iEncoding;
+extern int iEOLMode;
+extern DWORD dwLastIOError;
+BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 
 #ifndef N2E_TESTING
 
