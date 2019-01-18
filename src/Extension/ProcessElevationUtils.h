@@ -3,11 +3,10 @@
 #define IPCID_PARAM L"IPCID="
 
 BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
-BOOL n2e_IsElevatedModeEnabled();
 BOOL n2e_IsElevatedMode();
 BOOL n2e_SwitchElevation();
 
-BOOL n2e_InitializeIPC(const BOOL bInitParent, const DWORD dwID);
+BOOL n2e_InitializeIPC(const DWORD dwID);
 BOOL n2e_FinalizeIPC();
 
 BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size);
@@ -20,4 +19,3 @@ BOOL n2e_SetEndOfFile(HANDLE hFile);
 BOOL n2e_CloseHandle(HANDLE hFile);
 int n2e_GetFileHeaderLength(const int iEncoding);
 
-void n2e_SetUACIcon(HMENU hMenu, UINT nItem);

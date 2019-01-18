@@ -9,6 +9,7 @@
 
 BOOL bElevationEnabled = FALSE;
 DWORD dwIPCID = 0;
+BOOL bIsParentIPC = FALSE;
 
 #define FILEMAPPING_IPCDATA_NAME L"Global\\filemapping_ipcdata"
 #define FILEMAPPING_NAME L"Global\\filemapping"
@@ -73,11 +74,9 @@ LPCWSTR FormatObjectName(LPCWSTR lpPrefix, const DWORD dwPostfix)
 
 HANDLE n2e_RunElevatedInstance()
 {
-  int iNumArgs = 0;
-  LPWSTR* lpCmdLineArgs = NULL;
-  if ((lstrlen(GetCommandLine()) > 0)
-      && (lpCmdLineArgs = CommandLineToArgvW(GetCommandLine(), &iNumArgs))
-      && (iNumArgs > 0))
+  WCHAR wchCmdLine[MAX_PATH] = { 0 };
+  if (GetModuleFileName(NULL, wchCmdLine, COUNTOF(wchCmdLine))
+      && (lstrlen(wchCmdLine) > 0))
   {
     WCHAR wchParams[MAX_PATH] = { 0 };
     lstrcat(wchParams, L"/" IPCID_PARAM);
@@ -88,33 +87,37 @@ HANDLE n2e_RunElevatedInstance()
     sei.fMask = SEE_MASK_NOCLOSEPROCESS | SEE_MASK_FLAG_NO_UI | SEE_MASK_NOASYNC | /*SEE_MASK_NOZONECHECKS*/0x00800000;
     sei.hwnd = GetForegroundWindow();
     sei.lpVerb = L"runas";
-    sei.lpFile = lpCmdLineArgs[0];
+    sei.lpFile = wchCmdLine;
     sei.lpParameters = wchParams;
     sei.nShow = SW_HIDE;
     if (ShellExecuteEx(&sei) && sei.hProcess)
     {
-      LocalFree(lpCmdLineArgs);
       return sei.hProcess;
     }
-  }
-  if (lpCmdLineArgs)
-  {
-    LocalFree(lpCmdLineArgs);
   }
   dwLastIOError = GetLastError();
   return NULL;
 }
 
-BOOL n2e_InitializeIPC(const BOOL bInitParent, const DWORD dwID)
+BOOL n2e_InitializeIPC(const DWORD dwID)
 {
+  static BOOL bIsInitialized = FALSE;
+  if (!bIsInitialized)
+  {
+    bIsInitialized = TRUE;
+    STARTUPINFO si = { 0 };
+    GetStartupInfo(&si);
+    bIsParentIPC = !((si.dwFlags & STARTF_USESHOWWINDOW) && (si.wShowWindow == SW_HIDE));
+  }
+
   n2e_FinalizeIPC();
   dwIPCID = dwID;
   FileMapping_Init(&fileMapping,
                    FormatObjectName(FILEMAPPING_NAME, dwIPCID),
-                   !bInitParent);
+                   !bIsParentIPC);
   FileMapping_Init(&fileMappingIPCData,
                    FormatObjectName(FILEMAPPING_IPCDATA_NAME, dwIPCID),
-                   !bInitParent);
+                   !bIsParentIPC);
   return dwIPCID && FileMapping_IsOK(&fileMapping) && FileMapping_IsOK(&fileMappingIPCData);
 }
 
@@ -135,7 +138,7 @@ BOOL n2e_FinalizeIPC()
 
 BOOL n2e_RunChildProcess()
 {
-  return n2e_InitializeIPC(TRUE, GetCurrentProcessId()) && (hChildProcess = n2e_RunElevatedInstance());
+  return n2e_InitializeIPC(GetCurrentProcessId()) && (hChildProcess = n2e_RunElevatedInstance());
 }
 
 struct TIPCData
