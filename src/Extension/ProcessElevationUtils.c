@@ -1,7 +1,9 @@
 #include "stdafx.h"
 #include "ProcessElevationUtils.h"
+#include "CommonUtils.h"
 #include "Externals.h"
 #include "IPC/FileMapping.h"
+#include "SciCall.h"
 #include "VersionHelper.h"
 
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
@@ -216,7 +218,7 @@ DWORD n2e_GetChildProcessQuitCode()
   return 0;
 }
 
-BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const __int64 size)
+BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename)
 {
   if (!n2e_IsElevatedModeEnabled())
   {
@@ -237,7 +239,7 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const __int64 size)
 
   IPCData ipcData = { 0 };
   wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, wcslen(lpFilename));
-  ipcData.iFileSize = size;
+  ipcData.iFileSize = n2e_CalculateFileLength();
 
   FileMapping_TryCreate(&fileMappingIPCData);
   while (1)
@@ -268,12 +270,12 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const __int64 size)
         FileMapping_TryCreate(&fileMapping);
         break;
       case WAIT_OBJECT_0 + 3:   // filemapping created
-        if (size == 0)
+        if (ipcData.iFileSize == 0)
         {
-          SendMessage(hwndEdit, SCI_SETSAVEPOINT, 0, 0);
+          SciCall_SetSavePoint();
           FileMapping_TryClose(&fileMapping);
         }
-        else if (FileMapping_Open(&fileMapping, lpFilename, size, TRUE)
+        else if (FileMapping_Open(&fileMapping, lpFilename, ipcData.iFileSize, TRUE)
                  && FileMapping_MapViewOfFile(&fileMapping))
         {
           BOOL bCancelDataLoss = FALSE;
@@ -349,21 +351,32 @@ BOOL n2e_CloseHandle(HANDLE hFile)
   }
 }
 
-int n2e_GetFileHeaderLength(const int iEncoding)
+int n2e_CalculateFileLength()
 {
+  int iResult = SciCall_GetLength();
   if (mEncoding[iEncoding].uFlags & NCP_UNICODE)
   {
+    iResult += 1;
+    LPVOID lpData = n2e_Alloc(iResult / 2);
+    SciCall_GetText(iResult, (char*)lpData);
+    iResult = MultiByteToWideChar(CP_UTF8, 0, lpData, iResult-1, NULL, 0) * sizeof(WCHAR);
+    n2e_Free(lpData);
     if (mEncoding[iEncoding].uFlags & NCP_UNICODE_BOM)
     {
-      return 2;
+      iResult += 2;
     }
   }
   else if (mEncoding[iEncoding].uFlags & NCP_UTF8)
   {
     if (mEncoding[iEncoding].uFlags & NCP_UTF8_SIGN)
     {
-      return 3;
+      iResult += 3;
     }
   }
-  return 0;
+  else if (mEncoding[iEncoding].uFlags & NCP_8BIT)
+  {
+    // no text recoding, no file BOM
+  }
+
+  return iResult;
 }

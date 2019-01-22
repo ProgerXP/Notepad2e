@@ -7146,7 +7146,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
       // [/2e]
       else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)
                           // [2e]: Process elevation #166
-                          || n2e_ParentProcess_ElevatedFileIO(tchFile, n2e_GetFileHeaderLength(iEncoding) + SciCall_GetLength()))
+                          || n2e_ParentProcess_ElevatedFileIO(tchFile))
       {
         n2e_ResetLastRun();
         // [2e]: File->RenameTo menu item
@@ -7180,7 +7180,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   else
     fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
                // [2e]: Process elevation #166
-               || n2e_ParentProcess_ElevatedFileIO(szCurFile, n2e_GetFileHeaderLength(iEncoding) + SciCall_GetLength());
+               || n2e_ParentProcess_ElevatedFileIO(szCurFile);
 
   if (fSuccess)
   {
