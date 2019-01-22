@@ -9,7 +9,7 @@ BOOL n2e_SwitchElevation();
 BOOL n2e_InitializeIPC(const DWORD dwID);
 BOOL n2e_FinalizeIPC();
 
-BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size);
+BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const __int64 size);
 void n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess);
 
 HANDLE n2e_CreateFile(LPCWSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes,

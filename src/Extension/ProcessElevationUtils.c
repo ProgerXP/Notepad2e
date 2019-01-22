@@ -144,7 +144,7 @@ BOOL n2e_RunChildProcess()
 struct TIPCData
 {
   WCHAR wchFileName[MAX_PATH];
-  LONGLONG llFileSize;
+  __int64 iFileSize;
 };
 typedef struct TIPCData IPCData;
 
@@ -189,13 +189,13 @@ void n2e_ChildProcess_FileIOHandler(const DWORD pidParentProcess)
         FileMapping_Close(&fileMappingIPCData, sizeof(ipcData));
         break;
       case WAIT_OBJECT_0 + 3:     // create filemapping
-        if (!FileMapping_Open(&fileMapping, &ipcData.wchFileName[0], ipcData.llFileSize, FALSE))
+        if (!FileMapping_Open(&fileMapping, &ipcData.wchFileName[0], ipcData.iFileSize, FALSE))
         {
           n2e_ChildProcess_Exit(FileMapping_GetError(&fileMapping), hParentProcess);
         }
         break;
       case WAIT_OBJECT_0 + 4:     // close filemapping
-        if (!FileMapping_Close(&fileMapping, ipcData.llFileSize))
+        if (!FileMapping_Close(&fileMapping, ipcData.iFileSize))
         {
           n2e_ChildProcess_Exit(FileMapping_GetError(&fileMapping), hParentProcess);
         }
@@ -216,7 +216,7 @@ DWORD n2e_GetChildProcessQuitCode()
   return 0;
 }
 
-BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
+BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const __int64 size)
 {
   if (!n2e_IsElevatedModeEnabled())
   {
@@ -237,7 +237,7 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename, const LONGLONG size)
 
   IPCData ipcData = { 0 };
   wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, wcslen(lpFilename));
-  ipcData.llFileSize = size;
+  ipcData.iFileSize = size;
 
   FileMapping_TryCreate(&fileMappingIPCData);
   while (1)
