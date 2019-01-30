@@ -101,25 +101,16 @@ HANDLE n2e_RunElevatedInstance()
   return NULL;
 }
 
-BOOL n2e_InitializeIPC(const DWORD dwID)
+BOOL n2e_InitializeIPC(const DWORD dwID, const BOOL bIsParentMode)
 {
-  static BOOL bIsInitialized = FALSE;
-  if (!bIsInitialized)
-  {
-    bIsInitialized = TRUE;
-    STARTUPINFO si = { 0 };
-    GetStartupInfo(&si);
-    bIsParentIPC = !((si.dwFlags & STARTF_USESHOWWINDOW) && (si.wShowWindow == SW_HIDE));
-  }
-
   n2e_FinalizeIPC();
   dwIPCID = dwID;
   FileMapping_Init(&fileMapping,
                    FormatObjectName(FILEMAPPING_NAME, dwIPCID),
-                   !bIsParentIPC);
+                   !bIsParentMode);
   FileMapping_Init(&fileMappingIPCData,
                    FormatObjectName(FILEMAPPING_IPCDATA_NAME, dwIPCID),
-                   !bIsParentIPC);
+                   !bIsParentMode);
   return dwIPCID && FileMapping_IsOK(&fileMapping) && FileMapping_IsOK(&fileMappingIPCData);
 }
 
@@ -140,7 +131,7 @@ BOOL n2e_FinalizeIPC()
 
 BOOL n2e_RunChildProcess()
 {
-  return n2e_InitializeIPC(GetCurrentProcessId()) && (hChildProcess = n2e_RunElevatedInstance());
+  return n2e_InitializeIPC(GetCurrentProcessId(), TRUE) && (hChildProcess = n2e_RunElevatedInstance());
 }
 
 struct TIPCData

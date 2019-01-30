@@ -6,7 +6,7 @@ BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
 BOOL n2e_IsElevatedMode();
 BOOL n2e_SwitchElevation();
 
-BOOL n2e_InitializeIPC(const DWORD dwID);
+BOOL n2e_InitializeIPC(const DWORD dwID, const BOOL bIsParentMode);
 BOOL n2e_FinalizeIPC();
 
 BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename);

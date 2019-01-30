@@ -6027,7 +6027,7 @@ BOOL ParseCommandLine()
       {
         DWORD idIPC = 0;
         if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d", &idIPC) == 0)
-            || !n2e_InitializeIPC(idIPC))
+            || !n2e_InitializeIPC(idIPC, FALSE))
         {
           return FALSE;
         }
