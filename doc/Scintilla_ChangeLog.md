@@ -123,7 +123,7 @@ Remove triple-click handler in Editor::ButtonDown():
 [**6. "Scroll margin"-feature**]:
 New notification code added:
 [scintilla/include/Scintilla.h]
-\#define SCN_CARETMOVED 2031
+\#define SCN_N2E_CARETMOVED 2031
 [/scintilla/include/Scintilla.h]
 
 New notification proc added:
@@ -136,7 +136,7 @@ void Editor::n2e_NotifyCaretMoved()
 {
 	// Send notification
 	SCNotification scn = { 0 };
-	scn.nmhdr.code = SCN_CARETMOVED;
+	scn.nmhdr.code = SCN_N2E_CARETMOVED;
 	NotifyParent(scn);
 }
 
@@ -200,7 +200,7 @@ Corresponding calls added to Editor::KeyCommand():
 [**"Update gutter width"-feature**]:
 New notification code added:
 [scintilla/include/Scintilla.h]
-\#define SCN_LINECOUNTCHANGED 2032
+\#define SCN_N2E_LINECOUNTCHANGED 2032
 [/scintilla/include/Scintilla.h]
 
 New notification proc added:
@@ -213,7 +213,7 @@ void Editor::n2e_NotifyLineCountChanged()
 {
   // Send notification
   SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
+  scn.nmhdr.code = SCN_N2E_LINECOUNTCHANGED;
   NotifyParent(scn);
 }
 
@@ -270,10 +270,10 @@ New code around DropAt()-call:
 [/**Drag & drop improvement #63**]
 
 [**Implement Notepad's right click behavior #54**]
-Add new message SCI_MOVECARETONRCLICK:
+Add new message SCI_N2E_MOVECARETONRCLICK:
 
 [scintilla/include/Scintilla.h]
-\#define SCI_MOVECARETONRCLICK 2369
+\#define SCI_N2E_MOVECARETONRCLICK 2369
 [/scintilla/include/Scintilla.h]
 
 [scintilla/src/ScintillaBase.h]
@@ -290,7 +290,7 @@ ScintillaBase::ScintillaBase() {
 
 ...
 
-	case SCI_MOVECARETONRCLICK:
+	case SCI_N2E_MOVECARETONRCLICK:
 		n2e_moveCaretOnRClick = wParam != 0;
 		break;*
 
@@ -349,14 +349,14 @@ with:
 [/**Unindent and tabs #128**]
 
 [**ctrl+arrow behavior toggle #89**]
-Add new message SCI_SETWORDNAVIGATIONMODE:
+Add new message SCI_N2E_SETWORDNAVIGATIONMODE:
 [scintilla/include/Scintilla.h]
-\#define SCI_SETWORDNAVIGATIONMODE 2379
+\#define SCI_N2E_SETWORDNAVIGATIONMODE 2379
 [/scintilla/include/Scintilla.h]
 
 Add message handler in ScintillaBase::WndProc:
 [scintilla/src/ScintillaBase.cxx]
-	case SCI_SETWORDNAVIGATIONMODE:
+	case SCI_N2E_SETWORDNAVIGATIONMODE:
 		pdoc->SetWordNavigationMode((int)wParam);
 		break;
 
@@ -495,10 +495,10 @@ Move class RESearchRange declaration/implementation from Document.cxx to Documen
 
 [**Increasingly slow to hex/base64/qp #142**]
 
-Add new message SCI_SETSKIPUIUPDATE:
+Add new message SCI_N2E_SETSKIPUIUPDATE:
 [scintilla/include/Scintilla.h]
-#define SCI_GETSUBSTYLEBASES 4026
-*#define SCI_SETSKIPUIUPDATE 9000*
+#define SCI_N2E_GETSUBSTYLEBASES 4026
+*#define SCI_N2E_SETSKIPUIUPDATE 9000*
 [/scintilla/include/Scintilla.h]
 
 Add corresponding flag to Editor class:
@@ -553,7 +553,7 @@ with
 			}*
 ...
 Add next handler to Editor::WndProc():
-	case SCI_SETSKIPUIUPDATE:
+	case SCI_N2E_SETSKIPUIUPDATE:
 		n2e_skipUIUpdate = (wParam != 0);
 		if (!n2e_skipUIUpdate) {
 			InvalidateWholeSelection();
@@ -566,9 +566,9 @@ Add next handler to Editor::WndProc():
 
 [**DPI awareness #154**]
 
-Add new message SCI_SETDPI:
+Add new message SCI_N2E_SETDPI:
 [scintilla/include/Scintilla.h]
-#define SCI_SETDPI 9001
+#define SCI_N2E_SETDPI 9001
 [/scintilla/include/Scintilla.h]
 
 Add message handler and replace some code:
@@ -587,7 +587,7 @@ Add message handler and replace some code:
 
 ...
 
-	  case SCI_SETDPI:
+	  case SCI_N2E_SETDPI:
 		n2e_SetDPI(LOWORD(wParam),
 			HIWORD(wParam),
 			MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, n2e_GetDpiY()));

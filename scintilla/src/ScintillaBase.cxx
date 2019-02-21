@@ -971,13 +971,13 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 		break;
 
 	// [n2e]: Implement Notepad's right click behavior #54
-	case SCI_MOVECARETONRCLICK:
+	case SCI_N2E_MOVECARETONRCLICK:
 		n2e_moveCaretOnRClick = wParam != 0;
 		break;
 	// [/n2e]
 
 	// [n2e]: ctrl+arrow behavior toggle #89
-	case SCI_SETWORDNAVIGATIONMODE:
+	case SCI_N2E_SETWORDNAVIGATIONMODE:
 		pdoc->SetWordNavigationMode((int)wParam);
 		break;
 	// [/n2e]

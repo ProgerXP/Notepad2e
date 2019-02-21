@@ -2527,7 +2527,7 @@ void Editor::n2e_NotifyCaretMoved()
 {
 	// Send notification
 	SCNotification scn = { 0 };
-	scn.nmhdr.code = SCN_CARETMOVED;
+	scn.nmhdr.code = SCN_N2E_CARETMOVED;
 	NotifyParent(scn);
 }
 // [/n2e]
@@ -2537,7 +2537,7 @@ void Editor::n2e_NotifyLineCountChanged()
 {
 	// Send notification
 	SCNotification scn = { 0 };
-	scn.nmhdr.code = SCN_LINECOUNTCHANGED;
+	scn.nmhdr.code = SCN_N2E_LINECOUNTCHANGED;
 	NotifyParent(scn);
 }
 // [/n2e]
@@ -8154,7 +8154,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 		return pdoc->CountCharacters(static_cast<int>(wParam), static_cast<int>(lParam));
 
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	case SCI_SETSKIPUIUPDATE:
+	case SCI_N2E_SETSKIPUIUPDATE:
 		n2e_skipUIUpdate = (wParam != 0);
 		if (!n2e_skipUIUpdate) {
 			InvalidateWholeSelection();

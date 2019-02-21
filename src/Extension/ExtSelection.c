@@ -108,7 +108,7 @@ void n2e_EditSelectionInit(LPCWSTR lpSection, const int iDefaultSection, const i
 void n2e_EditInit()
 {
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
-  SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+  SendMessage(hwndEdit, SCI_N2E_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
 
 #define DEFAULT_SECTION 6
 #define EXTENDED_SECTION 7

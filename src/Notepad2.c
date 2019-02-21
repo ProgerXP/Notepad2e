@@ -1464,7 +1464,7 @@ void _MsgCreate()
   // Nonprinting characters
   SendMessage(hwndEdit, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
   SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
-  SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+  SendMessage(hwndEdit, SCI_N2E_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
 // [/2e]
 
@@ -4294,7 +4294,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // [2e]: Implement Notepad's right click behavior #54
     case ID_SETTINGS_MOVE_CARET_ON_RCLICK:
       bMoveCaretOnRightClick = !bMoveCaretOnRightClick;
-      SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+      SendMessage(hwndEdit, SCI_N2E_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
       break;
     // [/2e]
 
@@ -4322,12 +4322,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // [2e]: ctrl + arrow behavior toggle #89
     case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
       iWordNavigationMode = WNM_STANDARD;
-      SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+      SendMessage(hwndEdit, SCI_N2E_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
 
     case ID_SETTINGS_WORD_NAVIGATION_ACCELERATED:
       iWordNavigationMode = WNM_ACCELERATED;
-      SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+      SendMessage(hwndEdit, SCI_N2E_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     // [/2e]
 
@@ -5334,7 +5334,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           break;
 
         // [2e]: "Scroll margin"-feature
-        case SCN_CARETMOVED:
+        case SCN_N2E_CARETMOVED:
           {
             const int iSelPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
             const int iSelAnchor = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
@@ -5344,7 +5344,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
         // [/2e]
 
         // [2e]: "Update gutter width"-feature
-        case SCN_LINECOUNTCHANGED:
+        case SCN_N2E_LINECOUNTCHANGED:
           UpdateLineNumberWidth();
           break;
         // [/2e]

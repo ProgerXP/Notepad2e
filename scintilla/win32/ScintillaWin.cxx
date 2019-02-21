@@ -1756,7 +1756,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			        reinterpret_cast<char*>(lParam));
 
 		// [n2e]: DPI awareness #154
-		case SCI_SETDPI:
+		case SCI_N2E_SETDPI:
 			n2e_SetDPI(LOWORD(wParam),
 				HIWORD(wParam),
 				MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, n2e_GetDpiY()));
