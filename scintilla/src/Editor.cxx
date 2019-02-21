@@ -184,7 +184,7 @@ Editor::Editor() {
 	foldAutomatic = 0;
 
 	convertPastes = true;
-	skipUIUpdate = false; // [n2e]: Increasingly slow to hex/base64/qp #142
+	n2e_skipUIUpdate = false; // [n2e]: Increasingly slow to hex/base64/qp #142
 
 	SetRepresentations();
 }
@@ -451,7 +451,7 @@ bool Editor::AbandonPaint() {
 void Editor::RedrawRect(PRectangle rc) {
 	//Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -479,7 +479,7 @@ void Editor::DiscardOverdraw() {
 void Editor::Redraw() {
 	//Platform::DebugPrintf("Redraw all\n");
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -609,7 +609,7 @@ void Editor::ThinRectangularRange() {
 
 void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -1405,7 +1405,7 @@ void Editor::ScrollRange(SelectionRange range) {
 
 void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -1458,7 +1458,7 @@ void Editor::CaretSetPeriod(int period) {
 
 void Editor::InvalidateCaret() {
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -1722,7 +1722,7 @@ void Editor::RefreshPixMaps(Surface *surfaceWindow) {
 
 void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
 	// [n2e]: Increasingly slow to hex/base64/qp #142
-	if (skipUIUpdate) {
+	if (n2e_skipUIUpdate) {
 		return;
 	}
 	// [/n2e]
@@ -5964,7 +5964,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			const int lengthInserted = pdoc->InsertString(
 				sel.MainCaret(), replacement, istrlen(replacement));
 			// [n2e]: Increasingly slow to hex/base64/qp #142
-			if (!skipUIUpdate) {
+			if (!n2e_skipUIUpdate) {
 				SetEmptySelection(sel.MainCaret() + lengthInserted);
 				EnsureCaretVisible();
 			}
@@ -8155,12 +8155,12 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	// [n2e]: Increasingly slow to hex/base64/qp #142
 	case SCI_SETSKIPUIUPDATE:
-		skipUIUpdate = (wParam != 0);
-		if (!skipUIUpdate) {
+		n2e_skipUIUpdate = (wParam != 0);
+		if (!n2e_skipUIUpdate) {
 			InvalidateWholeSelection();
 			Redraw();
 		}
-		return skipUIUpdate;
+		return n2e_skipUIUpdate;
 	// /n2e
 
 	default:

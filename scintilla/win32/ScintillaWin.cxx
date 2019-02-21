@@ -1408,7 +1408,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 
 		case WM_RBUTTONDOWN:
 			::SetFocus(MainHWND());
-			if (moveCaretOnRClick && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) { // [n2e]: Implement Notepad's right click behavior #54
+			if (n2e_moveCaretOnRClick && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) { // [n2e]: Implement Notepad's right click behavior #54
 				CancelModes();
 				SetEmptySelection(PositionFromLocation(Point::FromLong(static_cast<long>(lParam))));
 			}
@@ -1759,7 +1759,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 		case SCI_SETDPI:
 			SetDPI(LOWORD(wParam),
 				HIWORD(wParam),
-				MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
+				MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, GetDpiY()));
 			InvalidateStyleData();
 			RefreshStyleData();
 			return 0;

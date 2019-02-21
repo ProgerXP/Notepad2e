@@ -52,30 +52,30 @@
 #endif
 
 // [n2e]: DPI awareness #154
-static float dpiX = DEFAULT_SCREEN_DPI;
-static float dpiY = DEFAULT_SCREEN_DPI;
-static int dpiFont = DEFAULT_FONT_DPI;
+static float n2e_dpiX = N2E_DEFAULT_SCREEN_DPI;
+static float n2e_dpiY = N2E_DEFAULT_SCREEN_DPI;
+static int n2e_dpiFont = N2E_DEFAULT_FONT_DPI;
 
 void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 {
-	dpiX = _dpiX;
-	dpiY = _dpiY;
-	dpiFont = _dpiFont;
+	n2e_dpiX = _dpiX;
+	n2e_dpiY = _dpiY;
+	n2e_dpiFont = _dpiFont;
 }
 
 float GetDpiX()
 {
-	return dpiX;
+	return n2e_dpiX;
 }
 
 float GetDpiY()
 {
-	return dpiY;
+	return n2e_dpiY;
 }
 
 int GetDpiFont()
 {
-	return dpiFont;
+	return n2e_dpiFont;
 }
 // [/n2e]
 
@@ -716,7 +716,7 @@ int SurfaceGDI::LogPixelsY() {
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI); // [n2e]: DPI awareness #154
+	return ::MulDiv(points, LogPixelsY(), N2E_DEFAULT_FONT_DPI); // [n2e]: DPI awareness #154
 }
 
 void SurfaceGDI::MoveTo(int x_, int y_) {
@@ -1184,7 +1184,7 @@ SurfaceD2D::SurfaceD2D() :
 
 	pBrush = NULL;
 
-	logPixelsY = DEFAULT_FONT_DPI; // [n2e]: DPI awareness #154
+	logPixelsY = N2E_DEFAULT_FONT_DPI; // [n2e]: DPI awareness #154
 	dpiScaleX = 1.0;
 	dpiScaleY = 1.0;
 }

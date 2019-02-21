@@ -64,7 +64,7 @@ using namespace Scintilla;
 #endif
 
 ScintillaBase::ScintillaBase() {
-	moveCaretOnRClick = true; // [n2e]: Implement Notepad's right click behavior #54
+	n2e_moveCaretOnRClick = true; // [n2e]: Implement Notepad's right click behavior #54
 	displayPopupMenu = true;
 	listType = 0;
 	maxListWidth = 0;
@@ -972,7 +972,7 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 
 	// [n2e]: Implement Notepad's right click behavior #54
 	case SCI_MOVECARETONRCLICK:
-		moveCaretOnRClick = wParam != 0;
+		n2e_moveCaretOnRClick = wParam != 0;
 		break;
 	// [/n2e]
 

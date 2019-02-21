@@ -258,7 +258,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	WrapPending wrapPending;
 
 	bool convertPastes;
-	bool skipUIUpdate; // [n2e]: Increasingly slow to hex/base64/qp #142
+	bool n2e_skipUIUpdate; // [n2e]: Increasingly slow to hex/base64/qp #142
 
 	Editor();
 	virtual ~Editor();

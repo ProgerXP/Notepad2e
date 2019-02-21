@@ -40,7 +40,7 @@ protected:
 
 	enum { maxLenInputIME = 200 };
 
-	bool moveCaretOnRClick; // [n2e]: Implement Notepad's right click behavior #54
+	bool n2e_moveCaretOnRClick; // [n2e]: Implement Notepad's right click behavior #54
 	bool displayPopupMenu;
 	Menu popup;
 	AutoComplete ac;

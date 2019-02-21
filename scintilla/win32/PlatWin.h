@@ -14,8 +14,8 @@ namespace Scintilla {
 
 
 // [n2e]: DPI awareness #154
-#define DEFAULT_SCREEN_DPI 96
-#define DEFAULT_FONT_DPI 72
+#define N2E_DEFAULT_SCREEN_DPI 96
+#define N2E_DEFAULT_FONT_DPI 72
 
 void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
 float GetDpiX();

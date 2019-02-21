@@ -279,19 +279,19 @@ Add new message SCI_MOVECARETONRCLICK:
 [scintilla/src/ScintillaBase.h]
 	enum { maxLenInputIME = 200 };
 
-	*bool moveCaretOnRClick;*
+	*bool n2e_moveCaretOnRClick;*
 	bool displayPopupMenu;
 [/scintilla/src/ScintillaBase.h]
 
 [scintilla/src/ScintillaBase.cxx]
 ScintillaBase::ScintillaBase() {
-	*moveCaretOnRClick = true;*
+	*n2e_moveCaretOnRClick = true;*
 	displayPopupMenu = true;
 
 ...
 
 	case SCI_MOVECARETONRCLICK:
-		moveCaretOnRClick = wParam != 0;
+		n2e_moveCaretOnRClick = wParam != 0;
 		break;*
 
 	case SCI_USEPOPUP:
@@ -300,7 +300,7 @@ ScintillaBase::ScintillaBase() {
 [scintilla/win32/ScintillaWin.cxx]
 		case WM_RBUTTONDOWN:
 			::SetFocus(MainHWND());
-			if (*moveCaretOnRClick* && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) {
+			if (*n2e_moveCaretOnRClick* && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) {
 				CancelModes();
 [/scintilla/win32/ScintillaWin.cxx]
 [/**Implement Notepad's right click behavior #54**]
@@ -504,42 +504,42 @@ Add new message SCI_SETSKIPUIUPDATE:
 Add corresponding flag to Editor class:
 [scintilla/src/Editor.h]
 	bool convertPastes;
-	*bool skipUIUpdate;*
+	*bool n2e_skipUIUpdate;*
 [/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
 	convertPastes = true;
-	*skipUIUpdate = false;*
+	*n2e_skipUIUpdate = false;*
 ...
 void Editor::RedrawRect(PRectangle rc) {
 	//Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
 void Editor::Redraw() {
 	//Platform::DebugPrintf("Redraw all\n");
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
 void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
 void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
 void Editor::InvalidateCaret() {
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
 void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
-	*if (skipUIUpdate) {
+	*if (n2e_skipUIUpdate) {
 		return;
 	}*
 ...
@@ -547,19 +547,19 @@ Replace the code in Editor::WndProc() for case SCI_REPLACESEL:
 			SetEmptySelection(sel.MainCaret() + lengthInserted);
 			EnsureCaretVisible();
 with
-			*if (!skipUIUpdate) {
+			*if (!n2e_skipUIUpdate) {
 					SetEmptySelection(sel.MainCaret() + lengthInserted);
 					EnsureCaretVisible();
 			}*
 ...
 Add next handler to Editor::WndProc():
 	case SCI_SETSKIPUIUPDATE:
-		skipUIUpdate = (wParam != 0);
-		if (!skipUIUpdate) {
+		n2e_skipUIUpdate = (wParam != 0);
+		if (!n2e_skipUIUpdate) {
 			InvalidateWholeSelection();
 			Redraw();
 		}
-		return skipUIUpdate;
+		return n2e_skipUIUpdate;
 [/scintilla/src/Editor.cxx]
 [/**Increasingly slow to hex/base64/qp #142**]
 
@@ -590,7 +590,7 @@ Add message handler and replace some code:
 	  case SCI_SETDPI:
 		SetDPI(LOWORD(wParam),
 			HIWORD(wParam),
-			MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
+			MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, GetDpiY()));
 		InvalidateStyleData();
 		RefreshStyleData();
 		return 0;
@@ -606,8 +606,8 @@ Add message handler and replace some code:
 
 Add required subroutines:
 [scintilla/win32/PlatWin.h]
-#define DEFAULT_SCREEN_DPI 96
-#define DEFAULT_FONT_DPI 72
+#define N2E_DEFAULT_SCREEN_DPI 96
+#define N2E_DEFAULT_FONT_DPI 72
 
 void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
 float GetDpiX();
@@ -616,30 +616,30 @@ int GetDpiFont();
 [/scintilla/win32/PlatWin.h]
 
 [scintilla/win32/PlatWin.cxx]
-static float dpiX = DEFAULT_SCREEN_DPI;
-static float dpiY = DEFAULT_SCREEN_DPI;
-static int dpiFont = DEFAULT_FONT_DPI;
+static float n2e_dpiX = N2E_DEFAULT_SCREEN_DPI;
+static float n2e_dpiY = N2E_DEFAULT_SCREEN_DPI;
+static int n2e_dpiFont = N2E_DEFAULT_FONT_DPI;
 
 void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 {
-	dpiX = _dpiX;
-	dpiY = _dpiY;
-	dpiFont = _dpiFont;
+	n2e_dpiX = _dpiX;
+	n2e_dpiY = _dpiY;
+	n2e_dpiFont = _dpiFont;
 }
 
 float GetDpiX()
 {
-	return dpiX;
+	return n2e_dpiX;
 }
 
 float GetDpiY()
 {
-	return dpiY;
+	return n2e_dpiY;
 }
 
 int GetDpiFont()
 {
-	return dpiFont;
+	return n2e_dpiFont;
 }
 
 ...
@@ -647,14 +647,14 @@ int GetDpiFont()
 In SurfaceD2D::SurfaceD2D() replace
 logPixelsY = 72;
 with
-logPixelsY = DEFAULT_FONT_DPI;
+logPixelsY = N2E_DEFAULT_FONT_DPI;
 
 int SurfaceGDI::LogPixelsY() {
 	return GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
+	return ::MulDiv(points, LogPixelsY(), N2E_DEFAULT_FONT_DPI);
 }
 
 void SurfaceD2D::SetScale() {
