@@ -128,11 +128,11 @@ New notification code added:
 
 New notification proc added:
 [scintilla/src/Editor.h]
-void NotifyCaretMoved();
+void n2e_NotifyCaretMoved();
 [/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
-void Editor::NotifyCaretMoved()
+void Editor::n2e_NotifyCaretMoved()
 {
 	// Send notification
 	SCNotification scn = { 0 };
@@ -146,11 +146,11 @@ Corresponding calls added to Editor::KeyCommand():
 
 	case SCI_PARADOWN:
 		ParaUpOrDown(1, Selection::noSel);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARADOWNEXTEND:
 		ParaUpOrDown(1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLDOWN:
 
@@ -158,11 +158,11 @@ Corresponding calls added to Editor::KeyCommand():
 
 	case SCI_PARAUP:
 		ParaUpOrDown(-1, Selection::noSel);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARAUPEXTEND:
 		ParaUpOrDown(-1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLUP:
 
@@ -170,27 +170,27 @@ Corresponding calls added to Editor::KeyCommand():
 
 	case SCI_PAGEUP:
 		PageMove(-1);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPEXTEND:
 		PageMove(-1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPRECTEXTEND:
 		PageMove(-1, Selection::selRectangle);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWN:
 		PageMove(1);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNEXTEND:
 		PageMove(1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNRECTEXTEND:
 		PageMove(1, Selection::selRectangle);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_EDITTOGGLEOVERTYPE:
 [/scintilla/src/Editor.cxx]
@@ -205,11 +205,11 @@ New notification code added:
 
 New notification proc added:
 [scintilla/src/Editor.h]
-void NotifyLineCountChanged();
+void n2e_NotifyLineCountChanged();
 [/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
-void Editor::NotifyLineCountChanged()
+void Editor::n2e_NotifyLineCountChanged()
 {
   // Send notification
   SCNotification scn = { 0 };
@@ -223,31 +223,31 @@ Corresponding calls added to Editor::KeyCommand():
 
 	case SCI_NEWLINE:
 		...
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 	case SCI_LINEDELETE:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 	case SCI_CUT:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 	case SCI_PASTE:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 	case SCI_CLEAR:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 	case SCI_UNDO:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 	case SCI_REDO:
 		...
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged();
 		break;
 [/scintilla/src/Editor.cxx]
 [/**"Update gutter width"-feature**]
@@ -576,8 +576,8 @@ Add message handler and replace some code:
 	drtp.dpiX = 96.0;
 	drtp.dpiY = 96.0;
 >>
-	drtp.dpiX = GetDpiX();
-	drtp.dpiY = GetDpiY();
+	drtp.dpiX = n2e_GetDpiX();
+	drtp.dpiY = n2e_GetDpiY();
 
 ...
 
@@ -588,9 +588,9 @@ Add message handler and replace some code:
 ...
 
 	  case SCI_SETDPI:
-		SetDPI(LOWORD(wParam),
+		n2e_SetDPI(LOWORD(wParam),
 			HIWORD(wParam),
-			MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, GetDpiY()));
+			MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, n2e_GetDpiY()));
 		InvalidateStyleData();
 		RefreshStyleData();
 		return 0;
@@ -600,8 +600,8 @@ Add message handler and replace some code:
 			drtp.dpiX = 96.0;
 			drtp.dpiY = 96.0;
 >>
-			drtp.dpiX = GetDpiX();
-			drtp.dpiY = GetDpiY();
+			drtp.dpiX = n2e_GetDpiX();
+			drtp.dpiY = n2e_GetDpiY();
 [/scintilla/win32/ScintillaWin.cxx]
 
 Add required subroutines:
@@ -609,10 +609,10 @@ Add required subroutines:
 #define N2E_DEFAULT_SCREEN_DPI 96
 #define N2E_DEFAULT_FONT_DPI 72
 
-void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
-float GetDpiX();
-float GetDpiY();
-int GetDpiFont();
+void n2e_SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
+float n2e_GetDpiX();
+float n2e_GetDpiY();
+int n2e_GetDpiFont();
 [/scintilla/win32/PlatWin.h]
 
 [scintilla/win32/PlatWin.cxx]
@@ -620,24 +620,24 @@ static float n2e_dpiX = N2E_DEFAULT_SCREEN_DPI;
 static float n2e_dpiY = N2E_DEFAULT_SCREEN_DPI;
 static int n2e_dpiFont = N2E_DEFAULT_FONT_DPI;
 
-void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+void n2e_SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 {
 	n2e_dpiX = _dpiX;
 	n2e_dpiY = _dpiY;
 	n2e_dpiFont = _dpiFont;
 }
 
-float GetDpiX()
+float n2e_GetDpiX()
 {
 	return n2e_dpiX;
 }
 
-float GetDpiY()
+float n2e_GetDpiY()
 {
 	return n2e_dpiY;
 }
 
-int GetDpiFont()
+int n2e_GetDpiFont()
 {
 	return n2e_dpiFont;
 }
@@ -650,7 +650,7 @@ with
 logPixelsY = N2E_DEFAULT_FONT_DPI;
 
 int SurfaceGDI::LogPixelsY() {
-	return GetDpiY();
+	return n2e_GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
@@ -660,13 +660,13 @@ int SurfaceGDI::DeviceHeightFont(int points) {
 void SurfaceD2D::SetScale() {
 	HDC hdcMeasure = ::CreateCompatibleDC(NULL);
 	logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
-	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
-	dpiScaleY = logPixelsY / GetDpiY();
+	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / n2e_GetDpiX();
+	dpiScaleY = logPixelsY / n2e_GetDpiY();
 	::DeleteDC(hdcMeasure);
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), GetDpiFont());
+	return ::MulDiv(points, LogPixelsY(), n2e_GetDpiFont());
 }
 
 [/scintilla/win32/PlatWin.cxx]

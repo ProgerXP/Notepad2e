@@ -534,8 +534,8 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 		drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 		drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 		drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-		drtp.dpiX = GetDpiX(); // [n2e]: DPI awareness #154
-		drtp.dpiY = GetDpiY(); // [n2e]: DPI awareness #154
+		drtp.dpiX = n2e_GetDpiX(); // [n2e]: DPI awareness #154
+		drtp.dpiY = n2e_GetDpiY(); // [n2e]: DPI awareness #154
 		drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 		drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
@@ -1757,9 +1757,9 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 
 		// [n2e]: DPI awareness #154
 		case SCI_SETDPI:
-			SetDPI(LOWORD(wParam),
+			n2e_SetDPI(LOWORD(wParam),
 				HIWORD(wParam),
-				MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, GetDpiY()));
+				MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, n2e_GetDpiY()));
 			InvalidateStyleData();
 			RefreshStyleData();
 			return 0;
@@ -3357,8 +3357,8 @@ LRESULT PASCAL ScintillaWin::CTWndProc(
 						drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 						drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 						drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-						drtp.dpiX = GetDpiX(); // [n2e]: DPI awareness #154
-						drtp.dpiY = GetDpiY(); // [n2e]: DPI awareness #154
+						drtp.dpiX = n2e_GetDpiX(); // [n2e]: DPI awareness #154
+						drtp.dpiY = n2e_GetDpiY(); // [n2e]: DPI awareness #154
 						drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 						drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 

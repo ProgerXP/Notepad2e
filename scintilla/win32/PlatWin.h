@@ -17,10 +17,10 @@ namespace Scintilla {
 #define N2E_DEFAULT_SCREEN_DPI 96
 #define N2E_DEFAULT_FONT_DPI 72
 
-void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
-float GetDpiX();
-float GetDpiY();
-int GetDpiFont();
+void n2e_SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
+float n2e_GetDpiX();
+float n2e_GetDpiY();
+int n2e_GetDpiFont();
 // [/n2e]
 
 extern void Platform_Initialise(void *hInstance);

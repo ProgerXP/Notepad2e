@@ -2523,7 +2523,7 @@ void Editor::NotifyZoom() {
 }
 
 // [n2e]: "Scroll margin"-feature
-void Editor::NotifyCaretMoved()
+void Editor::n2e_NotifyCaretMoved()
 {
 	// Send notification
 	SCNotification scn = { 0 };
@@ -2533,7 +2533,7 @@ void Editor::NotifyCaretMoved()
 // [/n2e]
 
 // [n2e]: "Update gutter width"-feature
-void Editor::NotifyLineCountChanged()
+void Editor::n2e_NotifyLineCountChanged()
 {
 	// Send notification
 	SCNotification scn = { 0 };
@@ -3624,11 +3624,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARADOWN:
 		ParaUpOrDown(1, Selection::noSel);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARADOWNEXTEND:
 		ParaUpOrDown(1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLDOWN:
 		ScrollTo(topLine + 1);
@@ -3645,11 +3645,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARAUP:
 		ParaUpOrDown(-1, Selection::noSel);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARAUPEXTEND:
 		ParaUpOrDown(-1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLUP:
 		ScrollTo(topLine - 1);
@@ -3727,27 +3727,27 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PAGEUP:
 		PageMove(-1);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPEXTEND:
 		PageMove(-1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPRECTEXTEND:
 		PageMove(-1, Selection::selRectangle);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWN:
 		PageMove(1);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNEXTEND:
 		PageMove(1, Selection::selStream);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNRECTEXTEND:
 		PageMove(1, Selection::selRectangle);
-		NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_EDITTOGGLEOVERTYPE:
 		inOverstrike = !inOverstrike;
@@ -3796,7 +3796,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_NEWLINE:
 		NewLine();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 	case SCI_FORMFEED:
 		AddChar('\f');
@@ -3845,7 +3845,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 			int start = pdoc->LineStart(line);
 			int end = pdoc->LineStart(line + 1);
 			pdoc->DeleteChars(start, end - start);
-			NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+			n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		}
 		break;
 	case SCI_LINETRANSPOSE:
@@ -5809,7 +5809,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_CUT:
 		Cut();
 		SetLastXChosen();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_COPY:
@@ -5846,20 +5846,20 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			SetLastXChosen();
 		}
 		EnsureCaretVisible();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_CLEAR:
 		Clear();
 		SetLastXChosen();
 		EnsureCaretVisible();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_UNDO:
 		Undo();
 		SetLastXChosen();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_CANUNDO:
@@ -6327,7 +6327,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	case SCI_REDO:
 		Redo();
-		NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_SELECTALL:

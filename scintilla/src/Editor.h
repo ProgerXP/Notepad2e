@@ -441,8 +441,8 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifyNeedShown(int pos, int len);
 	void NotifyDwelling(Point pt, bool state);
 	void NotifyZoom();
-	void NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
-	void NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+	void n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+	void n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 
 	void NotifyModifyAttempt(Document *document, void *userData);
 	void NotifySavePoint(Document *document, void *userData, bool atSavePoint);
