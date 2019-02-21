@@ -13,8 +13,8 @@
 
 #include "Sci_Position.h"
 
-typedef void ( * wheel_action ) ( int );
-typedef int ( * key_action ) ( int , int );
+typedef void (*wheel_action (int);
+typedef int (*key_action)(int , int);
 #ifdef __cplusplus
 extern "C" {
 #endif

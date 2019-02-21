@@ -827,10 +827,10 @@ void Editor::MovedCaret(SelectionPosition newPos, SelectionPosition previousPos,
 	if (ensureVisible) {
 		// In case in need of wrapping to ensure DisplayFromDoc works.
 		if (currentLine >= wrapPending.start) {
-      if (WrapLines(wsAll)) {
-        Redraw();
-      }      
-    }
+			if (WrapLines(wsAll)) {
+				Redraw();
+			}
+		}
 		XYScrollPosition newXY = XYScrollToMakeVisible(
 			SelectionRange(posDrag.IsValid() ? posDrag : newPos), xysDefault);
 		if (previousPos.IsValid() && (newXY.xOffset == xOffset)) {
@@ -2512,18 +2512,18 @@ void Editor::NotifyZoom() {
 
 void Editor::NotifyCaretMoved()
 {
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_CARETMOVED;
-  NotifyParent(scn);
+	// Send notification
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_CARETMOVED;
+	NotifyParent(scn);
 }
 
 void Editor::NotifyLineCountChanged()
 {
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
-  NotifyParent(scn);
+	// Send notification
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_LINECOUNTCHANGED;
+	NotifyParent(scn);
 }
 
 // Notifications from document
@@ -3608,11 +3608,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARADOWN:
 		ParaUpOrDown(1, Selection::noSel);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PARADOWNEXTEND:
 		ParaUpOrDown(1, Selection::selStream);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_LINESCROLLDOWN:
 		ScrollTo(topLine + 1);
@@ -3629,11 +3629,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARAUP:
 		ParaUpOrDown(-1, Selection::noSel);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PARAUPEXTEND:
 		ParaUpOrDown(-1, Selection::selStream);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_LINESCROLLUP:
 		ScrollTo(topLine - 1);
@@ -3711,27 +3711,27 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PAGEUP:
 		PageMove(-1);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PAGEUPEXTEND:
 		PageMove(-1, Selection::selStream);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PAGEUPRECTEXTEND:
 		PageMove(-1, Selection::selRectangle);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PAGEDOWN:
 		PageMove(1);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PAGEDOWNEXTEND:
 		PageMove(1, Selection::selStream);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_PAGEDOWNRECTEXTEND:
 		PageMove(1, Selection::selRectangle);
-    NotifyCaretMoved();
+		NotifyCaretMoved();
 		break;
 	case SCI_EDITTOGGLEOVERTYPE:
 		inOverstrike = !inOverstrike;
@@ -4509,7 +4509,7 @@ void Editor::ButtonDownWithModifiers(Point pt, unsigned int curTime, int modifie
 					selectionType = selWord;
 					doubleClick = true;
 				} else if (selectionType == selWord) {
-          // do nothing on *triple* click
+					// do nothing on *triple* click
 				} else {
 					selectionType = selChar;
 					originalAnchorPos = sel.MainCaret();
@@ -5946,8 +5946,8 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			const int lengthInserted = pdoc->InsertString(
 				sel.MainCaret(), replacement, istrlen(replacement));
 			if (!skipUIUpdate) {
-					SetEmptySelection(sel.MainCaret() + lengthInserted);
-					EnsureCaretVisible();
+				SetEmptySelection(sel.MainCaret() + lengthInserted);
+				EnsureCaretVisible();
 			}
 		}
 		break;
