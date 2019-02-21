@@ -21,7 +21,14 @@
     "lmSQL",
     "lmVB",
     "lmVBScript",
-    "lmXML"
+    "lmXML",
+    "lmAsn1", /* [n2e] */
+    "lmBash", /* [n2e] */
+    "lmCaml", /* [n2e] */
+    "lmCoffeeScript", /* [n2e] */
+    "lmD", /* [n2e] */
+    "lmLISP", /* [n2e] */
+    "lmTeX" /* [n2e] */
   );
 
   var fso = new ActiveXObject("Scripting.FileSystemObject");

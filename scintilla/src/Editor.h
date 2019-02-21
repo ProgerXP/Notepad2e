@@ -258,7 +258,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	WrapPending wrapPending;
 
 	bool convertPastes;
-	bool skipUIUpdate;
+	bool skipUIUpdate; // [n2e]: Increasingly slow to hex/base64/qp #142
 
 	Editor();
 	virtual ~Editor();
@@ -441,8 +441,8 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifyNeedShown(int pos, int len);
 	void NotifyDwelling(Point pt, bool state);
 	void NotifyZoom();
-	void NotifyCaretMoved();
-	void NotifyLineCountChanged();
+	void NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+	void NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 
 	void NotifyModifyAttempt(Document *document, void *userData);
 	void NotifySavePoint(Document *document, void *userData, bool atSavePoint);

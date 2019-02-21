@@ -37,7 +37,7 @@
 #endif
 
 #include "Platform.h"
-#include "PlatWin.h"
+#include "PlatWin.h" // [n2e]: DPI awareness #154
 #include "StringCopy.h"
 #include "XPM.h"
 #include "UniConversion.h"
@@ -51,6 +51,7 @@
 #define SPI_GETFONTSMOOTHINGCONTRAST	0x200C
 #endif
 
+// [n2e]: DPI awareness #154
 static float dpiX = DEFAULT_SCREEN_DPI;
 static float dpiY = DEFAULT_SCREEN_DPI;
 static int dpiFont = DEFAULT_FONT_DPI;
@@ -76,6 +77,7 @@ int GetDpiFont()
 {
 	return dpiFont;
 }
+// [/n2e]
 
 static void *PointerFromWindow(HWND hWnd) {
 	return reinterpret_cast<void *>(::GetWindowLongPtr(hWnd, 0));
@@ -714,7 +716,7 @@ int SurfaceGDI::LogPixelsY() {
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
+	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI); // [n2e]: DPI awareness #154
 }
 
 void SurfaceGDI::MoveTo(int x_, int y_) {
@@ -1182,7 +1184,7 @@ SurfaceD2D::SurfaceD2D() :
 
 	pBrush = NULL;
 
-	logPixelsY = DEFAULT_FONT_DPI;
+	logPixelsY = DEFAULT_FONT_DPI; // [n2e]: DPI awareness #154
 	dpiScaleX = 1.0;
 	dpiScaleY = 1.0;
 }
@@ -1211,8 +1213,8 @@ void SurfaceD2D::Release() {
 void SurfaceD2D::SetScale() {
 	HDC hdcMeasure = ::CreateCompatibleDC(NULL);
 	logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
-	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
-	dpiScaleY = logPixelsY / GetDpiY();
+	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX(); // [n2e]: DPI awareness #154
+	dpiScaleY = logPixelsY / GetDpiY(); // [n2e]: DPI awareness #154
 	::DeleteDC(hdcMeasure);
 }
 
@@ -1311,7 +1313,7 @@ int SurfaceD2D::LogPixelsY() {
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), GetDpiFont());
+	return ::MulDiv(points, LogPixelsY(), GetDpiFont()); // [n2e]: DPI awareness #154
 }
 
 void SurfaceD2D::MoveTo(int x_, int y_) {

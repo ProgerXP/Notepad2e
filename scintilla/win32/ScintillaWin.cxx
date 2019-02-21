@@ -126,8 +126,10 @@
 #endif
 
 typedef BOOL (WINAPI *TrackMouseEventSig)(LPTRACKMOUSEEVENT);
+// [n2e]: Implement wheel_action/proc_action
 wheel_action n2e_wheel_action = 0;
 key_action n2e_proc_action = 0;
+// [/n2e]
 typedef UINT_PTR (WINAPI *SetCoalescableTimerSig)(HWND hwnd, UINT_PTR nIDEvent,
 	UINT uElapse, TIMERPROC lpTimerFunc, ULONG uToleranceDelay);
 
@@ -532,8 +534,8 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 		drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 		drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 		drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-		drtp.dpiX = GetDpiX();
-		drtp.dpiY = GetDpiY();
+		drtp.dpiX = GetDpiX(); // [n2e]: DPI awareness #154
+		drtp.dpiY = GetDpiY(); // [n2e]: DPI awareness #154
 		drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 		drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
@@ -572,7 +574,7 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 			D2D1::RenderTargetProperties(
 				D2D1_RENDER_TARGET_TYPE_DEFAULT ,
 				D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-				GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+				GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT), // [n2e]: DPI awareness #154
 			D2D1::HwndRenderTargetProperties(hw, size),
 			&pRenderTarget);
 #endif
@@ -1307,6 +1309,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 				if (wParam & MK_CONTROL) {
 					// Zoom! We play with the font sizes in the styles.
 					// Number of steps/line is ignored, we just care if sizing up or down
+					// [n2e]: Implement wheel_action/proc_action
 					if (n2e_wheel_action) {
 						n2e_wheel_action(linesToScroll);
 					} else {
@@ -1316,6 +1319,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 							KeyCommand(SCI_ZOOMOUT);
 						}
 					}
+					// [/n2e]
 				} else {
 					// Scroll
 					ScrollTo(topLine + linesToScroll);
@@ -1404,7 +1408,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 
 		case WM_RBUTTONDOWN:
 			::SetFocus(MainHWND());
-			if (moveCaretOnRClick && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) {
+			if (moveCaretOnRClick && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) { // [n2e]: Implement Notepad's right click behavior #54
 				CancelModes();
 				SetEmptySelection(PositionFromLocation(Point::FromLong(static_cast<long>(lParam))));
 			}
@@ -1436,12 +1440,14 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			}
 
 		case WM_CHAR:
+			// [n2e]: Implement wheel_action/proc_action
 			if (n2e_proc_action) {
 				int ret = n2e_proc_action(wParam, WM_CHAR);
 				if (ret >= 0) {
 					return ret;
 				}
 			}
+			// [/n2e]
 			if (((wParam >= 128) || !iscntrl(static_cast<int>(wParam))) || !lastKeyDownConsumed) {
 				wchar_t wcs[3] = {static_cast<wchar_t>(wParam), 0};
 				unsigned int wclen = 1;
@@ -1474,6 +1480,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: {
 			//Platform::DebugPrintf("S keydown %d %x %x %x %x\n",iMessage, wParam, lParam, ::IsKeyDown(VK_SHIFT), ::IsKeyDown(VK_CONTROL));
+				// [n2e]: Implement wheel_action/proc_action
 				if (n2e_proc_action) {
 					int ret = n2e_proc_action(wParam, WM_KEYDOWN);
 					if (ret >= 0) {
@@ -1481,6 +1488,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 						return ret;
 					}
 				}
+				// [/n2e]
 				lastKeyDownConsumed = false;
 				int ret = KeyDown(KeyTranslate(static_cast<int>(wParam)),
 					Platform::IsKeyDown(VK_SHIFT),
@@ -1747,6 +1755,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			return EncodedFromUTF8(reinterpret_cast<char*>(wParam),
 			        reinterpret_cast<char*>(lParam));
 
+		// [n2e]: DPI awareness #154
 		case SCI_SETDPI:
 			SetDPI(LOWORD(wParam),
 				HIWORD(wParam),
@@ -1754,6 +1763,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			InvalidateStyleData();
 			RefreshStyleData();
 			return 0;
+		// [/n2e]
 
 		default:
 			return ScintillaBase::WndProc(iMessage, wParam, lParam);
@@ -3137,6 +3147,7 @@ STDMETHODIMP ScintillaWin::Drop(LPDATAOBJECT pIDataSource, DWORD grfKeyState,
 		POINT rpt = {pt.x, pt.y};
 		::ScreenToClient(MainHWND(), &rpt);
 		SelectionPosition movePos = SPositionFromLocation(PointFromPOINT(rpt), false, false, UserVirtualSpace());
+		// [n2e]: Drag & drop improvement #63
 		const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
 		const bool bAddNewLine = (inDragDrop != ddDragging) && (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
 		if (bAddNewLine)
@@ -3148,6 +3159,7 @@ STDMETHODIMP ScintillaWin::Drop(LPDATAOBJECT pIDataSource, DWORD grfKeyState,
 		if (bAddNewLine) {
 			KeyCommand(SCI_CHARRIGHT);
 		}
+		// [/n2e]
 
 		// Free data
 		if (medium.pUnkForRelease != NULL)
@@ -3345,8 +3357,8 @@ LRESULT PASCAL ScintillaWin::CTWndProc(
 						drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 						drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 						drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-						drtp.dpiX = GetDpiX();
-						drtp.dpiY = GetDpiY();
+						drtp.dpiX = GetDpiX(); // [n2e]: DPI awareness #154
+						drtp.dpiY = GetDpiY(); // [n2e]: DPI awareness #154
 						drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 						drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 

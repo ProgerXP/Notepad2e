@@ -251,8 +251,7 @@ public:
 	bool tabIndents;
 	bool backspaceUnindents;
 	double durationStyleOneLine;
-	// [2e]: ctrl+arrow behavior toggle #89
-	int wordNavigationMode;
+	int wordNavigationMode; // [n2e]: ctrl+arrow behavior toggle #89
 
 	DecorationList decorations;
 
@@ -449,8 +448,7 @@ public:
 	int ParaDown(int pos) const;
 	int IndentSize() const { return actualIndentInChars; }
 	int BraceMatch(int position, int maxReStyle);
-	// [2e]: ctrl+arrow behavior toggle #89
-	void SetWordNavigationMode(const int iMode);
+	void SetWordNavigationMode(const int iMode); // [n2e]: ctrl+arrow behavior toggle #89
 
 private:
 	void NotifyModifyAttempt();
@@ -540,6 +538,7 @@ public:
 	virtual void NotifyErrorOccurred(Document *doc, void *userData, int status) = 0;
 };
 
+// [n2e]: Regexp: confine to single line #90: RESearchRange moved from Document.cpp
 /**
 * RESearchRange keeps track of search range.
 */
@@ -592,6 +591,7 @@ public:
 		return range;
 	}
 };
+// [/n2e]
 
 #ifdef SCI_NAMESPACE
 }
