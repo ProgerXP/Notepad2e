@@ -1601,6 +1601,7 @@ BEGIN
     63032                   "YAML"
     63033                   "Rust"
     63034                   "Markdown"
+    63035                   "Awk Script"
 END
 
 STRINGTABLE
