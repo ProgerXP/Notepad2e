@@ -1,3 +1,4 @@
+#include <time.h>
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
@@ -19,6 +20,7 @@
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
 #define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
 #define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
+#define INI_SETTING_CLOCK_FORMAT L"ClockFormat"
 #define INI_SETTING_CSS_SETTINGS L"CSSSettings"
 #define INI_SETTING_SHELL_MENU_TYPE L"ShellMenuType"
 #define INI_SETTING_MAX_SEARCH_DISTANCE L"MaxSearchDistance"
@@ -35,12 +37,17 @@
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
+#define DEFAULT_CLOCK_UPDATE_INTERVAL_MS  10000
 #define DEFAULT_MAX_SEARCH_DISTANCE_KB  96
 #define BYTES_IN_KB  1024
 
 HANDLE g_hScintilla = NULL;
 UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
+const UINT iClockUpdateInterval = DEFAULT_CLOCK_UPDATE_INTERVAL_MS;
+WCHAR wchClockFormat[MAX_PATH] = { 0 };
+UINT_PTR iClockUpdateTimerId = 0;
+int iClockMenuItemIndex = -1;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
 EUsePrefixInOpenDialog iUsePrefixInOpenDialog = UPO_AUTO;
@@ -101,10 +108,65 @@ void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
   KillTimer(NULL, idEvent);
 }
 
+BOOL n2e_UpdateClockMenuItem()
+{
+  time_t t;
+  time(&t);
+  WCHAR buf[MAX_PATH] = { 0 };
+  if ((iClockMenuItemIndex < 0)
+      || !lstrlen(wchClockFormat)
+      || !wcsftime(buf, sizeof(buf), wchClockFormat, localtime(&t)))
+  {
+    return FALSE;
+  }
+
+  const HMENU hmenu = GetMenu(hwndMain);
+  MENUITEMINFO mii = { 0 };
+  mii.cbSize = sizeof(mii);
+  mii.fMask = MIIM_STRING | MIIM_STATE;
+  mii.fState = MFS_DISABLED | MFS_GRAYED | MFS_HILITE;
+  mii.dwTypeData = buf;
+  mii.cch = lstrlen(buf);
+  if (SetMenuItemInfo(hmenu, iClockMenuItemIndex, TRUE, &mii))
+  {
+    RedrawWindow(hwndMain, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_FRAME | RDW_NOINTERNALPAINT);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void CALLBACK n2e_ClockTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
+{
+  n2e_UpdateClockMenuItem();
+}
+
+void n2e_InitClock()
+{
+  if (lstrlen(wchClockFormat))
+  {
+    const HMENU hmenu = GetMenu(hwndMain);
+    iClockMenuItemIndex = GetMenuItemCount(hmenu);
+    MENUITEMINFO mii = { 0 };
+    mii.cbSize = sizeof(mii);
+    InsertMenuItem(hmenu, iClockMenuItemIndex, TRUE, &mii);
+    n2e_UpdateClockMenuItem();
+    iClockUpdateTimerId = SetTimer(NULL, 0, iClockUpdateInterval, n2e_ClockTimerProc);
+  }
+}
+
+void n2e_ReleaseClock()
+{
+  if (iClockUpdateTimerId)
+  {
+    KillTimer(NULL, iClockUpdateTimerId);
+  }
+}
+
 void n2e_Init()
 {
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
+  n2e_InitClock();
   n2e_ResetLastRun();
   n2e_EditInit();
 }
@@ -149,6 +211,7 @@ void n2e_LoadINI()
   iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  IniGetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, L"", wchClockFormat, COUNTOF(wchClockFormat));
   iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
@@ -201,6 +264,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  IniSetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, wchClockFormat);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, iMaxSearchDistance / BYTES_IN_KB);
@@ -218,6 +282,7 @@ void n2e_SaveINI()
 
 void n2e_Release()
 {
+  n2e_ReleaseClock();
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
 }
