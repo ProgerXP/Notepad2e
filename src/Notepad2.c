@@ -37,6 +37,7 @@
 #include "resource.h"
 #include "SciCall.h"
 #include "Extension/DPIHelper.h"
+#include "Extension/DPIHelperScintilla.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
@@ -431,7 +432,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     return FALSE;
 
   // [2e]: DPI awareness #154
-  n2e_DPIInitialize();
+  DPIInitialize();
 
   if (!(hwnd = InitInstance(hInstance, lpCmdLine, nCmdShow)))
     return FALSE;
@@ -841,7 +842,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     // [2e]: DPI awareness #154
     case WM_DPICHANGED:
       n2e_ScintillaDPIUpdate(hwndEdit, wParam);
-      n2e_DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
+      DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
       MsgThemeChanged(hwnd, 0, 0);
       return 0;
     // [/2e]
@@ -864,7 +865,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     // [2e]: DPI awareness #154
     case WM_NCCREATE:
-      n2e_EnableNonClientDpiScaling(hwnd);
+      DPI_ENABLE_NC_SCALING();
       return (DefWindowProc(hwnd, umsg, wParam, lParam));
     // [/2e]
 

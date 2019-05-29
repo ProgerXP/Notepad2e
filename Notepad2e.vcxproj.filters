@@ -312,6 +312,9 @@
     <ClInclude Include="src\Extension\StrToURL.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\DPIHelperScintilla.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -791,9 +794,6 @@
     <ClCompile Include="src\Extension\CommonUtils.c">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
-    <ClCompile Include="src\Extension\DPIHelper.c">
-      <Filter>Source Files\Extension</Filter>
-    </ClCompile>
     <ClCompile Include="src\Extension\EditHelper.c">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
@@ -825,6 +825,12 @@
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
     <ClCompile Include="src\Extension\StrToURL.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\DPIHelper.cpp">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\DPIHelperScintilla.c">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>

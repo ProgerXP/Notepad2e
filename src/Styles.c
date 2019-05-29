@@ -3459,7 +3459,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -3498,7 +3498,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         hFontTitle = CreateFontIndirect(&lf);
         SendDlgItemMessage(hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -3936,7 +3936,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -4017,7 +4017,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         if (bAutoSelect)
           CheckDlgButton(hwnd, IDC_AUTOSELECT, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -4072,7 +4072,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         MapWindowPoints(NULL, hwnd, (LPPOINT)&rc, 2);
         SetWindowPos(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, rc.left, rc.top + dyClient, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         InvalidateRect(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, TRUE);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
@@ -4081,7 +4081,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = mmiPtMinX;
         lpmmi->ptMinTrackSize.y = mmiPtMaxY;
-        N2E_DPI_GETMINMAXINFO();
+        DPI_GETMINMAXINFO();
       }
       return TRUE;
 

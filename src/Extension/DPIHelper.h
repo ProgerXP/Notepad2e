@@ -1,6 +1,10 @@
 #pragma once
 #include <wtypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define WM_DPICHANGED 0x02E0
 #define DEFAULT_SCREEN_DPI 96
 #define DEFAULT_FONT_DPI 72
@@ -14,17 +18,17 @@
 #define PROPERTY_WINDOW_SIZE L"WindowSize"
 
 #define DeclareGetWindowProp(prop, name, ret)             \
-__forceinline ret n2e_GetWindow##prop(const HWND hwnd) {  \
+__forceinline ret GetWindow##prop(const HWND hwnd) {  \
   return((ret)GetProp(hwnd, name));                       \
 }
 
 #define DeclareSetWindowProp(prop, name, type)                              \
-__forceinline void n2e_SetWindow##prop(const HWND hwnd, const type value) { \
+__forceinline void SetWindow##prop(const HWND hwnd, const type value) { \
   SetProp(hwnd, name, (HANDLE)value);                                       \
 }
 
 #define DeclareSetWindowProp2(prop, name, type1, type2)    \
-__forceinline void n2e_SetWindow##prop(const HWND hwnd, const type1 value1, const type2 value2) {  \
+__forceinline void SetWindow##prop(const HWND hwnd, const type1 value1, const type2 value2) {  \
   SetProp(hwnd, name, (HANDLE)MAKEWPARAM(value1, value2));               \
 }
 
@@ -44,25 +48,28 @@ DeclareGetWindowProp(Size, PROPERTY_WINDOW_SIZE, DWORD);
 DeclareSetWindowProp2(Size, PROPERTY_WINDOW_SIZE, int, int);
 
 
-BOOL n2e_DPIInitialize();
-BOOL n2e_EnableNonClientDpiScaling(const HWND hwnd);
-RECT n2e_DPIAdjustRect(RECT rc, const int dpiXInitial, const int dpiYInitial, const int dpiX, const int dpiY);
+BOOL DPIInitialize();
+BOOL DPIEnableNonClientDpiScaling(const HWND hwnd);
+RECT DPIAdjustRect(RECT rc, const int dpiXInitial, const int dpiYInitial, const int dpiX, const int dpiY);
 
-void n2e_ScintillaDPIInit(const HWND hwnd);
-void n2e_ScintillaDPIUpdate(const HWND hwnd, const WPARAM dpi);
-void n2e_DialogDPIInit(const HWND hwnd);
-void n2e_DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC);
-void n2e_DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam);
+void DialogDPIInit(const HWND hwnd);
+void DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC);
+void DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam);
 
-DWORD n2e_GetDPIFromMonitor(const HMONITOR hMonitor, const HWND hwnd);
+DWORD GetDPIFromMonitor(const HMONITOR hMonitor, const HWND hwnd);
 
-LRESULT n2e_DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
-LRESULT n2e_DPIChanged_DlgProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
+LRESULT DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
+LRESULT DPIChanged_DlgProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
 
-#define N2E_DPI_INIT() n2e_DialogDPIInit(hwnd);
-#define N2E_DPI_RESIZE() n2e_DialogDPIUpdate(hwnd, FALSE);
-#define N2E_DPI_GETMINMAXINFO() n2e_DialogDPIGetMinMaxInfo(hwnd, lParam);
+#define DPI_INIT() DialogDPIInit(hwnd);
+#define DPI_ENABLE_NC_SCALING() DPIEnableNonClientDpiScaling(hwnd);
+#define DPI_RESIZE() DialogDPIUpdate(hwnd, FALSE);
+#define DPI_GETMINMAXINFO() DialogDPIGetMinMaxInfo(hwnd, lParam);
 
-#define N2E_DPI_CHANGED_HANDLER() \
+#define DPI_CHANGED_HANDLER() \
   case WM_DPICHANGED: \
-    return n2e_DPIChanged_DlgProcHandler(hwnd, wParam, lParam);
+    return DPIChanged_DlgProcHandler(hwnd, wParam, lParam);
+
+#ifdef __cplusplus
+}//end extern "C"
+#endif
