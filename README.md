@@ -28,7 +28,7 @@ Latest non-stable x86/non-ICU build is available from [here](http://proger.me/no
 1. [Prepare Boost environment](https://github.com/ProgerXP/Notepad2e/blob/master/doc/BoostSetup.md).
     * you will get `libboost_regex-vc141-mt-s-x32-1_68.lib`, `libboost_regex-vc141-mt-s-x64-1_68.lib` in `%BOOST_ROOT%\stage\lib`
 2. If you are going to build ICU configurations, [prepare ICU too](https://github.com/ProgerXP/Notepad2e/blob/master/doc/ICUBuild.md). #162
-    * you will get the 2 Boost libs above in `%BOOST_ROOT_ICU%\stage\lib` and also `icuregex64.lib`, `icuregex86.lib`
+    * you will get the 2 Boost libraries above in `%BOOST_ROOT_ICU%\stage\lib` and also `icuregex64.lib`, `icuregex86.lib`
 3. The project comes with a "hacked" Scintilla; if you wish to use the original Scintilla, [read this changelog](https://github.com/ProgerXP/Notepad2e/blob/master/doc/Scintilla_ChangeLog.md).
 4. To compile the sources, use Visual Studio 2015 or 2017. #178
 5. To run tests (`Notepad2eTests`), point `FileSamplesPath` environment variable to the `...\test\data\Extension` directory. #178
@@ -72,7 +72,7 @@ The following locations are checked for an existing INI file, in order:
     * If this key is non-existing or blank, the previously found INI is used
     * Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
     * Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
-    * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
+    * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's directory if relative)
 
 If the located INI path (`PATH` below) is a directory rather than a file or it ends with `\` then:
 
@@ -87,7 +87,7 @@ The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items
 
 ### [NEW] Current Word Highlighting
 Word under cursor is highlighted in one of 3 modes: #27 #1
-1. One occurrence in the document. Indispensible to spot typos.
+1. One occurrence in the document. Indispensable to spot typos.
 2. Two or more occurrences but all are visible on the screen.
 3. Multiple occurrences with some hidden under the scrollbar.
 
@@ -238,7 +238,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 
 ### Go To (Ctrl+G)
 * Extracts first number from Line and Column instead of requiring a strictly numeric value. For example, `abc567.89` navigates to 567. #14
-* **[NEW]** Navigation by absolute Offset in the buffer. Respects different charsets to the best effort possible. Value is normalized: #2
+* **[NEW]** Navigation by absolute Offset in the buffer. Respects different character sets to the best effort possible. Value is normalized: #2
   1. Leading symbols that are not `0-9 A-Z a-z` are removed.
   2. If remainder consists of `0-9` then use it as a decimal offset and return.
   3. Remove possible leading `0x` and/or `h`.
@@ -294,7 +294,7 @@ Backreference | Allowed in Search | Allowed in Replace
 Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there use `$0`.
 
 ### Enclose Selection (Alt+Q)
-* Skips leading/trailing whitespace within the selection. For example, enclosindg space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
+* Skips leading/trailing whitespace within the selection. For example, enclosing space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
 * When "before" string consists of one of these characters: `{ ( [ <` then "after" is set to the same number of `} ) ] >`.
 * When "before" consists of one of the characters below then "after" is set to the same string as "before":
 ```
