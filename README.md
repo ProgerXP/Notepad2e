@@ -105,7 +105,7 @@ Allows simultaneous editing of all occurrences of the same string as the selecti
 
 **Note:** when selection is empty, this mode affects word near the cursor, and finds other substrings case-insensitively. When selection is non-empty - case-sensitive search is performed, and word boundaries are not checked.
 
-This mode allows easy renaming of varaibles, typo corrections and so on.
+This mode allows easy renaming of variables, typo corrections and so on.
 
 Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and any change you do (such as typing `bar`) will edit all of the three `foo`s at the same time:
 
