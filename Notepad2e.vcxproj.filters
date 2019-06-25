@@ -315,6 +315,18 @@
     <ClInclude Include="src\Extension\DPIHelperScintilla.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\IPC\Event.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\IPC\FileMapping.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\ProcessElevationUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\Shell32Helper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -832,6 +844,18 @@
     </ClCompile>
     <ClCompile Include="src\Extension\DPIHelperScintilla.c">
       <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\IPC\Event.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\IPC\FileMapping.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\ProcessElevationUtils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\Shell32Helper.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
