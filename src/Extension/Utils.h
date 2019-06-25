@@ -1,6 +1,7 @@
 #pragma once
 #include <stddef.h>
 #include <wtypes.h>
+#include <Richedit.h>
 
 typedef enum
 {
@@ -66,6 +67,12 @@ typedef enum
 
 typedef enum
 {
+  UEM_LEGACY = 0,
+  UEM_IMPROVED = 1,
+} EUrlEncodeMode;
+
+typedef enum
+{
   SCP_LEGACY = 0,
   SCP_THIRD = 1,
   SCP_HALF = 2
@@ -126,3 +133,5 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 void n2e_ProcessPendingMessages();
 int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd);
 int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing);
+void n2e_InitAbout3rdPartyText(const HWND hwndRichedit);
+void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink);

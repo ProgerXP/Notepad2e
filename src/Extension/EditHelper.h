@@ -15,6 +15,7 @@ extern BOOL bCtrlWheelScroll;
 extern BOOL bMoveCaretOnRightClick;
 extern EExpressionEvaluationMode iEvaluateMathExpression;
 extern EWordNavigationMode iWordNavigationMode;
+extern EUrlEncodeMode iUrlEncodeMode;
 extern WCHAR wchLastHTMLTag[0xff];
 extern WCHAR wchLastHTMLEndTag[0xff];
 
@@ -37,6 +38,8 @@ void n2e_EditString2Base64(const HWND hwnd);
 void n2e_EditBase642String(const HWND hwnd);
 void n2e_EditString2QP(const HWND hwnd);
 void n2e_EditQP2String(const HWND hwnd);
+void n2e_EditString2URL(const HWND hwnd);
+void n2e_EditURL2String(const HWND hwnd);
 
 void n2e_SaveCheckboxes(const HWND hwnd);
 BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bCheckRestoredState);
@@ -44,7 +47,6 @@ void n2e_EditFindReplaceUpdateCheckboxes(const HWND hwnd, const UINT nCtrlID);
 void n2e_EditFindReplaceInitialUpdateCheckboxes(const HWND hwnd);
 
 BOOL n2e_CheckWindowClassName(const HWND hwnd, LPCWSTR lpwstrClassname);
-BOOL n2e_IsSubclassedEdit(const HWND hwnd);
 BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit);
 BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo);
 BOOL n2e_SubclassOpenDialog(const HWND hwnd);
@@ -59,3 +61,5 @@ void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata);
 void n2e_int2bin(unsigned int val, LPWSTR binString);
 BOOL n2e_IsExpressionEvaluationEnabled();
 int n2e_GetExpressionTextRange(int* piStart, int* piEnd);
+
+BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr);

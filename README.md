@@ -8,13 +8,32 @@ This document describes *2e*-specific features (**e** for **E**xtended).
 For those of you who are unfamiliar with *Notepad2*:
 
 > ***Notepad2* is a light-weight Scintilla-based text editor for Windows.** <br>
-> It features no tabs, code folding, autocompletion, or other features <br>
+> It offers no tabs, code folding, autocompletion, or other features <br>
 > available in IDEs or more complex editors like Notepad++. <br>
-> It's just 1 EXE file and (optionally) 1 INI file.
+> It's just 1 portable EXE file and (optionally) 1 INI file.
 
-Some folks use it to replace the standard `Notepad.exe` of Windows. 
+Some folks use it to replace the standard `Notepad.exe` of Windows.
 
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
+
+## Downloads
+Stable versions are available via [GitHub releases](https://github.com/ProgerXP/Notepad2e/releases).
+
+Non-stable daily builds are available from [this page](http://proger.me/notepad2e/binaries/).
+
+Latest non-stable x86/non-ICU build is available from [here](http://proger.me/notepad2e/binaries/LATEST).
+
+## Compilation
+
+1. [Prepare Boost environment](https://github.com/ProgerXP/Notepad2e/blob/master/doc/BoostSetup.md).
+    * you will get `libboost_regex-vc141-mt-s-x32-1_68.lib`, `libboost_regex-vc141-mt-s-x64-1_68.lib` in `%BOOST_ROOT%\stage\lib`
+2. If you are going to build ICU configurations, [prepare ICU too](https://github.com/ProgerXP/Notepad2e/blob/master/doc/ICUBuild.md). #162
+    * you will get the 2 Boost libraries above in `%BOOST_ROOT_ICU%\stage\lib` and also `icuregex64.lib`, `icuregex86.lib`
+3. The project comes with a "hacked" Scintilla; if you wish to use the original Scintilla, [read this changelog](https://github.com/ProgerXP/Notepad2e/blob/master/doc/Scintilla_ChangeLog.md).
+4. To compile the sources, use Visual Studio 2015 or 2017. #178
+5. To run tests (`Notepad2eTests`), point `FileSamplesPath` environment variable to the `...\test\data\Extension` directory. #178
+
+**Note:** x64 configuration is not considered "mainstream" and was poorly tested. #157
 
 ## Replacing Windows (XP/7/10) Notepad
 One obvious way is to overwrite all `Notepad.exe`s inside Windows directory. However, this irritates SFC and may not persist across OS updates.
@@ -47,13 +66,13 @@ The following locations are checked for an existing INI file, in order:
 2. `PROGRAM.ini`, where `PROGRAM` is the EXE's name without `.exe` extension, is searched in:
     * Program's directory
     * `%APPDATA%`
-    * `%PATH%` 
+    * `%PATH%`
 3. Same as above but with `Notepad2.ini` (*Notepad 2e* is a drop-in replacement so its INI file works with *Notepad2* and vice-versa).
 4. If an INI was found, it may be further redirected: its `Notepad2.ini` key from `[Notepad2]` section is read and checked:
     * If this key is non-existing or blank, the previously found INI is used
     * Else, if the value is an absolute path (`%env%` vars expanded) to an existing file - it's used as the INI
     * Else, if the path is relative (`%env%` vars expanded) - it's searched in the same folders as `PROGRAM.ini` (above) and used, if found
-    * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's dir if relative)
+    * Else, if the key was not blank and no INI was found - the value is used as the (new, non-existing) INI file path (prepended with program's directory if relative)
 
 If the located INI path (`PATH` below) is a directory rather than a file or it ends with `\` then:
 
@@ -68,7 +87,7 @@ The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items
 
 ### [NEW] Current Word Highlighting
 Word under cursor is highlighted in one of 3 modes: #27 #1
-1. One occurrence in the document. Indispensible to spot typos.
+1. One occurrence in the document. Indispensable to spot typos.
 2. Two or more occurrences but all are visible on the screen.
 3. Multiple occurrences with some hidden under the scrollbar.
 
@@ -86,7 +105,7 @@ Allows simultaneous editing of all occurrences of the same string as the selecti
 
 **Note:** when selection is empty, this mode affects word near the cursor, and finds other substrings case-insensitively. When selection is non-empty - case-sensitive search is performed, and word boundaries are not checked.
 
-This mode allows easy renaming of varaibles, typo corrections and so on.
+This mode allows easy renaming of variables, typo corrections and so on.
 
 Below, with cursor within `foo` pressing **Ctrl+Tab** will enter this mode and any change you do (such as typing `bar`) will edit all of the three `foo`s at the same time:
 
@@ -149,7 +168,6 @@ Tab's behaviour is not changed, it still indents to the column. #61
 * **[NEW]** Find (**Ctrl+F**) now has Grep/Ungrep buttons (can be quickly called with **Alt+G/R**). Find's settings including regexp mode are respected. In case of active selection these commands operate on selected lines only. Big buffers will see a progress bar in the status bar. #46 #29
 * Submission buttons are disabled in regexp mode if Search String has errors.
 * Checkboxes are disabled when certain combinations of flags render other flags invalid (e.g. **regexp** doesn't support **whole word**). #108
-* Line feeds (`\r` and `\n`) are removed from Search/Replace Strings (can appear after pasting). #70
 * Search and Replace String inputs handle **Ctrl+Backspace** hotkey (delete word before cursor). #121 #50
 * **[NEW]** Find and other navigation commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
 * **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search (Find, Replace or Find Word) hits last result in that direction, regardless of the **Wrap around** flag.
@@ -185,8 +203,8 @@ Related settings:
 ### [NEW] Save On Lose Focus
 File > Save On Lose Focus submenu allows automatic saving of the document when program's window loses focus, similarly to Vim's `au FocusLost * :wa`. Saving doesn't occur if any of these is true: #164
 
-* current document is unsaved (*Untitled*) or not modified
-* window is not visible 
+* current document is unsaved (*Untitled*), not modified or read-only
+* window is not visible (is being closed) or has any dialogs opened (e.g. Tab Settings)
 * a child window is opened (e.g. an Open File dialog or Tab Settings)
 
 Related settings:
@@ -220,7 +238,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 
 ### Go To (Ctrl+G)
 * Extracts first number from Line and Column instead of requiring a strictly numeric value. For example, `abc567.89` navigates to 567. #14
-* **[NEW]** Navigation by absolute Offset in the buffer. Respects different charsets to the best effort possible. Value is normalized: #2
+* **[NEW]** Navigation by absolute Offset in the buffer. Respects different character sets to the best effort possible. Value is normalized: #2
   1. Leading symbols that are not `0-9 A-Z a-z` are removed.
   2. If remainder consists of `0-9` then use it as a decimal offset and return.
   3. Remove possible leading `0x` and/or `h`.
@@ -238,7 +256,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 ![Ctrl+Alt+L - Open Folder](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-folder.gif)
 
 ### Line Selection Hotkeys
-Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Scintilla behaviour that previously caused selection of the entire line. Full line can still be selected with standard **Ctrl+Shift+Space** hotkey, or by clicking on the line number.
+Due to their accidental nature, disabled triple-click and triple-**Ctrl+Space** Scintilla behaviour that previously caused selection of the entire line. Full line can still be selected with standard **Ctrl+Shift+Space** hotkey, or by clicking on the line number.
 
 ### Line Gutter
 * Default gutter style was changed from `size:-2;fore:#ff0000` to `size:-1`.
@@ -256,11 +274,14 @@ Due to it accidental nature, disabled triple-click and triple-**Ctrl+Space** Sci
   * File saving
 
 ### PCRE Support
-* Replaced incomplete *Notepad2* regexp implementation with a fully-featured Boost regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
+* Replaced incomplete *Notepad2* regexp implementation with a fully-featured Scintilla's Boost Regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
 * One particularly useful feature is ability to change character case with new escape codes: `\l` (one next symbol becomes lower-case), `\L` (all following become lower-case), `\u` and `\U` (similar but for upper-case), `\E` (cancels effect of the preceding `\L` and `\U`). Example: replace from `(.)(.)` to `\l\1\u\2`.
 * An ICU version is available, which adds Unicode support to Boost regexps, allowing `\U` and others to work on non-ASCII symbols. #162
+    * ICU version's Find/Replace in regexp mode only support Unicode (UTF-8, etc.) buffers.
+    * Most other national regexp features (`\w`, `\pL`, etc.) work even in non-ICU versions.
 * Original Notepad2's regexp didn't support UTF-8 buffers (only ASCII) - Boost's does. #78
-* Boost was hacked to allow Replace string to contain NUL (`\0`) - normally it truncates the buffer. 
+* Boost was hacked to allow Replace string to contain NUL (`\0`) - normally it truncates the buffer.
+* Another hack was made to allow backward search (Find Previous) in regexp mode. #174
 * **Attention:** there are two kinds of backreferences (`\n` and `$n`) and unlike in PHP they are used differently: #145
 
 Backreference | Allowed in Search | Allowed in Replace
@@ -273,7 +294,7 @@ Backreference | Allowed in Search | Allowed in Replace
 Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there use `$0`.
 
 ### Enclose Selection (Alt+Q)
-* Skips leading/trailing whitespace within the selection. For example, enclosindg space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
+* Skips leading/trailing whitespace within the selection. For example, enclosing space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
 * When "before" string consists of one of these characters: `{ ( [ <` then "after" is set to the same number of `} ) ] >`.
 * When "before" consists of one of the characters below then "after" is set to the same string as "before":
 ```
@@ -307,6 +328,9 @@ Binary data:
 * **Warning:** when saving binary data (e.g. a base64-encoded binary file) disable both checkboxes in File > Line Endings > Default, or saved content may be altered. Binary-Safe Save toolbar button does this for you. #170
 
 ![Encode/Decode Quoted-Printable/Base64](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/qp-b64.gif)
+
+Other data:
+* Edit > Special > URL Encode and URL Decode (**[Alt+]Ctrl+Shift+E**) use new `UrlEscapeFlags` setting for predictable processing according to RFC 3986. #189
 
 ### [NEW] Ctrl+Wheel Scroll
 Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11
@@ -359,15 +383,18 @@ Related settings:
 * Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
 * Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are simply inserted into a focused input instead of replacing its value. #119
+* Line breaks (`\r` and `\n`) are removed from Search/Replace (of Find/Replace, **Ctrl+F/H**) and Prefix/Append (of Modify Lines, **Alt+M**) inputs (could appear after pasting). #70 #173
 * **[NEW]** Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
 * "Accelerated" navigation mode for **Ctrl+Arrow** (like in Windows Notepad) that skips punctuation and other characters. Setting: `WordNavigationMode`.
+* Empty Window (**Alt+0**) no more triggers save prompt when Save Before Running Tools is enabled. #176
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
 * File > Line Endings > Unix has **Alt+F8** hotkey assigned. #44
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
 * **[NEW]** DPI awareness - proper font scaling with crisp texts without Windows fallback mechanism. #154
-* Fixed Notepad2 bug in processing `[Toolbar Labels]` INI section. #150
+* Fixed bug of *Notepad2* in processing `[Toolbar Labels]` INI section. #150
 * Upgraded Scintilla library to a more recent version (3.6.6).
 * Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
+* Reduced default *Notepad2* timeout from 1000 ms to 250 ms which sometimes allowed duplicate windows even if Single File Instance/Reuse Window were enabled. #177
 * Changed *Notepad2* defaults: #167
 
 Setting | Old Value | New Value
@@ -492,7 +519,7 @@ Windows 7+ have a registry preference that enables autocompletion in various pla
 Value | Meaning
 ------|--------
 0 | Don't enable, use native Windows behaviour
-1 | Enable unless Explorer autocompletion is enabled 
+1 | Enable unless Explorer autocompletion is enabled
 2 | Always enable
 
 ### ScrollYCaretPolicy
@@ -661,6 +688,16 @@ Type | Default | Set By UI
 int, KiB | 96 KiB |
 
 Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
+
+#### UrlEscapeFlags
+
+Type | Default | Set By UI
+-----|---------|----------
+int, bitfield | 8192 |
+
+If **0**, perform full URL encoding/decoding per RFC 3986.
+
+If **non-0**, call [UrlEscape](https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea) with those flags. Default value sets `URL_ESCAPE_SEGMENT_ONLY`, preserving *Notepad2*'s behaviour.
 
 #### _SelectionType
 

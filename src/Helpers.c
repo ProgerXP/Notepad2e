@@ -33,6 +33,8 @@
 #include "Extension/Utils.h"
 
 
+extern BOOL fExpandEnvVariables;
+
 //=============================================================================
 //
 //  Manipulation of (cached) ini file sections
@@ -341,7 +343,7 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
 //
 BOOL bFreezeAppTitle = FALSE;
 
-BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitled,
+BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsPasteBoard, BOOL bIsElevated, UINT uIDUntitled,
                     LPCWSTR lpszFile, enum EPathNameFormat nPathNameFormat, BOOL bModified,
                     UINT uIDReadOnly, BOOL bReadOnly, LPCWSTR lpszExcerpt)
 {
@@ -363,6 +365,14 @@ BOOL SetWindowTitle(HWND hwnd, UINT uIDAppName, BOOL bIsElevated, UINT uIDUntitl
   if (!GetString(uIDAppName, szAppName, COUNTOF(szAppName)) ||
       !GetString(uIDUntitled, szUntitled, COUNTOF(szUntitled)))
     return FALSE;
+
+  // [2e]: Build info #195
+  if (bIsPasteBoard)
+  {
+    FormatString(szElevatedAppName, COUNTOF(szElevatedAppName), IDS_APPTITLE_PASTEBOARD, szAppName);
+    StrCpyN(szAppName, szElevatedAppName, COUNTOF(szAppName));
+  }
+  // [/2e]
 
   if (bIsElevated)
   {
@@ -1010,7 +1020,8 @@ void PathRelativeToApp(
       lstrcpyn(wchPath, lpszSrc, COUNTOF(wchPath));
   }
 
-  if (bUnexpandEnv)
+  // [2e]: Don't interpret %envvars% in pathname when opening file #193
+  if (bUnexpandEnv && fExpandEnvVariables)
   {
     if (!PathUnExpandEnvStrings(wchPath, wchResult, COUNTOF(wchResult)))
       lstrcpyn(wchResult, wchPath, COUNTOF(wchResult));
@@ -1460,8 +1471,9 @@ void PathFixBackslashes(LPWSTR lpsz)
 void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 {
   WCHAR szBuf[312];
-
-  if (ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
+	
+  // [2e]: Don't interpret %envvars% in pathname when opening file #193
+  if (fExpandEnvVariables && ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
     lstrcpyn(lpSrc, szBuf, dwSrc);
 }
 

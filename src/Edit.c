@@ -3708,6 +3708,8 @@ void EditPadWithSpaces(HWND hwnd, BOOL bSkipEmpty, BOOL bNoUndoGroup)
     }
     if (!bNoUndoGroup)
       SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+
+    LocalFree(pmszPadStr);
   }
 
   if (!bIsRectangular &&
@@ -4952,11 +4954,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
-        N2E_DPI_INIT();
+        DPI_INIT();
 
         int cchSelection;
         char *lpszSelection;
@@ -5482,6 +5484,10 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   if (!lstrlenA(lpefr->szFind))
     return FALSE;
 
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
+    return FALSE;
+
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
@@ -5561,6 +5567,10 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   BOOL bSuppressNotFound = FALSE;
 
   if (!lstrlenA(lpefr->szFind))
+    return FALSE;
+
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
@@ -5733,6 +5743,8 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
       bSuppressNotFound = TRUE;
   }
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   if (iPos != -1)
     EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
@@ -5768,6 +5780,10 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   BOOL bRegexStartOrEndOfLine;
 
   if (!lstrlenA(lpefr->szFind))
+    return FALSE;
+
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
   // Show wait cursor...
@@ -5855,6 +5871,8 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   if (iCount)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   // Remove wait cursor
   EndWaitCursor();
 
@@ -6007,6 +6025,8 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   }
 
+  // [2e]: Gutter not updated on Replace #206
+  UpdateLineNumberWidth();
   // Remove wait cursor
   EndWaitCursor();
 
@@ -6032,7 +6052,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 {
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -6043,7 +6063,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         SendDlgItemMessage(hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -6181,7 +6201,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         LOGFONT lf;
@@ -6210,7 +6230,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         n2e_EnableClipboardFiltering(hwnd, 101);
         // [/2e]
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6380,12 +6400,12 @@ INT_PTR CALLBACK EditAlignDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
   static int *piAlignMode;
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         piAlignMode = (int *)lParam;
         CheckRadioButton(hwnd, 100, 104, *piAlignMode + 100);
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6462,7 +6482,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
   static PENCLOSESELDATA pdata;
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         pdata = (PENCLOSESELDATA)lParam;
@@ -6470,7 +6490,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -6574,7 +6594,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
   static PTAGSDATA pdata;
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
@@ -6584,7 +6604,7 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
         SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return FALSE;
@@ -6650,7 +6670,7 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         piSortFlags = (int *)lParam;
@@ -6699,7 +6719,7 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
           *piSortFlags |= SORT_COLUMN;
           CheckDlgButton(hwnd, 108, BST_CHECKED);
         }
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;

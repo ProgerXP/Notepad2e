@@ -65,6 +65,7 @@
 #define IDC_RESIZEGRIP4                 101
 #define IDC_NOUNICODEDETECTION          101
 #define IDC_COPYRIGHT                   101
+#define IDR_ABOUT_3RD_PARTY             102
 #define IDC_STYLEEDIT                   102
 #define IDC_FINDCASE                    102
 #define IDC_OPENWITHDESCR               102
@@ -127,6 +128,7 @@
 #define IDD_SORT                        115
 #define IDC_TOGGLEFINDREPLACE           115
 #define IDD_COLUMNWRAP                  116
+#define IDC_RICHEDIT                    116
 #define IDD_LINENUM                     117
 #define IDD_FIND                        118
 #define IDD_REPLACE                     119
@@ -139,6 +141,7 @@
 #define IDD_INFOBOX                     126
 #define IDD_INFOBOX2                    127
 #define IDD_INFOBOX3                    128
+#define IDD_ABOUT_3RD_PARTY             129
 #define IDACC_FIND                      200
 #define IDACC_REPLACE                   201
 #define IDACC_SAVEPOS                   202
@@ -379,6 +382,7 @@
 #define IDM_HELP_ABOUT                  40500
 #define IDM_TRAY_RESTORE                40600
 #define IDM_TRAY_EXIT                   40601
+#define IDM_HELP_ABOUT_3RD_PARTY        40602
 #define IDT_FILE_NEW                    40700
 #define IDT_FILE_OPEN                   40701
 #define IDT_FILE_BROWSE                 40702
@@ -451,7 +455,8 @@
 #define IDS_EXPORT_FAIL                 50040
 #define IDS_ERR_SAVEAS                  50041
 #define IDS_ERR_SAVEAS_RENAME_DETAILS   50042
-#define IDS_ERR_ELEVATE                 50043
+#define IDS_WARN_ICU_REGEX              50043
+#define IDS_ERR_ELEVATE                 50044
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects

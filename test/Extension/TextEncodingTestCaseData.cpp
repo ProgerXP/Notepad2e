@@ -56,12 +56,23 @@ std::map<int, std::wstring> mapEncodingNames = {
   { CPI_WINDOWS_KOI8_R, L"Windows-KOI8-R" }
 };
 
-#define TEST_DATA_PATH "..\\..\\..\\test\\data\\Extension\\"
+#define TEST_DATA_PATH "..\\..\\..\\test\\data\\Extension"
 
 std::vector<unsigned char> CTestCaseData::LoadFile(const std::string filename)
 {
   std::vector<unsigned char> vectorBuffer;
-  auto file = TEST_DATA_PATH + filename;
+  char* pFileSamplesPath;
+  size_t len = 0;
+  if (_dupenv_s(&pFileSamplesPath, &len, "FileSamplesPath") || !pFileSamplesPath)
+  {
+	  pFileSamplesPath = TEST_DATA_PATH;
+  }
+  std::string fileSamplesPath(pFileSamplesPath);
+  if (fileSamplesPath.size() && (*fileSamplesPath.rbegin() != '\\'))
+  {
+	  fileSamplesPath += L'\\';
+  }
+  auto file = fileSamplesPath + filename;
   if (PathFileExistsA(file.c_str()))
   {
     HANDLE hFile = CreateFileA(file.c_str(), FILE_READ_ACCESS, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);

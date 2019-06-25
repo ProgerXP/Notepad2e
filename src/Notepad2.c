@@ -37,12 +37,14 @@
 #include "resource.h"
 #include "SciCall.h"
 #include "Extension/DPIHelper.h"
+#include "Extension/DPIHelperScintilla.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
 #include "Extension/MainWndHelper.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/InlineProgressBarCtrl.h"
+#include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
 #include "Extension/VersionHelper.h"
 
@@ -250,6 +252,7 @@ WIN32_FIND_DATA fdCurFile;
 UINT      msgTaskbarCreated = 0;
 
 HMODULE   hModUxTheme = NULL;
+HMODULE   hModRichEdit = NULL;  // [2e]: Attribution menu command #181
 
 EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, NULL };
 UINT cpLastFind = 0;
@@ -274,6 +277,7 @@ int   iAlignMode = 0;
 
 BOOL      fIsElevated = FALSE;
 WCHAR     wchWndClass[16] = WC_NOTEPAD2;
+BOOL      fExpandEnvVariables = FALSE;
 
 HINSTANCE g_hInstance;
 UINT16    g_uWinVer;
@@ -421,6 +425,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   msgTaskbarCreated = RegisterWindowMessage(L"TaskbarCreated");
 
   hModUxTheme = LoadLibrary(L"uxtheme.dll");
+  // [2e]: Attribution menu command #181
+  hModRichEdit = LoadLibrary(L"RICHED20.DLL");
 
   Scintilla_RegisterClasses(hInstance);
 
@@ -431,7 +437,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     return FALSE;
 
   // [2e]: DPI awareness #154
-  n2e_DPIInitialize();
+  DPIInitialize();
 
   if (!(hwnd = InitInstance(hInstance, lpCmdLine, nCmdShow)))
     return FALSE;
@@ -446,7 +452,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
     if (IsWindow(hDlgFindReplace) && (msg.hwnd == hDlgFindReplace || IsChild(hDlgFindReplace, msg.hwnd)))
     {
       // [2e]: Ctrl+H: Replace input behaviour #121
-      if (n2e_IsSubclassedEdit(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
+      if (n2e_IsSubclassedWindow(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
         continue;
       if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
         continue;
@@ -464,6 +470,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   if (hModUxTheme)
     FreeLibrary(hModUxTheme);
+
+  // [2e]: Attribution menu command #181
+  if (hModRichEdit)
+    FreeLibrary(hModRichEdit);
 
   OleUninitialize();
 
@@ -781,7 +791,6 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
   {
     bLastCopyFromMe = TRUE;
     hwndNextCBChain = SetClipboardViewer(hwndMain);
-    uidsAppTitle = IDS_APPTITLE_PASTEBOARD;
     n2e_UpdateWindowTitle(hwndMain);
     bLastCopyFromMe = FALSE;
 
@@ -838,7 +847,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     // [2e]: DPI awareness #154
     case WM_DPICHANGED:
       n2e_ScintillaDPIUpdate(hwndEdit, wParam);
-      n2e_DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
+      DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
       MsgThemeChanged(hwnd, 0, 0);
       return 0;
     // [/2e]
@@ -861,7 +870,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
     // [2e]: DPI awareness #154
     case WM_NCCREATE:
-      n2e_EnableNonClientDpiScaling(hwnd);
+      DPI_ENABLE_NC_SCALING();
       return (DefWindowProc(hwnd, umsg, wParam, lParam));
     // [/2e]
 
@@ -879,7 +888,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       {
         n2e_SelectionEditStop(SES_APPLY);
         // [2e]: Save on deactivate #164
-        if (bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
+        if (!bReadOnly && bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
@@ -1969,8 +1978,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS2, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES2, i);
-  EnableCmd(hmenu, IDM_EDIT_URLENCODE, i);
-  EnableCmd(hmenu, IDM_EDIT_URLDECODE, i);
+  // [2e]: Url encode issue #189
+  EnableCmd(hmenu, IDM_EDIT_URLENCODE, (iUrlEncodeMode == UEM_LEGACY) ? i : i3);
+  EnableCmd(hmenu, IDM_EDIT_URLDECODE, (iUrlEncodeMode == UEM_LEGACY) ? i : i3);
   EnableCmd(hmenu, IDM_EDIT_ESCAPECCHARS, i);
   EnableCmd(hmenu, IDM_EDIT_UNESCAPECCHARS, i);
   EnableCmd(hmenu, IDM_EDIT_CHAR2HEX, i);
@@ -2291,7 +2301,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int x, y, cx, cy, imax;
         WCHAR tch[64];
 
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if (bSaveBeforeRunningTools
+            && (LOWORD(wParam) != IDM_FILE_NEWWINDOW2)      // [2e]: Disable save prompt for some Launch commands #176
+            && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         GetModuleFileName(NULL, szModuleName, COUNTOF(szModuleName));
@@ -2400,9 +2412,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iParamsSize = _countof(wchParams) - 1;
 
         if (!lstrlen(szCurFile))
-          break;
-
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         wcscpy_s(wchParams, iParamsSize, L"/select, \"");
@@ -2887,12 +2896,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             iWordStart = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iPos, FALSE);
             iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
-            if (iWordStart != iWordEnd)
+            // [2e]: Always select closest word #205
+            const int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0);
+            const int iLineEndPos = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLine, 0);
+            while ((iWordStart == iWordEnd) && (iWordStart < iLineEndPos))
             {
-              SendMessage(hwndEdit, SCI_SETSEL, iWordStart, iWordEnd);
+              iWordStart = (int)SendMessage(hwndEdit, SCI_WORDSTARTPOSITION, iWordEnd + 1, TRUE);
+              iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
             }
+            // [/2e]
           }
-          else
+          if (iWordStart != iWordEnd)
           {
             SendMessage(hwndEdit, SCI_SETSEL, iWordStart, iWordEnd);
           }
@@ -3409,14 +3423,30 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_URLENCODE:
       BeginWaitCursor();
-      EditURLEncode(hwndEdit);
+      // [2e]: Url encode issue #189
+      if (iUrlEncodeMode == UEM_LEGACY)
+      {
+        EditURLEncode(hwndEdit);
+      }
+      else
+      {
+        n2e_EditString2URL(hwndEdit);
+      }
       EndWaitCursor();
       break;
 
 
     case IDM_EDIT_URLDECODE:
       BeginWaitCursor();
-      EditURLDecode(hwndEdit);
+      // [2e]: Url encode issue #189
+      if (iUrlEncodeMode == UEM_LEGACY)
+      {
+        EditURLDecode(hwndEdit);
+      }
+      else
+      {
+        n2e_EditURL2String(hwndEdit);
+      }
       EndWaitCursor();
       break;
 
@@ -4326,6 +4356,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT),
                       hwnd, AboutDlgProc);
       break;
+
+
+    // [2e]: Attribution menu command #181
+    case IDM_HELP_ABOUT_3RD_PARTY:
+      ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_ABOUT_3RD_PARTY),
+                      hwnd, About3rdPartyDlgProc);
+      break;
+    // [/2e]
+
+
     case CMD_ESCAPE:
       // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
@@ -6022,6 +6062,14 @@ BOOL ParseCommandLine()
         else
           flagUseSystemMRU = 1;
       }
+      // [2e]: Don't interpret %envvars% in pathname when opening file #193
+      else if (StrCmpNI(lp1, L"expandenv=", CSTRLEN(L"expandenv=")) == 0)
+      {
+        WCHAR wch[8];
+        StrCpyN(wch, lp1 + CSTRLEN(L"expandenv="), COUNTOF(wch));
+        StrTrim(wch, L" ");
+        fExpandEnvVariables = (_wtoi(wch) != 0);
+      }
       // [2e]: Process elevation #166
       else if (n2e_IsIPCIDParam(lp1))
       {
@@ -6696,11 +6744,13 @@ void UpdateStatusbar()
   int iLines;
   int iCol;
   int iSel;
+  int iSelLines;
   WCHAR tchLn[32];
   WCHAR tchLines[32];
   WCHAR tchCol[32];
   WCHAR tchCols[32];
   WCHAR tchSel[32];
+  WCHAR tchSelLines[32];
   WCHAR tchDocPos[256];
 
   int iBytes;
@@ -6734,15 +6784,25 @@ void UpdateStatusbar()
     wsprintf(tchCols, L"%i", iLongLinesLimit);
     FormatNumberStr(tchCols);
   }
+
+  // [2e]: Show line count for selection #204
+  iSelLines = SciCall_LineFromPosition(SciCall_GetSelEnd())
+              - SciCall_LineFromPosition(SciCall_GetSelStart())
+              + 1;
+  wsprintf(tchSelLines, L"%i", iSelLines);
+  FormatNumberStr(tchSelLines);
+  lstrcpy(tchSel, tchSelLines);
+
   if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0))
   {
     iSel = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-    wsprintf(tchSel, L"%i", iSel);
-    FormatNumberStr(tchSel);
+    wsprintf(tchSelLines, L"%i", iSel);
+    FormatNumberStr(tchSelLines);
+    lstrcat(tchSel, L" : ");
+    lstrcat(tchSel, tchSelLines);
   }
-  else
-    lstrcpy(tchSel, L"--");
-
+  // [/2e]
+  
   if (!bMarkLongLines)
     FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS, tchLn, tchLines, tchCol, tchSel);
   else

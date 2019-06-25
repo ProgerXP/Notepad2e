@@ -7,6 +7,7 @@
 #include "StrToBase64.h"
 #include "StrToHex.h"
 #include "StrToQP.h"
+#include "StrToURL.h"
 
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
 #define DEFAULT_RECODING_BUFFER_SIZE_MAX 5 * 1024 * 1024
@@ -18,7 +19,7 @@ int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 BOOL bBreakOnError = TRUE;
 
-BOOL IsUnicodeEncodingMode()
+BOOL n2e_IsUnicodeEncodingMode()
 {
   return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
 }
@@ -126,7 +127,7 @@ BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars)
   return pTB->m_iPos <= pTB->m_iSize - 1 - requiredChars;
 }
 
-BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorythm* pRA)
+BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA)
 {
   return TextBuffer_IsPosOKImpl(pTB, pRA->iRequiredCharsForEncode);
 }
@@ -212,9 +213,9 @@ BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChar
   return FALSE;
 }
 
-void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
+void TextBuffer_NormalizeBeforeEncode(RecodingAlgorithm* pRA, TextBuffer* pTB, long* piPositionCurrent, long* piUnicodeProcessedChars)
 {
-  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
+  if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = n2e_Alloc(cbDataWide);
@@ -293,10 +294,10 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorythm* pRA, TextBuffer* pTB, l
   }
 }
 
-void TextBuffer_NormalizeAfterDecode(RecodingAlgorythm* pRA, TextBuffer* pTB)
+void TextBuffer_NormalizeAfterDecode(RecodingAlgorithm* pRA, TextBuffer* pTB)
 {
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
-  if (IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
+  if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
     LPSTR lpData = n2e_Alloc(pTB->m_iPos * 2 + 16);
     const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos / sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
@@ -353,7 +354,7 @@ BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, str
   return FALSE;
 }
 
-BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, const BOOL isEncoding)
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding)
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
@@ -362,7 +363,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
   case ERT_HEX:
     lstrcpy(pRA->statusText, isEncoding ? L"String to Hex..." : L"Hex to String...");
     pRA->iRequiredCharsForEncode = 1;
-    pRA->iRequiredCharsForDecode = IsUnicodeEncodingMode() ? 4 : 2;
+    pRA->iRequiredCharsForDecode = n2e_IsUnicodeEncodingMode() ? 4 : 2;
     pRA->pIsValidStrSequence = Hex_IsValidSequence;
     pRA->pEncodeMethod = Hex_Encode;
     pRA->pEncodeTailMethod = NULL;
@@ -379,7 +380,7 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = Base64_EncodeTail;
     pRA->pDecodeMethod = Base64_Decode;
     pRA->pDecodeTailMethod = NULL;
-    pRA->data = Base64_InitAlgorythmData(pRA->isEncoding);
+    pRA->data = Base64_InitAlgorithmData(pRA->isEncoding);
     return TRUE;
   case ERT_QP:
     lstrcpy(pRA->statusText, isEncoding ? L"String to QP..." : L"QP to String...");
@@ -392,25 +393,38 @@ BOOL RecodingAlgorythm_Init(RecodingAlgorythm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = QP_Decode;
     pRA->pDecodeTailMethod = QP_Decode; // use regular decode proc for tail
-    pRA->data = QP_InitAlgorythmData(pRA->isEncoding);
+    pRA->data = QP_InitAlgorithmData(pRA->isEncoding);
     return TRUE;
+	case ERT_URL:
+		lstrcpy(pRA->statusText, isEncoding ? L"String to URL..." : L"URL to String...");
+		pRA->iRequiredCharsForEncode = 1;
+		pRA->iRequiredCharsForDecode = 3;
+		pRA->pIsValidStrSequence = URL_IsValidSequence;
+		pRA->pEncodeMethod = URL_Encode;
+		pRA->pEncodeTailMethod = NULL;
+		pRA->pDecodeMethod = URL_Decode;
+		pRA->pDecodeTailMethod = URL_Decode;
+		pRA->data = NULL;
+		return TRUE;
   default:
     assert(FALSE);
     return FALSE;
   }
 }
 
-BOOL RecodingAlgorythm_Release(RecodingAlgorythm* pRA)
+BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA)
 {
   switch (pRA->recodingType)
   {
   case ERT_HEX:
     return TRUE;
   case ERT_BASE64:
-    Base64_ReleaseAlgorythmData(pRA->data);
+    Base64_ReleaseAlgorithmData(pRA->data);
     return TRUE;
   case ERT_QP:
-    QP_ReleaseAlgorythmData(pRA->data);
+    QP_ReleaseAlgorithmData(pRA->data);
+    return TRUE;
+  case ERT_URL:
     return TRUE;
   default:
     assert(FALSE);
@@ -523,7 +537,7 @@ void EncodingSettings_Free(EncodingData* pED)
   TextBuffer_Free(&pED->m_tbTmp);
 }
 
-void Recode_Run(RecodingAlgorythm* pRA, StringSource* pSS, const int bufferSize)
+void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
 {
   if (bufferSize > 0)
   {
@@ -594,7 +608,7 @@ long UTF8StringLength(LPCSTR text)
 }
 
 
-BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, EncodingData* pED)
+BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, EncodingData* pED)
 {
   BOOL bRes = TRUE;
   long iCursorOffset = 0;
@@ -708,7 +722,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorythm* pRA, StringSource* pSS, Encodi
                 pED->m_tbRes.m_ptr, length);
       pSS->iResultLength += length;
     }
-    if (pED->m_bIsEncoding && IsUnicodeEncodingMode())
+    if (pED->m_bIsEncoding && n2e_IsUnicodeEncodingMode())
     {
       if (pED->m_tr.m_iExpectedProcessedChars)
       {

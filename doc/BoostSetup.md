@@ -1,9 +1,19 @@
-0. Download boost sources from here: http://www.boost.org/users/download/
-1. Unzip boost_1_63_0.zip, e.g. to C:\\Program Files\\boost
-2. Setup BOOST_ROOT environment variable to the same path
-3. Open console window (cmd), run command: "cd %BOOST_ROOT%"
+1. Download boost sources from here: http://www.boost.org/users/download/
+1. Unzip boost_1_68_0.zip, e.g. to C:\\Program Files\\boost
+2. Setup BOOST_ROOT environment variable to the destination path, e.g. C:\\Program Files\\boost\\boost_1_68_0
+3. Open VS2017 native tools command prompt (x86/x64), run command: "cd %BOOST_ROOT%"
 4. Run command: "bootstrap.bat"
-5. Run command: "b2 runtime-link=static"
-6. Check next files created in %BOOST_ROOT%\\stage\\lib:
-	libboost_regex-vc140-mt-s-1_63.lib
-	libboost_regex-vc140-mt-sgd-1_63.lib
+5. Remove bin.v2\\libs\\regex\\build [to avoid recompilation problems](https://github.com/ProgerXP/Notepad2e/issues/162#issuecomment-438666846) like this one:
+`fatal error LNK1112: module machine type 'x64' conflicts with target machine type 'x86'`
+6. Run command:
+for x86:
+"b2 runtime-link=static link=static --with-regex --stagedir=stage/x86"
+for x64:
+"b2 address-model=64 architecture=x86 runtime-link=static link=static --with-regex --stagedir=stage/x64"
+7. Copy next files created in %BOOST_ROOT%\\stage\\(x86|x64)\\lib to %BOOST_ROOT%\\stage\\lib:
+for x86:
+libboost_regex-vc141-mt-s-x32-1_68.lib
+libboost_regex-vc141-mt-sgd-x32-1_68.lib
+for x64:
+libboost_regex-vc141-mt-s-x64-1_68.lib
+libboost_regex-vc141-mt-sgd-x64-1_68.lib

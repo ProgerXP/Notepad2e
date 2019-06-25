@@ -1997,6 +1997,8 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "styling.within.preprocessor", (LPARAM) "1");
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.track.preprocessor", (LPARAM) "0");
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.update.preprocessor", (LPARAM) "0");
+    // [2e]: Highlight JS templates #207
+    SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.cpp.backquoted.strings", (LPARAM) "1");
   }
   else if (pLexNew->iLexer == SCLEX_PASCAL)
     SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.pascal.smart.highlighting", (LPARAM) "1");
@@ -2364,6 +2366,13 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
         for (j = 0; j < COUNTOF(iRelated); j++)
           Style_SetStyles(hwnd, iRelated[j], pLexNew->Styles[i].szValue);
       }
+
+      // [2e]: Highlight JS templates #207
+      if (pLexNew->iLexer == SCLEX_CPP && pLexNew->rid == 63010 && pLexNew->Styles[i].iStyle8[0] == SCE_C_STRING)
+      {
+        Style_SetStyles(hwnd, SCE_C_STRINGRAW, pLexNew->Styles[i].szValue);
+      }
+      // [/2e]
 
       if (pLexNew->iLexer == SCLEX_SQL && pLexNew->Styles[i].iStyle8[0] == SCE_SQL_COMMENT)
       {
@@ -3259,7 +3268,7 @@ void Style_SetStyles(HWND hwnd, int iStyle, LPCWSTR lpszStyle)
   {
     char mch[256] = "Lucida Console";
     if (fIsConsolasAvailable || lstrcmpi(tch, L"Consolas"))
-      WideCharToMultiByte(CP_ACP, 0, tch, -1, mch, COUNTOF(mch), NULL, NULL);
+      WideCharToMultiByte(CP_UTF8, 0, tch, -1, mch, COUNTOF(mch), NULL, NULL);
     SendMessage(hwnd, SCI_STYLESETFONT, iStyle, (LPARAM)mch);
   }
 
@@ -3481,7 +3490,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -3520,7 +3529,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
         hFontTitle = CreateFontIndirect(&lf);
         SendDlgItemMessage(hwnd, IDC_TITLE, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -3958,7 +3967,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -4039,7 +4048,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         if (bAutoSelect)
           CheckDlgButton(hwnd, IDC_AUTOSELECT, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -4094,7 +4103,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         MapWindowPoints(NULL, hwnd, (LPPOINT)&rc, 2);
         SetWindowPos(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, rc.left, rc.top + dyClient, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
         InvalidateRect(GetDlgItem(hwnd, IDC_DEFAULTSCHEME), NULL, TRUE);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
@@ -4103,7 +4112,7 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         LPMINMAXINFO lpmmi = (LPMINMAXINFO)lParam;
         lpmmi->ptMinTrackSize.x = mmiPtMinX;
         lpmmi->ptMinTrackSize.y = mmiPtMaxY;
-        N2E_DPI_GETMINMAXINFO();
+        DPI_GETMINMAXINFO();
       }
       return TRUE;
 

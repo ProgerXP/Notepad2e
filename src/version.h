@@ -19,20 +19,36 @@
 ******************************************************************************/
 
 
-#define VERSION_FILEVERSION_NUM      4,2,25,0
-#define VERSION_FILEVERSION_SHORT    L"4.2.25"
+#define STRINGIFY(x) L#x
+#define TOSTRING(x) STRINGIFY(x)
+
+#define VERSION_FILEVERSION_BUILD    0
+#define VERSION_FILEVERSION_BUILD_STRING  TOSTRING(VERSION_FILEVERSION_BUILD)
+#define VERSION_FILEVERSION_NUM      1,VERSION_FILEVERSION_BUILD
+#define VERSION_FILEVERSION_SHORT    L"1." VERSION_FILEVERSION_BUILD_STRING
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
-#define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer 2004-2011"
-#ifdef _M_AMD64
-#define VERSION_FILEDESCRIPTION      L"Notepad 2e x64"
+#define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer and contributors"
+#ifdef ICU_BUILD
+#define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e-ICU"
 #else
-#define VERSION_FILEDESCRIPTION      L"Notepad 2e"
+#define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e"
 #endif
+#ifdef _WIN64
+#define VERSION_FILEDESCRIPTION      VERSION_FILEDESCRIPTION_BASE L" x64"
+#else
+#define VERSION_FILEDESCRIPTION      VERSION_FILEDESCRIPTION_BASE
+#endif
+#ifdef ICU_BUILD
+#define VERSION_INTERNALNAME         L"Notepad2e-ICU"
+#define VERSION_ORIGINALFILENAME     L"Notepad2ei.exe"
+#else
 #define VERSION_INTERNALNAME         L"Notepad2e"
-#define VERSION_ORIGINALFILENAME     L"Notepad2.exe"
+#define VERSION_ORIGINALFILENAME     L"Notepad2e.exe"
+#endif
 #define VERSION_AUTHORNAME           L"Florian Balmer"
 #define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"
 #define VERSION_EMAILDISPLAY         L"florian.balmer@gmail.com"
-#define VERSION_EXT_VERSION          L"Extended Edition © 2013-2018"
+#define VERSION_EXT_VERSION          L"Extended Edition © 2013-2019"
 #define VERSION_EXT_BY               L"By Proger_XP and contributors"
 #define VERSION_EXT_PAGE             L"https://github.com/ProgerXP/Notepad2e"
+#define VERSION_COMMIT               L"6c3f5ac"

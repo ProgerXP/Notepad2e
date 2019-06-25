@@ -78,7 +78,7 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
   }
   if (nCode == HSHELL_LANGUAGE)
   {
-    PostMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
+    SendMessage(hwndMain, WM_INPUTLANGCHANGE, 0, 0);
   }
   return 0;
 }
@@ -162,13 +162,18 @@ BOOL n2e_IsModalDialogOnTop()
   return bIsModalDialogOnTop;
 }
 
+BOOL n2e_IsTopLevelWindow(const HWND hwnd)
+{
+  return hwnd == GetAncestor(hwnd, GA_ROOT);
+}
+
 BOOL n2e_IsModalDialog(const HWND hwnd)
 {
-  extern INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam);
-
-  return n2e_CheckWindowClassName(hwnd, L"#32770")
-    && (GetWindowLongPtr(hwnd, GWL_STYLE) & DS_MODALFRAME)
-    && (GetWindowLongPtr(hwnd, DWLP_DLGPROC) != EditFindReplaceDlgProcW);
+  const HWND hwndOwner = GetWindow(hwnd, GW_OWNER);
+  return hwnd
+    && n2e_IsTopLevelWindow(hwnd)
+    && n2e_IsTopLevelWindow(hwndOwner)
+    && !IsWindowEnabled(hwndOwner);
 }
 
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam)

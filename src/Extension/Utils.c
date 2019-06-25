@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <time.h>
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
@@ -12,7 +13,9 @@
 #include "SciCall.h"
 #include "Notepad2.h"
 #include "Trace.h"
+#include "Subclassing.h"
 #include "VersionHelper.h"
+#include "Externals.h"
 #include "ProcessElevationUtils.h"
 #include "Shell32Helper.h"
 
@@ -20,6 +23,7 @@
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
 #define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
 #define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
+#define INI_SETTING_CLOCK_FORMAT L"ClockFormat"
 #define INI_SETTING_CSS_SETTINGS L"CSSSettings"
 #define INI_SETTING_SHELL_MENU_TYPE L"ShellMenuType"
 #define INI_SETTING_MAX_SEARCH_DISTANCE L"MaxSearchDistance"
@@ -32,15 +36,21 @@
 #define INI_SETTING_MATH_EVAL L"MathEval"
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
+#define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
+#define DEFAULT_CLOCK_UPDATE_INTERVAL_MS  10000
 #define DEFAULT_MAX_SEARCH_DISTANCE_KB  96
 #define BYTES_IN_KB  1024
 
 HANDLE g_hScintilla = NULL;
 UINT iWheelScrollInterval = DEFAULT_WHEEL_SCROLL_INTERVAL_MS;
 BOOL bWheelTimerActive = FALSE;
+const UINT iClockUpdateInterval = DEFAULT_CLOCK_UPDATE_INTERVAL_MS;
+WCHAR wchClockFormat[MAX_PATH] = { 0 };
+UINT_PTR iClockUpdateTimerId = 0;
+int iClockMenuItemIndex = -1;
 ECSSSettingsMode iCSSSettings = CSS_LESS;
 WCHAR wchLastRun[N2E_MAX_PATH_N_CMD_LINE];
 EUsePrefixInOpenDialog iUsePrefixInOpenDialog = UPO_AUTO;
@@ -49,7 +59,8 @@ ESaveOnLoseFocus iSaveOnLoseFocus = SLF_DISABLED;
 BOOL bCtrlWheelScroll = TRUE;
 BOOL bMoveCaretOnRightClick = TRUE;
 EExpressionEvaluationMode iEvaluateMathExpression = EEM_LINE;
-EWordNavigationMode iWordNavigationMode = 0;
+EWordNavigationMode iWordNavigationMode = WNM_STANDARD;
+EUrlEncodeMode iUrlEncodeMode = UEM_IMPROVED;
 ELanguageIndicatorMode iShowLanguageInTitle = LIT_SHOW_NON_US;
 UINT iShellMenuType = CMF_EXPLORE;
 BOOL bHighlightLineIfWindowInactive = FALSE;
@@ -66,6 +77,7 @@ extern WCHAR szTitleExcerpt[128];
 extern int iPathNameFormat;
 extern WCHAR szCurFile[MAX_PATH + 40];
 extern UINT uidsAppTitle;
+extern int flagPasteBoard;
 extern BOOL fIsElevated;
 extern BOOL bModified;
 extern int iEncoding;
@@ -99,10 +111,65 @@ void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
   KillTimer(NULL, idEvent);
 }
 
+BOOL n2e_UpdateClockMenuItem()
+{
+  time_t t;
+  time(&t);
+  WCHAR buf[MAX_PATH] = { 0 };
+  if ((iClockMenuItemIndex < 0)
+      || !lstrlen(wchClockFormat)
+      || !wcsftime(buf, sizeof(buf), wchClockFormat, localtime(&t)))
+  {
+    return FALSE;
+  }
+
+  const HMENU hmenu = GetMenu(hwndMain);
+  MENUITEMINFO mii = { 0 };
+  mii.cbSize = sizeof(mii);
+  mii.fMask = MIIM_STRING | MIIM_STATE;
+  mii.fState = MFS_DISABLED | MFS_GRAYED | MFS_HILITE;
+  mii.dwTypeData = buf;
+  mii.cch = lstrlen(buf);
+  if (SetMenuItemInfo(hmenu, iClockMenuItemIndex, TRUE, &mii))
+  {
+    RedrawWindow(hwndMain, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_FRAME | RDW_NOINTERNALPAINT);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void CALLBACK n2e_ClockTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
+{
+  n2e_UpdateClockMenuItem();
+}
+
+void n2e_InitClock()
+{
+  if (lstrlen(wchClockFormat))
+  {
+    const HMENU hmenu = GetMenu(hwndMain);
+    iClockMenuItemIndex = GetMenuItemCount(hmenu);
+    MENUITEMINFO mii = { 0 };
+    mii.cbSize = sizeof(mii);
+    InsertMenuItem(hmenu, iClockMenuItemIndex, TRUE, &mii);
+    n2e_UpdateClockMenuItem();
+    iClockUpdateTimerId = SetTimer(NULL, 0, iClockUpdateInterval, n2e_ClockTimerProc);
+  }
+}
+
+void n2e_ReleaseClock()
+{
+  if (iClockUpdateTimerId)
+  {
+    KillTimer(NULL, iClockUpdateTimerId);
+  }
+}
+
 void n2e_Init()
 {
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
+  n2e_InitClock();
   n2e_ResetLastRun();
   n2e_EditInit();
   n2e_Shell32Initialize();
@@ -148,6 +215,7 @@ void n2e_LoadINI()
   iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  IniGetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, L"", wchClockFormat, COUNTOF(wchClockFormat));
   iCSSSettings = IniGetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   iShellMenuType = IniGetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   iMaxSearchDistance = IniGetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, DEFAULT_MAX_SEARCH_DISTANCE_KB) * BYTES_IN_KB;
@@ -160,6 +228,7 @@ void n2e_LoadINI()
   iEvaluateMathExpression = IniGetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 
   if (iUsePrefixInOpenDialog != UPO_AUTO)
   {
@@ -199,6 +268,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
+  IniSetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, wchClockFormat);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_CSS_SETTINGS, iCSSSettings);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SHELL_MENU_TYPE, iShellMenuType);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MAX_SEARCH_DISTANCE, iMaxSearchDistance / BYTES_IN_KB);
@@ -211,10 +281,12 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MATH_EVAL, iEvaluateMathExpression);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 }
 
 void n2e_Release()
 {
+  n2e_ReleaseClock();
   n2e_SelectionRelease();
   n2e_FinalizeTrace();
   n2e_FinalizeIPC();
@@ -512,7 +584,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                   PathRemoveFileSpec(dir);
                 }
               }
-              SetWindowLong(hdlg, DWL_MSGRESULT, 1);
+              SetWindowLongPtr(hdlg, DWLP_MSGRESULT, 1);
               N2E_TRACE("OFN OK '%S' ", buf);
               if (len)
               {
@@ -547,7 +619,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
                     lstrcpy(ofn->lpOFN->lpstrFile, out);
                   }
                   N2E_TRACE("OFN final result (%S) ", out);
-                  SetWindowLong(hdlg, DWL_MSGRESULT, 0);
+                  SetWindowLongPtr(hdlg, DWLP_MSGRESULT, 0);
                   take_call = FALSE;
                   return 1;
                 }
@@ -595,7 +667,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
       if (file_ok == uiMsg)
       {
         N2E_TRACE("custom OK");
-        SetWindowLong(hdlg, DWL_MSGRESULT, take_call);
+        SetWindowLongPtr(hdlg, DWLP_MSGRESULT, take_call);
       }
   }
   return take_call;
@@ -643,7 +715,12 @@ BOOL n2e_OpenMRULast(LPWSTR fn)
     }
     return 0;
   }
-  return  i > 0 && lstrcmp(fn, szCurFile);
+  if (i > 0 && lstrcmp(fn, szCurFile))
+  {
+    MRU_Add(pFileMRU, fn);
+    return TRUE;
+  }
+  return FALSE;
 }
 
 void n2e_GetLastDir(LPTSTR out)
@@ -796,7 +873,7 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
 
 void n2e_UpdateWindowTitle(const HWND hwnd)
 {
-  SetWindowTitle(hwnd, uidsAppTitle, fIsElevated, IDS_UNTITLED, szCurFile,
+  SetWindowTitle(hwnd, uidsAppTitle, flagPasteBoard, fIsElevated, IDS_UNTITLED, szCurFile,
                  iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
                  IDS_READONLY, bReadOnly, szTitleExcerpt);
 }
@@ -979,4 +1056,97 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
     }
   }
   return res;
+}
+
+LRESULT CALLBACK n2e_About3rdPartyRicheditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  if (uMsg == WM_GETDLGCODE)
+  {
+    return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam) & ~DLGC_HASSETSEL;
+  }
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+LPCWSTR LoadAbout3rdPartyText(int* pLength)
+{
+  static HRSRC hRes = NULL;
+  static HGLOBAL hGlob = NULL;
+  static LPCWSTR lpRTF = NULL;
+  if (!hRes)
+  {
+    hRes = FindResource(g_hInstance, MAKEINTRESOURCE(IDR_ABOUT_3RD_PARTY), L"RTF");
+  }
+  if (hRes && !hGlob)
+  {
+    hGlob = LoadResource(g_hInstance, hRes);
+  }
+  if (hGlob && !lpRTF)
+  {
+    lpRTF = (LPCWSTR)LockResource(hGlob);
+  }
+  if (pLength)
+  {
+    *pLength = hRes ? SizeofResource(g_hInstance, hRes) : 0;
+  }
+  return lpRTF;
+}
+
+struct TRTFData
+{
+  LPCWSTR lpData;
+  LONG nLength;
+  LONG nOffset;
+};
+typedef struct TRTFData RTFData;
+
+RTFData rtfData = { 0 };
+
+DWORD CALLBACK EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+{
+  RTFData* prtfData = (RTFData*)dwCookie;
+  if (prtfData->nLength < cb)
+  {
+    *pcb = prtfData->nLength;
+    memcpy(pbBuff, (LPCSTR)prtfData->lpData, *pcb);
+  }
+  else
+  {
+    *pcb = cb;
+    memcpy(pbBuff, (LPCSTR)(prtfData->lpData + prtfData->nOffset), *pcb);
+    prtfData->nOffset += cb;
+  }
+  return 0;
+}
+
+void n2e_InitAbout3rdPartyText(const HWND hwndRichedit)
+{
+  n2e_SubclassWindow(hwndRichedit, n2e_About3rdPartyRicheditWndProc);
+
+  SendMessage(hwndRichedit, EM_SETEVENTMASK, 0,
+    SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK);
+  SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);
+
+  if (!rtfData.lpData)
+  {
+    rtfData.lpData = LoadAbout3rdPartyText(&rtfData.nLength);
+  }
+  rtfData.nOffset = 0;
+
+  EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, EditStreamCallBack };
+  SendMessage(hwndRichedit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+  SendMessage(hwndRichedit, EM_SETTARGETDEVICE, (WPARAM)NULL, 0);
+}
+
+void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
+{
+  if (pENLink->msg == WM_LBUTTONUP)
+  {
+    LPWSTR pUrl = (LPWSTR)n2e_Alloc(pENLink->chrg.cpMax - pENLink->chrg.cpMin + 1);
+    TEXTRANGE tr = { pENLink->chrg, pUrl };
+    if (SendMessage(hwndRichedit, EM_GETTEXTRANGE, 0, (LPARAM)&tr) > 0)
+    {
+      ShellExecute(GetParent(hwndRichedit), L"open", pUrl, NULL, NULL, SW_SHOWNORMAL);
+    }
+    n2e_Free(pUrl);
+  }
 }

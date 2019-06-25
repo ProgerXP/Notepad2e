@@ -2,14 +2,14 @@
 
 struct TEncodingData;
 typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorythm;
-typedef struct TRecodingAlgorythm RecodingAlgorythm;
+struct TRecodingAlgorithm;
+typedef struct TRecodingAlgorithm RecodingAlgorithm;
 
 BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars);
-LPVOID QP_InitAlgorythmData(const BOOL isEncoding);
-void QP_ReleaseAlgorythmData(LPVOID pData);
-BOOL QP_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
-BOOL QP_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed);
+LPVOID QP_InitAlgorithmData(const BOOL isEncoding);
+void QP_ReleaseAlgorithmData(LPVOID pData);
+BOOL QP_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
+BOOL QP_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
 
 #ifdef __cplusplus
 extern "C" { // C-Declarations

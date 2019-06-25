@@ -91,7 +91,7 @@ BOOL VerifyContrast(COLORREF, COLORREF);
 BOOL IsFontAvailable(LPCWSTR);
 
 
-BOOL SetWindowTitle(HWND, UINT, BOOL, UINT, LPCWSTR, enum EPathNameFormat, BOOL, UINT, BOOL, LPCWSTR);
+BOOL SetWindowTitle(HWND, UINT, BOOL, BOOL, UINT, LPCWSTR, enum EPathNameFormat, BOOL, UINT, BOOL, LPCWSTR);
 void SetWindowTransparentMode(HWND, BOOL);
 
 

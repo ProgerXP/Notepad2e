@@ -222,7 +222,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
@@ -246,6 +246,20 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         if (hFontTitle)
           DeleteObject(hFontTitle);
 
+        // [2e]: Boost regex and Cyrillic #162 (ICU build)
+        wchar_t szText[MAX_PATH] = { 0 };
+        if (GetString(IDS_APPTITLE, szText, COUNTOF(szText)-1))
+        {
+          StrCatBuff(szText, L" (R", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_FILEVERSION_BUILD_STRING, COUNTOF(szText));
+          StrCatBuff(szText, L", ", COUNTOF(szText));
+          StrCatBuff(szText, VERSION_COMMIT, COUNTOF(szText));
+          StrCatBuff(szText, L")", COUNTOF(szText));
+          SetWindowText(hwnd, szText);
+          SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETTEXT, 0, (LPARAM)szText);
+        }
+        // [/2e]
+
         if (NULL == (hFontTitle = (HFONT)SendDlgItemMessage(hwnd, IDC_VERSION, WM_GETFONT, 0, 0)))
           hFontTitle = GetStockObject(DEFAULT_GUI_FONT);
         GetObject(hFontTitle, sizeof(LOGFONT), &lf);
@@ -254,7 +268,7 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
         SendDlgItemMessage(hwnd, IDC_EXT, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -292,6 +306,47 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 }
 
 
+// [2e]: Attribution menu command #181
+INT_PTR CALLBACK About3rdPartyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (umsg)
+  {
+	DPI_CHANGED_HANDLER();
+
+    case WM_INITDIALOG: {
+      n2e_InitAbout3rdPartyText(GetDlgItem(hwnd, IDC_RICHEDIT));
+      DPI_INIT();
+      CenterDlgInParent(hwnd);
+    }
+    return TRUE;
+
+    case WM_NOTIFY: {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+      case EN_LINK:
+        if (pnmhdr->idFrom == IDC_RICHEDIT) {
+          n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
+        }
+        break;
+      }
+     }
+     break;
+
+  case WM_COMMAND:
+    switch (LOWORD(wParam))
+    {
+    case IDOK:
+    case IDCANCEL:
+      EndDialog(hwnd, IDOK);
+      break;
+    }
+    return TRUE;
+  }
+  return FALSE;
+}
+// [/2e]
+
 
 //=============================================================================
 //
@@ -301,14 +356,14 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         MakeBitmapButton(hwnd, IDC_SEARCHEXE, g_hInstance, IDB_OPEN);
         SendDlgItemMessage(hwnd, IDC_COMMANDLINE, EM_LIMITTEXT, MAX_PATH - 1, 0);
         SetDlgItemText(hwnd, IDC_COMMANDLINE, (LPCWSTR)lParam);
         SHAutoComplete(GetDlgItem(hwnd, IDC_COMMANDLINE), SHACF_FILESYSTEM);
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -465,7 +520,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 {
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -482,7 +537,7 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         ListView_SetItemState(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
         MakeBitmapButton(hwnd, IDC_GETOPENWITHDIR, g_hInstance, IDB_OPEN);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -513,14 +568,14 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         EndDeferWindowPos(hdwp);
 
         ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_OPENWITHDIR), 0, LVSCW_AUTOSIZE_USEHEADER);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
 
     case WM_GETMINMAXINFO:
       ResizeDlg_GetMinMaxInfo(hwnd, lParam);
-      N2E_DPI_GETMINMAXINFO();
+      DPI_GETMINMAXINFO();
       return TRUE;
 
 
@@ -661,7 +716,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -678,7 +733,7 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         ListView_SetItemState(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
 
         MakeBitmapButton(hwnd, IDC_GETFAVORITESDIR, g_hInstance, IDB_OPEN);
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -708,14 +763,14 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         hdwp = DeferCtlPos(hdwp, hwnd, IDC_FAVORITESDESCR, 0, dy, SWP_NOSIZE);
         EndDeferWindowPos(hdwp);
         ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVSCW_AUTOSIZE_USEHEADER);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
 
     case WM_GETMINMAXINFO:
       ResizeDlg_GetMinMaxInfo(hwnd, lParam);
-      N2E_DPI_GETMINMAXINFO();
+      DPI_GETMINMAXINFO();
       return TRUE;
 
 
@@ -826,7 +881,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     WCHAR *pszName;
 
@@ -837,7 +892,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, MAX_PATH - 1, 0);
       SetDlgItemText(hwnd, 100, pszName);
 
-      N2E_DPI_INIT();
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 
@@ -1027,7 +1082,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         SHFILEINFO shfi;
@@ -1060,7 +1115,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         if (bSaveRecentFiles)
           CheckDlgButton(hwnd, IDC_SAVEMRU, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -1107,14 +1162,14 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         hdwp = DeferCtlPos(hdwp, hwnd, IDC_SAVEMRU, 0, dy, SWP_NOSIZE);
         EndDeferWindowPos(hdwp);
         ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVSCW_AUTOSIZE_USEHEADER);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
 
     case WM_GETMINMAXINFO:
       ResizeDlg_GetMinMaxInfo(hwnd, lParam);
-      N2E_DPI_GETMINMAXINFO();
+      DPI_GETMINMAXINFO();
       return TRUE;
 
 
@@ -1174,16 +1229,26 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                           SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
             lvi.iImage = shfi.iIcon;
 
-            for (i = 0; i < MRU_Enum(pFileMRU, 0, NULL, 0); i++)
+            // [2e]: History dialog: focus second item on show #209
+            const int iCount = MRU_Enum(pFileMRU, 0, NULL, 0);
+            int iOpenedItem = -1;
+            for (i = 0; i < iCount; i++)
             {
               MRU_Enum(pFileMRU, i, tch, COUNTOF(tch));
               PathAbsoluteFromApp(tch, NULL, 0, TRUE);
               lvi.iItem = i;
               lvi.pszText = tch;
               ListView_InsertItem(GetDlgItem(hwnd, IDC_FILEMRU), &lvi);
+              if ((iOpenedItem < 0) && (lstrcmp(tch, szCurFile) == 0))
+              {
+                iOpenedItem = i;
+              }
             }
-
-            ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVIS_FOCUSED, LVIS_FOCUSED);
+            const int iSelectedItem = ((iCount > 1) && (iOpenedItem >= 0))
+                                     ? (iOpenedItem < iCount - 1) ? iOpenedItem + 1 : 0                          
+                                     : 0;
+            ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), iSelectedItem, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+            // [/2e]
             ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVSCW_AUTOSIZE_USEHEADER);
 
             CreateThread(NULL, 0, FileMRUIconThread, (LPVOID)lpit, 0, &dwtid);
@@ -1279,7 +1344,7 @@ INT_PTR CALLBACK ChangeNotifyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 {
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG:
       CheckRadioButton(hwnd, 100, 102, 100 + iFileWatchingMode);
@@ -1287,7 +1352,7 @@ INT_PTR CALLBACK ChangeNotifyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
       {
         CheckDlgButton(hwnd, 103, BST_CHECKED);
       }
-      N2E_DPI_INIT();
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
     case WM_COMMAND:
@@ -1348,7 +1413,7 @@ INT_PTR CALLBACK ColumnWrapDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM l
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1357,7 +1422,7 @@ INT_PTR CALLBACK ColumnWrapDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM l
         SetDlgItemInt(hwnd, 100, *piNumber, FALSE);
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 15, 0);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1446,7 +1511,7 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1475,7 +1540,7 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
           (WPARAM)(bShowWordWrapSymbols) ? ((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10 : 0, 0);
         SendDlgItemMessage(hwnd, 103, CB_SETCURSEL, (WPARAM)iWordWrapMode, 0);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1562,7 +1627,7 @@ INT_PTR CALLBACK LongLineSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1576,7 +1641,7 @@ INT_PTR CALLBACK LongLineSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
         else
           CheckRadioButton(hwnd, 101, 102, 102);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1666,7 +1731,7 @@ INT_PTR CALLBACK TabSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
 
@@ -1685,7 +1750,7 @@ INT_PTR CALLBACK TabSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         if (bBackspaceUnindents)
           CheckDlgButton(hwnd, 104, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
 
       }
@@ -1778,7 +1843,7 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         HBITMAP hbmp;
@@ -1803,7 +1868,7 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
         if (bNoEncodingTags)
           CheckDlgButton(hwnd, IDC_ENCODINGFROMFILEVARS, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -1877,7 +1942,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -1903,7 +1968,7 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
 
         ListView_SetColumnWidth(hwndLV, 0, LVSCW_AUTOSIZE_USEHEADER);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -1926,14 +1991,14 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
         hdwp = DeferCtlPos(hdwp, hwnd, IDC_ENCODINGLIST, dx, dy, SWP_NOMOVE);
         EndDeferWindowPos(hdwp);
         ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_ENCODINGLIST), 0, LVSCW_AUTOSIZE_USEHEADER);
-        N2E_DPI_RESIZE();
+        DPI_RESIZE();
       }
       return TRUE;
 
 
     case WM_GETMINMAXINFO:
       ResizeDlg_GetMinMaxInfo(hwnd, lParam);
-      N2E_DPI_GETMINMAXINFO();
+      DPI_GETMINMAXINFO();
       return TRUE;
 
 
@@ -2078,7 +2143,7 @@ INT_PTR CALLBACK SelectDefLineEndingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam,
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         int i;
@@ -2102,7 +2167,7 @@ INT_PTR CALLBACK SelectDefLineEndingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam,
         if (bAutoStripBlanks)
           CheckDlgButton(hwnd, IDC_AUTOSTRIPBLANKS, BST_CHECKED);
 
-        N2E_DPI_INIT();
+        DPI_INIT();
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -2168,7 +2233,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 
   switch (umsg)
   {
-    N2E_DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG:
       lpib = (LPINFOBOX)lParam;
@@ -2179,7 +2244,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       if (lpib->bDisableCheckBox)
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
       LocalFree(lpib->lpstrMessage);
-      N2E_DPI_INIT();
+      DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 

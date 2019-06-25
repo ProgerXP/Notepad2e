@@ -17,7 +17,7 @@ typedef struct TQPData QPData;
 
 static QPData qpdata = { 0 };
 
-LPVOID QP_InitAlgorythmData(const BOOL isEncoding)
+LPVOID QP_InitAlgorithmData(const BOOL isEncoding)
 {
   if (isEncoding)
   {
@@ -30,7 +30,7 @@ LPVOID QP_InitAlgorythmData(const BOOL isEncoding)
   }
 }
 
-void QP_ReleaseAlgorythmData(LPVOID pData)
+void QP_ReleaseAlgorithmData(LPVOID pData)
 {
 }
 
@@ -65,7 +65,7 @@ const unsigned char QP_GetNextChar(TextBuffer* pTB)
   return (pTB->m_iPos < pTB->m_iMaxPos) ? TextBuffer_GetChar(pTB) : ' ';
 }
 
-BOOL QP_Encode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL QP_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
   
@@ -95,7 +95,7 @@ BOOL IsLineEnd(unsigned char ch)
   return (ch == '\r') || (ch == '\n');
 }
 
-BOOL QP_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed)
+BOOL QP_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   int iCharsProcessed = 0;
   const char ch = TextBuffer_PopChar(&pED->m_tb);
@@ -155,15 +155,15 @@ BOOL QP_Decode(RecodingAlgorythm* pRA, EncodingData* pED, long* piCharsProcessed
 }
 
 static StringSource ss = { 0 };
-static RecodingAlgorythm ra = { 0 };
+static RecodingAlgorithm ra = { 0 };
 
 LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_QP, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
@@ -171,26 +171,26 @@ LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, c
 LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorythm_Init(&ra, ERT_QP, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
   *pResultLength = ss.iResultLength;
   return ss.result;
 }
 
 void EncodeStrToQP(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_QP, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }
 
 void DecodeQPToStr(const HWND hwnd)
 {
-  RecodingAlgorythm_Init(&ra, ERT_QP, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
-  RecodingAlgorythm_Release(&ra);
+  RecodingAlgorithm_Release(&ra);
 }

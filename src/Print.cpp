@@ -224,7 +224,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
   // Convert page size to logical units and we're done!
   DPtoLP(hdc, (LPPOINT)&ptPage, 1);
 
-  headerLineHeight = MulDiv(8, ptDpi.y, 72);
+  headerLineHeight = MulDiv(10, ptDpi.y, 72);
   fontHeader = CreateFont(headerLineHeight,
                           0, 0, 0,
                           FW_BOLD,
@@ -240,7 +240,7 @@ extern "C" BOOL EditPrint(HWND hwnd, LPCWSTR pszDocTitle, LPCWSTR pszPageFormat)
   if (iPrintHeader == 3)
     headerLineHeight = 0;
 
-  footerLineHeight = MulDiv(7, ptDpi.y, 72);
+  footerLineHeight = MulDiv(10, ptDpi.y, 72);
   fontFooter = CreateFont(footerLineHeight,
                           0, 0, 0,
                           FW_NORMAL,

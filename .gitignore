@@ -1,0 +1,6 @@
+*.vcxproj.user
+/.vs
+/bin/Win32
+/bin/x64
+/bin/obj
+/src/_version.h
