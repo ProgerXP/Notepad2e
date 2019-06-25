@@ -42,9 +42,11 @@
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
 #include "Extension/MainWndHelper.h"
+#include "Extension/ProcessElevationUtils.h"
 #include "Extension/InlineProgressBarCtrl.h"
 #include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
+#include "Extension/VersionHelper.h"
 
 
 
@@ -376,7 +378,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   Encoding_InitDefaults();
 
   // Command Line, Ini File and Flags
-  ParseCommandLine();
+  if (!ParseCommandLine())
+  {
+    return 0;
+  }
   FindIniFile();
   TestIniFile();
   CreateIniFile();
@@ -1895,6 +1900,14 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_FILE_OPENFOLDER, i);
   EnableCmd(hmenu, IDM_FILE_PROPERTIES, i);
   EnableCmd(hmenu, IDM_FILE_CREATELINK, i);
+  // [2e]: Process elevation #166
+  n2e_SetUACIcon(hmenu, IDM_FILE_ELEVATE);
+  if (!IsWindowsVistaOrGreater() || fIsElevated)
+  {
+    EnableCmd(hmenu, IDM_FILE_ELEVATE, FALSE);
+  }
+  CheckCmd(hmenu, IDM_FILE_ELEVATE, fIsElevated || n2e_IsElevatedMode());
+  // [/2e]
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
   // [2e]: File->RenameTo menu item
   EnableCmd(hmenu, ID_FILE_RENAMETO, i);
@@ -2510,6 +2523,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
       }
       break;
+
+    // [2e]: Process elevation #166
+    case IDM_FILE_ELEVATE:
+      n2e_SwitchElevation();
+      break;
+    // [/2e]
 
 
     case IDM_FILE_OPENFAV:
@@ -5959,7 +5978,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
 //  ParseCommandLine()
 //
 //
-void ParseCommandLine()
+BOOL ParseCommandLine()
 {
 
   LPWSTR lp1, lp2, lp3;
@@ -5970,7 +5989,7 @@ void ParseCommandLine()
   LPWSTR lpCmdLine = GetCommandLine();
 
   if (lstrlen(lpCmdLine) == 0)
-    return;
+    return TRUE;
 
   // Good old console can also send args separated by Tabs
   StrTab2Space(lpCmdLine);
@@ -6050,6 +6069,18 @@ void ParseCommandLine()
         StrCpyN(wch, lp1 + CSTRLEN(L"expandenv="), COUNTOF(wch));
         StrTrim(wch, L" ");
         fExpandEnvVariables = (_wtoi(wch) != 0);
+      }
+      // [2e]: Process elevation #166
+      else if (n2e_IsIPCIDParam(lp1))
+      {
+        DWORD idIPC = 0;
+        if ((swscanf_s(lp1 + CSTRLEN(IPCID_PARAM), L"%d", &idIPC) == 0)
+            || !n2e_InitializeIPC(idIPC, FALSE))
+        {
+          return FALSE;
+        }
+        n2e_ChildProcess_FileIOHandler(idIPC);
+        return FALSE;
       }
       // [/2e]
 
@@ -6376,6 +6407,7 @@ void ParseCommandLine()
   LocalFree(lp2);
   LocalFree(lp3);
 
+  return TRUE;
 }
 
 
@@ -7172,7 +7204,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
         return FALSE;
       }
       // [/2e]
-      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy))
+      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)
+                          // [2e]: Process elevation #166
+                          || n2e_ParentProcess_ElevatedFileIO(tchFile))
       {
         n2e_ResetLastRun();
         // [2e]: File->RenameTo menu item
@@ -7204,7 +7238,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   else
-    fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE);
+    fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
+               // [2e]: Process elevation #166
+               || n2e_ParentProcess_ElevatedFileIO(szCurFile);
 
   if (fSuccess)
   {

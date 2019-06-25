@@ -4,9 +4,11 @@
 #include "Notepad2.h"
 #include "resource.h"
 #include "Scintilla.h"
+#include "Shell32Helper.h"
 #include "Helpers.h"
 #include "tinyexpr/tinyexpr.h"
 #include "Utils.h"
+#include "VersionHelper.h"
 
 HHOOK hShellHook = NULL;
 
@@ -177,4 +179,60 @@ BOOL n2e_IsModalDialog(const HWND hwnd)
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam)
 {
   bIsModalDialogOnTop = (wParam == WA_INACTIVE) ? n2e_IsModalDialog((HWND)lParam) : FALSE;
+}
+
+HBITMAP ConvertIconToBitmap(const HICON hIcon, const int cx, const int cy)
+{
+  const HDC hScreenDC = GetDC(NULL);
+  const HBITMAP hbmpTmp = CreateCompatibleBitmap(hScreenDC, cx, cy);
+  const HDC hMemDC = CreateCompatibleDC(hScreenDC);
+  const HBITMAP hOldBmp = SelectObject(hMemDC, hbmpTmp);
+  DrawIconEx(hMemDC, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL);
+  SelectObject(hMemDC, hOldBmp);
+
+  const HBITMAP hDibBmp = (HBITMAP)CopyImage((HANDLE)hbmpTmp, IMAGE_BITMAP, 0, 0, LR_DEFAULTSIZE | LR_CREATEDIBSECTION);
+
+  DeleteObject(hbmpTmp);
+  DeleteDC(hMemDC);
+  ReleaseDC(NULL, hScreenDC);
+
+  return hDibBmp;
+}
+
+void n2e_SetUACIcon(const HMENU hMenu, const UINT nItem)
+{
+  static BOOL bInitialized = FALSE;
+  if (bInitialized)
+  {
+    return;
+  }
+
+#define IDI_SHIELD          32518
+
+  if (IsWindowsVistaOrGreater())
+  {
+    const int cx = GetSystemMetrics(SM_CYMENU) - 4;
+    const int cy = cx;
+
+    HICON hIconShield = NULL;
+    SHSTOCKICONINFO sii = { 0 };
+    sii.cbSize = sizeof(sii);
+    if (SUCCEEDED(n2e_SHGetStockIconInfo(SIID_SHIELD, SHGFI_ICON | SHGFI_SMALLICON, &sii)))
+    {
+      hIconShield = sii.hIcon;
+    }
+    if (!hIconShield)
+    {
+      hIconShield = LoadImage(NULL, (LPCWSTR)IDI_SHIELD, IMAGE_ICON, cx, cy, LR_SHARED);
+    }
+    if (hIconShield)
+    {
+      MENUITEMINFO mii = { 0 };
+      mii.cbSize = sizeof(mii);
+      mii.fMask = MIIM_BITMAP;
+      mii.hbmpItem = ConvertIconToBitmap(hIconShield, cx, cy);
+      SetMenuItemInfo(hMenu, nItem, FALSE, &mii);
+    }
+  }
+  bInitialized = TRUE;
 }
