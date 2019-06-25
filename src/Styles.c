@@ -1626,6 +1626,8 @@ EDITLEXER lexMarkdown = { SCLEX_MARKDOWN, 63034, L"Markdown", L"markdown;mdown;m
 };
 
 
+// [2e]: Awk syntax highlighting #216
+// Original lexer implementation: https://github.com/rizonesoft/Notepad3/blob/master/src/StyleLexers/styleLexAwk.c
 KEYWORDLIST KeyWords_Awk = {
     "break case continue default do else exit function for if in next return switch while "
     "@include delete nextfile print printf BEGIN BEGINFILE END "
@@ -1651,6 +1653,7 @@ EDITLEXER lexAWK = { SCLEX_PYTHON, 63035, L"Awk Script", L"awk", L"", &KeyWords_
         { -1, 00000, L"", L"", L"" }
       }
 };
+// [/2e]
 
 
 PEDITLEXER pLexArray[NUMLEXERS] = {
