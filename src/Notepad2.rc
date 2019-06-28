@@ -127,7 +127,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Propert&ies...",              IDM_FILE_PROPERTIES
         MENUITEM "Create &Desktop Link",        IDM_FILE_CREATELINK
-        MENUITEM "&Elevate",                    IDM_FILE_ELEVATE
+        MENUITEM "Ele&vate",                    IDM_FILE_ELEVATE
         MENUITEM SEPARATOR
         POPUP "&Favorites"
         BEGIN
