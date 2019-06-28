@@ -109,7 +109,7 @@ BEGIN
             MENUITEM "UTF-8 with &Signature",       IDM_ENCODING_UTF8SIGN
             MENUITEM "&More...\tF9",                IDM_ENCODING_SELECT
             MENUITEM SEPARATOR
-            MENUITEM "&Recode...\tF8",              IDM_ENCODING_RECODE
+            MENUITEM "&Reload As...\tF8",           IDM_ENCODING_RECODE
             MENUITEM SEPARATOR
             MENUITEM "&Default...",                 IDM_ENCODING_SETDEFAULT
         END
@@ -1051,7 +1051,7 @@ END
 
 IDD_RECODE DIALOGEX 0, 0, 165, 135
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Recode"
+CAPTION "Reload As"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Select source &encoding to reload file:",IDC_STATIC,7,7,119,8
