@@ -167,6 +167,7 @@ void n2e_ReleaseClock()
 
 void n2e_Init()
 {
+  srand((UINT)GetTickCount());
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_InitClock();
@@ -1149,4 +1150,18 @@ void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
     }
     n2e_Free(pUrl);
   }
+}
+
+long n2e_GenerateRandom()
+{
+  const long MIN_RANDOM = 1;
+  const long MAX_DECIMAL_DIGITS = 5;
+  long factor = 1;
+  long res = 0;
+  for (int i = 0; i < MAX_DECIMAL_DIGITS; ++i)
+  {
+    res += (rand() % 10) * factor;
+    factor *= 10;
+  }
+  return max(MIN_RANDOM, res);
 }

@@ -3333,6 +3333,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Edit > Insert > Random #221
+    case IDM_EDIT_INSERT_RANDOM:
+      {
+        char mszBuf[MAX_PATH] = { 0 };
+        sprintf(mszBuf, "%05d", n2e_GenerateRandom());
+        SendMessage(hwndEdit, SCI_REPLACESEL, 0, (LPARAM)mszBuf);
+      }
+      break;
+    // [/2e]
+
+
     case IDM_EDIT_LINECOMMENT:
       switch (SendMessage(hwndEdit, SCI_GETLEXER, 0, 0))
       {
