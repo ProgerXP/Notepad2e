@@ -5153,6 +5153,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         case IDC_FINDTRANSFORMBS:
           n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDTRANSFORMBS);
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
           break;
 
         case IDOK:
