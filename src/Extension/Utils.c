@@ -132,7 +132,7 @@ BOOL n2e_UpdateClockMenuItem()
   mii.cch = lstrlen(buf);
   if (SetMenuItemInfo(hmenu, iClockMenuItemIndex, TRUE, &mii))
   {
-    RedrawWindow(hwndMain, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_FRAME | RDW_NOINTERNALPAINT);
+    DrawMenuBar(hwndMain);
     return TRUE;
   }
   return FALSE;
