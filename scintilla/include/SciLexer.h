@@ -133,7 +133,7 @@
 #define SCLEX_IHEX 118
 #define SCLEX_TEHEX 119
 #define SCLEX_JSON 120
-#define SCLEX_AHK 200
+#define SCLEX_AHK 200 // [n2e]: add AHK lexer
 #define SCLEX_AUTOMATIC 1000
 #define SCE_P_DEFAULT 0
 #define SCE_P_COMMENTLINE 1
@@ -1525,6 +1525,7 @@
 #define SCE_TXT2TAGS_OPTION 23
 #define SCE_TXT2TAGS_PREPROC 24
 #define SCE_TXT2TAGS_POSTPROC 25
+// [n2e]: add AHK lexer
 #define SCE_AHK_DEFAULT 0
 #define SCE_AHK_COMMENTLINE 1
 #define SCE_AHK_COMMENTBLOCK 2
@@ -1546,6 +1547,7 @@
 #define SCE_AHK_WORD_UD 18
 #define SCE_AHK_VARREFKW 19
 #define SCE_AHK_ERROR 20
+// [/n2e]
 #define SCE_A68K_DEFAULT 0
 #define SCE_A68K_COMMENT 1
 #define SCE_A68K_NUMBER_DEC 2

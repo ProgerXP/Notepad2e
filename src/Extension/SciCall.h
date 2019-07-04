@@ -95,7 +95,7 @@ DeclareSciCallR2(GetTextRange, GETTEXTRANGE, int, int, unused, struct Sci_TextRa
 DeclareSciCallV0(SetSavePoint, SETSAVEPOINT);
 DeclareSciCallV0(BeginUndoAction, BEGINUNDOACTION);
 DeclareSciCallV0(EndUndoAction, ENDUNDOACTION);
-DeclareSciCallV1(SetSkipUIUpdate, SETSKIPUIUPDATE, int, skipUIUpdate);
+DeclareSciCallV1(SetSkipUIUpdate, N2E_SETSKIPUIUPDATE, int, skipUIUpdate);
 
 //=============================================================================
 //
@@ -155,4 +155,4 @@ DeclareSciCallV1(EnsureVisible, ENSUREVISIBLE, int, line);
 //
 //
 DeclareSciCallV2(SetProperty, SETPROPERTY, const char *, key, const char *, value);
-DeclareSciCallV1(SetDPI, SETDPI, DWORD, dpi);
+DeclareSciCallV1(SetDPI, N2E_SETDPI, DWORD, dpi);

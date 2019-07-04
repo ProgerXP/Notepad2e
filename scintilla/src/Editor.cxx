@@ -184,7 +184,7 @@ Editor::Editor() {
 	foldAutomatic = 0;
 
 	convertPastes = true;
-	skipUIUpdate = false;
+	n2e_skipUIUpdate = false; // [n2e]: Increasingly slow to hex/base64/qp #142
 
 	SetRepresentations();
 }
@@ -450,9 +450,11 @@ bool Editor::AbandonPaint() {
 
 void Editor::RedrawRect(PRectangle rc) {
 	//Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
+	// [/n2e]
 
 	// Clip the redraw rectangle into the client area
 	PRectangle rcClient = GetClientRectangle();
@@ -476,9 +478,11 @@ void Editor::DiscardOverdraw() {
 
 void Editor::Redraw() {
 	//Platform::DebugPrintf("Redraw all\n");
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
+	// [/n2e]
 
 	PRectangle rcClient = GetClientRectangle();
 	wMain.InvalidateRectangle(rcClient);
@@ -604,9 +608,11 @@ void Editor::ThinRectangularRange() {
 }
 
 void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
+	// [/n2e]
 
 	if (sel.Count() > 1 || !(sel.RangeMain().anchor == newMain.anchor) || sel.IsRectangular()) {
 		invalidateWholeSelection = true;
@@ -826,11 +832,13 @@ void Editor::MovedCaret(SelectionPosition newPos, SelectionPosition previousPos,
 	const int currentLine = pdoc->LineFromPosition(newPos.Position());
 	if (ensureVisible) {
 		// In case in need of wrapping to ensure DisplayFromDoc works.
+		// [n2e]: repaint issue when using Ctrl+Shift+Backspace/Del #116
 		if (currentLine >= wrapPending.start) {
-      if (WrapLines(wsAll)) {
-        Redraw();
-      }      
-    }
+			if (WrapLines(wsAll)) {
+				Redraw();
+			}
+		}
+		// [/n2e]
 		XYScrollPosition newXY = XYScrollToMakeVisible(
 			SelectionRange(posDrag.IsValid() ? posDrag : newPos), xysDefault);
 		if (previousPos.IsValid() && (newXY.xOffset == xOffset)) {
@@ -1396,9 +1404,11 @@ void Editor::ScrollRange(SelectionRange range) {
 }
 
 void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
+	// [/n2e]
 
 	SetXYScroll(XYScrollToMakeVisible(SelectionRange(posDrag.IsValid() ? posDrag : sel.RangeMain().caret),
 		static_cast<XYScrollOptions>((useMargin?xysUseMargin:0)|(vert?xysVertical:0)|(horiz?xysHorizontal:0))));
@@ -1447,10 +1457,11 @@ void Editor::CaretSetPeriod(int period) {
 }
 
 void Editor::InvalidateCaret() {
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
-
+	// [/n2e]
 	if (posDrag.IsValid()) {
 		InvalidateRange(posDrag.Position(), posDrag.Position() + 1);
 	} else {
@@ -1710,10 +1721,11 @@ void Editor::RefreshPixMaps(Surface *surfaceWindow) {
 }
 
 void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
-	if (skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	if (n2e_skipUIUpdate) {
 		return;
 	}
-
+	// [/n2e]
 	//Platform::DebugPrintf("Paint:%1d (%3d,%3d) ... (%3d,%3d)\n",
 	//	paintingAllText, rcArea.left, rcArea.top, rcArea.right, rcArea.bottom);
 	AllocateGraphics();
@@ -2510,21 +2522,25 @@ void Editor::NotifyZoom() {
 	NotifyParent(scn);
 }
 
-void Editor::NotifyCaretMoved()
+// [n2e]: "Scroll margin"-feature
+void Editor::n2e_NotifyCaretMoved()
 {
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_CARETMOVED;
-  NotifyParent(scn);
+	// Send notification
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_N2E_CARETMOVED;
+	NotifyParent(scn);
 }
+// [/n2e]
 
-void Editor::NotifyLineCountChanged()
+// [n2e]: "Update gutter width"-feature
+void Editor::n2e_NotifyLineCountChanged()
 {
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
-  NotifyParent(scn);
+	// Send notification
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_N2E_LINECOUNTCHANGED;
+	NotifyParent(scn);
 }
+// [/n2e]
 
 // Notifications from document
 void Editor::NotifyModifyAttempt(Document *, void *) {
@@ -3608,11 +3624,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARADOWN:
 		ParaUpOrDown(1, Selection::noSel);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARADOWNEXTEND:
 		ParaUpOrDown(1, Selection::selStream);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLDOWN:
 		ScrollTo(topLine + 1);
@@ -3629,11 +3645,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PARAUP:
 		ParaUpOrDown(-1, Selection::noSel);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PARAUPEXTEND:
 		ParaUpOrDown(-1, Selection::selStream);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_LINESCROLLUP:
 		ScrollTo(topLine - 1);
@@ -3711,27 +3727,27 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_PAGEUP:
 		PageMove(-1);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPEXTEND:
 		PageMove(-1, Selection::selStream);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEUPRECTEXTEND:
 		PageMove(-1, Selection::selRectangle);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWN:
 		PageMove(1);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNEXTEND:
 		PageMove(1, Selection::selStream);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_PAGEDOWNRECTEXTEND:
 		PageMove(1, Selection::selRectangle);
-    NotifyCaretMoved();
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
 		break;
 	case SCI_EDITTOGGLEOVERTYPE:
 		inOverstrike = !inOverstrike;
@@ -3780,7 +3796,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_NEWLINE:
 		NewLine();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 	case SCI_FORMFEED:
 		AddChar('\f');
@@ -3829,7 +3845,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 			int start = pdoc->LineStart(line);
 			int end = pdoc->LineStart(line + 1);
 			pdoc->DeleteChars(start, end - start);
-			NotifyLineCountChanged();
+			n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		}
 		break;
 	case SCI_LINETRANSPOSE:
@@ -3912,6 +3928,7 @@ void Editor::Indent(bool forwards) {
 					}
 				}
 			} else {
+				// [n2e]: Unindent and tabs #128
 				if (pdoc->tabIndents) {
 					SelectionPosition posCaret(sel.Range(r).caret.Position());
 					SelectionPosition posAnchor(sel.Range(r).anchor.Position());
@@ -3938,6 +3955,7 @@ void Editor::Indent(bool forwards) {
 						posAnchor.Add(-indentationStep);
 						sel.Range(r) = SelectionRange(posCaret, posAnchor);
 					}
+				// [/n2e]
 				} else {
 					int newColumn = ((pdoc->GetColumn(caretPosition) - 1) / pdoc->tabInChars) *
 							pdoc->tabInChars;
@@ -4509,7 +4527,7 @@ void Editor::ButtonDownWithModifiers(Point pt, unsigned int curTime, int modifie
 					selectionType = selWord;
 					doubleClick = true;
 				} else if (selectionType == selWord) {
-          // do nothing on *triple* click
+					// [n2e]: "No line selection on active selection"-feature: do nothing on *triple* click
 				} else {
 					selectionType = selChar;
 					originalAnchorPos = sel.MainCaret();
@@ -5791,7 +5809,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_CUT:
 		Cut();
 		SetLastXChosen();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_COPY:
@@ -5828,20 +5846,20 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			SetLastXChosen();
 		}
 		EnsureCaretVisible();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_CLEAR:
 		Clear();
 		SetLastXChosen();
 		EnsureCaretVisible();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_UNDO:
 		Undo();
 		SetLastXChosen();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_CANUNDO:
@@ -5945,10 +5963,12 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			char *replacement = CharPtrFromSPtr(lParam);
 			const int lengthInserted = pdoc->InsertString(
 				sel.MainCaret(), replacement, istrlen(replacement));
-			if (!skipUIUpdate) {
-					SetEmptySelection(sel.MainCaret() + lengthInserted);
-					EnsureCaretVisible();
+			// [n2e]: Increasingly slow to hex/base64/qp #142
+			if (!n2e_skipUIUpdate) {
+				SetEmptySelection(sel.MainCaret() + lengthInserted);
+				EnsureCaretVisible();
 			}
+			// [/n2e]
 		}
 		break;
 
@@ -6307,7 +6327,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	case SCI_REDO:
 		Redo();
-		NotifyLineCountChanged();
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
 		break;
 
 	case SCI_SELECTALL:
@@ -8133,13 +8153,15 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_COUNTCHARACTERS:
 		return pdoc->CountCharacters(static_cast<int>(wParam), static_cast<int>(lParam));
 
-	case SCI_SETSKIPUIUPDATE:
-		skipUIUpdate = (wParam != 0);
-		if (!skipUIUpdate) {
+	// [n2e]: Increasingly slow to hex/base64/qp #142
+	case SCI_N2E_SETSKIPUIUPDATE:
+		n2e_skipUIUpdate = (wParam != 0);
+		if (!n2e_skipUIUpdate) {
 			InvalidateWholeSelection();
 			Redraw();
 		}
-		return skipUIUpdate;
+		return n2e_skipUIUpdate;
+	// /n2e
 
 	default:
 		return DefWndProc(iMessage, wParam, lParam);

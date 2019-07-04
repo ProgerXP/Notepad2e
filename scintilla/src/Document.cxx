@@ -110,8 +110,7 @@ Document::Document() {
 	tabIndents = true;
 	backspaceUnindents = false;
 	durationStyleOneLine = 0.00001;
-	// [2e]: ctrl+arrow behavior toggle #89
-	wordNavigationMode = 0;
+	wordNavigationMode = 0; // [n2e]: ctrl+arrow behavior toggle #89
 
 	matchesValid = false;
 	regex = 0;
@@ -1522,7 +1521,7 @@ int Document::ExtendWordSelect(int pos, int delta, bool onlyWordCharacters) {
  */
 int Document::NextWordStart(int pos, int delta) {
 	if (delta < 0) {
-		// [2e]: ctrl+arrow behavior toggle #89
+		// [n2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -1537,7 +1536,6 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
-			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			{
 				if (pos > 0)
@@ -1569,14 +1567,12 @@ int Document::NextWordStart(int pos, int delta) {
 				}
 			}
 			break;
-			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
 			break;
 		}
 	} else {
-		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -1590,7 +1586,6 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
-			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			{
 				bool stopAtCurrentNewLine = false;
@@ -1622,6 +1617,7 @@ int Document::NextWordStart(int pos, int delta) {
 			PLATFORM_ASSERT(false);
 			break;
 		}
+	// [/n2e]
 	}
 	return pos;
 }
@@ -2328,12 +2324,12 @@ int Document::BraceMatch(int position, int /*maxReStyle*/) {
 	return - 1;
 }
 
-// [2e]: ctrl+arrow behavior toggle #89
+// [n2e]: ctrl+arrow behavior toggle #89
 void Document::SetWordNavigationMode(const int iMode)
 {
 	wordNavigationMode = iMode;
 }
-// [/2e]
+// [/n2e]
 
 /**
  * Implementation of RegexSearchBase for the default built-in regular expression engine
@@ -2357,6 +2353,7 @@ private:
 };
 
 namespace {
+// [n2e]: Regexp: confine to single line #90: moved RESearchRange to Document.h
 
 // Define a way for the Regular Expression code to access the document
 class DocumentIndexer : public CharacterIndexer {

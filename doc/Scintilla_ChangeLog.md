@@ -34,184 +34,186 @@
 
 [**Implement wheel_action/proc_action**]:
 [Scintilla/include/Scintilla.h]:
-typedef void ( * wheel_action ) ( int );
-typedef int ( * key_action ) ( int , int );
-extern wheel_action hl_wheel_action ;
-extern key_action hl_proc_action;
+typedef void (*wheel_action) (int);
+typedef int (*key_action)(int , int);
+extern wheel_action n2e_wheel_action;
+extern key_action n2e_proc_action;
+[/Scintilla/include/Scintilla.h]:
 
 [Scintilla/win32/ScintillaWin.cxx]
-wheel_action hl_wheel_action = 0;
-key_action hl_proc_action = 0;
+wheel_action n2e_wheel_action = 0;
+key_action n2e_proc_action = 0;
 
 ...
 
-          if (wParam & MK_CONTROL)
-          {
-            // Zoom! We play with the font sizes in the styles.
-            // Number of steps/line is ignored, we just care if sizing up or down
-            if ( hl_wheel_action ) {
-                hl_wheel_action ( linesToScroll );
-            } else {
-                if ( linesToScroll < 0 ) {
-                    KeyCommand ( SCI_ZOOMIN );
-                } else {
-                    KeyCommand ( SCI_ZOOMOUT );
-                }
-            }
-	  }
+				if (wParam & MK_CONTROL) {
+					// Zoom! We play with the font sizes in the styles.
+					// Number of steps/line is ignored, we just care if sizing up or down
+					if (n2e_wheel_action) {
+						n2e_wheel_action(linesToScroll);
+					} else {
+						if (linesToScroll < 0) {
+							KeyCommand(SCI_ZOOMIN);
+						} else {
+							KeyCommand(SCI_ZOOMOUT);
+						}
+					}
+				} else {
 
 ...
 
-      case WM_CHAR:
-        if (hl_proc_action)
-	{
+		case WM_CHAR:
+			if (n2e_proc_action) {
+				int ret = n2e_proc_action(wParam, WM_CHAR);
+				if (ret >= 0) {
+					return ret;
+				}
+			}
+			if (((wParam >= 128) || !iscntrl(static_cast<int>(wParam))) || !lastKeyDownConsumed) {
 
-		int ret = hl_proc_action(wParam, WM_CHAR);
-
-		if (ret >= 0)
-		{
-
-            return ret;
-		}
-
-	}
 ...
 
-      case WM_SYSKEYDOWN:
-      case WM_KEYDOWN: {
-          if (hl_proc_action)
+		case WM_SYSKEYDOWN:
+		case WM_KEYDOWN: {
+			//Platform::DebugPrintf("S keydown %d %x %x %x %x\n",iMessage, wParam, lParam, ::IsKeyDown(VK_SHIFT), ::IsKeyDown(VK_CONTROL));
+				if (n2e_proc_action) {
+					int ret = n2e_proc_action(wParam, WM_KEYDOWN);
+					if (ret >= 0) {
 
-          {
-
-            int ret = hl_proc_action(wParam, WM_KEYDOWN);
-
-            if (ret >= 0)
-
-            {
-
-              return ret;
-
-            }
-
-          }
-
-
+						return ret;
+					}
+				}
+				lastKeyDownConsumed = false;
+[/Scintilla/win32/ScintillaWin.cxx]
 [/**Implement wheel_action/proc_action**]
 
 
 [**Enable additional Lexers**]:
 [scintilla/src/Catalogue.cxx]
-LINK_LEXER(lmAsn1);
-LINK_LEXER(lmBash);
-LINK_LEXER(lmCaml);
-LINK_LEXER(lmCoffeeScript);
-LINK_LEXER(lmD);
-LINK_LEXER(lmLISP);
-LINK_LEXER(lmTeX);
+	LINK_LEXER(lmAsn1);
+	LINK_LEXER(lmBash);
+	LINK_LEXER(lmCaml);
+	LINK_LEXER(lmCoffeeScript);
+	LINK_LEXER(lmD);
+	LINK_LEXER(lmLISP);
+	LINK_LEXER(lmTeX);
+[/scintilla/src/Catalogue.cxx]
+
+The script lexlink.js is adjusted accordingly.
+
 [/**Enable additional Lexers**]
 
 
 [**13. "No line selection on active selection"-feature**]:
 Remove triple-click handler in Editor::ButtonDown():
 [scintilla/src/Editor.cxx]
-                if ( selectionType == selChar ) {
-                    selectionType = selWord;
-                    doubleClick = true;
-                } else if ( selectionType == selWord ) {
-                    // do nothing on *triple* click
-                } else {
-                    selectionType = selChar;
-                    originalAnchorPos = sel.MainCaret();
-                }
+				if (selectionType == selChar) {
+					selectionType = selWord;
+					doubleClick = true;
+				} else if (selectionType == selWord) {
+					// [n2e]: "No line selection on active selection"-feature: do nothing on *triple* click
+				} else {
+					selectionType = selChar;
+					originalAnchorPos = sel.MainCaret();
+				}
+[/scintilla/src/Editor.cxx]
 [/**13.**]
 
 
 [**6. "Scroll margin"-feature**]:
 New notification code added:
 [scintilla/include/Scintilla.h]
-\#define SCN_CARETMOVED 2031
+\#define SCN_N2E_CARETMOVED 2031
+[/scintilla/include/Scintilla.h]
 
 New notification proc added:
 [scintilla/src/Editor.h]
-void NotifyCaretMoved();
+void n2e_NotifyCaretMoved();
+[/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
-void Editor::NotifyCaretMoved()
+void Editor::n2e_NotifyCaretMoved()
 {
-  // Send notification
-  SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_CARETMOVED;
-  NotifyParent(scn);
+	// Send notification
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_N2E_CARETMOVED;
+	NotifyParent(scn);
 }
 
 ...
 
 Corresponding calls added to Editor::KeyCommand():
 
-        case SCI_PARADOWN:
-            ParaUpOrDown ( 1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PARADOWNEXTEND:
-            ParaUpOrDown ( 1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
+	case SCI_PARADOWN:
+		ParaUpOrDown(1, Selection::noSel);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PARADOWNEXTEND:
+		ParaUpOrDown(1, Selection::selStream);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_LINESCROLLDOWN:
 
 ...
 
-        case SCI_PARAUP:
-            ParaUpOrDown ( -1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PARAUPEXTEND:
-            ParaUpOrDown ( -1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
+	case SCI_PARAUP:
+		ParaUpOrDown(-1, Selection::noSel);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PARAUPEXTEND:
+		ParaUpOrDown(-1, Selection::selStream);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_LINESCROLLUP:
 
 ...
 
-        case SCI_PAGEUP:
-            PageMove ( -1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEUPEXTEND:
-            PageMove ( -1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEUPRECTEXTEND:
-            PageMove ( -1, Selection::selRectangle );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWN:
-            PageMove ( 1 );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWNEXTEND:
-            PageMove ( 1, Selection::selStream );
-            NotifyCaretMoved();
-            break;
-        case SCI_PAGEDOWNRECTEXTEND:
-            PageMove ( 1, Selection::selRectangle );
-            NotifyCaretMoved();
-            break;
+	case SCI_PAGEUP:
+		PageMove(-1);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PAGEUPEXTEND:
+		PageMove(-1, Selection::selStream);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PAGEUPRECTEXTEND:
+		PageMove(-1, Selection::selRectangle);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PAGEDOWN:
+		PageMove(1);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PAGEDOWNEXTEND:
+		PageMove(1, Selection::selStream);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_PAGEDOWNRECTEXTEND:
+		PageMove(1, Selection::selRectangle);
+		n2e_NotifyCaretMoved(); // [n2e]: "Scroll margin"-feature
+		break;
+	case SCI_EDITTOGGLEOVERTYPE:
+[/scintilla/src/Editor.cxx]
 [/**6.**]
 
 
 [**"Update gutter width"-feature**]:
 New notification code added:
 [scintilla/include/Scintilla.h]
-\#define SCN_LINECOUNTCHANGED 2032
+\#define SCN_N2E_LINECOUNTCHANGED 2032
+[/scintilla/include/Scintilla.h]
 
 New notification proc added:
 [scintilla/src/Editor.h]
-void NotifyLineCountChanged();
+void n2e_NotifyLineCountChanged();
+[/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
-void Editor::NotifyLineCountChanged()
+void Editor::n2e_NotifyLineCountChanged()
 {
   // Send notification
   SCNotification scn = { 0 };
-  scn.nmhdr.code = SCN_LINECOUNTCHANGED;
+  scn.nmhdr.code = SCN_N2E_LINECOUNTCHANGED;
   NotifyParent(scn);
 }
 
@@ -219,149 +221,146 @@ void Editor::NotifyLineCountChanged()
 
 Corresponding calls added to Editor::KeyCommand():
 
-    case SCI_NEWLINE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_LINEDELETE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_CUT:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_PASTE:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_CLEAR:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_UNDO:
-        ...
-        NotifyLineCountChanged();
-        break;
-    case SCI_REDO:
-        ...
-        NotifyLineCountChanged();
-        break;
+	case SCI_NEWLINE:
+		...
+		n2e_NotifyLineCountChanged(); // [n2e]: "Update gutter width"-feature
+		break;
+	case SCI_LINEDELETE:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+	case SCI_CUT:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+	case SCI_PASTE:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+	case SCI_CLEAR:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+	case SCI_UNDO:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+	case SCI_REDO:
+		...
+		n2e_NotifyLineCountChanged();
+		break;
+[/scintilla/src/Editor.cxx]
 [/**"Update gutter width"-feature**]
 
 [**Drag & drop improvement #63**]
 New code around DropAt()-call:
 [scintilla/win32/ScintillaWin.cxx]
-    const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
-    const bool bAddNewLine = (inDragDrop != ddDragging) && (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
-    if (bAddNewLine)
-    {
-      data.insert(data.end() - 1, '\r');
-      data.insert(data.end() - 1, '\n');
-    }
-    DropAt(movePos, &data[0], data.size() - 1, \*pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
-    if (bAddNewLine)
-    {
-      KeyCommand(SCI_CHARRIGHT);
-    }
+		const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
+		const bool bAddNewLine = (inDragDrop != ddDragging) && (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
+		if (bAddNewLine)
+		{
+			data.insert(data.end() - 1, '\r');
+			data.insert(data.end() - 1, '\n');
+		}
+		DropAt(movePos, &data[0], data.size() - 1, *pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
+		if (bAddNewLine) {
+			KeyCommand(SCI_CHARRIGHT);
+		}
+[/scintilla/win32/ScintillaWin.cxx]
 [/**Drag & drop improvement #63**]
 
 [**Implement Notepad's right click behavior #54**]
-Add new message SCI_MOVECARETONRCLICK:
+Add new message SCI_N2E_MOVECARETONRCLICK:
 
 [scintilla/include/Scintilla.h]
-\#define SCI_MOVECARETONRCLICK 2369
+\#define SCI_N2E_MOVECARETONRCLICK 2369
 [/scintilla/include/Scintilla.h]
 
 [scintilla/src/ScintillaBase.h]
- 	enum { maxLenInputIME = 200 };
+	enum { maxLenInputIME = 200 };
 
-    *bool moveCaretOnRClick;*
-    bool displayPopupMenu;
+	*bool n2e_moveCaretOnRClick;*
+	bool displayPopupMenu;
 [/scintilla/src/ScintillaBase.h]
 
 [scintilla/src/ScintillaBase.cxx]
 ScintillaBase::ScintillaBase() {
-    *moveCaretOnRClick = true;*
-    displayPopupMenu = true;
+	*n2e_moveCaretOnRClick = true;*
+	displayPopupMenu = true;
 
 ...
 
-    case SCI_MOVECARETONRCLICK:
-        moveCaretOnRClick = wParam != 0;
-        break;*
+	case SCI_N2E_MOVECARETONRCLICK:
+		n2e_moveCaretOnRClick = wParam != 0;
+		break;*
 
-    case SCI_USEPOPUP:
-        displayPopupMenu = wParam != 0;
-        break;
+	case SCI_USEPOPUP:
 [/scintilla/src/ScintillaBase.cxx]
 
 [scintilla/win32/ScintillaWin.cxx]
-      case WM_RBUTTONDOWN:
-        ::SetFocus(MainHWND());
-        if ( *moveCaretOnRClick &&* !PointInSelection(Point::FromLong(static_cast<long>(lParam))))
-        {
+		case WM_RBUTTONDOWN:
+			::SetFocus(MainHWND());
+			if (*n2e_moveCaretOnRClick* && !PointInSelection(Point::FromLong(static_cast<long>(lParam)))) {
+				CancelModes();
 [/scintilla/win32/ScintillaWin.cxx]
-
 [/**Implement Notepad's right click behavior #54**]
 
 [**Unindent and tabs #128**]
 [scintilla/src/Editor.cxx]
 Change the code in Editor::Indent(bool forwards): replace condition code block
 
-    if (pdoc->GetColumn(caretPosition) <= pdoc->GetLineIndentation(lineCurrentPos) &&
-                                                pdoc->tabIndents) {
-            int indentation = pdoc->GetLineIndentation(lineCurrentPos);
-            int indentationStep = pdoc->IndentSize();
-            const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-            sel.Range(r) = SelectionRange(posSelect);
-    }
-
+				if (pdoc->GetColumn(caretPosition) <= pdoc->GetLineIndentation(lineCurrentPos) &&
+						pdoc->tabIndents) {
+					int indentation = pdoc->GetLineIndentation(lineCurrentPos);
+					int indentationStep = pdoc->IndentSize();
+					const int posSelect = pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
+					sel.Range(r) = SelectionRange(posSelect);
+				} else {
 with:
 
-    if (pdoc->tabIndents) {
-        SelectionPosition posCaret(sel.Range(r).caret.Position());
-        SelectionPosition posAnchor(sel.Range(r).anchor.Position());
-        const int indentation = pdoc->GetLineIndentation(lineCurrentPos);
-        const int indentationStep = pdoc->IndentSize();
-        bool adjustCaretPosition = false;
-        int tabsCount = 0;
-        if (pdoc->CharAt(pdoc->LineStart(lineCurrentPos)) == '\t') {
-            adjustCaretPosition = true;
-            for (int i = pdoc->LineStart(lineCurrentPos); i < posCaret.Position(); i++) {
-                if (pdoc->CharAt(i) != '\t')
-                    break;
-                ++tabsCount;
-            }
-        }
-        pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
-        if (adjustCaretPosition) {
-            const int offset = (pdoc->useTabs ? std::max(1, tabsCount - 1) : tabsCount) * (indentationStep - 1);
-            posCaret.Add(offset);
-            posAnchor.Add(offset);
-        }
-        if ((posCaret.Position() - pdoc->LineStart(lineCurrentPos) >= indentationStep) && (indentation >= indentationStep)) {
-            posCaret.Add(-indentationStep);
-            posAnchor.Add(-indentationStep);
-            sel.Range(r) = SelectionRange(posCaret, posAnchor);
-        }
-    }
-
-
-[scintilla/src/Editor.cxx]
+				if (pdoc->tabIndents) {
+					SelectionPosition posCaret(sel.Range(r).caret.Position());
+					SelectionPosition posAnchor(sel.Range(r).anchor.Position());
+					const int indentation = pdoc->GetLineIndentation(lineCurrentPos);
+					const int indentationStep = pdoc->IndentSize();
+					bool adjustCaretPosition = false;
+					int tabsCount = 0;
+					if (pdoc->CharAt(pdoc->LineStart(lineCurrentPos)) == '\t') {
+						adjustCaretPosition = true;
+						for (int i = pdoc->LineStart(lineCurrentPos); i < posCaret.Position(); i++) {
+							if (pdoc->CharAt(i) != '\t')
+								break;
+							++tabsCount;
+						}
+					}
+					pdoc->SetLineIndentation(lineCurrentPos, indentation - indentationStep);
+					if (adjustCaretPosition) {
+						const int offset = (pdoc->useTabs ? std::max(1, tabsCount - 1) : tabsCount) * (indentationStep - 1);
+						posCaret.Add(offset);
+						posAnchor.Add(offset);
+					}
+					if ((posCaret.Position() - pdoc->LineStart(lineCurrentPos) >= indentationStep) && (indentation >= indentationStep)) {
+						posCaret.Add(-indentationStep);
+						posAnchor.Add(-indentationStep);
+						sel.Range(r) = SelectionRange(posCaret, posAnchor);
+					}
+				} else {
+[/scintilla/src/Editor.cxx]
 [/**Unindent and tabs #128**]
 
 [**ctrl+arrow behavior toggle #89**]
-Add new message SCI_SETWORDNAVIGATIONMODE:
+Add new message SCI_N2E_SETWORDNAVIGATIONMODE:
 [scintilla/include/Scintilla.h]
-\#define SCI_SETWORDNAVIGATIONMODE 2379
+\#define SCI_N2E_SETWORDNAVIGATIONMODE 2379
 [/scintilla/include/Scintilla.h]
 
 Add message handler in ScintillaBase::WndProc:
 [scintilla/src/ScintillaBase.cxx]
-	case SCI_SETWORDNAVIGATIONMODE:
+	case SCI_N2E_SETWORDNAVIGATIONMODE:
 		pdoc->SetWordNavigationMode((int)wParam);
 		break;
+
+	case SCI_USEPOPUP:
 [/scintilla/src/ScintillaBase.cxx]
 
 Add method declaration/implemention to Document class:
@@ -380,7 +379,7 @@ Add method declaration/implemention to Document class:
 
 int Document::NextWordStart(int pos, int delta) {
 	if (delta < 0) {
-		// [2e]: ctrl+arrow behavior toggle #89
+		// [n2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -395,7 +394,6 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
-			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			{
 				if (pos > 0)
@@ -427,14 +425,12 @@ int Document::NextWordStart(int pos, int delta) {
 				}
 			}
 			break;
-			// [/2e]
 		default:
 			// not implemented
 			PLATFORM_ASSERT(false);
 			break;
 		}
 	} else {
-		// [2e]: ctrl+arrow behavior toggle #89
 		switch (wordNavigationMode)
 		{
 		case 0:
@@ -448,7 +444,6 @@ int Document::NextWordStart(int pos, int delta) {
 			}
 			break;
 		case 1:
-			// [2e]: ctrl+arrow behavior toggle #89
 			// accelerated navigation
 			{
 				bool stopAtCurrentNewLine = false;
@@ -480,6 +475,7 @@ int Document::NextWordStart(int pos, int delta) {
 			PLATFORM_ASSERT(false);
 			break;
 		}
+	// [/n2e]
 	}
 	return pos;
 }
@@ -488,7 +484,6 @@ void Document::SetWordNavigationMode(const int iMode)
 {
 	wordNavigationMode = iMode;
 }
-
 [/scintilla/src/Document.cxx]
 [/**ctrl+arrow behavior toggle #89**]
 
@@ -500,175 +495,243 @@ Move class RESearchRange declaration/implementation from Document.cxx to Documen
 
 [**Increasingly slow to hex/base64/qp #142**]
 
-Add new message SCI_SETSKIPUIUPDATE:
+Add new message SCI_N2E_SETSKIPUIUPDATE:
 [scintilla/include/Scintilla.h]
-#define SCI_GETSUBSTYLEBASES 4026
-*#define SCI_SETSKIPUIUPDATE 9000*
+#define SCI_N2E_GETSUBSTYLEBASES 4026
+*#define SCI_N2E_SETSKIPUIUPDATE 9000*
 [/scintilla/include/Scintilla.h]
 
 Add corresponding flag to Editor class:
 [scintilla/src/Editor.h]
-    bool convertPastes;
-    *bool skipUIUpdate;*
+	bool convertPastes;
+	*bool n2e_skipUIUpdate;*
 [/scintilla/src/Editor.h]
 
 [scintilla/src/Editor.cxx]
-    convertPastes = true;
-    *skipUIUpdate = false;*
+	convertPastes = true;
+	*n2e_skipUIUpdate = false;*
 ...
 void Editor::RedrawRect(PRectangle rc) {
-    //Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
-    *if (skipUIUpdate) {
-        return;
-    }*
+	//Platform::DebugPrintf("Redraw %0d,%0d - %0d,%0d\n", rc.left, rc.top, rc.right, rc.bottom);
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 void Editor::Redraw() {
-    //Platform::DebugPrintf("Redraw all\n");
-    *if (skipUIUpdate) {
-        return;
-    }*
+	//Platform::DebugPrintf("Redraw all\n");
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 void Editor::InvalidateSelection(SelectionRange newMain, bool invalidateWholeSelection) {
-    *if (skipUIUpdate) {
-        return;
-    }*
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 void Editor::EnsureCaretVisible(bool useMargin, bool vert, bool horiz) {
-    *if (skipUIUpdate) {
-        return;
-    }*
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 void Editor::InvalidateCaret() {
-    *if (skipUIUpdate) {
-        return;
-    }*
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 void Editor::Paint(Surface *surfaceWindow, PRectangle rcArea) {
-    *if (skipUIUpdate) {
-        return;
-    }*
+	*if (n2e_skipUIUpdate) {
+		return;
+	}*
 ...
 Replace the code in Editor::WndProc() for case SCI_REPLACESEL:
-            SetEmptySelection(sel.MainCaret() + lengthInserted);
-            EnsureCaretVisible();
+			SetEmptySelection(sel.MainCaret() + lengthInserted);
+			EnsureCaretVisible();
 with
-            *if (!skipUIUpdate) {
-                    SetEmptySelection(sel.MainCaret() + lengthInserted);
-                    EnsureCaretVisible();
-            }*
+			*if (!n2e_skipUIUpdate) {
+					SetEmptySelection(sel.MainCaret() + lengthInserted);
+					EnsureCaretVisible();
+			}*
 ...
 Add next handler to Editor::WndProc():
-    case SCI_SETSKIPUIUPDATE:
-        skipUIUpdate = (wParam != 0);
-        if (!skipUIUpdate) {
-            InvalidateWholeSelection();
-            Redraw();
-        }
-        return skipUIUpdate;
+	case SCI_N2E_SETSKIPUIUPDATE:
+		n2e_skipUIUpdate = (wParam != 0);
+		if (!n2e_skipUIUpdate) {
+			InvalidateWholeSelection();
+			Redraw();
+		}
+		return n2e_skipUIUpdate;
 [/scintilla/src/Editor.cxx]
 [/**Increasingly slow to hex/base64/qp #142**]
 
 
 [**DPI awareness #154**]
 
-Add new message SCI_SETDPI:
+Add new message SCI_N2E_SETDPI:
 [scintilla/include/Scintilla.h]
-#define SCI_SETDPI 9001
+#define SCI_N2E_SETDPI 9001
 [/scintilla/include/Scintilla.h]
 
 Add message handler and replace some code:
 [scintilla/win32/ScintillaWin.cxx]
-    drtp.dpiX = 96.0;
-    drtp.dpiY = 96.0;
+	drtp.dpiX = 96.0;
+	drtp.dpiY = 96.0;
 >>
-    drtp.dpiX = GetDpiX();
-    drtp.dpiY = GetDpiY();
+	drtp.dpiX = n2e_GetDpiX();
+	drtp.dpiY = n2e_GetDpiY();
 
 ...
 
-        96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+		96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
 >>
-        GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+		GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
 
 ...
 
-      case SCI_SETDPI:
-        SetDPI(LOWORD(wParam),
-               HIWORD(wParam),
-               MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
-        InvalidateStyleData();
-        RefreshStyleData();
-        return 0;
+	  case SCI_N2E_SETDPI:
+		n2e_SetDPI(LOWORD(wParam),
+			HIWORD(wParam),
+			MulDiv(N2E_DEFAULT_FONT_DPI, N2E_DEFAULT_SCREEN_DPI, n2e_GetDpiY()));
+		InvalidateStyleData();
+		RefreshStyleData();
+		return 0;
 
 ... 
 
-            drtp.dpiX = 96.0;
-            drtp.dpiY = 96.0;
+			drtp.dpiX = 96.0;
+			drtp.dpiY = 96.0;
 >>
-            drtp.dpiX = GetDpiX();
-            drtp.dpiY = GetDpiY();
+			drtp.dpiX = n2e_GetDpiX();
+			drtp.dpiY = n2e_GetDpiY();
 [/scintilla/win32/ScintillaWin.cxx]
 
 Add required subroutines:
 [scintilla/win32/PlatWin.h]
-#define DEFAULT_SCREEN_DPI 96
-#define DEFAULT_FONT_DPI 72
+#define N2E_DEFAULT_SCREEN_DPI 96
+#define N2E_DEFAULT_FONT_DPI 72
 
-void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
-float GetDpiX();
-float GetDpiY();
-int GetDpiFont();
+void n2e_SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont);
+float n2e_GetDpiX();
+float n2e_GetDpiY();
+int n2e_GetDpiFont();
 [/scintilla/win32/PlatWin.h]
 
 [scintilla/win32/PlatWin.cxx]
-static float dpiX = DEFAULT_SCREEN_DPI;
-static float dpiY = DEFAULT_SCREEN_DPI;
-static int dpiFont = DEFAULT_FONT_DPI;
+static float n2e_dpiX = N2E_DEFAULT_SCREEN_DPI;
+static float n2e_dpiY = N2E_DEFAULT_SCREEN_DPI;
+static int n2e_dpiFont = N2E_DEFAULT_FONT_DPI;
 
-void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+void n2e_SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 {
-    dpiX = _dpiX;
-    dpiY = _dpiY;
-    dpiFont = _dpiFont;
+	n2e_dpiX = _dpiX;
+	n2e_dpiY = _dpiY;
+	n2e_dpiFont = _dpiFont;
 }
 
-float GetDpiX()
+float n2e_GetDpiX()
 {
-    return dpiX;
+	return n2e_dpiX;
 }
 
-float GetDpiY()
+float n2e_GetDpiY()
 {
-    return dpiY;
+	return n2e_dpiY;
 }
 
-int GetDpiFont()
+int n2e_GetDpiFont()
 {
-    return dpiFont;
+	return n2e_dpiFont;
 }
 
 ...
 
+In SurfaceD2D::SurfaceD2D() replace
+logPixelsY = 72;
+with
+logPixelsY = N2E_DEFAULT_FONT_DPI;
+
 int SurfaceGDI::LogPixelsY() {
-    return GetDpiY();
+	return n2e_GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-    return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
+	return ::MulDiv(points, LogPixelsY(), N2E_DEFAULT_FONT_DPI);
 }
 
 void SurfaceD2D::SetScale() {
-    HDC hdcMeasure = ::CreateCompatibleDC(NULL);
-    logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
-    dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
-    dpiScaleY = logPixelsY / GetDpiY();
-    ::DeleteDC(hdcMeasure);
+	HDC hdcMeasure = ::CreateCompatibleDC(NULL);
+	logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
+	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / n2e_GetDpiX();
+	dpiScaleY = logPixelsY / n2e_GetDpiY();
+	::DeleteDC(hdcMeasure);
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-    return ::MulDiv(points, LogPixelsY(), GetDpiFont());
+	return ::MulDiv(points, LogPixelsY(), n2e_GetDpiFont());
 }
 
 [/scintilla/win32/PlatWin.cxx]
 
 [/**DPI awareness #154**]
+
+[**EscapeHTML**]
+Remove const from lpstrText.
+
+[scintilla/include/scintilla.h]
+struct Sci_TextToFind {
+	struct Sci_CharacterRange chrg;
+	char *lpstrText;
+	struct Sci_CharacterRange chrgText;
+};
+[/scintilla/include/scintilla.h]
+[/**EscapeHTML**]
+
+[**repaint issue when using Ctrl+Shift+Backspace/Del #116**]
+[scintilla/src/Editor.cxx]
+Replace
+
+		if (currentLine >= wrapPending.start)
+			WrapLines(wsAll);
+
+with
+
+		if (currentLine >= wrapPending.start) {
+			if (WrapLines(wsAll)) {
+				Redraw();
+			}
+		}
+[/scintilla/src/Editor.cxx]
+[/**repaint issue when using Ctrl+Shift+Backspace/Del #116**]
+
+[**#145 Allow NULL character substitution when using regexp-replace (\x00)**]
+[scintilla/src/UniConversion.cxx]
+unsigned int UTF8Length(const wchar_t *uptr, unsigned int tlen) {
+>>
+unsigned int UTF8Length(const wchar_t *uptr, unsigned int tlen, const bool processNULL) {
+
+...
+
+for (unsigned int i = 0; i < tlen && uptr[i];) {
+>>
+for (unsigned int i = 0; i < tlen && (uptr[i] || processNULL);) {
+
+...
+
+void UTF8FromUTF16(const wchar_t *uptr, unsigned int tlen, char *putf, unsigned int len) {
+>>
+void UTF8FromUTF16(const wchar_t *uptr, unsigned int tlen, char *putf, unsigned int len, const bool processNULL) {
+
+...
+
+for (unsigned int i = 0; i < tlen && uptr[i];) {
+>>
+for (unsigned int i = 0; i < tlen && (uptr[i] || processNULL);) {
+
+[/scintilla/src/UniConversion.cxx]
+
+[scintilla/src/UniConversion.h]
+unsigned int UTF8Length(const wchar_t *uptr, unsigned int tlen);
+void UTF8FromUTF16(const wchar_t *uptr, unsigned int tlen, char *putf, unsigned int len);
+>>
+unsigned int UTF8Length(const wchar_t *uptr, unsigned int tlen, const bool processNULL = false);
+void UTF8FromUTF16(const wchar_t *uptr, unsigned int tlen, char *putf, unsigned int len, const bool processNULL = false);
+[/scintilla/src/UniConversion.h]
