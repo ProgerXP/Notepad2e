@@ -680,7 +680,7 @@ Type | Default | Set By UI
 -----|---------|----------
 int, ms | 50 ms |
 
-when using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Edit it if the program skips wheel rotations or is too sensitive.
+When using **Ctrl+Wheel**, buffer will be scrolled at most once per this interval. Edit it if the program skips wheel rotations or is too sensitive.
 
 Necessary because Windows fires a handful of wheel scroll events per one real scroll.
 
@@ -709,7 +709,7 @@ Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where o
 
 Type | Default | Set By UI
 -----|---------|----------
-int | 1 |
+int, bool | 1 |
 
 If **0**, use *Notepad2*'s behaviour calling [UrlEscape](https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea) with `URL_ESCAPE_SEGMENT_ONLY`.
 
