@@ -366,7 +366,7 @@ BEGIN
     POPUP "&?"
     BEGIN
         MENUITEM "&About...\tF1",               IDM_HELP_ABOUT
-        MENUITEM "&Third-party Code...",        IDM_HELP_ABOUT_3RD_PARTY
+        MENUITEM "&3rd-Party Code...",          IDM_HELP_ABOUT_3RD_PARTY
     END
 END
 
@@ -1092,7 +1092,7 @@ END
 
 IDD_ABOUT_3RD_PARTY DIALOGEX 0, 0, 339, 141
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_NOFAILCREATE | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Third-party Code"
+CAPTION "3rd-Party Code"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     ICON            IDR_MAINWND,-1,7,7,20,20
