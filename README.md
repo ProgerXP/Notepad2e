@@ -14,14 +14,17 @@ For those of you who are unfamiliar with *Notepad2*:
 
 Some folks use it to replace the standard `Notepad.exe` of Windows.
 
+It's also part of [TortoiseGit](https://tortoisegit.org).
+
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
 
 ## Downloads
+
 Stable versions are available via [GitHub releases](https://github.com/ProgerXP/Notepad2e/releases).
 
-Non-stable daily builds are available from [this page](http://proger.me/notepad2e/binaries/).
+Archived non-stable daily builds are available from [this page](http://proger.me/notepad2e/binaries/).
 
-Latest non-stable x86/non-ICU build is available from [here](http://proger.me/notepad2e/binaries/LATEST).
+Latest non-stable x86/non-ICU build is permanently available by [this URL](http://proger.me/notepad2e/binaries/LATEST).
 
 ## Compilation
 
@@ -181,6 +184,12 @@ File > Open Previous (**Alt+G**) command lets you toggle between two most recent
 
 ![Alt+G - Open Previous](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-prev.gif)
 
+File > History (**Alt+H**) now pre-selects the target for **Alt+G**: #209
+* first item - if current document is not saved ("Untitled")
+* second item - in other cases
+
+This allows faster list navigation skipping first and second items (which are directly accessible via **F5** and **Alt+G**).
+
 ### [NEW] Open By Prefix
 Open Dialog allows opening by prefix - so instead of typing the full file name or selecting a file with your mouse you can only type the name's beginning and hit Enter (or click Open) to open the first matching file. #19
 
@@ -256,7 +265,8 @@ When saving, if the given new file name ends on period then the file is saved wi
 ![Ctrl+Alt+L - Open Folder](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/open-folder.gif)
 
 ### Line Selection Hotkeys
-Due to their accidental nature, disabled triple-click and triple-**Ctrl+Space** Scintilla behaviour that previously caused selection of the entire line. Full line can still be selected with standard **Ctrl+Shift+Space** hotkey, or by clicking on the line number.
+* Triple-click and triple-**Ctrl+Space** in Scintilla select entire line. Due to their accidental nature they are disabled in *Notepad 2e*. Full line can still be selected with standard **Ctrl+Shift+Space** hotkey or by clicking on the line number (gutter).
+* Single **Ctrl+Space** now selects closest word on the right, ignoring non-word symbols before it. If there is none, entire line sans leading whtiespace is selected. #205
 
 ### Line Gutter
 * Default gutter style was changed from `size:-2;fore:#ff0000` to `size:-1`.
@@ -272,6 +282,8 @@ Due to their accidental nature, disabled triple-click and triple-**Ctrl+Space** 
   * XML lexer setting (**Shift+F11**)
   * Zoom level change (**Ctrl++/-**)
   * File saving
+  * Replace/All/In Selection (**Ctrl+H**) #206
+  * Drag & drop #222
 
 ### PCRE Support
 * Replaced incomplete *Notepad2* regexp implementation with a fully-featured Scintilla's Boost Regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
@@ -314,6 +326,8 @@ These changes make editing Markdown and wiki sources much more pleasant: `[[foo|
 ![Unwrap commands](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/unwrap.gif)
 
 ### Special Commands
+Split Edit > Special submenu into 2 submenus: Special and Encode. #201
+
 HTML data:
 * **[NEW]** Edit > Special > Strip HTML Tags (**Shift+Alt+X**) command removes `<tags>` inside selection, or if there's none - removes first tag before cursor. #40
 * **[NEW]** Edit > Special > Escape HTML (**Ctrl+Shift+Alt+X**) command turns `< > &` into `&lt; &gt; &amp;` respectively (inside selection or everywhere in the document if selection is empty). #51 #31
@@ -321,19 +335,19 @@ HTML data:
 ![Shift+Alt+X - String Tags](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/strip-tags.gif)
 
 Binary data:
-* **[NEW]** Edit > Special > String To Hex and Hex To String (**[Ctrl+]Alt+Shift+A**) operate on the document as a bytestream similarly to PHP's `bin2hex()` and `hex2bin()`. Hex To String ignores whitespace (#123). Output: `616263` for `abc`. #87
-* **[NEW]** Edit > Special > QP Encode and QP Decode (**[Ctrl+]Alt+Shift+Q**) operate on the document as a bytestream similarly to PHP's `quoted_printable_encode()` and `quoted_printable_decode()`. Output: `ab=3Dc` for `ab=c`. See [RFC2045, Section 6.7](http://www.faqs.org/rfcs/rfc2045) (this format is typically used in vCards and MIME). #124
-* **[NEW]** Edit > Special > Base64 Encode and Base64 Decode (**[Ctrl+]Alt+Shift+W**) operate on the document as a bytestream similarly to PHP's `base64_encode()` and `base64_decode()`. Base64 Decode ignores whitespace. Output: `YWJj` for `abc`. #122
+* **[NEW]** Edit > Encode > String To Hex and Hex To String (**[Ctrl+]Alt+Shift+A**) operate on the document as a bytestream similarly to PHP's `bin2hex()` and `hex2bin()`. Hex To String ignores whitespace (#123). Output: `616263` for `abc`. #87
+* **[NEW]** Edit > Encode > QP Encode and QP Decode (**[Ctrl+]Alt+Shift+Q**) operate on the document as a bytestream similarly to PHP's `quoted_printable_encode()` and `quoted_printable_decode()`. Output: `ab=3Dc` for `ab=c`. See [RFC2045, Section 6.7](http://www.faqs.org/rfcs/rfc2045) (this format is typically used in vCards and MIME). #124
+* **[NEW]** Edit > Encode > Base64 Encode and Base64 Decode (**[Ctrl+]Alt+Shift+W**) operate on the document as a bytestream similarly to PHP's `base64_encode()` and `base64_decode()`. Base64 Decode ignores whitespace. Output: `YWJj` for `abc`. #122
 * Big buffers will see a progress bar in the status bar for the above commands.
 * **Warning:** when saving binary data (e.g. a base64-encoded binary file) disable both checkboxes in File > Line Endings > Default, or saved content may be altered. Binary-Safe Save toolbar button does this for you. #170
 
 ![Encode/Decode Quoted-Printable/Base64](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/qp-b64.gif)
 
 Other data:
-* Edit > Special > URL Encode and URL Decode (**[Alt+]Ctrl+Shift+E**) use new `UrlEscapeFlags` setting for predictable processing according to RFC 3986. #189
+* Edit > Encode > URL Encode and URL Decode (**[Alt+]Ctrl+Shift+E**) use new `UrlEscapeFlags` setting for predictable processing according to RFC 3986. #189
 
 ### [NEW] Ctrl+Wheel Scroll
-Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11
+Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11 #217
 
 Related settings:
 * `WheelScroll`
@@ -355,8 +369,9 @@ Useful when creating snippets or lists from other sources - such as from URLs; n
 * When called with empty selection - appends the entire line.
 * In *Notepad2*, it didn't work with empty clipboard - now it works.
 
-### Retain Position On Recode
-When file is re-coded (File > Encoding menu items) caret position and selection are retained, to the best effort possible. #7
+### File Encoding
+* When file is re-coded (File > Encoding menu items) caret position and selection are retained, to the best effort possible. #7
+* File > Encoding > Recode (**F8**) renamed to Reload As to better reflect its purpose. #218
 
 ### [NEW] Go To Last Change
 Go To Last Change (**Ctrl+Shift+Z**) command moves caret to the position of last Undo action. Useful when making a change, scrolling to confirm something and then navigating back to continue. #6
@@ -379,12 +394,23 @@ Related settings:
 
 ![Language indicator](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/lang-title.gif)
 
+### [NEW] Date/Time Indicator
+
+Menu bar can display the clock in the configured format. For example: `07/05/19 - 13:53`. The text is updated every 10 seconds. #210
+
+Related settings:
+* `ClockFormat`
+
+![Menu clock](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/menu-clock.png)
+
 ### Other Changes
 * Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
 * Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are simply inserted into a focused input instead of replacing its value. #119
 * Line breaks (`\r` and `\n`) are removed from Search/Replace (of Find/Replace, **Ctrl+F/H**) and Prefix/Append (of Modify Lines, **Alt+M**) inputs (could appear after pasting). #70 #173
 * **[NEW]** Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
+* **[NEW]** Displaying selected line count in the status bar (in regular and rectangular modes). #204
+* **[NEW]** Edit > Insert > Random (**Ctrl+Shift+Alt+R**) inserts a padded number in range 1..99999 (inclusive) using the poor C's `rand()`. #221
 * "Accelerated" navigation mode for **Ctrl+Arrow** (like in Windows Notepad) that skips punctuation and other characters. Setting: `WordNavigationMode`.
 * Empty Window (**Alt+0**) no more triggers save prompt when Save Before Running Tools is enabled. #176
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
@@ -395,6 +421,9 @@ Related settings:
 * Upgraded Scintilla library to a more recent version (3.6.6).
 * Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
 * Reduced default *Notepad2* timeout from 1000 ms to 250 ms which sometimes allowed duplicate windows even if Single File Instance/Reuse Window were enabled. #177
+* Changed hardcoded printed page's header/footer font size from 8 pt/7 pt to 10 pt. #199
+* Reorganized `&` accelerators in File, Edit and Settings. #197
+* **[NEW]** ? > 3rd-Party Code attribution dialog. #181
 * Changed *Notepad2* defaults: #167
 
 Setting | Old Value | New Value
@@ -414,6 +443,7 @@ Long Line | 72 | 80
 ### Syntax Schemes
 
 **[NEW]** These syntax schemes were added:
+* `awk` #216
 * ASN1
 * bash
 * CoffeeScript
@@ -566,6 +596,41 @@ Value | Meaning
 0 | No indication (as in *Notepad2*)
 1 | Always add language name as in `... [RU]`
 2 | As **1** but don't add if the language is English (`EN`)
+
+### ClockFormat
+
+Type | Default | Set By UI
+-----|---------|----------
+str, `strftime()` | |
+
+Controls format of the date/time indicator in the menu bar. If empty, it's hidden.
+
+Value is a standard `strftime()` format string composed of `%smth` sequences to be replaced by the corresponding values. Useful variables:
+
+Variable | Meaning | Example
+---------|---------|--------
+%% | The percent symbol itself | %
+%Y | Year | 2019
+%y | Short year | 19
+%B | Month name | July
+%b | Short month name | Jul
+%m | Month | 07
+%V | Week of the year | 27
+%j | Day of the year | 186
+%e | Day | 5
+%A | Weekday name | Friday
+%a | Short weekday name | Fri
+%H | Hour in 24-hour format | 14
+%I | Hour in 12-hour format | 02
+%p | Locale-dependent A.M. or P.M. | P.M.
+%M | Minute | 03
+%S | Second | 25
+%c | Locale-dependent standard date/time | Fri Jul 5 14:03:25 2019
+%x | Locale-dependent standard date | 07/05/19
+%X | Locale-dependent standard time | 14:03:25
+%Z | Locale-dependent time zone | Russia TZ 2 Standard Time
+
+Full reference: https://en.cppreference.com/w/cpp/chrono/c/strftime
 
 ### ShellMenuType
 
