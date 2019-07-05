@@ -155,6 +155,10 @@ void n2e_InitClock()
     n2e_UpdateClockMenuItem();
     iClockUpdateTimerId = SetTimer(NULL, 0, iClockUpdateInterval, n2e_ClockTimerProc);
   }
+  else
+  {
+    iClockUpdateTimerId = 0;
+  }
 }
 
 void n2e_ReleaseClock()
@@ -162,6 +166,9 @@ void n2e_ReleaseClock()
   if (iClockUpdateTimerId)
   {
     KillTimer(NULL, iClockUpdateTimerId);
+    const HMENU hmenu = GetMenu(hwndMain);
+    DeleteMenu(hmenu, GetMenuItemCount(hmenu) - 1, MF_BYPOSITION);
+    DrawMenuBar(hwndMain);
   }
 }
 
