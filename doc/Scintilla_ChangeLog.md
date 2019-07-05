@@ -247,6 +247,38 @@ Corresponding calls added to Editor::KeyCommand():
         ...
         NotifyLineCountChanged();
         break;
+        
+...
+
+New code around DropAt()-call:
+
+		position = positionAfterDeletion;
+
+		*const int linesTotal = pdoc->LinesTotal();*
+		std::string convertedText = Document::TransformLineEnds(value, lengthValue, pdoc->eolMode);
+		
+...
+
+		if (rectangular) {
+			PasteRectangular(position, convertedText.c_str(), static_cast<int>(convertedText.length()));
+			// Should try to select new rectangle but it may not be a rectangle now so just select the drop position
+			SetEmptySelection(position);
+		} else {
+			position = MovePositionOutsideChar(position, sel.MainCaret() - position.Position());
+			position = SelectionPosition(InsertSpace(position.Position(), position.VirtualSpace()));
+			const int lengthInserted = pdoc->InsertString(
+				position.Position(), convertedText.c_str(), static_cast<int>(convertedText.length()));
+			if (lengthInserted > 0) {
+				SelectionPosition posAfterInsertion = position;
+				posAfterInsertion.Add(lengthInserted);
+				SetSelection(posAfterInsertion, position);
+			}
+		}
+		*if (pdoc->LinesTotal() != linesTotal) {
+			NotifyLineCountChanged();
+		}*
+		
+
 [/**"Update gutter width"-feature**]
 
 [**Drag & drop improvement #63**]

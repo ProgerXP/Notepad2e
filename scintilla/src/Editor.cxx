@@ -4275,6 +4275,7 @@ void Editor::DropAt(SelectionPosition position, const char *value, size_t length
 		}
 		position = positionAfterDeletion;
 
+		const int linesTotal = pdoc->LinesTotal();
 		std::string convertedText = Document::TransformLineEnds(value, lengthValue, pdoc->eolMode);
 
 		if (rectangular) {
@@ -4291,6 +4292,9 @@ void Editor::DropAt(SelectionPosition position, const char *value, size_t length
 				posAfterInsertion.Add(lengthInserted);
 				SetSelection(posAfterInsertion, position);
 			}
+		}
+		if (pdoc->LinesTotal() != linesTotal) {
+			NotifyLineCountChanged();
 		}
 	} else if (inDragDrop == ddDragging) {
 		SetEmptySelection(position);
