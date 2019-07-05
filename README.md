@@ -344,7 +344,7 @@ Binary data:
 ![Encode/Decode Quoted-Printable/Base64](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/qp-b64.gif)
 
 Other data:
-* Edit > Encode > URL Encode and URL Decode (**[Alt+]Ctrl+Shift+E**) use new `UrlEscapeFlags` setting for predictable processing according to RFC 3986. #189
+* Edit > Encode > URL Encode and URL Decode (**[Alt+]Ctrl+Shift+E**) use new `UrlEncodeMode` setting for predictable processing according to RFC 3986. #189
 
 ### [NEW] Ctrl+Wheel Scroll
 Rolling mouse wheel while holding **Ctrl** scrolls the document by entire pages (like **Page Up/Down**) - makes it easier to navigate long scripts. #11 #217
@@ -705,6 +705,16 @@ Controls **Ctrl+Arrow** navigation. If **1**, enables "accelerated" mode where o
 ![Accelerated navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-accel.gif)
 ![Standard navigation](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/nav-std.gif)
 
+### UrlEncodeMode
+
+Type | Default | Set By UI
+-----|---------|----------
+int | 1 |
+
+If **0**, use *Notepad2*'s behaviour calling [UrlEscape](https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea) with `URL_ESCAPE_SEGMENT_ONLY`.
+
+If **1**, perform full URL encoding/decoding per RFC 3986.
+
 ### SaveOnLoseFocus
 
 Type | Default | Set By UI
@@ -753,16 +763,6 @@ Type | Default | Set By UI
 int, KiB | 96 KiB |
 
 Maximum lookahead/behind distance for word highlighting. If too large, navigation in big files will lag since it will search the buffer for twice this length (back & forward) on every position change. #53 #42
-
-#### UrlEscapeFlags
-
-Type | Default | Set By UI
------|---------|----------
-int, bitfield | 8192 |
-
-If **0**, perform full URL encoding/decoding per RFC 3986.
-
-If **non-0**, call [UrlEscape](https://docs.microsoft.com/en-us/windows/desktop/api/shlwapi/nf-shlwapi-urlescapea) with those flags. Default value sets `URL_ESCAPE_SEGMENT_ONLY`, preserving *Notepad2*'s behaviour.
 
 #### _SelectionType
 
