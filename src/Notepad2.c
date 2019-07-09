@@ -1907,7 +1907,10 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     EnableCmd(hmenu, IDM_FILE_ELEVATE, FALSE);
   }
   CheckCmd(hmenu, IDM_FILE_ELEVATE, fIsElevated || n2e_IsElevatedMode());
-  // [/2e]
+  // [2e]: Minor menu fixes #229
+  EnableCmd(hmenu, ID_FILE_OPEN__NEXT, i);
+  EnableCmd(hmenu, ID_FILE_OPEN__PREVIOUS, i);
+  EnableCmd(hmenu, ID_FILE_INVOKESHELLMENU, i);
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
   // [2e]: File->RenameTo menu item
   EnableCmd(hmenu, ID_FILE_RENAMETO, i);
