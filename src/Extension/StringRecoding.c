@@ -395,17 +395,17 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     pRA->pDecodeTailMethod = QP_Decode; // use regular decode proc for tail
     pRA->data = QP_InitAlgorithmData(pRA->isEncoding);
     return TRUE;
-	case ERT_URL:
-		lstrcpy(pRA->statusText, isEncoding ? L"String to URL..." : L"URL to String...");
-		pRA->iRequiredCharsForEncode = 1;
-		pRA->iRequiredCharsForDecode = 3;
-		pRA->pIsValidStrSequence = URL_IsValidSequence;
-		pRA->pEncodeMethod = URL_Encode;
-		pRA->pEncodeTailMethod = NULL;
-		pRA->pDecodeMethod = URL_Decode;
-		pRA->pDecodeTailMethod = URL_Decode;
-		pRA->data = NULL;
-		return TRUE;
+  case ERT_URL:
+    lstrcpy(pRA->statusText, isEncoding ? L"String to URL..." : L"URL to String...");
+    pRA->iRequiredCharsForEncode = 1;
+    pRA->iRequiredCharsForDecode = 3;
+    pRA->pIsValidStrSequence = URL_IsValidSequence;
+    pRA->pEncodeMethod = URL_Encode;
+    pRA->pEncodeTailMethod = NULL;
+    pRA->pDecodeMethod = URL_Decode;
+    pRA->pDecodeTailMethod = URL_Decode;
+    pRA->data = NULL;
+    return TRUE;
   default:
     assert(FALSE);
     return FALSE;

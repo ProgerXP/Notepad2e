@@ -178,31 +178,31 @@ namespace Notepad2eTests
     }
   };
 
-	TEST_CLASS(CStringToURL)
-	{
-	public:
-		TEST_METHOD(TestURL_StringSamples)
-		{
-			const CTestCaseData data[] = {
-				CTestCaseData(false, "http://site.com/?foo=bar", CPI_DEFAULT, "http%3A%2F%2Fsite.com%2F%3Ffoo%3Dbar"),
-				CTestCaseData(false, "test string", CPI_DEFAULT, "test%20string"),
-				CTestCaseData(false, L"тестовая строка", CPI_UTF8, "%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%BE%D0%BA%D0%B0"),
-				CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing%20space%20test%20%20%0D%0Awith%20new%20%20%20%20line%20%20%20%20test%20%20%20%20"),
-				CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t%00e%00s%00t%00s%00%00%00t%00r%00i%00n%00g%00")
-			};
-			DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
-			DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
-		}
+  TEST_CLASS(CStringToURL)
+  {
+  public:
+    TEST_METHOD(TestURL_StringSamples)
+    {
+      const CTestCaseData data[] = {
+        CTestCaseData(false, "http://site.com/?foo=bar", CPI_DEFAULT, "http%3A%2F%2Fsite.com%2F%3Ffoo%3Dbar"),
+        CTestCaseData(false, "test string", CPI_DEFAULT, "test%20string"),
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%BE%D0%BA%D0%B0"),
+        CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing%20space%20test%20%20%0D%0Awith%20new%20%20%20%20line%20%20%20%20test%20%20%20%20"),
+        CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t%00e%00s%00t%00s%00%00%00t%00r%00i%00n%00g%00")
+      };
+      DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
+      DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
+    }
 
-		TEST_METHOD(TestURL_FileSamples)
-		{
-			const CTestCaseData data[] = {
-				CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_URL_UTF8.txt"),
-				CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_URL_UTF8_big.txt"),
-				CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_URL_SHIFT-JIS.txt"),
-			};
-			DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
-			DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
-		}
-	};
+    TEST_METHOD(TestURL_FileSamples)
+    {
+      const CTestCaseData data[] = {
+        CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_URL_UTF8.txt"),
+        CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_URL_UTF8_big.txt"),
+        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_URL_SHIFT-JIS.txt"),
+      };
+      DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
+      DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
+    }
+  };
 }

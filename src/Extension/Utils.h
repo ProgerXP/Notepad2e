@@ -26,9 +26,9 @@ typedef enum
 
 typedef enum
 {
-	SLF_DISABLED = 0,
-	SLF_ENABLED = 1,
-	SLF_ENABLED_UNTIL_NEW_FILE = 2,
+  SLF_DISABLED = 0,
+  SLF_ENABLED = 1,
+  SLF_ENABLED_UNTIL_NEW_FILE = 2,
 } ESaveOnLoseFocus;
 
 typedef enum

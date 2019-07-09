@@ -1471,7 +1471,7 @@ void PathFixBackslashes(LPWSTR lpsz)
 void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 {
   WCHAR szBuf[312];
-	
+
   // [2e]: Don't interpret %envvars% in pathname when opening file #193
   if (fExpandEnvVariables && ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
     lstrcpyn(lpSrc, szBuf, dwSrc);

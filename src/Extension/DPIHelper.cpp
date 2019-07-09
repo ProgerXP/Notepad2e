@@ -319,11 +319,11 @@ static BOOL isWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WO
 {
   OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
   DWORDLONG        const dwlConditionMask = VerSetConditionMask(
-	  VerSetConditionMask(
-		  VerSetConditionMask(
-			  0, VER_MAJORVERSION, VER_GREATER_EQUAL),
-		  VER_MINORVERSION, VER_GREATER_EQUAL),
-	  VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
+    VerSetConditionMask(
+      VerSetConditionMask(
+        0, VER_MAJORVERSION, VER_GREATER_EQUAL),
+      VER_MINORVERSION, VER_GREATER_EQUAL),
+    VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
 
   osvi.dwMajorVersion = wMajorVersion;
   osvi.dwMinorVersion = wMinorVersion;

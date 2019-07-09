@@ -311,7 +311,7 @@ INT_PTR CALLBACK About3rdPartyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 {
   switch (umsg)
   {
-	DPI_CHANGED_HANDLER();
+    DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
       n2e_InitAbout3rdPartyText(GetDlgItem(hwnd, IDC_RICHEDIT));

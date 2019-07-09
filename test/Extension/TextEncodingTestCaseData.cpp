@@ -65,12 +65,12 @@ std::vector<unsigned char> CTestCaseData::LoadFile(const std::string filename)
   size_t len = 0;
   if (_dupenv_s(&pFileSamplesPath, &len, "FileSamplesPath") || !pFileSamplesPath)
   {
-	  pFileSamplesPath = TEST_DATA_PATH;
+    pFileSamplesPath = TEST_DATA_PATH;
   }
   std::string fileSamplesPath(pFileSamplesPath);
   if (fileSamplesPath.size() && (*fileSamplesPath.rbegin() != '\\'))
   {
-	  fileSamplesPath += L'\\';
+    fileSamplesPath += L'\\';
   }
   auto file = fileSamplesPath + filename;
   if (PathFileExistsA(file.c_str()))
