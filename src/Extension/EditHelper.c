@@ -965,17 +965,7 @@ LRESULT CALLBACK n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
   switch (uMsg)
   {
     case WM_PASTE:
-      if (n2e_FilteredPasteFromClipboard(hwnd))
-      {
-        DWORD dwControlID = GetWindowLong(hwnd, GWL_ID);
-        HWND hParent = GetParent(hwnd);
-        if (n2e_CheckWindowClassName(hParent, WC_COMBOBOX))
-        {
-          dwControlID = GetWindowLong(hParent, GWL_ID);
-          hParent = GetParent(hParent);
-        }
-        PostMessage(hParent, WM_COMMAND, MAKELONG(dwControlID, 1), 0);
-      }
+      n2e_FilteredPasteFromClipboard(hwnd);
       return 0;
     case WM_COMMAND:
       switch (LOWORD(wParam))
@@ -1028,7 +1018,6 @@ LRESULT CALLBACK n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
             {
               SendMessage(hwnd, EM_SETSEL, cou + 1, car);
               SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)L"");
-              PostMessage(GetParent(hwndCombo), WM_COMMAND, MAKELONG(idControl, 1), 0);
             }
           }
           break;
@@ -1039,7 +1028,13 @@ LRESULT CALLBACK n2e_FindEditWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
     default:
       break;
   }
-  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+  const auto res = n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+  if ((uMsg == WM_SETTEXT) || (uMsg == EM_REPLACESEL))
+  {
+    const HWND hwndCombo = GetParent(hwnd);
+    PostMessage(GetParent(hwndCombo), WM_COMMAND, MAKELONG(GetWindowLong(hwndCombo, GWL_ID), CBN_EDITCHANGE), 0);
+  }
+  return res;
 }
 
 BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit)
