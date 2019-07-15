@@ -108,7 +108,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex);
 void n2e_InplaceRev(WCHAR * s);
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2);
 BOOL n2e_OpenFileByPrefix(LPCWSTR pref, LPWSTR dir, LPWSTR out);
-void n2e_Grep(void* lpf, const BOOL grep);
+BOOL n2e_Grep(void* lpf, const BOOL grep);
 void n2e_SetWheelScroll(const BOOL enable);
 BOOL n2e_IsWordChar(const WCHAR ch);
 

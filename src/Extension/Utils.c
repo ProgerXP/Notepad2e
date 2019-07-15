@@ -757,7 +757,7 @@ void n2e_GetLastDir(LPTSTR out)
   }
 }
 
-void n2e_Grep(void* _lpf, const BOOL grep)
+BOOL n2e_Grep(void* _lpf, const BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
   int k = 0;
@@ -768,7 +768,12 @@ void n2e_Grep(void* _lpf, const BOOL grep)
   struct Sci_TextToFind ttf;
   if (!lstrlenA(lpf->szFind))
   {
-    return;
+    return FALSE;
+  }
+
+  if (!n2e_IsFindReplaceAvailable(lpf))
+  {
+    return FALSE;
   }
 
   const int selStart = SciCall_GetSelStart();
@@ -790,7 +795,7 @@ void n2e_Grep(void* _lpf, const BOOL grep)
   }
   if (lstrlenA(szFind2) == 0)
   {
-    return;
+    return FALSE;
   }
 
   BeginWaitCursor();
@@ -840,6 +845,7 @@ void n2e_Grep(void* _lpf, const BOOL grep)
   UpdateLineNumberWidth();
   n2e_HideProgressBarInStatusBar();
   EndWaitCursor();
+  return TRUE;
 }
 
 void n2e_InplaceRev(WCHAR * s)

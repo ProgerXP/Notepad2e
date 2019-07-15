@@ -5260,14 +5260,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             if (!GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_REPLACETEXT, lpefr->szReplaceUTF8, COUNTOF(lpefr->szReplaceUTF8)))
               lstrcpyA(lpefr->szReplaceUTF8, "");
           }
-          // [2e]: Grep / Ungrep #29
-          if (LOWORD(wParam) == ID_GREP ||
-              LOWORD(wParam) == ID_UNGREP)
-          {
-            bCloseDlg = TRUE;
-          }
-          // [/2e]
-          else if (bIsFindDlg)
+          
+          if (bIsFindDlg)
           {
             bCloseDlg = lpefr->bFindClose;
           }
@@ -5300,54 +5294,54 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           if (!bSwitchedFindReplace)
             SendMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetFocus()), 1);
 
-          if (bCloseDlg)
-          {
-            // [2e]: Match indicator
-            n2e_ResetFindIcon();
-            DestroyWindow(hwnd);
-            hDlgFindReplace = NULL;
-          }
-
           switch (LOWORD(wParam))
           {
             case IDOK: // find next
             case IDACC_SELTONEXT:
               if (!bIsFindDlg)
                 bReplaceInitialized = TRUE;
-              EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT || HIBYTE(GetKeyState(VK_SHIFT)));
+              bCloseDlg &= EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT || HIBYTE(GetKeyState(VK_SHIFT)));
               break;
 
             case IDC_FINDPREV: // find previous
             case IDACC_SELTOPREV:
               if (!bIsFindDlg)
                 bReplaceInitialized = TRUE;
-              EditFindPrev(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTOPREV || HIBYTE(GetKeyState(VK_SHIFT)));
+              bCloseDlg &= EditFindPrev(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTOPREV || HIBYTE(GetKeyState(VK_SHIFT)));
               break;
 
             case IDC_REPLACE:
               bReplaceInitialized = TRUE;
-              EditReplace(lpefr->hwnd, lpefr);
+              bCloseDlg &= EditReplace(lpefr->hwnd, lpefr);
               break;
 
             case IDC_REPLACEALL:
               bReplaceInitialized = TRUE;
-              EditReplaceAll(lpefr->hwnd, lpefr, TRUE);
+              bCloseDlg &= EditReplaceAll(lpefr->hwnd, lpefr, TRUE);
               break;
 
             case IDC_REPLACEINSEL:
               bReplaceInitialized = TRUE;
-              EditReplaceAllInSelection(lpefr->hwnd, lpefr, TRUE);
+              bCloseDlg &= EditReplaceAllInSelection(lpefr->hwnd, lpefr, TRUE);
               break;
 
             // [2e]: Grep / Ungrep #29
             case ID_GREP:
-              n2e_Grep(lpefr, TRUE);
+              bCloseDlg = n2e_Grep(lpefr, TRUE);
               break;
 
             case ID_UNGREP:
-              n2e_Grep(lpefr, FALSE);
+              bCloseDlg = n2e_Grep(lpefr, FALSE);
               break;
             // [/2e]
+          }
+
+          if (bCloseDlg)
+          {
+            // [2e]: Match indicator
+            n2e_ResetFindIcon();
+            DestroyWindow(hwnd);
+            hDlgFindReplace = NULL;
           }
           break;
 
@@ -5658,6 +5652,10 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   if (!lstrlenA(lpefr->szFind))
     return FALSE;
 
+  // [2e]: ICU build: missing regexp warnings #232
+  if (!n2e_IsFindReplaceAvailable(lpefr))
+    return FALSE;
+
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
@@ -5914,6 +5912,10 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   }
 
   if (!lstrlenA(lpefr->szFind))
+    return FALSE;
+
+  // [2e]: ICU build: missing regexp warnings #232
+  if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
   // Show wait cursor...
