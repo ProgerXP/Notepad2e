@@ -40,13 +40,14 @@ BOOL Hex_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
 
 BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
+  long iCharsProcessed = 0;
   if (n2e_IsUnicodeEncodingMode())
   {
     char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
-    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, piCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded3, piCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded4, piCharsProcessed))
+    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, &iCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, &iCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded3, &iCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded4, &iCharsProcessed))
     {
       const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
@@ -60,6 +61,10 @@ BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
         TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
       }
+      if (piCharsProcessed)
+      {
+        (*piCharsProcessed) += iCharsProcessed;
+      }
       return TRUE;
     }
     return FALSE;
@@ -67,11 +72,15 @@ BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
   else
   {
     char chEncoded1, chEncoded2;
-    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, piCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, piCharsProcessed))
+    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, &iCharsProcessed)
+        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, &iCharsProcessed))
     {
       const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
       TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
+      if (piCharsProcessed)
+      {
+        (*piCharsProcessed) += iCharsProcessed;
+      }
       return TRUE;
     }
     return FALSE;
