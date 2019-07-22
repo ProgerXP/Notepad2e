@@ -107,12 +107,15 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\Extension\CommonUtils.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\Externals.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StringRecoding.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StrToBase64.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
@@ -124,15 +127,19 @@
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StrToQP.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\StrToURL.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\tinyexpr\tinyexpr.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\Trace.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="EvalTests.cpp" />
     <ClCompile Include="stdafx.cpp">
