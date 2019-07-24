@@ -131,6 +131,7 @@ void n2e_HideProgressBarInStatusBar();
 void n2e_SetProgressBarPosInStatusBar(const long nCurPos);
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 void n2e_ProcessPendingMessages();
+void n2e_ProcessPendingMessagesForProgressBar();
 int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd);
 int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing);
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit);

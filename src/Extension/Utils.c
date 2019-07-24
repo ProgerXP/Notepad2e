@@ -151,7 +151,7 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
     n2e_OnMouseVanishEvent(FALSE);
     break;
   case WM_MOUSEMOVE:
-    n2e_ProcessPendingMessages();
+    n2e_ProcessPendingMessagesForProgressBar();
     n2e_OnMouseVanishEvent(TRUE);
     break;
   default:
@@ -996,6 +996,14 @@ void n2e_ProcessPendingMessages()
   {
     TranslateMessage(&msg);
     DispatchMessage(&msg);
+  }
+}
+
+void n2e_ProcessPendingMessagesForProgressBar()
+{
+  if (hwndStatusProgressBar)
+  {
+    n2e_ProcessPendingMessages();
   }
 }
 
