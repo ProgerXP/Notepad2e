@@ -3341,7 +3341,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         char mszBuf[MAX_PATH] = { 0 };
         sprintf(mszBuf, "%05d", n2e_GenerateRandom());
-        SciCall_ReplaceSel(0, (LPARAM)mszBuf);
+        SciCall_ReplaceSel(0, mszBuf);
         SciCall_SetSel(SciCall_GetAnchor() - strlen(mszBuf), SciCall_GetSelStart());
       }
       break;

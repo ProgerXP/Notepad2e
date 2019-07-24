@@ -13,7 +13,11 @@ VOID n2e_InitializeTrace()
 #ifdef _DEBUG
   if (IniGetInt(N2E_INI_SECTION, L"DebugLog", 0))
   {
-    n2e_log = fopen("n2e_log.log", "w");
+    errno_t err;
+    if ((err = fopen_s(&n2e_log, "n2e_log.log", "w")) != 0)
+    {
+      err;
+    }
   }
 #endif
 }

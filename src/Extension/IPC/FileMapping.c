@@ -280,7 +280,7 @@ BOOL FileMapping_FlushViewOfFile(FileMapping *pFileMapping)
   }
   if (pFileMapping->lpData)
   {
-    if (FlushViewOfFile(pFileMapping->lpData, pFileMapping->iBufferSize))
+    if (FlushViewOfFile(pFileMapping->lpData, (SIZE_T)pFileMapping->iBufferSize))
     {
       return TRUE;
     }
