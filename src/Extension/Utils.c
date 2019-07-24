@@ -92,7 +92,7 @@ extern enum ESaveSettingsMode nSaveSettingsMode;
 void n2e_InitInstance()
 {
   InitScintillaHandle(hwndEdit);
-  n2e_Init();
+  n2e_Init(hwndEdit);
   hShellHook = SetWindowsHookEx(WH_SHELL, n2e_ShellProc, NULL, GetCurrentThreadId());
 }
 
@@ -143,6 +143,22 @@ void CALLBACK n2e_ClockTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
   n2e_UpdateClockMenuItem();
 }
 
+LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (uMsg)
+  {
+  case WM_CHAR:
+    n2e_OnMouseVanishEvent(FALSE);
+    break;
+  case WM_MOUSEMOVE:
+    n2e_OnMouseVanishEvent(TRUE);
+    break;
+  default:
+    break;
+  }
+  return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
 void n2e_InitClock()
 {
   if (lstrlen(wchClockFormat))
@@ -172,7 +188,7 @@ void n2e_ReleaseClock()
   }
 }
 
-void n2e_Init()
+void n2e_Init(const HWND hwndEdit)
 {
   srand((UINT)GetTickCount());
   n2e_InitializeTrace();
@@ -181,6 +197,7 @@ void n2e_Init()
   n2e_ResetLastRun();
   n2e_EditInit();
   n2e_Shell32Initialize();
+  n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
@@ -303,7 +320,7 @@ void n2e_Release()
 void n2e_Reset()
 {
   n2e_Release();
-  n2e_Init();
+  n2e_Init(hwndEdit);
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)

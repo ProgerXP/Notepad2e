@@ -1204,6 +1204,13 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       MsgInitMenu(hwnd, wParam, lParam);
       break;
 
+    
+    // [2e]: Hide pointer while typing #230
+    case WM_MENUSELECT:
+      n2e_OnMouseVanishEvent(TRUE);
+      break;
+    // [/2e]
+
 
     case WM_NOTIFY:
       return MsgNotify(hwnd, wParam, lParam);

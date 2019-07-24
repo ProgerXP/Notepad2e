@@ -22,3 +22,4 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place);
 BOOL n2e_IsSelectionEditModeOn();
 void n2e_SelectionEditStart(const BOOL highlightAll);
 BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode);
+void n2e_OnMouseVanishEvent(const BOOL showCursor);

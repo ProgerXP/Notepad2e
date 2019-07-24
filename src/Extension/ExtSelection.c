@@ -750,3 +750,33 @@ UINT n2e_SelectionGetSciEventMask(const BOOL range_not)
   }
   return out;
 }
+
+void n2e_OnMouseVanishEvent(const BOOL showCursor)
+{
+  static int hideCursorCounter = 0;
+  if (showCursor)
+  {
+    if (hideCursorCounter > 0)
+    {
+      ShowCursor(TRUE);
+      --hideCursorCounter;
+    }
+  }
+  else
+  {
+    if (hideCursorCounter <= 0)
+    {
+      static BOOL bInitialized = FALSE;
+      static BOOL bVanish = FALSE;
+      if (!bInitialized)
+      {
+        bInitialized = SystemParametersInfo(SPI_GETMOUSEVANISH, 0, &bVanish, 0);
+      }
+      if (bVanish)
+      {
+        ShowCursor(FALSE);
+        ++hideCursorCounter;
+      }
+    }
+  }
+}
