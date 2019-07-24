@@ -151,7 +151,6 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
     n2e_OnMouseVanishEvent(FALSE);
     break;
   case WM_MOUSEMOVE:
-    n2e_ProcessPendingMessagesForProgressBar();
     n2e_OnMouseVanishEvent(TRUE);
     break;
   default:
@@ -987,24 +986,6 @@ void n2e_SetProgressBarPosInStatusBar(const long nCurPos)
 void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 {
   InlineProgressBarCtrl_IncPos(hwndStatusProgressBar, nOffset);
-}
-
-void n2e_ProcessPendingMessages()
-{
-  MSG msg;
-  while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-  {
-    TranslateMessage(&msg);
-    DispatchMessage(&msg);
-  }
-}
-
-void n2e_ProcessPendingMessagesForProgressBar()
-{
-  if (hwndStatusProgressBar)
-  {
-    n2e_ProcessPendingMessages();
-  }
 }
 
 int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd)
