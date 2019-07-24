@@ -151,6 +151,7 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
     n2e_OnMouseVanishEvent(FALSE);
     break;
   case WM_MOUSEMOVE:
+    n2e_ProcessPendingMessages();
     n2e_OnMouseVanishEvent(TRUE);
     break;
   default:
@@ -981,13 +982,11 @@ void n2e_HideProgressBarInStatusBar()
 void n2e_SetProgressBarPosInStatusBar(const long nCurPos)
 {
   InlineProgressBarCtrl_SetPos(hwndStatusProgressBar, nCurPos);
-  n2e_ProcessPendingMessages();
 }
 
 void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 {
   InlineProgressBarCtrl_IncPos(hwndStatusProgressBar, nOffset);
-  n2e_ProcessPendingMessages();
 }
 
 void n2e_ProcessPendingMessages()
