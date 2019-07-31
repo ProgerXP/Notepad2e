@@ -17,34 +17,44 @@ extern "C" {
 #define PROPERTY_WINDOW_POSITION L"WindowPosition"
 #define PROPERTY_WINDOW_SIZE L"WindowSize"
 
-#define DeclareGetWindowProp(prop, name, ret)             \
-__forceinline ret GetWindow##prop(const HWND hwnd) {  \
-  return((ret)GetProp(hwnd, name));                       \
+#define DeclareGetWindowProp(prop, name)                                  \
+__forceinline HANDLE GetWindow##prop(const HWND hwnd) {                   \
+  return GetProp(hwnd, name);                                             \
 }
 
-#define DeclareSetWindowProp(prop, name, type)                              \
-__forceinline void SetWindow##prop(const HWND hwnd, const type value) { \
-  SetProp(hwnd, name, (HANDLE)value);                                       \
+#define DeclareSetWindowProp(prop, name)                                  \
+__forceinline void SetWindow##prop(const HWND hwnd, const HANDLE value) { \
+  SetProp(hwnd, name, value);                                             \
 }
 
-#define DeclareSetWindowProp2(prop, name, type1, type2)    \
+#define DeclareGetWindowPropSpec(prop, name, ret)                         \
+__forceinline ret GetWindow##prop(const HWND hwnd) {                      \
+  return PtrToInt(GetProp(hwnd, name));                                   \
+}
+
+#define DeclareSetWindowPropSpec(prop, name, type)                        \
+__forceinline void SetWindow##prop(const HWND hwnd, const type value) {   \
+  SetProp(hwnd, name, IntToPtr(value));                                   \
+}
+
+#define DeclareSetWindowProp2(prop, name, type1, type2)                                        \
 __forceinline void SetWindow##prop(const HWND hwnd, const type1 value1, const type2 value2) {  \
-  SetProp(hwnd, name, (HANDLE)MAKEWPARAM(value1, value2));               \
+  SetProp(hwnd, name, (HANDLE)MAKEWPARAM(value1, value2));                                     \
 }
 
-DeclareGetWindowProp(DPIInitialized, PROPERTY_WINDOW_DPI_INITIALIZED, BOOL);
-DeclareSetWindowProp(DPIInitialized, PROPERTY_WINDOW_DPI_INITIALIZED, BOOL);
-DeclareGetWindowProp(SkipDPIResize, PROPERTY_WINDOW_SKIP_DPI_RESIZE, BOOL);
-DeclareSetWindowProp(SkipDPIResize, PROPERTY_WINDOW_SKIP_DPI_RESIZE, BOOL);
-DeclareGetWindowProp(FontSize, PROPERTY_WINDOW_FONT_SIZE, int);
-DeclareSetWindowProp(FontSize, PROPERTY_WINDOW_FONT_SIZE, int);
-DeclareGetWindowProp(DynamicFont, PROPERTY_WINDOW_DYNAMIC_FONT, HANDLE);
-DeclareSetWindowProp(DynamicFont, PROPERTY_WINDOW_DYNAMIC_FONT, HANDLE);
-DeclareGetWindowProp(DPI, PROPERTY_WINDOW_DPI, DWORD);
+DeclareGetWindowPropSpec(DPIInitialized, PROPERTY_WINDOW_DPI_INITIALIZED, BOOL);
+DeclareSetWindowPropSpec(DPIInitialized, PROPERTY_WINDOW_DPI_INITIALIZED, BOOL);
+DeclareGetWindowPropSpec(SkipDPIResize, PROPERTY_WINDOW_SKIP_DPI_RESIZE, BOOL);
+DeclareSetWindowPropSpec(SkipDPIResize, PROPERTY_WINDOW_SKIP_DPI_RESIZE, BOOL);
+DeclareGetWindowPropSpec(FontSize, PROPERTY_WINDOW_FONT_SIZE, int);
+DeclareSetWindowPropSpec(FontSize, PROPERTY_WINDOW_FONT_SIZE, int);
+DeclareGetWindowProp(DynamicFont, PROPERTY_WINDOW_DYNAMIC_FONT);
+DeclareSetWindowProp(DynamicFont, PROPERTY_WINDOW_DYNAMIC_FONT);
+DeclareGetWindowPropSpec(DPI, PROPERTY_WINDOW_DPI, DWORD);
 DeclareSetWindowProp2(DPI, PROPERTY_WINDOW_DPI, int, int);
-DeclareGetWindowProp(Position, PROPERTY_WINDOW_POSITION, DWORD);
+DeclareGetWindowPropSpec(Position, PROPERTY_WINDOW_POSITION, DWORD);
 DeclareSetWindowProp2(Position, PROPERTY_WINDOW_POSITION, int, int);
-DeclareGetWindowProp(Size, PROPERTY_WINDOW_SIZE, DWORD);
+DeclareGetWindowPropSpec(Size, PROPERTY_WINDOW_SIZE, DWORD);
 DeclareSetWindowProp2(Size, PROPERTY_WINDOW_SIZE, int, int);
 
 
