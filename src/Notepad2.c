@@ -6773,6 +6773,7 @@ void UpdateStatusbar()
   WCHAR tchCols[32];
   WCHAR tchSel[32];
   WCHAR tchSelLines[32];
+  WCHAR tchPos[32];
   WCHAR tchDocPos[256];
 
   int iBytes;
@@ -6824,11 +6825,16 @@ void UpdateStatusbar()
     lstrcat(tchSel, tchSelLines);
   }
   // [/2e]
+
+  // [2e]: Display the data offset in the Statusbar #233
+  wsprintf(tchPos, L"%i", iPos);
+  FormatNumberStr(tchPos);
+  // [/2e]
   
   if (!bMarkLongLines)
-    FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS, tchLn, tchLines, tchCol, tchSel);
+    FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS, tchLn, tchLines, tchCol, tchSel, tchPos);
   else
-    FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS2, tchLn, tchLines, tchCol, tchCols, tchSel);
+    FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS2, tchLn, tchLines, tchCol, tchCols, tchSel, tchPos);
   
   // [2e]: "Evaluate selection"-feature
   const BOOL docSizeOK = n2e_FormatEvaluatedExpression(hwndEdit, tchDocSize, COUNTOF(tchDocSize));
