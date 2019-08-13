@@ -248,6 +248,23 @@ Corresponding calls added to Editor::KeyCommand():
         NotifyLineCountChanged();
         break;
         
+    case SCI_LINEDUPLICATE:
+        ...
+        NotifyLineCountChanged();
+        break;
+    case SCI_SELECTIONDUPLICATE:
+        ...
+        NotifyLineCountChanged();
+        break;
+...
+
+Corresponding calls added to Editor::WndProc():
+
+    case SCI_ADDTEXT: {
+        ...
+        NotifyLineCountChanged();
+        return 0;
+    }
 ...
 
 New code around DropAt()-call:

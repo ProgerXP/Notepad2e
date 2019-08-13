@@ -3837,9 +3837,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_LINEDUPLICATE:
 		Duplicate(true);
+		NotifyLineCountChanged();
 		break;
 	case SCI_SELECTIONDUPLICATE:
 		Duplicate(false);
+		NotifyLineCountChanged();
 		break;
 	case SCI_LOWERCASE:
 		ChangeCaseOfSelection(cmLower);
@@ -6127,6 +6129,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 			const int lengthInserted = pdoc->InsertString(
 				CurrentPosition(), CharPtrFromSPtr(lParam), static_cast<int>(wParam));
 			SetEmptySelection(sel.MainCaret() + lengthInserted);
+			NotifyLineCountChanged();
 			return 0;
 		}
 
