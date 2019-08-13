@@ -150,6 +150,7 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
   case WM_CHAR:
     n2e_OnMouseVanishEvent(FALSE);
     break;
+  case WM_KILLFOCUS:
   case WM_MOUSEMOVE:
     n2e_OnMouseVanishEvent(TRUE);
     break;
