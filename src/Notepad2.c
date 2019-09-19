@@ -1920,7 +1920,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, ID_FILE_INVOKESHELLMENU, i);
   EnableCmd(hmenu, IDM_FILE_ADDTOFAV, i);
   // [2e]: Disable Launch commands for Unnamed #238
-  EnableCmd(hmenu, IDM_FILE_OPENWITH, i || bSaveBeforeRunningTools);
+  EnableCmd(hmenu, IDM_FILE_OPENWITH, i);
   // [2e]: File->RenameTo menu item
   EnableCmd(hmenu, ID_FILE_RENAMETO, i);
   EnableCmd(hmenu, IDM_FILE_READONLY, i);
