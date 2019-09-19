@@ -68,7 +68,7 @@ private:
 		Match() : _document(NULL), _documentModified(false), _position(-1), _endPosition(-1), _endPositionForContinuationCheck(-1)  {}
 		~Match() { setDocument(NULL); }
 		Match(Document* document, int position = -1, int endPosition = -1) : _document(NULL) { set(document, position, endPosition); }
-		Match& operator=(Match& m) {
+		Match& operator=(const Match& m) {
 			set(m._document, m.position(), m.endPosition());
 			return *this;
 		}
@@ -95,10 +95,10 @@ private:
 		bool isEmpty() {
 			return _position == _endPosition;
 		}
-		int position() {
+		int position() const {
 			return _position;
 		}
-		int endPosition() {
+		int endPosition() const {
 			return _endPosition;
 		}
 		int length() {
