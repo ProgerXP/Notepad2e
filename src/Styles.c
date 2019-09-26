@@ -104,12 +104,12 @@ KEYWORDLIST KeyWords_HTML = {
     "reset rev reversed rows rowspan rp rt rtc ruby rules s samp sandbox scheme scope scoped script "
     "scrolling seamless section select selected shape size sizes small source span spellcheck src "
     "srcdoc srclang standby start step strike strong style sub submit summary sup tabindex table "
-    "target tbody td text textarea tfoot th thead time title topmargin tr track tt type u ul usemap "
+    "target tbody td template text textarea tfoot th thead time title topmargin tr track tt type u ul usemap "
     "valign value valuetype var version video vlink vspace wbr width wrap xml xmlns",
     "abstract boolean break byte case catch char class const continue debugger default delete do "
     "double else enum export extends false final finally float for function goto if implements "
     "import in instanceof int interface long native new null package private protected public "
-    "return short static super switch synchronized template this throw throws transient true try typeof var "
+    "return short static super switch synchronized this throw throws transient true try typeof var "
     "void volatile while with",
     "alias and as attribute begin boolean byref byte byval call case class compare const continue "
     "currency date declare dim do double each else elseif empty end enum eqv erase error event exit "
