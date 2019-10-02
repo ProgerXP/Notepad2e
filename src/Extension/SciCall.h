@@ -75,10 +75,14 @@ __forceinline LRESULT SciCall_##fn(type1 var1, type2 var2) {       \
 //
 DeclareSciCallR0(GetLineCount, GETLINECOUNT, int);
 DeclareSciCallR0(GetLength, GETLENGTH, int);
+DeclareSciCallR0(GetSelectionMode, GETSELECTIONMODE, int);
 DeclareSciCallR0(GetSelStart, GETSELECTIONSTART, int);
 DeclareSciCallR0(GetSelEnd, GETSELECTIONEND, int);
 DeclareSciCallV2(SetSel, SETSEL, int, anchorPos, int, currentPos);
 DeclareSciCallV2(ReplaceSel, REPLACESEL, int, unused, const char*, text);
+DeclareSciCallR0(GetSelections, GETSELECTIONS, int);
+DeclareSciCallR1(GetSelectionNStart, GETSELECTIONNSTART, Sci_Position, int, position);
+DeclareSciCallR1(GetSelectionNEnd, GETSELECTIONNEND, Sci_Position, int, position);
 DeclareSciCallV1(GotoPos, GOTOPOS, int, position);
 DeclareSciCallV1(GotoLine, GOTOLINE, int, line);
 DeclareSciCallR0(GetCurrentPos, GETCURRENTPOS, int);

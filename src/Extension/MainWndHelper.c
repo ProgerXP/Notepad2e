@@ -4,6 +4,7 @@
 #include "Notepad2.h"
 #include "resource.h"
 #include "Scintilla.h"
+#include "SciCall.h"
 #include "Shell32Helper.h"
 #include "Helpers.h"
 #include "tinyexpr/tinyexpr.h"
@@ -85,17 +86,51 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int bufferSize)
 {
-  int iPosStart = 0;
-  int iPosEnd = 0;
   int iCount = 0;
-  if (n2e_IsExpressionEvaluationEnabled() &&
-      ((iCount = n2e_GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
-      (iCount <= MAX_EXPRESSION_LENGTH))
+  if (n2e_IsExpressionEvaluationEnabled())
   {
-    char *pszText = LocalAlloc(LPTR, iCount + 1);
-    struct TextRange tr = { { iPosStart, iPosEnd }, pszText };
-    SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-    if ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue))
+    char *pszText = NULL;
+    if (SciCall_GetSelectionMode() == SC_SEL_RECTANGLE)
+    {
+      pszText = LocalAlloc(LPTR, MAX_EXPRESSION_LENGTH + 1);
+      const int iSelections = SciCall_GetSelections();
+      for (int i = 0; i < iSelections; ++i)
+      {
+        const Sci_Position posStart = SciCall_GetSelectionNStart(i);
+        const Sci_Position posEnd = SciCall_GetSelectionNEnd(i);
+        const int iCountOnLine = posEnd - posStart;
+        if (((iCountOnLine <= 0)
+          || (iCountOnLine > MAX_EXPRESSION_LENGTH))
+          || (iCount + iCountOnLine + 2 > MAX_EXPRESSION_LENGTH))
+        {
+          break;
+        }
+        char *pszTextOnLine = LocalAlloc(LPTR, iCountOnLine + 1);
+        struct TextRange tr = { { posStart, posEnd }, pszTextOnLine };
+        if (SciCall_GetTextRange(0, &tr) > 0)
+        {
+          lstrcatA(pszText, pszTextOnLine);
+          lstrcatA(pszText, "\n");
+          iCount += iCountOnLine + 1;
+        }
+        LocalFree(pszTextOnLine);
+      }
+    }
+    else
+    {
+      int iPosStart = 0;
+      int iPosEnd = 0;
+      if (((iCount = n2e_GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
+           (iCount <= MAX_EXPRESSION_LENGTH))
+      {
+        pszText = LocalAlloc(LPTR, iCount + 1);
+        struct TextRange tr = { { iPosStart, iPosEnd }, pszText };
+        SciCall_GetTextRange(0, &tr);
+      }
+    }
+
+    if ((iCount > 0) && (iCount <= MAX_EXPRESSION_LENGTH) && 
+        ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
     {
       double exprValue = 0.0;
       if (is_valid_expression(pszText, 1, &exprValue))
