@@ -244,9 +244,8 @@ UINT      uidsAppTitle = IDS_APPTITLE;
 WCHAR     szTitleExcerpt[128] = L"";
 int       fKeepTitleExcerpt = 0;
 
-HANDLE    hChangeHandle = NULL;
 BOOL      bRunningWatch = FALSE;
-BOOL      dwChangeNotifyTime = 0;
+DWORD     dwChangeNotifyTime = 0;
 WIN32_FIND_DATA fdCurFile;
 
 UINT      msgTaskbarCreated = 0;
@@ -7974,12 +7973,7 @@ void InstallFileWatching(LPCWSTR lpszFile)
   {
     if (bRunningWatch)
     {
-      if (hChangeHandle)
-      {
-        FindCloseChangeNotification(hChangeHandle);
-        hChangeHandle = NULL;
-      }
-      KillTimer(NULL, ID_WATCHTIMER);
+      KillTimer(hwndMain, ID_WATCHTIMER);
       bRunningWatch = FALSE;
       dwChangeNotifyTime = 0;
     }
@@ -7992,18 +7986,13 @@ void InstallFileWatching(LPCWSTR lpszFile)
     // Terminate previous watching
     if (bRunningWatch)
     {
-      if (hChangeHandle)
-      {
-        FindCloseChangeNotification(hChangeHandle);
-        hChangeHandle = NULL;
-      }
       dwChangeNotifyTime = 0;
     }
 
     // No previous watching installed, so launch the timer first
     else
     {
-      SetTimer(NULL, ID_WATCHTIMER, dwFileCheckInverval, WatchTimerProc);
+      SetTimer(hwndMain, ID_WATCHTIMER, dwFileCheckInverval, WatchTimerProc);
     }
     lstrcpy(tchDirectory, lpszFile);
     PathRemoveFileSpec(tchDirectory);
@@ -8015,12 +8004,6 @@ void InstallFileWatching(LPCWSTR lpszFile)
     else
       ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
 
-    hChangeHandle = FindFirstChangeNotification(tchDirectory, FALSE,
-                                                FILE_NOTIFY_CHANGE_FILE_NAME | \
-                                                FILE_NOTIFY_CHANGE_DIR_NAME | \
-                                                FILE_NOTIFY_CHANGE_ATTRIBUTES | \
-                                                FILE_NOTIFY_CHANGE_SIZE | \
-                                                FILE_NOTIFY_CHANGE_LAST_WRITE);
     bRunningWatch = TRUE;
     dwChangeNotifyTime = 0;
   }
@@ -8034,61 +8017,43 @@ void InstallFileWatching(LPCWSTR lpszFile)
 //
 void CALLBACK WatchTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-  if (bRunningWatch)
+  if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > dwAutoReloadTimeout)
   {
-    if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > dwAutoReloadTimeout)
-    {
-      if (hChangeHandle)
-      {
-        FindCloseChangeNotification(hChangeHandle);
-        hChangeHandle = NULL;
-      }
-      KillTimer(NULL, ID_WATCHTIMER);
-      bRunningWatch = FALSE;
-      dwChangeNotifyTime = 0;
-      SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
-    }
+    KillTimer(hwndMain, ID_WATCHTIMER);
+    bRunningWatch = FALSE;
+    dwChangeNotifyTime = 0;
+    SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
+  }
 
-    // Check Change Notification Handle
-    else if (WAIT_OBJECT_0 == WaitForSingleObject(hChangeHandle, 0))
-    {
-      // Check if the changes affect the current file
-      WIN32_FIND_DATA fdUpdated;
-      HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
-      if (INVALID_HANDLE_VALUE != hFind)
-        FindClose(hFind);
-      else
-        // The current file has been removed
-        ZeroMemory(&fdUpdated, sizeof(WIN32_FIND_DATA));
+  else
+  {
+    // Check if the changes affect the current file
+    WIN32_FIND_DATA fdUpdated;
+    HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
+    if (INVALID_HANDLE_VALUE != hFind)
+      FindClose(hFind);
+    else
+      // The current file has been removed
+      ZeroMemory(&fdUpdated, sizeof(WIN32_FIND_DATA));
 
-      // Check if the file has been changed
-      if (CompareFileTime(&fdCurFile.ftLastWriteTime, &fdUpdated.ftLastWriteTime) != 0 ||
-          fdCurFile.nFileSizeLow != fdUpdated.nFileSizeLow ||
-          fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
+    // Check if the file has been changed
+    if (CompareFileTime(&fdCurFile.ftLastWriteTime, &fdUpdated.ftLastWriteTime) != 0 ||
+        fdCurFile.nFileSizeLow != fdUpdated.nFileSizeLow ||
+        fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
+    {
+      // Shutdown current watching and give control to main window
+      if (iFileWatchingMode == 2)
       {
-        // Shutdown current watching and give control to main window
-        if (hChangeHandle)
-        {
-          FindCloseChangeNotification(hChangeHandle);
-          hChangeHandle = NULL;
-        }
-        if (iFileWatchingMode == 2)
-        {
-          bRunningWatch = TRUE; /* ! */
+        bRunningWatch = TRUE; /* ! */
+        if (dwChangeNotifyTime == 0)
           dwChangeNotifyTime = GetTickCount();
-        }
-        else
-        {
-          KillTimer(NULL, ID_WATCHTIMER);
-          bRunningWatch = FALSE;
-          dwChangeNotifyTime = 0;
-          SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
-        }
       }
-
       else
       {
-        FindNextChangeNotification(hChangeHandle);
+        KillTimer(hwndMain, ID_WATCHTIMER);
+        bRunningWatch = FALSE;
+        dwChangeNotifyTime = 0;
+        SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
       }
     }
   }
