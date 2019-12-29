@@ -326,7 +326,8 @@ int n2e_HighlightWord(LPCSTR word)
             continue;
           }
           N2E_TRACE("[%d] line__ %d (%d , %d , %d) ", ttf.chrgText.cpMin, line, lwrap, lstart, lrange);
-          if (line <= lrange + lstart)
+          if ((line <= lrange + lstart)
+            && (iEditSelectionsCount < N2E_SELECT_MAX_COUNT - 1))
           {
             LPSE_DATA dt = &arrEditSelections[iEditSelectionsCount++];
             dt->pos = ttf.chrgText.cpMin;
