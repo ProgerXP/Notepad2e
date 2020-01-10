@@ -48,7 +48,7 @@
 #define VERSION_AUTHORNAME           L"Florian Balmer"
 #define VERSION_WEBPAGEDISPLAY       L"flo's freeware - http://www.flos-freeware.ch"
 #define VERSION_EMAILDISPLAY         L"florian.balmer@gmail.com"
-#define VERSION_EXT_VERSION          L"Extended Edition © 2013-2019"
+#define VERSION_EXT_VERSION          L"Extended Edition © 2013-2020"
 #define VERSION_EXT_BY               L"By Proger_XP and contributors"
 #define VERSION_EXT_PAGE             L"https://github.com/ProgerXP/Notepad2e"
 #define VERSION_COMMIT               L"6c3f5ac"
