@@ -1374,7 +1374,7 @@ BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
 #ifndef ICU_BUILD
   return TRUE;
 #else
-  if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || (iEncoding == CPI_UTF8))
+  if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || n2e_IsUTF8EncodingMode())
     return TRUE;
 
   if (InfoBox(MBYESNO, L"MsgICURegexWarning", IDS_WARN_ICU_REGEX) != IDYES)

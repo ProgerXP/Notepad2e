@@ -24,6 +24,11 @@ BOOL n2e_IsUnicodeEncodingMode()
   return (mEncoding[iEncoding].uFlags & NCP_UNICODE);
 }
 
+BOOL n2e_IsUTF8EncodingMode()
+{
+  return (mEncoding[iEncoding].uFlags & NCP_UTF8);
+}
+
 BOOL Is8BitEncodingMode()
 {
   return (mEncoding[iEncoding].uFlags & NCP_8BIT);
