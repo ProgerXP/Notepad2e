@@ -16,9 +16,9 @@ using namespace Scintilla;
 
 namespace Scintilla {
 
-size_t UTF8Length(const wchar_t *uptr, size_t tlen) noexcept {
+size_t UTF8Length(const wchar_t *uptr, size_t tlen, const bool processNULL) noexcept {
 	size_t len = 0;
-	for (size_t i = 0; i < tlen && uptr[i];) {
+	for (size_t i = 0; i < tlen && (uptr[i] || processNULL);) {
 		const unsigned int uch = uptr[i];
 		if (uch < 0x80) {
 			len++;
@@ -36,9 +36,9 @@ size_t UTF8Length(const wchar_t *uptr, size_t tlen) noexcept {
 	return len;
 }
 
-void UTF8FromUTF16(const wchar_t *uptr, size_t tlen, char *putf, size_t len) {
+void UTF8FromUTF16(const wchar_t *uptr, size_t tlen, char *putf, size_t len, const bool processNULL) {
 	size_t k = 0;
-	for (size_t i = 0; i < tlen && uptr[i];) {
+	for (size_t i = 0; i < tlen && (uptr[i] || processNULL);) {
 		const unsigned int uch = uptr[i];
 		if (uch < 0x80) {
 			putf[k++] = static_cast<char>(uch);
@@ -83,6 +83,21 @@ void UTF8FromUTF32Character(int uch, char *putf) noexcept {
 		putf[k++] = static_cast<char>(0x80 | (uch & 0x3f));
 	}
 	putf[k] = '\0';
+}
+
+size_t UTF8CharLength(const unsigned char ch) noexcept {
+	if (ch < 0x80) {
+		return 1;
+	}
+	else if (ch < 0x80 + 0x40 + 0x20) {
+		return 2;
+	}
+	else if (ch < 0x80 + 0x40 + 0x20 + 0x10) {
+		return 3;
+	}
+	else {
+		return 4;
+	}
 }
 
 size_t UTF16Length(const char *s, size_t len) noexcept {

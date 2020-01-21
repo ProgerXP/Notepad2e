@@ -19,6 +19,8 @@
 #include <algorithm>
 #include <memory>
 
+#pragma comment(lib, "Msimg32.lib")
+
 // Want to use std::min and std::max so don't want Windows.h version of min and max
 #if !defined(NOMINMAX)
 #define NOMINMAX
@@ -59,6 +61,32 @@
 #endif
 
 namespace Scintilla {
+
+static float dpiX = DEFAULT_SCREEN_DPI;
+static float dpiY = DEFAULT_SCREEN_DPI;
+static int dpiFont = DEFAULT_FONT_DPI;
+
+void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+{
+	dpiX = _dpiX;
+	dpiY = _dpiY;
+	dpiFont = _dpiFont;
+}
+
+float GetDpiX()
+{
+	return dpiX;
+}
+
+float GetDpiY()
+{
+	return dpiY;
+}
+
+int GetDpiFont()
+{
+	return dpiFont;
+}
 
 UINT CodePageFromCharSet(DWORD characterSet, UINT documentCodePage);
 
@@ -597,7 +625,7 @@ int SurfaceGDI::LogPixelsY() {
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), 72);
+	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
 }
 
 void SurfaceGDI::MoveTo(int x_, int y_) {
@@ -1060,7 +1088,7 @@ SurfaceD2D::SurfaceD2D() noexcept :
 
 	pBrush = nullptr;
 
-	logPixelsY = 72;
+	logPixelsY = DEFAULT_FONT_DPI;
 	dpiScaleX = 1.0;
 	dpiScaleY = 1.0;
 }
@@ -1093,8 +1121,8 @@ void SurfaceD2D::Release() {
 void SurfaceD2D::SetScale() {
 	HDC hdcMeasure = ::CreateCompatibleDC(NULL);
 	logPixelsY = ::GetDeviceCaps(hdcMeasure, LOGPIXELSY);
-	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / 96.0f;
-	dpiScaleY = logPixelsY / 96.0f;
+	dpiScaleX = ::GetDeviceCaps(hdcMeasure, LOGPIXELSX) / GetDpiX();
+	dpiScaleY = logPixelsY / GetDpiY();
 	::DeleteDC(hdcMeasure);
 }
 
@@ -1193,7 +1221,7 @@ int SurfaceD2D::LogPixelsY() {
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), 72);
+	return ::MulDiv(points, LogPixelsY(), GetDpiFont());
 }
 
 void SurfaceD2D::MoveTo(int x_, int y_) {
@@ -2968,6 +2996,12 @@ void Platform_Finalise(bool fromDllMain) {
 		::DestroyCursor(reverseArrowCursor);
 	ListBoxX_Unregister();
 	::DeleteCriticalSection(&crPlatformLock);
+}
+
+RECT RectFromPRectangle(PRectangle prc) noexcept {
+	RECT rc = { static_cast<LONG>(prc.left), static_cast<LONG>(prc.top),
+		static_cast<LONG>(prc.right), static_cast<LONG>(prc.bottom) };
+	return rc;
 }
 
 }

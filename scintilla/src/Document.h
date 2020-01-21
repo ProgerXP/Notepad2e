@@ -281,6 +281,8 @@ public:
 	bool tabIndents;
 	bool backspaceUnindents;
 	ActionDuration durationStyleOneLine;
+	// [2e]: ctrl+arrow behavior toggle #89
+	int wordNavigationMode;
 
 	std::unique_ptr<IDecorationList> decorations;
 
@@ -493,6 +495,8 @@ public:
 	Sci::Position ParaDown(Sci::Position pos) const;
 	int IndentSize() const noexcept { return actualIndentInChars; }
 	Sci::Position BraceMatch(Sci::Position position, Sci::Position maxReStyle) noexcept;
+	// [2e]: ctrl+arrow behavior toggle #89
+	void SetWordNavigationMode(const int iMode);
 
 private:
 	void NotifyModifyAttempt();
@@ -585,6 +589,48 @@ public:
 	virtual void NotifyStyleNeeded(Document *doc, void *userData, Sci::Position endPos) = 0;
 	virtual void NotifyLexerChanged(Document *doc, void *userData) = 0;
 	virtual void NotifyErrorOccurred(Document *doc, void *userData, int status) = 0;
+};
+
+/**
+* RESearchRange keeps track of search range.
+*/
+class RESearchRange {
+public:
+	const Document *doc;
+	int increment;
+	Sci::Position startPos;
+	Sci::Position endPos;
+	Sci::Line lineRangeStart;
+	Sci::Line lineRangeEnd;
+	Sci::Line lineRangeBreak;
+	RESearchRange(const Document *doc_, Sci::Position minPos, Sci::Position maxPos) noexcept : doc(doc_) {
+		increment = (minPos <= maxPos) ? 1 : -1;
+
+		// Range endpoints should not be inside DBCS characters or between a CR and LF,
+		// but just in case, move them.
+		startPos = doc->MovePositionOutsideChar(minPos, 1, true);
+		endPos = doc->MovePositionOutsideChar(maxPos, 1, true);
+
+		lineRangeStart = doc->SciLineFromPosition(startPos);
+		lineRangeEnd = doc->SciLineFromPosition(endPos);
+		lineRangeBreak = lineRangeEnd + increment;
+	}
+	Range LineRange(Sci::Line line) const {
+		Range range(doc->LineStart(line), doc->LineEnd(line));
+		if (increment == 1) {
+			if (line == lineRangeStart)
+				range.start = startPos;
+			if (line == lineRangeEnd)
+				range.end = endPos;
+		}
+		else {
+			if (line == lineRangeEnd)
+				range.start = endPos;
+			if (line == lineRangeStart)
+				range.end = startPos;
+		}
+		return range;
+	}
 };
 
 }

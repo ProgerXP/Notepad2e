@@ -106,7 +106,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -123,7 +123,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ICU_ROOT)\include;$(BOOST_ROOT_ICU);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>ICU_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -142,7 +142,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -166,7 +166,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ICU_ROOT)\include;$(BOOST_ROOT_ICU);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>ICU_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -194,6 +194,7 @@
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
     <ClCompile Include="scintilla\lexers\LexAbaqus.cxx" />
     <ClCompile Include="scintilla\lexers\LexAda.cxx" />
+    <ClCompile Include="scintilla\lexers\LexAHK.cxx" />
     <ClCompile Include="scintilla\lexers\LexAPDL.cxx" />
     <ClCompile Include="scintilla\lexers\LexAsn1.cxx" />
     <ClCompile Include="scintilla\lexers\LexASY.cxx" />
@@ -284,13 +285,15 @@
     <ClCompile Include="scintilla\lexers\LexVisualProlog.cxx" />
     <ClCompile Include="scintilla\lexers\LexYAML.cxx" />
     <ClCompile Include="scintilla\lexlib\CharacterCategory.cxx" />
+    <ClCompile Include="scintilla\lexlib\DefaultLexer.cxx" />
     <ClCompile Include="scintilla\lexlib\LexerNoExceptions.cxx" />
     <ClCompile Include="scintilla\src\CaseConvert.cxx" />
     <ClCompile Include="scintilla\src\CaseFolder.cxx" />
+    <ClCompile Include="scintilla\src\DBCS.cxx" />
     <ClCompile Include="scintilla\src\EditModel.cxx" />
     <ClCompile Include="scintilla\src\EditView.cxx" />
     <ClCompile Include="scintilla\src\MarginView.cxx" />
-    <ClCompile Include="scintilla\win32\CheckD2D.cxx" />
+    <ClCompile Include="scintilla\src\UniqueString.cxx" />
     <ClCompile Include="scintilla\win32\HanjaDic.cxx" />
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
@@ -372,17 +375,20 @@
     <ClInclude Include="scintilla\boostregex\UTF8DocumentIterator.h" />
     <ClInclude Include="scintilla\include\Sci_Position.h" />
     <ClInclude Include="scintilla\lexlib\CharacterCategory.h" />
+    <ClInclude Include="scintilla\lexlib\DefaultLexer.h" />
     <ClInclude Include="scintilla\lexlib\LexerNoExceptions.h" />
     <ClInclude Include="scintilla\lexlib\SparseState.h" />
     <ClInclude Include="scintilla\lexlib\StringCopy.h" />
     <ClInclude Include="scintilla\lexlib\SubStyles.h" />
     <ClInclude Include="scintilla\src\CaseConvert.h" />
     <ClInclude Include="scintilla\src\CaseFolder.h" />
+    <ClInclude Include="scintilla\src\DBCS.h" />
     <ClInclude Include="scintilla\src\EditModel.h" />
     <ClInclude Include="scintilla\src\EditView.h" />
     <ClInclude Include="scintilla\src\MarginView.h" />
     <ClInclude Include="scintilla\src\Position.h" />
     <ClInclude Include="scintilla\src\UnicodeFromUTF8.h" />
+    <ClInclude Include="scintilla\src\UniqueString.h" />
     <ClInclude Include="scintilla\win32\HanjaDic.h" />
     <ClInclude Include="scintilla\win32\PlatWin.h" />
     <ClInclude Include="src\Dialogs.h" />

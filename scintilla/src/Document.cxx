@@ -132,6 +132,8 @@ Document::Document(int options) :
 	useTabs = true;
 	tabIndents = true;
 	backspaceUnindents = false;
+	// [2e]: ctrl+arrow behavior toggle #89
+	wordNavigationMode = 0;
 
 	matchesValid = false;
 
@@ -1816,36 +1818,122 @@ Sci::Position Document::ExtendWordSelect(Sci::Position pos, int delta, bool only
  */
 Sci::Position Document::NextWordStart(Sci::Position pos, int delta) const {
 	if (delta < 0) {
-		while (pos > 0) {
-			const CharacterExtracted ce = CharacterBefore(pos);
-			if (WordCharacterClass(ce.character) != CharClassify::ccSpace)
-				break;
-			pos -= ce.widthBytes;
-		}
-		if (pos > 0) {
-			CharacterExtracted ce = CharacterBefore(pos);
-			const CharClassify::cc ccStart = WordCharacterClass(ce.character);
+		// [2e]: ctrl+arrow behavior toggle #89
+		switch (wordNavigationMode)
+		{
+		case 0:
+			// standard navigation
 			while (pos > 0) {
-				ce = CharacterBefore(pos);
-				if (WordCharacterClass(ce.character) != ccStart)
+				const CharacterExtracted ce = CharacterBefore(pos);
+				if (WordCharacterClass(ce.character) != CharClassify::ccSpace)
 					break;
 				pos -= ce.widthBytes;
 			}
+			if (pos > 0) {
+				CharacterExtracted ce = CharacterBefore(pos);
+				const CharClassify::cc ccStart = WordCharacterClass(ce.character);
+				while (pos > 0) {
+					ce = CharacterBefore(pos);
+					if (WordCharacterClass(ce.character) != ccStart)
+						break;
+					pos -= ce.widthBytes;
+				}
+			}
+			break;
+		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
+			// accelerated navigation
+			{
+				if (pos > 0)
+				{
+					pos--;
+				}
+				bool stopAtCurrentNewLine = false;
+				while ((pos >= 0) && (WordCharacterClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
+				{
+					pos--;
+					stopAtCurrentNewLine = true;
+				}
+				if (stopAtCurrentNewLine)
+				{
+					pos++;
+				}
+				else
+				{
+					CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+					while (pos > 0)
+					{
+						CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+						if ((ccPrev == CharClassify::ccNewLine)
+							|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
+							break;
+						pos--;
+						ccCurrent = ccPrev;
+					}
+				}
+			}
+			break;
+			// [/2e]
+		default:
+			// not implemented
+			PLATFORM_ASSERT(false);
+			break;
 		}
 	} else {
-		CharacterExtracted ce = CharacterAfter(pos);
-		const CharClassify::cc ccStart = WordCharacterClass(ce.character);
-		while (pos < LengthNoExcept()) {
-			ce = CharacterAfter(pos);
-			if (WordCharacterClass(ce.character) != ccStart)
-				break;
-			pos += ce.widthBytes;
-		}
-		while (pos < LengthNoExcept()) {
-			ce = CharacterAfter(pos);
-			if (WordCharacterClass(ce.character) != CharClassify::ccSpace)
-				break;
-			pos += ce.widthBytes;
+		// [2e]: ctrl+arrow behavior toggle #89
+		switch (wordNavigationMode)
+		{
+		case 0:
+			// standard navigation
+			{
+				CharacterExtracted ce = CharacterAfter(pos);
+				const CharClassify::cc ccStart = WordCharacterClass(ce.character);
+				while (pos < LengthNoExcept()) {
+					ce = CharacterAfter(pos);
+					if (WordCharacterClass(ce.character) != ccStart)
+						break;
+					pos += ce.widthBytes;
+				}
+				while (pos < LengthNoExcept()) {
+					ce = CharacterAfter(pos);
+					if (WordCharacterClass(ce.character) != CharClassify::ccSpace)
+						break;
+					pos += ce.widthBytes;
+				}
+			}
+			break;
+		case 1:
+			// [2e]: ctrl+arrow behavior toggle #89
+			// accelerated navigation
+			{
+				bool stopAtCurrentNewLine = false;
+				while ((pos < Length()) && (WordCharacterClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
+				{
+					pos++;
+					stopAtCurrentNewLine = true;
+				}
+				if (!stopAtCurrentNewLine)
+				{
+					pos++;
+					assert(pos > 0);
+					CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+					while (pos < Length())
+					{
+						CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+						if ((ccCurrent == CharClassify::ccNewLine)
+							|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
+							break;
+						pos++;
+						ccPrev = ccCurrent;
+					}
+				}
+			}
+			break;
+			// [/2e]
+		default:
+			// not implemented
+			PLATFORM_ASSERT(false);
+			break;
 		}
 	}
 	return pos;
@@ -2640,6 +2728,13 @@ Sci::Position Document::BraceMatch(Sci::Position position, Sci::Position /*maxRe
 	return - 1;
 }
 
+// [2e]: ctrl+arrow behavior toggle #89
+void Document::SetWordNavigationMode(const int iMode)
+{
+	wordNavigationMode = iMode;
+}
+// [/2e]
+
 /**
  * Implementation of RegexSearchBase for the default built-in regular expression engine
  */
@@ -2664,47 +2759,6 @@ private:
 };
 
 namespace {
-
-/**
-* RESearchRange keeps track of search range.
-*/
-class RESearchRange {
-public:
-	const Document *doc;
-	int increment;
-	Sci::Position startPos;
-	Sci::Position endPos;
-	Sci::Line lineRangeStart;
-	Sci::Line lineRangeEnd;
-	Sci::Line lineRangeBreak;
-	RESearchRange(const Document *doc_, Sci::Position minPos, Sci::Position maxPos) noexcept : doc(doc_) {
-		increment = (minPos <= maxPos) ? 1 : -1;
-
-		// Range endpoints should not be inside DBCS characters or between a CR and LF,
-		// but just in case, move them.
-		startPos = doc->MovePositionOutsideChar(minPos, 1, true);
-		endPos = doc->MovePositionOutsideChar(maxPos, 1, true);
-
-		lineRangeStart = doc->SciLineFromPosition(startPos);
-		lineRangeEnd = doc->SciLineFromPosition(endPos);
-		lineRangeBreak = lineRangeEnd + increment;
-	}
-	Range LineRange(Sci::Line line) const {
-		Range range(doc->LineStart(line), doc->LineEnd(line));
-		if (increment == 1) {
-			if (line == lineRangeStart)
-				range.start = startPos;
-			if (line == lineRangeEnd)
-				range.end = endPos;
-		} else {
-			if (line == lineRangeEnd)
-				range.start = endPos;
-			if (line == lineRangeStart)
-				range.end = startPos;
-		}
-		return range;
-	}
-};
 
 // Define a way for the Regular Expression code to access the document
 class DocumentIndexer : public CharacterIndexer {

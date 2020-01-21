@@ -694,14 +694,14 @@ void n2e_EscapeHTML(const HWND hwnd)
     beg = 0;
     end = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
   }
-  ttf.lpstrText = (char*)n2e_Alloc(2);
-  ttf.lpstrText[1] = '\0';
+  char buffer[2] = { 0, 0 };
+  ttf.lpstrText = buffer;
   changed = FALSE;
   for (symb = 0; symb < strlen(_source); ++symb)
   {
     ttf.chrg.cpMin = beg;
     ttf.chrg.cpMax = end;
-    ttf.lpstrText[0] = _source[symb];
+    buffer[0] = _source[symb];
     int res = 0;
     while (-1 != res)
     {
@@ -724,7 +724,6 @@ void n2e_EscapeHTML(const HWND hwnd)
   {
     SendMessage(hwnd, SCI_SETSEL, beg, end);
   }
-  n2e_Free(ttf.lpstrText);
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 

@@ -252,6 +252,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	ActionDuration durationWrapOneLine;
 
 	bool convertPastes;
+	bool skipUIUpdate;
 
 	Editor();
 	// Deleted so Editor objects can not be copied.
@@ -435,6 +436,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifyNeedShown(Sci::Position pos, Sci::Position len);
 	void NotifyDwelling(Point pt, bool state);
 	void NotifyZoom();
+	void NotifyLineCountChanged();
 
 	void NotifyModifyAttempt(Document *document, void *userData) override;
 	void NotifySavePoint(Document *document, void *userData, bool atSavePoint) override;

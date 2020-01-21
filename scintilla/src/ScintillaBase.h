@@ -34,6 +34,7 @@ protected:
 
 	enum { maxLenInputIME = 200 };
 
+	bool moveCaretOnRClick;
 	int displayPopupMenu;
 	Menu popup;
 	AutoComplete ac;

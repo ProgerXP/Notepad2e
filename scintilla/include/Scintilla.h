@@ -11,6 +11,8 @@
 #ifndef SCINTILLA_H
 #define SCINTILLA_H
 
+typedef void ( * wheel_action ) ( int );
+typedef int ( * key_action ) ( int , int );
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -21,6 +23,8 @@ int Scintilla_RegisterClasses(void *hInstance);
 int Scintilla_ReleaseResources(void);
 #endif
 int Scintilla_LinkLexers(void);
+extern wheel_action n2e_wheel_action;
+extern key_action n2e_proc_action;
 
 #ifdef __cplusplus
 }
@@ -696,6 +700,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_SEARCHANCHOR 2366
 #define SCI_SEARCHNEXT 2367
 #define SCI_SEARCHPREV 2368
+#define SCI_MOVECARETONRCLICK 2369
 #define SCI_LINESONSCREEN 2370
 #define SC_POPUP_NEVER 0
 #define SC_POPUP_ALL 1
@@ -716,6 +721,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_GETCOMMANDEVENTS 2718
 #define SCI_SETFOCUS 2380
 #define SCI_GETFOCUS 2381
+#define SCI_SETWORDNAVIGATIONMODE 2382
 #define SC_STATUS_OK 0
 #define SC_STATUS_FAILURE 1
 #define SC_STATUS_BADALLOC 2
@@ -1039,6 +1045,8 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_NAMEOFSTYLE 4030
 #define SCI_TAGSOFSTYLE 4031
 #define SCI_DESCRIPTIONOFSTYLE 4032
+#define SCI_SETSKIPUIUPDATE 9000
+#define SCI_SETDPI 9001
 #define SC_MOD_NONE 0x0
 #define SC_MOD_INSERTTEXT 0x1
 #define SC_MOD_DELETETEXT 0x2
@@ -1136,6 +1144,8 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCN_AUTOCCOMPLETED 2030
 #define SCN_MARGINRIGHTCLICK 2031
 #define SCN_AUTOCSELECTIONCHANGE 2032
+#define SCN_CARETMOVED 2033
+#define SCN_LINECOUNTCHANGED  2034
 #ifndef SCI_DISABLE_PROVISIONAL
 #define SC_LINECHARACTERINDEX_NONE 0
 #define SC_LINECHARACTERINDEX_UTF32 1

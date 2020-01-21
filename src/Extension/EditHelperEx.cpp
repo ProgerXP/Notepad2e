@@ -185,6 +185,6 @@ extern "C"
 
   int n2e_GetUTF8CharLength(const unsigned char ch)
   {
-    return (int)UTF8CharLength(ch);
+    return (int)Scintilla::UTF8CharLength(ch);
   }
 }

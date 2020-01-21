@@ -13,3 +13,10 @@ int ResourcesRelease(bool fromDllMain);
 sptr_t DirectFunction(ScintillaWin *sci, UINT iMessage, uptr_t wParam, sptr_t lParam);
 
 }
+
+extern "C"
+__declspec(dllexport)
+sptr_t __stdcall Scintilla_DirectFunction(
+	ScintillaWin *sci, UINT iMessage, uptr_t wParam, sptr_t lParam) {
+	return Scintilla::DirectFunction(sci, iMessage, wParam, lParam);
+}

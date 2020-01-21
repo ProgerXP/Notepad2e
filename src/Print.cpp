@@ -24,6 +24,7 @@
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <string.h>
+#include <vector>
 #include "platform.h"
 #include "scintilla.h"
 #include "scilexer.h"

@@ -138,6 +138,9 @@
     <ClInclude Include="scintilla\lexlib\StyleContext.h">
       <Filter>scintilla\lexlib</Filter>
     </ClInclude>
+    <ClInclude Include="scintilla\lexlib\DefaultLexer.h">
+      <Filter>scintilla\lexlib</Filter>
+    </ClInclude>
     <ClInclude Include="scintilla\src\Style.h">
       <Filter>scintilla\src</Filter>
     </ClInclude>
@@ -249,6 +252,12 @@
     <ClInclude Include="scintilla\src\SVector.h">
       <Filter>scintilla\src</Filter>
     </ClInclude>
+    <ClInclude Include="scintilla\src\UniqueString.h">
+      <Filter>scintilla\src</Filter>
+    </ClInclude>
+    <ClInclude Include="scintilla\src\DBCS.h">
+      <Filter>scintilla\src</Filter>
+    </ClInclude>
     <ClInclude Include="src\Extension\CommonUtils.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
@@ -350,6 +359,9 @@
     <ClCompile Include="src\Styles.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="scintilla\lexlib\DefaultLexer.cxx">
+      <Filter>scintilla\lexers</Filter>
+    </ClCompile>
     <ClCompile Include="scintilla\lexers\LexA68k.cxx">
       <Filter>scintilla\lexers</Filter>
     </ClCompile>
@@ -357,6 +369,9 @@
       <Filter>scintilla\lexers</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\lexers\LexAda.cxx">
+      <Filter>scintilla\lexers</Filter>
+    </ClCompile>
+    <ClCompile Include="scintilla\lexers\LexAHK.cxx">
       <Filter>scintilla\lexers</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\lexers\LexAPDL.cxx">
@@ -698,9 +713,6 @@
     <ClCompile Include="scintilla\lexlib\CharacterCategory.cxx">
       <Filter>scintilla\lexlib</Filter>
     </ClCompile>
-    <ClCompile Include="scintilla\win32\CheckD2D.cxx">
-      <Filter>scintilla\win32</Filter>
-    </ClCompile>
     <ClCompile Include="scintilla\lexlib\PropSetSimple.cxx">
       <Filter>scintilla\lexlib</Filter>
     </ClCompile>
@@ -729,6 +741,9 @@
       <Filter>scintilla\src</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\src\ContractionState.cxx">
+      <Filter>scintilla\src</Filter>
+    </ClCompile>
+    <ClCompile Include="scintilla\src\DBCS.cxx">
       <Filter>scintilla\src</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\src\Decoration.cxx">
@@ -783,6 +798,9 @@
       <Filter>scintilla\src</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\src\UniConversion.cxx">
+      <Filter>scintilla\src</Filter>
+    </ClCompile>
+    <ClCompile Include="scintilla\src\UniqueString.cxx">
       <Filter>scintilla\src</Filter>
     </ClCompile>
     <ClCompile Include="src\Extension\VersionHelper.c">
