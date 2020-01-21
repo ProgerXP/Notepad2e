@@ -57,6 +57,31 @@ def FindModules(lexFile):
                     partLine = partLine + l
     return modules
 
+def FindLexersInXcode(xCodeProject):
+    lines = FileGenerator.ReadFileAsList(xCodeProject)
+
+    uidsOfBuild = {}
+    markersPBXBuildFile = ["Begin PBXBuildFile section", "", "End PBXBuildFile section"]
+    for buildLine in lines[FileGenerator.FindSectionInList(lines, markersPBXBuildFile)]:
+        # Occurs for each file in the build. Find the UIDs used for the file.
+        #\t\t[0-9A-F]+ /* [a-zA-Z]+.cxx in sources */ = {isa = PBXBuildFile; fileRef = [0-9A-F]+ /* [a-zA-Z]+ */; };
+        pieces = buildLine.split()
+        uid1 = pieces[0]
+        filename = pieces[2].split(".")[0]
+        uid2 = pieces[12]
+        uidsOfBuild[filename] = [uid1, uid2]
+
+    lexers = {}
+    markersLexers = ["/* Lexers */ =", "children", ");"]
+    for lexerLine in lines[FileGenerator.FindSectionInList(lines, markersLexers)]:
+        #\t\t\t\t[0-9A-F]+ /* [a-zA-Z]+.cxx */,
+        uid, _, rest = lexerLine.partition("/* ")
+        uid = uid.strip()
+        lexer, _, _ = rest.partition(".")
+        lexers[lexer] = uidsOfBuild[lexer]
+
+    return lexers
+
 # Properties that start with lexer. or fold. are automatically found but there are some
 # older properties that don't follow this pattern so must be explicitly listed.
 knownIrregularProperties = [
@@ -170,10 +195,16 @@ class ScintillaData:
         # Discover verion information
         with open(scintillaRoot + "version.txt") as f:
             self.version = f.read().strip()
-        self.versionDotted = self.version[0] + '.' + self.version[1] + '.' + \
-            self.version[2]
-        self.versionCommad = self.version[0] + ', ' + self.version[1] + ', ' + \
-            self.version[2] + ', 0'
+        if len(self.version) == 3:
+            self.versionDotted = self.version[0] + '.' + self.version[1] + '.' + \
+                self.version[2]
+            self.versionCommad = self.version[0] + ', ' + self.version[1] + ', ' + \
+                self.version[2] + ', 0'
+        else:
+            self.versionDotted = self.version[0] + '.' + self.version[1:3] + '.' + \
+                self.version[3]
+            self.versionCommad = self.version[0] + ', ' + self.version[1:3] + ', ' + \
+                self.version[3] + ', 0'
 
         with open(scintillaRoot + "doc/index.html") as f:
             self.dateModified = [l for l in f.readlines() if "Date.Modified" in l]\
@@ -217,6 +248,7 @@ class ScintillaData:
         self.lexerProperties = list(lexerProperties)
         SortListInsensitive(self.lexerProperties)
 
+        self.lexersXcode = FindLexersInXcode(scintillaRoot + "cocoa/ScintillaFramework/ScintillaFramework.xcodeproj/project.pbxproj")
         self.credits = FindCredits(scintillaRoot + "doc/ScintillaHistory.html")
 
 def printWrapped(text):
@@ -229,6 +261,8 @@ if __name__=="__main__":
         sci.dateModified, sci.yearModified, sci.mdyModified, sci.dmyModified, sci.myModified))
     printWrapped(str(len(sci.lexFiles)) + " lexer files: " + ", ".join(sci.lexFiles))
     printWrapped(str(len(sci.lexerModules)) + " lexer modules: " + ", ".join(sci.lexerModules))
+    #~ printWrapped(str(len(sci.lexersXcode)) + " Xcode lexer references: " + ", ".join(
+        #~ [lex+":"+uids[0]+","+uids[1] for lex, uids in sci.lexersXcode.items()]))
     print("Lexer name to ID:")
     lexNames = sorted(sci.sclexFromName.keys())
     for lexName in lexNames:

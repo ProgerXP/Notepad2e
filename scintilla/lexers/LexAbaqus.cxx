@@ -26,9 +26,7 @@
 #include "CharacterSet.h"
 #include "LexerModule.h"
 
-#ifdef SCI_NAMESPACE
 using namespace Scintilla;
-#endif
 
 static inline bool IsAKeywordChar(const int ch) {
 	return (ch < 0x80 && (isalnum(ch) || (ch == '_') || (ch == ' ')));
@@ -581,14 +579,14 @@ WordList *[], Accessor &styler) {
     for ( Sci_Position ll = beginData; ll < beginComment; ll++ )
         SafeSetLevel(ll, datLevel, styler) ;
 
-	if ( prvKeyLineTp == 5 ) {
-		level += 1 ;
-	}
+    if ( prvKeyLineTp == 5 ) {
+        level += 1 ;
+    }
 
-	if ( prvKeyLineTp == 6 ) {
-		level -= 1 ;
-	}
-	for ( Sci_Position m = beginComment; m <= endLine; m++ )
+    if ( prvKeyLineTp == 6 ) {
+        level -= 1 ;
+    }
+    for ( Sci_Position m = beginComment; m <= endLine; m++ )
         SafeSetLevel(m, level, styler) ;
 }
 
