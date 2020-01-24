@@ -9,6 +9,7 @@
  */
 #include <stdlib.h>
 #include <iterator> 
+#include <memory>
 #include <vector>
 #include "scintilla.h"
 #include "Platform.h"
