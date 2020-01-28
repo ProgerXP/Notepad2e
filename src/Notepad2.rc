@@ -1646,6 +1646,7 @@ BEGIN
     63033                   "Rust"
     63034                   "Markdown"
     63035                   "Awk Script"
+    63036                   "AutoHotkey Script"
 END
 
 STRINGTABLE
@@ -1935,6 +1936,15 @@ BEGIN
     63349                   "Code"
     63350                   "Code 2"
     63351                   "Code Block"
+    63352                   "Escape"
+    63353                   "Syntax operator"
+    63354                   "Expression operator"
+    63355                   "Variable dereferencing"
+    63356                   "Flow of control"
+    63357                   "Directive"
+    63358                   "Keys & buttons"
+    63359                   "Built-in variables"
+    63360                   "Variable keyword"
 END
 
 #endif    // English (United States) resources
