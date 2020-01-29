@@ -36,6 +36,7 @@
 #include "helpers.h"
 #include "resource.h"
 #include "SciCall.h"
+#include "Extension/CommonUtils.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/DPIHelperScintilla.h"
 #include "Extension/EditHelper.h"
@@ -44,6 +45,7 @@
 #include "Extension/MainWndHelper.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/InlineProgressBarCtrl.h"
+#include "Extension/StringRecoding.h"
 #include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
 #include "Extension/VersionHelper.h"
@@ -1020,11 +1022,71 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             FileLoad(FALSE, FALSE, FALSE, FALSE, tchFile);
         }
 
-        else
+        else if (DragQueryFile(hDrop, (UINT)(-1), NULL, 0) == 1)
+        {
           FileLoad(FALSE, FALSE, FALSE, FALSE, szBuf);
+        }
 
-        if (DragQueryFile(hDrop, (UINT)(-1), NULL, 0) > 1)
-          MsgBox(MBINFO, IDS_ERR_DROP);
+        // [2e]: Multi-file drop to concatenate all #250
+        else
+        {
+          LPSTR lpData = NULL;
+          int iDataLength = 0;
+          UINT iTotalFiles = DragQueryFile(hDrop, (UINT)(-1), NULL, 0);
+          UINT iFile = 0;
+          BOOL bError = FALSE;
+          BOOL bUseUTF8 = FALSE;
+
+          SciCall_SetSkipUIUpdate(1);
+          for (iFile = 0; iFile < iTotalFiles; iFile++)
+          {
+            DragQueryFile(hDrop, iFile, szBuf, COUNTOF(szBuf));
+            if (!FileLoad(FALSE, FALSE, FALSE, FALSE, szBuf))
+            {
+              bError = TRUE;
+              break;
+            }
+
+            int iCurrentDataLength = SciCall_GetLength();
+            LPSTR lpDataNew = n2e_Alloc(iDataLength + iCurrentDataLength + 1);
+            if (!lpDataNew)
+            {
+              MsgBox(MBWARN, IDS_ERR_MEMORY_ALLOCATION, iDataLength);
+              bError = TRUE;
+              break;
+            }
+            memcpy_s(lpDataNew, iDataLength + iCurrentDataLength + 1, lpData, iDataLength);
+            
+            if (!bUseUTF8 && (n2e_IsUTF8EncodingMode() || n2e_IsUnicodeEncodingMode()))
+            {
+              bUseUTF8 = TRUE;
+            }
+            SciCall_GetText(iCurrentDataLength + 1, lpDataNew + iDataLength);
+
+            n2e_Free(lpData);
+            lpData = lpDataNew;
+            iDataLength += iCurrentDataLength;
+          }
+          if (!bError)
+          {
+            FileLoad(FALSE, TRUE, FALSE, FALSE, L"");
+            if (bUseUTF8)
+            {
+              iEncoding = CPI_UTF8;
+              SendMessage(hwndEdit, SCI_SETCODEPAGE, SC_CP_UTF8, 0);
+            }
+            SciCall_AddText(iDataLength, lpData);
+            SciCall_GotoPos(0);
+            iEOLMode = EditDetectEOLMode(hwnd, lpData, iDataLength);
+          }
+          SciCall_SetSkipUIUpdate(0);
+          if (lpData)
+          {
+            n2e_Free(lpData);
+            lpData = NULL;
+          }
+        }
+        // [/2e]
 
         DragFinish(hDrop);
       }

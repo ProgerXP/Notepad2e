@@ -458,6 +458,7 @@
 #define IDS_ERR_SAVEAS_RENAME_DETAILS   50042
 #define IDS_WARN_ICU_REGEX              50043
 #define IDS_ERR_ELEVATE                 50044
+#define IDS_ERR_MEMORY_ALLOCATION       50045
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects
