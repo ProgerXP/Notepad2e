@@ -10,7 +10,7 @@ void* n2e_Alloc(size_t size)
     N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", iAllocCount);
   }
   ++iAllocCount;
-  return GlobalAlloc(GPTR, sizeof(WCHAR) * (size + 1));
+  return malloc(sizeof(WCHAR) * (size + 1));
 }
 
 void n2e_Free(void* ptr)
@@ -18,12 +18,16 @@ void n2e_Free(void* ptr)
   if (ptr)
   {
     --iAllocCount;
-    GlobalFree(ptr);
+    free(ptr);
   }
 }
 
 void* n2e_Realloc(void* ptr, size_t len)
 {
-  n2e_Free(ptr);
-  return n2e_Alloc(len);
+  void* res = realloc(ptr, len);
+  if (!res && ptr)
+  {
+    n2e_Free(ptr);
+  }
+  return res;
 }

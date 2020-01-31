@@ -1048,23 +1048,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             }
 
             int iCurrentDataLength = SciCall_GetLength();
-            LPSTR lpDataNew = n2e_Alloc(iDataLength + iCurrentDataLength + 1);
-            if (!lpDataNew)
+            lpData = n2e_Realloc(lpData, iDataLength + iCurrentDataLength + 1);
+            if (!lpData)
             {
               MsgBox(MBWARN, IDS_ERR_MEMORY_ALLOCATION, iDataLength);
               bError = TRUE;
               break;
             }
-            memcpy_s(lpDataNew, iDataLength + iCurrentDataLength + 1, lpData, iDataLength);
-            
             if (!bUseUTF8 && (n2e_IsUTF8EncodingMode() || n2e_IsUnicodeEncodingMode()))
             {
               bUseUTF8 = TRUE;
             }
-            SciCall_GetText(iCurrentDataLength + 1, lpDataNew + iDataLength);
-
-            n2e_Free(lpData);
-            lpData = lpDataNew;
+            SciCall_GetText(iCurrentDataLength + 1, lpData + iDataLength);
             iDataLength += iCurrentDataLength;
           }
           if (!bError)
