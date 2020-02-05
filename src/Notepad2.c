@@ -236,6 +236,8 @@ int       iDefaultCharSet;
 
 int       iInitialLine;
 int       iInitialColumn;
+int       iInitialSelStart = -1;
+int       iInitialSelEnd = -1;
 
 int       iInitialLexer;
 
@@ -673,7 +675,8 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       {
         if (flagJumpTo)
         { // Jump to position
-          EditJumpTo(hwndEdit, iInitialLine, iInitialColumn);
+          // [2e]: Add to Favorites - selection mode #249
+          n2e_EditJumpTo(hwndEdit, iInitialLine, iInitialColumn, iInitialSelStart, iInitialSelEnd);
           EditEnsureSelectionVisible(hwndEdit);
         }
       }
@@ -727,7 +730,8 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
       SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
       bAutoIndent = bAutoIndent2;
       if (flagJumpTo)
-        EditJumpTo(hwndEdit, iInitialLine, iInitialColumn);
+        // [2e]: Add to Favorites - selection mode #249
+        n2e_EditJumpTo(hwndEdit, iInitialLine, iInitialColumn, iInitialSelStart, iInitialSelEnd);
       EditEnsureSelectionVisible(hwndEdit);
     }
   }
@@ -1177,9 +1181,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
           if (params->flagJumpTo)
           {
-            if (params->iInitialLine == 0)
+            // [2e]: Add to Favorites - selection mode #249
+            if ((params->iInitialLine == 0) && (params->iInitialSelStart == -1))
               params->iInitialLine = 1;
-            EditJumpTo(hwndEdit, params->iInitialLine, params->iInitialColumn);
+            n2e_EditJumpTo(hwndEdit, params->iInitialLine, params->iInitialColumn, params->iInitialSelStart, params->iInitialSelEnd);
             EditEnsureSelectionVisible(hwndEdit);
           }
 
@@ -6162,6 +6167,23 @@ BOOL ParseCommandLine()
         n2e_ChildProcess_FileIOHandler(idIPC);
         return FALSE;
       }
+      // [2e]: Add to Favorites - selection mode #249
+      else if (StrCmpNI(lp1, L"gs", CSTRLEN(L"gs")) == 0)
+      {
+        if (ExtractFirstArgument(lp2, lp1, lp2))
+        {
+          const int itok = swscanf(lp1, L"%i:%i", &iInitialSelStart, &iInitialSelEnd);
+          if ((itok == 2) && (iInitialSelStart >= 0) && (iInitialSelEnd >= -1))
+          {
+            flagJumpTo = 1;
+          }
+          else
+          {
+            iInitialSelStart = -1;
+            iInitialSelEnd = -1;
+          }
+        }
+      }
       // [/2e]
 
       else switch (*CharUpper(lp1))
@@ -7650,6 +7672,8 @@ BOOL ActivatePrevInst()
         params->flagJumpTo = flagJumpTo;
         params->iInitialLine = iInitialLine;
         params->iInitialColumn = iInitialColumn;
+        params->iInitialSelStart = iInitialSelStart;
+        params->iInitialSelEnd = iInitialSelEnd;
 
         params->iSrcEncoding = (lpEncodingArg) ? Encoding_MatchW(lpEncodingArg) : -1;
         params->flagSetEncoding = flagSetEncoding;
@@ -7750,6 +7774,8 @@ BOOL ActivatePrevInst()
         params->flagJumpTo = flagJumpTo;
         params->iInitialLine = iInitialLine;
         params->iInitialColumn = iInitialColumn;
+        params->iInitialSelStart = iInitialSelStart;
+        params->iInitialSelEnd = iInitialSelEnd;
 
         params->iSrcEncoding = (lpEncodingArg) ? Encoding_MatchW(lpEncodingArg) : -1;
         params->flagSetEncoding = flagSetEncoding;

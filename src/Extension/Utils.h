@@ -78,6 +78,20 @@ typedef enum
   SCP_HALF = 2
 } EScrollYCaretPolicy;
 
+typedef enum
+{
+  FCP_FIRST_LINE = 0,
+  FCP_LAST_LINE = 1,
+  FCP_CURRENT_LINE = 2,
+  FCP_CURRENT_SELECTION = 3
+} EFavoritesCursorPosition;
+
+typedef struct TAddToFavoritesParams
+{
+  WCHAR pszName[MAX_PATH];
+  EFavoritesCursorPosition cursorPosition;
+} TADDFAVPARAMS, *PTADDFAVPARAMS;
+
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
@@ -101,8 +115,10 @@ void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
+BOOL n2e_IsRectangularSelection();
 BOOL n2e_OpenMRULast(LPWSTR fn);
 void n2e_GetLastDir(LPTSTR out);
+LPCWSTR n2e_GetExePath();
 UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM lParam);
 BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex);
 void n2e_InplaceRev(WCHAR * s);
@@ -135,3 +151,9 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit);
 void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink);
 long n2e_GenerateRandom();
+
+void n2e_SetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast, const int selectedIndex);
+int n2e_GetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast);
+
+void n2e_InitCreateFavLnkParams(const TADDFAVPARAMS params, LPWSTR* lpszTarget, LPWSTR* lpszArguments);
+void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, const int iNewSelStart, const int iNewSelEnd);

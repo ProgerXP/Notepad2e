@@ -96,6 +96,8 @@ DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
 DeclareSciCallR2(GetText, GETTEXT, int, int, length, char*, text);
 DeclareSciCallR2(GetTextRange, GETTEXTRANGE, int, int, unused, struct Sci_TextRange*, tr);
 
+DeclareSciCallV0(ChooseCaretX, CHOOSECARETX);
+
 DeclareSciCallV0(SetSavePoint, SETSAVEPOINT);
 DeclareSciCallV0(BeginUndoAction, BEGINUNDOACTION);
 DeclareSciCallV0(EndUndoAction, ENDUNDOACTION);

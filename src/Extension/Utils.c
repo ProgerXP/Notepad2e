@@ -473,6 +473,11 @@ BOOL n2e_IsTextEmpty(LPCWSTR txt)
   return TRUE;
 }
 
+BOOL n2e_IsRectangularSelection()
+{
+  return SciCall_GetSelectionMode() == SC_SEL_RECTANGLE;
+}
+
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2)
 {
   int res1, res2;
@@ -773,6 +778,22 @@ void n2e_GetLastDir(LPTSTR out)
   {
     lstrcpy(out, g_wchWorkingDirectory);
   }
+}
+
+LPCWSTR n2e_GetExePath()
+{
+  static WCHAR tchExePath[N2E_MAX_PATH_N_CMD_LINE] = { 0 };
+  if (lstrlen(tchExePath) == 0)
+  {
+    int nArgs = 0;
+    LPWSTR* szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
+    if (szArglist)
+    {
+      wcscpy_s(tchExePath, _countof(tchExePath) - 1, szArglist[0]);
+      LocalFree(szArglist);
+    }
+  }
+  return tchExePath;
 }
 
 BOOL n2e_Grep(void* _lpf, const BOOL grep)
@@ -1183,4 +1204,70 @@ long n2e_GenerateRandom()
     factor *= 10;
   }
   return max(MIN_RANDOM, res);
+}
+
+void n2e_SetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast, const int selectedIndex)
+{
+  CheckRadioButton(hwnd, idFirst, idLast, idFirst + selectedIndex);
+}
+
+int n2e_GetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast)
+{
+  int res = -1;
+  for (int id = idFirst; id <= idLast; ++id)
+  {
+    if (IsDlgButtonChecked(hwnd, id) & BST_CHECKED)
+    {
+      res = id - idFirst;
+      break;
+    }
+  }
+  return res;
+}
+
+void n2e_InitCreateFavLnkParams(const TADDFAVPARAMS params, LPWSTR* lpszTarget, LPWSTR* lpszArguments)
+{
+  static WCHAR wchTemp[MAX_PATH] = { 0 };
+  switch (params.cursorPosition)
+  {
+  case FCP_FIRST_LINE:
+    break;
+  case FCP_LAST_LINE:
+  case FCP_CURRENT_LINE:
+    PathQuoteSpaces(*lpszTarget);
+    _swprintf(wchTemp, L"/g %d %s",
+              (params.cursorPosition == FCP_LAST_LINE) ? -1 : SciCall_LineFromPosition(SciCall_GetSelStart()) + 1,
+              *lpszTarget);
+    *lpszArguments = wchTemp;
+    *lpszTarget = (LPWSTR)n2e_GetExePath();
+    break;
+  case FCP_CURRENT_SELECTION:
+    PathQuoteSpaces(*lpszTarget);
+    _swprintf(wchTemp, L"/gs %d:%d %s", SciCall_GetSelStart(), SciCall_GetSelEnd(), *lpszTarget);
+    *lpszArguments = wchTemp;
+    *lpszTarget = (LPWSTR)n2e_GetExePath();
+    break;
+  default:
+    break;
+  }
+}
+
+void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, const int iNewSelStart, const int iNewSelEnd)
+{
+  if (iNewSelStart == -1)
+  {
+    EditJumpTo(hwnd, iNewLine, iNewCol);
+  }
+  else
+  {
+    SciCall_SetXCaretPolicy(CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
+    SciCall_SetYCaretPolicy(CARET_SLOP | CARET_STRICT | CARET_EVEN, 5);
+
+    SciCall_GotoPos(iNewSelStart);
+    SciCall_SetSel(iNewSelStart, iNewSelEnd);
+    SciCall_ChooseCaretX();
+
+    SciCall_SetXCaretPolicy(CARET_SLOP | CARET_EVEN, 50);
+    SciCall_SetYCaretPolicy(CARET_EVEN, 0);
+  }
 }

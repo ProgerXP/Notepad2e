@@ -883,14 +883,20 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
   {
     DPI_CHANGED_HANDLER();
 
-    WCHAR *pszName;
+    // [2e]: Add to Favorites - selection mode #249
+    PTADDFAVPARAMS lpParams = NULL;
 
     case WM_INITDIALOG:
-      pszName = (LPWSTR)lParam;
-      SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)pszName);
+      lpParams = (PTADDFAVPARAMS)lParam;
+      SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lpParams);
 
       SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, MAX_PATH - 1, 0);
-      SetDlgItemText(hwnd, 100, pszName);
+      SetDlgItemText(hwnd, 100, lpParams->pszName);
+      if (n2e_IsRectangularSelection())
+      {
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO4), FALSE);
+      }
+      n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO4, lpParams->cursorPosition);
 
       DPI_INIT();
       CenterDlgInParent(hwnd);
@@ -909,9 +915,10 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
 
 
         case IDOK:
-          pszName = (LPWSTR)GetWindowLongPtr(hwnd, DWLP_USER);
-          GetDlgItemText(hwnd, 100, pszName,
+          lpParams = (PTADDFAVPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
+          GetDlgItemText(hwnd, 100, lpParams->pszName,
                          MAX_PATH - 1);
+          lpParams->cursorPosition = (EFavoritesCursorPosition)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO4);
           EndDialog(hwnd, IDOK);
           break;
 
@@ -940,18 +947,24 @@ BOOL AddToFavDlg(HWND hwnd, LPCWSTR lpszName, LPCWSTR lpszTarget)
 
   INT_PTR iResult;
 
-  WCHAR pszName[MAX_PATH];
-  lstrcpy(pszName, lpszName);
+  // [2e]: Add to Favorites - selection mode #249
+  TADDFAVPARAMS params = { 0, FCP_FIRST_LINE };
+  lstrcpy(params.pszName, lpszName);
 
   iResult = ThemedDialogBoxParam(
     g_hInstance,
     MAKEINTRESOURCE(IDD_ADDTOFAV),
     hwnd,
-    AddToFavDlgProc, (LPARAM)pszName);
+    AddToFavDlgProc, (LPARAM)&params);
 
   if (iResult == IDOK)
   {
-    if (!PathCreateFavLnk(pszName, lpszTarget, tchFavoritesDir))
+    // [2e]: Add to Favorites - selection mode #249
+    LPWSTR lpszArguments = NULL;
+    n2e_InitCreateFavLnkParams(params, (LPWSTR*)&lpszTarget, &lpszArguments);
+    // [/2e]
+
+    if (!PathCreateFavLnk(params.pszName, lpszTarget, lpszArguments, tchFavoritesDir))
     {
       MsgBox(MBWARN, IDS_FAV_FAILURE);
       return FALSE;

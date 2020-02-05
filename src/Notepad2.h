@@ -38,6 +38,8 @@ typedef struct np2params {
   int   flagJumpTo;
   int   iInitialLine;
   int   iInitialColumn;
+  int   iInitialSelStart;
+  int   iInitialSelEnd;
   int   iSrcEncoding;
   int   flagSetEncoding;
   int   flagSetEOLMode;

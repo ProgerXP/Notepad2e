@@ -130,9 +130,13 @@
 #define IDD_COLUMNWRAP                  116
 #define IDC_RICHEDIT                    116
 #define IDD_LINENUM                     117
+#define IDC_RADIO1                      117
 #define IDD_FIND                        118
+#define IDC_RADIO2                      118
 #define IDD_REPLACE                     119
+#define IDC_RADIO3                      119
 #define IDD_STYLESELECT                 120
+#define IDC_RADIO4                      120
 #define IDD_STYLECONFIG                 121
 #define IDD_WORDWRAP                    122
 #define IDD_LONGLINES                   123

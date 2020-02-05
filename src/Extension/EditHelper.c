@@ -113,7 +113,7 @@ void n2e_StripHTMLTags(const HWND hwnd)
 
 BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
 {
-  if (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0))
+  if (n2e_IsRectangularSelection())
   {
     MsgBox(MBINFO, IDS_SELRECT);
     return TRUE;

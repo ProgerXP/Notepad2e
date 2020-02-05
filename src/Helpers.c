@@ -1276,7 +1276,7 @@ BOOL PathCreateDeskLnk(LPCWSTR pszDocument)
 //
 //  Manipulates:
 //
-BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszDir)
+BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszArguments, LPCWSTR pszDir)
 {
 
   WCHAR tchLnkFileName[MAX_PATH];
@@ -1306,6 +1306,10 @@ BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszDir)
       lstrcpy(wsz, tchLnkFileName);
 
       psl->lpVtbl->SetPath(psl, pszTarget);
+      if (pszArguments)
+      {
+        psl->lpVtbl->SetArguments(psl, pszArguments);
+      }
 
       if (SUCCEEDED(ppf->lpVtbl->Save(ppf, wsz, TRUE)))
         bSucceeded = TRUE;
