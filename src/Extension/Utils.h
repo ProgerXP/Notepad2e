@@ -89,6 +89,8 @@ typedef enum
 typedef struct TAddToFavoritesParams
 {
   WCHAR pszName[MAX_PATH];
+  WCHAR pszTarget[MAX_PATH];
+  WCHAR pszArguments[MAX_PATH];
   EFavoritesCursorPosition cursorPosition;
 } TADDFAVPARAMS, *PTADDFAVPARAMS;
 
@@ -155,5 +157,5 @@ long n2e_GenerateRandom();
 void n2e_SetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast, const int selectedIndex);
 int n2e_GetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLast);
 
-void n2e_InitCreateFavLnkParams(const TADDFAVPARAMS params, LPWSTR* lpszTarget, LPWSTR* lpszArguments);
+void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams);
 void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, const int iNewSelStart, const int iNewSelEnd);

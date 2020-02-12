@@ -1225,27 +1225,24 @@ int n2e_GetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLa
   return res;
 }
 
-void n2e_InitCreateFavLnkParams(const TADDFAVPARAMS params, LPWSTR* lpszTarget, LPWSTR* lpszArguments)
+void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams)
 {
-  static WCHAR wchTemp[MAX_PATH] = { 0 };
-  switch (params.cursorPosition)
+  switch (lpParams->cursorPosition)
   {
   case FCP_FIRST_LINE:
     break;
   case FCP_LAST_LINE:
   case FCP_CURRENT_LINE:
-    PathQuoteSpaces(*lpszTarget);
-    _swprintf(wchTemp, L"/g %d %s",
-              (params.cursorPosition == FCP_LAST_LINE) ? -1 : SciCall_LineFromPosition(SciCall_GetSelStart()) + 1,
-              *lpszTarget);
-    *lpszArguments = wchTemp;
-    *lpszTarget = (LPWSTR)n2e_GetExePath();
+    PathQuoteSpaces(lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments, L"/g %d %s",
+              (lpParams->cursorPosition == FCP_LAST_LINE) ? -1 : SciCall_LineFromPosition(SciCall_GetSelStart()) + 1,
+              lpParams->pszTarget);
+    _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
     break;
   case FCP_CURRENT_SELECTION:
-    PathQuoteSpaces(*lpszTarget);
-    _swprintf(wchTemp, L"/gs %d:%d %s", SciCall_GetSelStart(), SciCall_GetSelEnd(), *lpszTarget);
-    *lpszArguments = wchTemp;
-    *lpszTarget = (LPWSTR)n2e_GetExePath();
+    PathQuoteSpaces(lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments, L"/gs %d:%d %s", SciCall_GetSelStart(), SciCall_GetSelEnd(), lpParams->pszTarget);
+    _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
     break;
   default:
     break;
