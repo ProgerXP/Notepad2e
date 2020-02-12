@@ -2097,7 +2097,7 @@ BOOL Style_Export(HWND hwnd)
 
     if (dwError != ERROR_SUCCESS)
     {
-      MsgBox(MBINFO, IDS_EXPORT_FAIL, szFile);
+      MsgBox(MBWARN, IDS_EXPORT_FAIL, szFile);
     }
     return (TRUE);
   }
@@ -4075,7 +4075,7 @@ void Style_ConfigDlg(HWND hwnd)
     fStylesModified = TRUE;
     if (lstrlen(szIniFile) == 0 && !fWarnedNoIniFile)
     {
-      MsgBox(MBINFO, IDS_SETTINGSNOTSAVED);
+      MsgBox(MBWARN, IDS_SETTINGSNOTSAVED);
       fWarnedNoIniFile = TRUE;
     }
   }

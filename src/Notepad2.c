@@ -4351,11 +4351,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else
           {
             dwLastIOError = GetLastError();
-            MsgBox(MBINFO, IDS_WRITEINI_FAIL);
+            MsgBox(MBWARN, IDS_WRITEINI_FAIL);
           }
         }
         else
-          MsgBox(MBINFO, IDS_CREATEINI_FAIL);
+          MsgBox(MBWARN, IDS_CREATEINI_FAIL);
       }
       break;
 
@@ -7308,7 +7308,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
         {
           GetString(IDS_ERR_SAVEAS_RENAME_DETAILS, tchDescription, COUNTOF(tchDescription) - 1);
         }
-        MsgBox(MBINFO, IDS_ERR_SAVEAS, tchDescription);
+        MsgBox(MBWARN, IDS_ERR_SAVEAS, tchDescription);
         return FALSE;
       }
       // [/2e]

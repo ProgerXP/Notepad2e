@@ -80,6 +80,7 @@ DeclareSciCallR0(GetSelStart, GETSELECTIONSTART, int);
 DeclareSciCallR0(GetSelEnd, GETSELECTIONEND, int);
 DeclareSciCallV2(SetSel, SETSEL, int, anchorPos, int, currentPos);
 DeclareSciCallV2(ReplaceSel, REPLACESEL, int, unused, const char*, text);
+DeclareSciCallR0(CharRightExtEnd, CHARRIGHTEXTEND, int);
 DeclareSciCallR0(GetSelections, GETSELECTIONS, int);
 DeclareSciCallR1(GetSelectionNStart, GETSELECTIONNSTART, Sci_Position, int, position);
 DeclareSciCallR1(GetSelectionNEnd, GETSELECTIONNEND, Sci_Position, int, position);

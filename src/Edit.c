@@ -827,7 +827,7 @@ BOOL Encoding_GetFromListView(HWND hwnd, int *pidEncoding)
       return (TRUE);
     }
     else
-      MsgBox(MBINFO, IDS_ERR_ENCODINGNA);
+      MsgBox(MBWARN, IDS_ERR_ENCODINGNA);
   }
   return (FALSE);
 }
@@ -914,7 +914,7 @@ BOOL Encoding_GetFromComboboxEx(HWND hwnd, int *pidEncoding)
       return (TRUE);
     }
     else
-      MsgBox(MBINFO, IDS_ERR_ENCODINGNA);
+      MsgBox(MBWARN, IDS_ERR_ENCODINGNA);
   }
   return (FALSE);
 }
@@ -3356,7 +3356,7 @@ void EditAlignText(HWND hwnd, int nMode)
         SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
     }
     else
-      MsgBox(MBINFO, IDS_BUFFERTOOSMALL);
+      MsgBox(MBWARN, IDS_BUFFERTOOSMALL);
 
     if (iCurPos < iAnchorPos)
     {

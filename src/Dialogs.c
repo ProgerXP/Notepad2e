@@ -94,7 +94,7 @@ int MsgBox(int iType, UINT uIdMsg, ...)
   switch (iType)
   {
     case MBINFO:
-      iIcon = MB_ICONEXCLAMATION;
+      iIcon = MB_ICONINFORMATION;
       break;
     case MBWARN:
       iIcon = MB_ICONEXCLAMATION;

@@ -115,7 +115,7 @@ BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
 {
   if (n2e_IsRectangularSelection())
   {
-    MsgBox(MBINFO, IDS_SELRECT);
+    MsgBox(MBWARN, IDS_SELRECT);
     return TRUE;
   }
   return FALSE;
