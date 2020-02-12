@@ -6901,8 +6901,9 @@ void UpdateStatusbar()
     iSel = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
     wsprintf(tchSelLines, L"%i", iSel);
     FormatNumberStr(tchSelLines);
-    lstrcat(tchSel, L" : ");
+    lstrcat(tchSel, L" L : ");
     lstrcat(tchSel, tchSelLines);
+    lstrcat(tchSel, L" B");
   }
   // [/2e]
 
