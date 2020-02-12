@@ -1133,7 +1133,7 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
       if (SUCCEEDED(ppf->lpVtbl->Load(ppf, wsz, STGM_READ)))
       {
         // [2e]: Add to Favorites - selection mode #249
-        if (NOERROR == psl->lpVtbl->GetArguments(psl, pszResPath, cchResPath))
+        if ((NOERROR == psl->lpVtbl->GetArguments(psl, pszResPath, cchResPath)) && (wcslen(pszResPath) > 0))
         {
           int i = 0;
           LPWSTR* szArglist = CommandLineToArgvW(pszResPath, &i);
