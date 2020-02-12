@@ -1260,8 +1260,9 @@ void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, cons
     SciCall_SetXCaretPolicy(CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
     SciCall_SetYCaretPolicy(CARET_SLOP | CARET_STRICT | CARET_EVEN, 5);
 
-    SciCall_GotoPos(iNewSelStart);
-    SciCall_SetSel(iNewSelStart, iNewSelEnd - 1);
+    SciCall_GotoPos(iNewSelStart + 1);
+    SciCall_CharLeftExtEnd();
+    SciCall_SetSel(SciCall_GetCurrentPos(), iNewSelEnd - 1);
     SciCall_CharRightExtEnd();
     SciCall_ChooseCaretX();
 

@@ -1142,7 +1142,7 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
             --i;
             while (i >= 0)
             {
-              if (PathFileExists(szArglist[i]))
+              if (wcslen(szArglist[i]) > 0)
               {
                 wcscpy_s(pszResPath, cchResPath, szArglist[i]);
                 bSucceeded = TRUE;
