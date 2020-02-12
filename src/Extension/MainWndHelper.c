@@ -53,7 +53,7 @@ BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt)
 
 void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
 {
-  if (bLeftClick)
+  if (!bLeftClick)
   {
     ++modeExpressionValue;
     if (modeExpressionValue > EVM_MAX)
