@@ -126,10 +126,12 @@
 #define IDD_INSERTTAG                   114
 #define IDC_REPLACEINSEL                114
 #define IDD_SORT                        115
-#define IDC_TOGGLEFINDREPLACE           115
+#define IDC_TOGGLEFIND                  115
 #define IDD_COLUMNWRAP                  116
+#define IDC_TOGGLEREPLACE               116
 #define IDC_RICHEDIT                    116
 #define IDD_LINENUM                     117
+#define IDC_TOGGLEGOTO                  117
 #define IDC_RADIO1                      117
 #define IDD_FIND                        118
 #define IDC_RADIO2                      118
@@ -157,6 +159,7 @@
 #define IDACC_SELTONEXT                 208
 #define IDACC_SELTOPREV                 209
 #define IDACC_BACK                      210
+#define IDACC_GOTO                      211
 #define IDS_APPTITLE                    10000
 #define IDS_APPTITLE_ELEVATED           10001
 #define IDS_APPTITLE_PASTEBOARD         10002

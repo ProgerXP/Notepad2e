@@ -5165,6 +5165,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         case IDACC_SELTOPREV:
         case IDMSG_SWITCHTOFIND:
         case IDMSG_SWITCHTOREPLACE:
+        case IDMSG_SWITCHTOGOTO:
         // [2e]: Grep / Ungrep #29
         case ID_GREP:
         case ID_UNGREP:
@@ -5174,8 +5175,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           bIsFindDlg = (GetDlgItem(hwnd, IDC_REPLACE) == NULL);
 
-          if ((bIsFindDlg && LOWORD(wParam) == IDMSG_SWITCHTOREPLACE ||
-               !bIsFindDlg && LOWORD(wParam) == IDMSG_SWITCHTOFIND))
+          if ((bIsFindDlg && (LOWORD(wParam) == IDMSG_SWITCHTOREPLACE))
+              || (!bIsFindDlg && (LOWORD(wParam) == IDMSG_SWITCHTOFIND))
+              || (LOWORD(wParam) == IDMSG_SWITCHTOGOTO))
           {
             GetDlgPos(hwnd, &xFindReplaceDlgSave, &yFindReplaceDlgSave);
             bSwitchedFindReplace = TRUE;
@@ -5360,6 +5362,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
           break;
 
+        case IDACC_GOTO:
+          PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_GOTOLINE, 1), 0);
+          break;
+
         case IDACC_SAVEPOS:
           GetDlgPos(hwnd, &xFindReplaceDlg, &yFindReplaceDlg);
           break;
@@ -5418,14 +5424,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         {
           case NM_CLICK:
           case NM_RETURN:
-            if (pnmhdr->idFrom == IDC_TOGGLEFINDREPLACE)
+            switch (pnmhdr->idFrom)
             {
-              if (GetDlgItem(hwnd, IDC_REPLACE))
-              {
-                PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_FIND, 1), 0);
-              }
-              else
-                PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
+            case IDC_TOGGLEFIND:
+              PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_FIND, 1), 0);
+              break;
+            case IDC_TOGGLEREPLACE:
+              PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
+              break;
+            case IDC_TOGGLEGOTO:
+              PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_GOTOLINE, 1), 0);
+              break;
             }
             break;
         }
@@ -6053,22 +6062,45 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
 //
 INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
+  LPEDITFINDREPLACE lpefr = NULL;
+
+
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
+        
+        SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
+        lpefr = (LPEDITFINDREPLACE)lParam;
 
-        int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0) + 1;
-
-        SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, FALSE);
+        if (!lpefr || !strlen(lpefr->szFindUTF8))
+        {
+          int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0) + 1;
+          SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, FALSE);
+        }
+        else
+        {
+          SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8);
+        }
         SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
 
         DPI_INIT();
-        CenterDlgInParent(hwnd);
 
+        if (!bSwitchedFindReplace)
+        {
+          if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
+            CenterDlgInParent(hwnd);
+          else
+            SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
+        }
+        else
+        {
+          SetDlgPos(hwnd, xFindReplaceDlgSave, yFindReplaceDlgSave);
+          bSwitchedFindReplace = FALSE;
+        }
       }
       return TRUE;
 
@@ -6077,6 +6109,29 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
       switch (LOWORD(wParam))
       {
+
+        case IDACC_FIND:
+        case IDACC_REPLACE:
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          if (!lpefr)
+          {
+            lpefr = &efrSave;
+          }
+          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8, COUNTOF(lpefr->szFindUTF8));
+          PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG((LOWORD(wParam) == IDACC_FIND) ? IDM_EDIT_FIND : IDM_EDIT_REPLACE, 1), 0);
+          break;
+
+
+        case IDACC_SAVEPOS:
+          GetDlgPos(hwnd, &xFindReplaceDlg, &yFindReplaceDlg);
+          break;
+
+
+        case IDMSG_SWITCHTOFIND:
+        case IDMSG_SWITCHTOREPLACE:
+          GetDlgPos(hwnd, &xFindReplaceDlg, &yFindReplaceDlg);
+          break;
+
 
         case IDOK: {
             // [2e]: Go-to absolute offset #2
@@ -6148,11 +6203,33 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
           break;
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
+          DestroyWindow(hwnd);
           break;
 
       }
 
       return TRUE;
+
+    case WM_NOTIFY: {
+
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+        case NM_CLICK:
+        case NM_RETURN:
+          switch (pnmhdr->idFrom)
+          {
+            case IDC_TOGGLEFIND:
+              PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_FIND, 1), 0);
+              break;
+            case IDC_TOGGLEREPLACE:
+              PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
+              break;
+          }
+          break;
+      }
+    }
+    break;
 
   }
 
@@ -6165,13 +6242,20 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 //
 //  EditLinenumDlg()
 //
-BOOL EditLinenumDlg(HWND hwnd)
+HWND EditLinenumDlg(HWND hwnd, LPCEDITFINDREPLACE lpefr)
 {
-  if (IDOK == ThemedDialogBoxParam(g_hInstance, MAKEINTRESOURCE(IDD_LINENUM),
-                                   GetParent(hwnd), EditLinenumDlgProc, (LPARAM)hwnd))
-    return TRUE;
-  else
-    return FALSE;
+
+  HWND hDlg;
+  
+  lpefr->hwnd = NULL;
+
+  hDlg = CreateThemedDialogParam(g_hInstance, MAKEINTRESOURCEW(IDD_LINENUM), 
+                                 GetParent(hwnd),  EditLinenumDlgProc, (LPARAM)lpefr);
+
+  ShowWindow(hDlg, SW_SHOW);
+
+  return hDlg;
+
 }
 
 

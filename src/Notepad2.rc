@@ -602,6 +602,7 @@ BEGIN
     "O",            IDACC_SAVEPOS,          VIRTKEY, CONTROL, NOINVERT
     VK_F2,          IDACC_SELTONEXT,        VIRTKEY, NOINVERT
     VK_F2,          IDACC_SELTOPREV,        VIRTKEY, SHIFT, NOINVERT
+    "G",            IDACC_GOTO,             VIRTKEY, CONTROL, NOINVERT
 END
 
 IDR_ACCFINDREPLACE_INLINE ACCELERATORS
@@ -652,10 +653,11 @@ BEGIN
     DEFPUSHBUTTON   "&Find Next",IDOK,215,7,50,14
     PUSHBUTTON      "Find &Previous",IDC_FINDPREV,215,24,50,14
     PUSHBUTTON      "&Grep",ID_GREP,215,41,50,14
-    CONTROL         "<a>Go to Replace (Ctrl+H)</a>",IDC_TOGGLEFINDREPLACE,
-                    "SysLink",0x0,125,85,74,10
     PUSHBUTTON      "Ung&rep",ID_UNGREP,215,58,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,74,50,14
+    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,73,74,10
+    CONTROL         "<a>Go to Replace (Ctrl+H)</a>",IDC_TOGGLEREPLACE,
+                    "SysLink",0x0,125,85,74,10
 END
 
 IDD_REPLACE DIALOGEX 0, 0, 272, 130
@@ -680,7 +682,8 @@ BEGIN
     PUSHBUTTON      "Replace &All",IDC_REPLACEALL,215,58,50,14
     PUSHBUTTON      "In &Selection",IDC_REPLACEINSEL,215,75,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,92,50,14
-    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFINDREPLACE,
+    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,102,74,10
+    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFIND,
                     "SysLink",0x0,125,114,74,10
 END
 
@@ -742,20 +745,23 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,123,24,50,14
 END
 
-IDD_LINENUM DIALOGEX 0, 0, 194, 87
+IDD_LINENUM DIALOGEX 0, 0, 194, 102
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Go To"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Line:",IDC_STATIC,7,7,16,8
-    EDITTEXT        IDC_LINENUM,7,24,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LINENUM,7,19,46,14,ES_AUTOHSCROLL
     LTEXT           "&Column:",IDC_STATIC,63,7,27,8
-    EDITTEXT        IDC_COLNUM,63,24,46,14,ES_AUTOHSCROLL
-    LTEXT           "&Offset:",IDC_STATIC,7,46,24,8
-    EDITTEXT        IDC_POSNUM,7,61,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_COLNUM,63,19,46,14,ES_AUTOHSCROLL
+    LTEXT           "&Offset:",IDC_STATIC,7,38,24,8
+    EDITTEXT        IDC_POSNUM,7,50,46,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,137,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,137,24,50,14
-    LTEXT           "in decimal or hexadecimal notation (if contains a-f), optionally prefixed with 0x or $",IDC_STATIC,65,46,109,34
+    LTEXT           "in decimal or hexadecimal notation (if contains a-f), optionally prefixed with 0x or $",IDC_STATIC,65,41,109,28
+    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFIND,"SysLink",0x0,8,72,74,10
+    CONTROL         "<a>Go to Replace (Ctrl+H)</a>",IDC_TOGGLEREPLACE,
+                    "SysLink",0x0,8,85,74,10
 END
 
 IDD_FILEMRU DIALOGEX 0, 0, 180, 134
@@ -1169,8 +1175,9 @@ BEGIN
     BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 187
+        VERTGUIDE, 63
         TOPMARGIN, 7
-        BOTTOMMARGIN, 80
+        BOTTOMMARGIN, 95
     END
 
     IDD_FILEMRU, DIALOG

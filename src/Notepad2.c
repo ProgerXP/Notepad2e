@@ -65,6 +65,7 @@ HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
 HWND      hDlgFindReplace = NULL;
+HWND      hDlgGotoLine = NULL;
 // [2e]: Save on deactivate #164
 BOOL      bFileSaveInProgress = FALSE;
 
@@ -458,6 +459,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
       if (n2e_IsSubclassedWindow(msg.hwnd) && TranslateAccelerator(msg.hwnd, hAccFindReplaceInline, &msg))
         continue;
       if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg) || IsDialogMessage(hDlgFindReplace, &msg))
+        continue;
+    }
+
+    else if (IsWindow(hDlgGotoLine) && (msg.hwnd == hDlgGotoLine || IsChild(hDlgGotoLine, msg.hwnd)))
+    {
+      if (TranslateAccelerator(hDlgGotoLine, hAccFindReplace, &msg) || IsDialogMessage(hDlgGotoLine, &msg))
         continue;
     }
 
@@ -945,6 +952,9 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         // Destroy find / replace dialog
         if (IsWindow(hDlgFindReplace))
           DestroyWindow(hDlgFindReplace);
+
+        if (IsWindow(hDlgGotoLine))
+          DestroyWindow(hDlgGotoLine);
 
         // call SaveSettings() when hwndToolbar is still valid
         SaveSettings(FALSE);
@@ -3676,6 +3686,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_FIND:
+      if (IsWindow(hDlgGotoLine))
+      {
+        SendMessage(hDlgGotoLine, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOFIND, 1), 0);
+        DestroyWindow(hDlgGotoLine);
+      }
       if (!IsWindow(hDlgFindReplace))
       {
         hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, FALSE);
@@ -3771,6 +3786,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_REPLACE:
+      if (IsWindow(hDlgGotoLine))
+      {
+        SendMessage(hDlgGotoLine, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOREPLACE, 1), 0);
+        DestroyWindow(hDlgGotoLine);
+      }
       if (!IsWindow(hDlgFindReplace))
       {
         hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, TRUE);
@@ -3793,7 +3813,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_GOTOLINE:
-      EditLinenumDlg(hwndEdit);
+      {
+        if (IsWindow(hDlgFindReplace))
+        {
+          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOGOTO, 1), 0);
+          DestroyWindow(hDlgFindReplace);
+          hDlgFindReplace = NULL;
+        }
+        if (!IsWindow(hDlgGotoLine))
+        {
+          hDlgGotoLine = EditLinenumDlg(hwndEdit, &efrData);
+        }
+        else
+        {
+          SetForegroundWindow(hDlgGotoLine);
+        }
+      }
       break;
 
 

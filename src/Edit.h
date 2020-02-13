@@ -45,6 +45,7 @@ typedef struct _editfindreplace
 
 #define IDMSG_SWITCHTOFIND    300
 #define IDMSG_SWITCHTOREPLACE 301
+#define IDMSG_SWITCHTOGOTO    302
 
 
 #define ALIGN_LEFT       0
@@ -117,7 +118,7 @@ BOOL  EditFindPrev(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditReplace(HWND, LPCEDITFINDREPLACE);
 BOOL  EditReplaceAll(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditReplaceAllInSelection(HWND, LPCEDITFINDREPLACE, BOOL);
-BOOL  EditLinenumDlg(HWND);
+HWND  EditLinenumDlg(HWND, LPCEDITFINDREPLACE);
 BOOL  EditModifyLinesDlg(HWND, LPWSTR, LPWSTR);
 BOOL  EditEncloseSelectionDlg(HWND, LPWSTR, LPWSTR);
 BOOL  EditInsertTagDlg(HWND, LPWSTR, LPWSTR);
