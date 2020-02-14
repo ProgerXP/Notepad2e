@@ -751,11 +751,11 @@ CAPTION "Go To"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Line:",IDC_STATIC,7,7,16,8
-    EDITTEXT        IDC_LINENUM,7,19,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_LINENUM,7,17,46,12,ES_AUTOHSCROLL
     LTEXT           "&Column:",IDC_STATIC,63,7,27,8
-    EDITTEXT        IDC_COLNUM,63,19,46,14,ES_AUTOHSCROLL
-    LTEXT           "&Offset:",IDC_STATIC,7,38,24,8
-    EDITTEXT        IDC_POSNUM,7,50,46,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_COLNUM,63,17,46,12,ES_AUTOHSCROLL
+    LTEXT           "&Offset:",IDC_STATIC,7,39,24,8
+    EDITTEXT        IDC_POSNUM,7,49,46,12,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,137,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,137,24,50,14
     LTEXT           "in decimal or hexadecimal notation (if contains a-f), optionally prefixed with 0x or $",IDC_STATIC,65,41,109,28
