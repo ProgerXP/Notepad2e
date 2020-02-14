@@ -2093,6 +2093,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_SELTOPREV, i && lstrlenA(efrData.szFind));
   EnableCmd(hmenu, IDM_EDIT_FINDMATCHINGBRACE, i);
   EnableCmd(hmenu, IDM_EDIT_SELTOMATCHINGBRACE, i);
+  // [2e]: Go To dialog - make similar to Find/Replace #260
+  EnableCmd(hmenu, IDM_EDIT_GOTOLINE, i);
   // [2e]: Minor: disable Edit Mode menu commands #151
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION, bHighlightSelection);
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, bHighlightSelection);
