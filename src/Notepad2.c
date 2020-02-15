@@ -2098,6 +2098,13 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   // [2e]: Minor: disable Edit Mode menu commands #151
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION, bHighlightSelection);
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, bHighlightSelection);
+  // [2e]: Disable more Edit commands on empty buffer #268
+  EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i);
+  EnableCmd(hmenu, ID_SPECIAL_ESCAPEHTML, i);
+  EnableCmd(hmenu, ID_EDIT_FINDNEXTWORD, i);
+  EnableCmd(hmenu, ID_EDIT_FINDPREVIOUSWORD, i);
+  EnableCmd(hmenu, ID_EDIT_EDITSELECTION, i);
+  EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, i);
   // [/2e]
   CheckCmd(hmenu, IDM_VIEW_USE2NDDEFAULT, Style_GetUse2ndDefault(hwndEdit));
   CheckCmd(hmenu, IDM_VIEW_WORDWRAP, fWordWrap);
