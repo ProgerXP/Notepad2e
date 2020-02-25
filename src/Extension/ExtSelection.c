@@ -497,8 +497,10 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
   clear cur edit
   */
   SendMessage(hwndEdit, SCI_SETMODEVENTMASK, n2e_SelectionGetSciEventMask(FALSE), 0);
+  BOOL bCurSelectionProcessed = FALSE;
   for (k = 0; k < iEditSelectionsCount; ++k)
   {
+    LPSE_DATA sePrev = (k > 0) ? &arrEditSelections[k - 1] : NULL;
     LPSE_DATA se = &arrEditSelections[k];
     // shifting
     N2E_TRACE("start shift: pos:%d cur:%d delta:%d", se->pos, trEditSelection.chrg.cpMin, delta_len);
@@ -516,13 +518,17 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
     }
     SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, se->pos, se->len);
     se->len = new_len;
+    if (sePrev && (se->pos < sePrev->pos + sePrev->len))
+    {
+      se->pos = sePrev->pos + sePrev->len;
+    }
     if (bEditSelectionStrictMode)
     {
       /*
       edited item
       */
       work = FALSE;
-      cur_se = (se->pos == trEditSelection.chrg.cpMin && !rollback);
+      cur_se = (se->pos == trEditSelection.chrg.cpMin && !rollback && !bCurSelectionProcessed);
       N2E_TRACE("start check: pos:%d cur:%d delta:%d", se->pos, trEditSelection.chrg.cpMin, delta_len);
       if (!cur_se)
       {
@@ -539,6 +545,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
       }
       else
       {
+        bCurSelectionProcessed = TRUE;
         work = FALSE;
         N2E_TRACE("cur pos!")
       }
