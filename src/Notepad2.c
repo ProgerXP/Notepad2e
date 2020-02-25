@@ -68,6 +68,8 @@ HWND      hDlgFindReplace = NULL;
 HWND      hDlgGotoLine = NULL;
 // [2e]: Save on deactivate #164
 BOOL      bFileSaveInProgress = FALSE;
+// [2e]: Open/Save dialogs - configurable filters #258
+int       iOpenSaveFilterIndex = 1;
 
 #define NUMTOOLBITMAPS  28
 #define NUMINITIALTOOLS 25
@@ -7481,6 +7483,8 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   ofn.lStructSize = sizeof(OPENFILENAME);
   ofn.hwndOwner = hwnd;
   ofn.lpstrFilter = szFilter;
+  // [2e]: Open/Save dialogs - configurable filters #258
+  ofn.nFilterIndex = iOpenSaveFilterIndex;
   ofn.lpstrFile = szFile;
   ofn.lpstrInitialDir = (lpstrInitialDir) ? lpstrInitialDir : tchInitialDir;
   ofn.nMaxFile = COUNTOF(szFile);
@@ -7499,6 +7503,8 @@ BOOL OpenFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
 
   if (GetOpenFileName(&ofn))
   {
+    // [2e]: Open/Save dialogs - configurable filters #258
+    iOpenSaveFilterIndex = ofn.nFilterIndex;
     lstrcpyn(lpstrFile, szFile, cchFile);
     return TRUE;
   }
@@ -7555,6 +7561,8 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   ofn.lStructSize = sizeof(OPENFILENAME);
   ofn.hwndOwner = hwnd;
   ofn.lpstrFilter = szFilter;
+  // [2e]: Open/Save dialogs - configurable filters #258
+  ofn.nFilterIndex = iOpenSaveFilterIndex;
   ofn.lpstrFile = szNewFile;
   ofn.lpstrInitialDir = tchInitialDir;
   ofn.nMaxFile = MAX_PATH;
@@ -7577,6 +7585,8 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   // [/2e]
   if (GetSaveFileName(&ofn))
   {
+    // [2e]: Open/Save dialogs - configurable filters #258
+    iOpenSaveFilterIndex = ofn.nFilterIndex;
     lstrcpyn(lpstrFile, szNewFile, cchFile);
     return TRUE;
   }
