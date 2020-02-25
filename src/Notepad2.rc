@@ -142,20 +142,6 @@ BEGIN
     END
     POPUP "&Edit"
     BEGIN
-        MENUITEM "Undo\tCtrl+Z",                IDM_EDIT_UNDO
-        MENUITEM "Redo\tCtrl+Y",                IDM_EDIT_REDO
-        MENUITEM "Go To Last Change\tCtrl+Alt+Shift+Z", ID_EDIT_UNDO_REDO
-        MENUITEM SEPARATOR
-        MENUITEM "Cut\tCtrl+X",                 IDM_EDIT_CUT
-        MENUITEM "Copy\tCtrl+C",                IDM_EDIT_COPY
-        MENUITEM "Copy All\tAlt+C",             IDM_EDIT_COPYALL
-        MENUITEM "Copy Add\tCtrl+E",            IDM_EDIT_COPYADD
-        MENUITEM "Paste\tCtrl+V",               IDM_EDIT_PASTE
-        MENUITEM "Swap\tCtrl+K",                IDM_EDIT_SWAP
-        MENUITEM "Clear\tDel",                  IDM_EDIT_CLEAR
-        MENUITEM "Clear Clipboar&d",            IDM_EDIT_CLEARCLIPBOARD
-        MENUITEM "Select All\tCtrl+A",          IDM_EDIT_SELECTALL
-        MENUITEM SEPARATOR
         POPUP "&Lines"
         BEGIN
             MENUITEM "Move &Up\tCtrl+Shift+Up",     IDM_EDIT_MOVELINEUP
@@ -259,15 +245,33 @@ BEGIN
             MENUITEM "QP Encode\tAlt+Shift+Q",      IDM_EDIT_QPENCODE
             MENUITEM "QP Decode\tCtrl+Alt+Shift+Q", IDM_EDIT_QPDECODE
         END
+        POPUP "&Clipboard"
+        BEGIN
+            MENUITEM "Cut\tCtrl+X",                 IDM_EDIT_CUT
+            MENUITEM "Copy\tCtrl+C",                IDM_EDIT_COPY
+            MENUITEM "Copy All\tAlt+C",             IDM_EDIT_COPYALL
+            MENUITEM "Copy Add\tCtrl+E",            IDM_EDIT_COPYADD
+            MENUITEM "Paste\tCtrl+V",               IDM_EDIT_PASTE
+            MENUITEM "Swap\tCtrl+K",                IDM_EDIT_SWAP
+            MENUITEM "Clear Clipboar&d",            IDM_EDIT_CLEARCLIPBOARD
+        END
+        POPUP "&Find"
+        BEGIN
+            MENUITEM "Find...\tCtrl+F",             IDM_EDIT_FIND
+            MENUITEM "Save Find Text\tAlt+F3",      IDM_EDIT_SAVEFIND
+            MENUITEM "Find Next\tF3",               IDM_EDIT_FINDNEXT
+            MENUITEM "Find Previous\tShift+F3",     IDM_EDIT_FINDPREV
+            MENUITEM "Replace...\tCtrl+H",          IDM_EDIT_REPLACE
+            MENUITEM "Replace Next\tF4",            IDM_EDIT_REPLACENEXT
+            MENUITEM "Find Next Word\tCtrl+8",      ID_EDIT_FINDNEXTWORD
+            MENUITEM "Find Previous Word\tCtrl+Shift+8", ID_EDIT_FINDPREVIOUSWORD
+        END
         MENUITEM SEPARATOR
-        MENUITEM "Find...\tCtrl+F",             IDM_EDIT_FIND
-        MENUITEM "Save Find Text\tAlt+F3",      IDM_EDIT_SAVEFIND
-        MENUITEM "Find Next\tF3",               IDM_EDIT_FINDNEXT
-        MENUITEM "Find Previous\tShift+F3",     IDM_EDIT_FINDPREV
-        MENUITEM "Replace...\tCtrl+H",          IDM_EDIT_REPLACE
-        MENUITEM "Replace Next\tF4",            IDM_EDIT_REPLACENEXT
-        MENUITEM "Find Next Word\tCtrl+8",      ID_EDIT_FINDNEXTWORD
-        MENUITEM "Find Previous Word\tCtrl+Shift+8", ID_EDIT_FINDPREVIOUSWORD
+        MENUITEM "Undo\tCtrl+Z",                IDM_EDIT_UNDO
+        MENUITEM "Redo\tCtrl+Y",                IDM_EDIT_REDO
+        MENUITEM "Go To Last Change\tCtrl+Alt+Shift+Z", ID_EDIT_UNDO_REDO
+        MENUITEM "Clear\tDel",                  IDM_EDIT_CLEAR
+        MENUITEM "Select All\tCtrl+A",          IDM_EDIT_SELECTALL
         MENUITEM "Go To...\tCtrl+G",            IDM_EDIT_GOTOLINE
         MENUITEM "Edit Selection\tCtrl+Tab",    ID_EDIT_EDITSELECTION
         MENUITEM "Edit Selection On Line\tCtrl+~", ID_EDIT_EDITSELECTION_LINE
@@ -346,22 +350,25 @@ BEGIN
         MENUITEM "C&trl+Wheel Scroll",          ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
-        MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT
-        MENUITEM "Remember S&earch Strings",    IDM_VIEW_NOSAVEFINDREPL
         MENUITEM SEPARATOR
         MENUITEM "S&how Toolbar",               IDM_VIEW_TOOLBAR
         MENUITEM "C&ustomize Toolbar...",       IDM_VIEW_CUSTOMIZETB
         MENUITEM "Sh&ow Statusbar",             IDM_VIEW_STATUSBAR
         MENUITEM SEPARATOR
-        POPUP "Save Settings On E&xit"
+        POPUP "Save Setti&ngs"
         BEGIN
-            MENUITEM "&All Settings",               IDM_VIEW_SAVESETTINGS_MODE_ALL
-            MENUITEM "&Recent Files/Search Strings", IDM_VIEW_SAVESETTINGS_MODE_RECENT
-            MENUITEM "&No",                         IDM_VIEW_SAVESETTINGS_MODE_NO
+            MENUITEM "Remember Recent F&iles",      IDM_VIEW_NOSAVERECENT
+            MENUITEM "Remember S&earch Strings",    IDM_VIEW_NOSAVEFINDREPL
+            POPUP "Save Settings On E&xit"
+            BEGIN
+                MENUITEM "&All Settings",               IDM_VIEW_SAVESETTINGS_MODE_ALL
+                MENUITEM "&Recent Files/Search Strings", IDM_VIEW_SAVESETTINGS_MODE_RECENT
+                MENUITEM "&No",                         IDM_VIEW_SAVESETTINGS_MODE_NO
+            END
+            MENUITEM "Save Settings Now\tF7",       IDM_VIEW_SAVESETTINGSNOW
+            MENUITEM "Reload From Disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
+            MENUITEM "Replace In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
         END
-        MENUITEM "Save Settings Now\tF7",       IDM_VIEW_SAVESETTINGSNOW
-        MENUITEM "Reload From Disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
-        MENUITEM "Replace In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
     END
     POPUP "&?"
     BEGIN
