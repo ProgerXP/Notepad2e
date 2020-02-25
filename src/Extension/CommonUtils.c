@@ -3,28 +3,21 @@
 
 INT iAllocCount = 0;
 
-void* n2e_Alloc(size_t size)
+LPVOID n2e_Alloc(size_t size)
 {
-  if (iAllocCount)
-  {
-    N2E_TRACE(L"WARNING !!! ALLOC mismatch : %d", iAllocCount);
-  }
   ++iAllocCount;
-  return malloc(sizeof(WCHAR) * (size + 1));
+  return malloc(size);
 }
 
-void n2e_Free(void* ptr)
-{
-  if (ptr)
-  {
-    --iAllocCount;
-    free(ptr);
-  }
+void n2e_Free(LPVOID ptr)
+{ 
+  --iAllocCount;
+  free(ptr);
 }
 
-void* n2e_Realloc(void* ptr, size_t len)
+LPVOID n2e_Realloc(LPVOID ptr, size_t size)
 {
-  void* res = realloc(ptr, len);
+  LPVOID res = realloc(ptr, size);
   if (!res && ptr)
   {
     n2e_Free(ptr);

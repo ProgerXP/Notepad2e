@@ -277,20 +277,21 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorithm* pRA, TextBuffer* pTB, l
     int cbData = pTB->m_iMaxPos + 1;
     LPSTR lpData = pTB->m_ptr;
     const int iOriginalLength = strlen(lpData);
-    LPWSTR lpDataWide = n2e_Alloc(cbData * sizeof(WCHAR) + 1);
-    int    cbDataWide = MultiByteToWideChar(CP_UTF8, 0, lpData, cbData, lpDataWide, (int)GlobalSize(lpDataWide) / sizeof(WCHAR));
+    LPWSTR lpDataWide = n2e_Alloc(cbData * sizeof(WCHAR) + 16);
+    int    cbDataWide = MultiByteToWideChar(CP_UTF8, 0, lpData, cbData, lpDataWide, cbData);
     // Special cases: 42, 50220, 50221, 50222, 50225, 50227, 50229, 54936, 57002-11, 65000, 65001
     if (uCodePage == CP_UTF7 || uCodePage == 54936)
     {
-      lpData = n2e_Alloc(GlobalSize(lpDataWide) * 2);
-      cbData = WideCharToMultiByte(uCodePage, 0, lpDataWide, cbDataWide, lpData, (int)GlobalSize(lpData), NULL, NULL);
+      cbData = cbDataWide * 2;
+      lpData = n2e_Alloc(cbData);
+      cbData = WideCharToMultiByte(uCodePage, 0, lpDataWide, cbDataWide, lpData, cbData, NULL, NULL);
     }
     else
     {
-      cbData = WideCharToMultiByte(uCodePage, WC_NO_BEST_FIT_CHARS, lpDataWide, cbDataWide, lpData, (int)GlobalSize(lpData), NULL, &bCancelDataLoss);
+      cbData = WideCharToMultiByte(uCodePage, WC_NO_BEST_FIT_CHARS, lpDataWide, cbDataWide, lpData, cbData, NULL, &bCancelDataLoss);
       if (!bCancelDataLoss)
       {
-        cbData = WideCharToMultiByte(uCodePage, 0, lpDataWide, cbDataWide, lpData, (int)GlobalSize(lpData), NULL, NULL);
+        cbData = WideCharToMultiByte(uCodePage, 0, lpDataWide, cbDataWide, lpData, cbData, NULL, NULL);
         bCancelDataLoss = FALSE;
       }
     }
@@ -304,8 +305,9 @@ void TextBuffer_NormalizeAfterDecode(RecodingAlgorithm* pRA, TextBuffer* pTB)
   const UINT uCodePage = mEncoding[iEncoding].uCodePage;
   if (n2e_IsUnicodeEncodingMode() && (pRA->recodingType == ERT_HEX))
   {
-    LPSTR lpData = n2e_Alloc(pTB->m_iPos * 2 + 16);
-    const int cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos / sizeof(WCHAR), lpData, (int)GlobalSize(lpData), NULL, NULL);
+    int cbData = pTB->m_iPos * sizeof(WCHAR) + 16;
+    LPSTR lpData = n2e_Alloc(cbData);
+    cbData = WideCharToMultiByte(CP_UTF8, 0, (LPCWSTR)pTB->m_ptr, pTB->m_iPos / sizeof(WCHAR), lpData, cbData, NULL, NULL);
     lpData[cbData] = 0;
     TextBuffer_Update(pTB, lpData, cbData);
     pTB->m_iPos = cbData;

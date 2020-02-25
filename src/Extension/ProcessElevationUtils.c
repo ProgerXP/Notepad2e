@@ -348,9 +348,9 @@ int n2e_CalculateFileLength()
   if (mEncoding[iEncoding].uFlags & NCP_UNICODE)
   {
     iResult += 1;
-    LPVOID lpData = n2e_Alloc(iResult / 2);
+    LPVOID lpData = n2e_Alloc(iResult);
     SciCall_GetText(iResult, (char*)lpData);
-    iResult = MultiByteToWideChar(CP_UTF8, 0, lpData, iResult-1, NULL, 0) * sizeof(WCHAR);
+    iResult = MultiByteToWideChar(CP_UTF8, 0, lpData, iResult - 1, NULL, 0) * sizeof(WCHAR);
     n2e_Free(lpData);
     if (mEncoding[iEncoding].uFlags & NCP_UNICODE_BOM)
     {

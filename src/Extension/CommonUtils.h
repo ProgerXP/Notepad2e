@@ -1,6 +1,6 @@
 #pragma once
 #include <wtypes.h>
 
-void* n2e_Alloc(size_t size);
-void n2e_Free(void* ptr);
-void* n2e_Realloc(void* ptr, size_t len);
+LPVOID n2e_Alloc(size_t size);
+void n2e_Free(LPVOID ptr);
+LPVOID n2e_Realloc(LPVOID ptr, size_t size);

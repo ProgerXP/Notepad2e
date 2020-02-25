@@ -1182,7 +1182,7 @@ void n2e_ProcessAbout3rdPartyUrl(const HWND hwndRichedit, ENLINK* pENLink)
 {
   if (pENLink->msg == WM_LBUTTONUP)
   {
-    LPWSTR pUrl = (LPWSTR)n2e_Alloc(pENLink->chrg.cpMax - pENLink->chrg.cpMin + 1);
+    LPWSTR pUrl = (LPWSTR)n2e_Alloc((pENLink->chrg.cpMax - pENLink->chrg.cpMin + 1) * sizeof(WCHAR));
     TEXTRANGE tr = { pENLink->chrg, pUrl };
     if (SendMessage(hwndRichedit, EM_GETTEXTRANGE, 0, (LPARAM)&tr) > 0)
     {
