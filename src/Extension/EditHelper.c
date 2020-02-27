@@ -28,6 +28,7 @@ extern TBBUTTON tbbMainWnd[];
 extern HWND hwndToolbar;
 extern HWND hwndMain;
 extern HWND hDlgFindReplace;
+extern int iOpenSaveFilterIndex;
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -449,7 +450,33 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
     StrCat(dirname, L"\\");
   }
   StrCpy(odn, dirname);
-  StrCat(dirname, L"*");
+
+  // [2e]: Open Next/Previous - use current dialog filter #277
+  WCHAR szFileFilter[MAX_PATH] = { L"*" };
+  if (iOpenSaveFilterIndex >= 1)
+  {
+    WCHAR szFilter[MAX_PATH] = { 0 };
+    Style_GetOpenDlgFilterStr(szFilter, COUNTOF(szFilter));
+
+    LPCWSTR psz = szFilter;
+    int iFilterIndex = iOpenSaveFilterIndex;
+    while (*psz)
+    {
+      if (psz[0] == L'*')
+      {
+        --iFilterIndex;
+        if (iFilterIndex == 0)
+        {
+          StrCpy(szFileFilter, psz);
+          break;
+        }
+      }
+      psz += wcslen(psz) + 1;
+    }
+  }
+  // [/2e]
+  StrCat(dirname, szFileFilter);
+
   hFind = FindFirstFile(dirname, &ffd);
   if (INVALID_HANDLE_VALUE == hFind)
   {
