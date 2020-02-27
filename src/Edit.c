@@ -5302,14 +5302,14 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             case IDACC_SELTONEXT:
               if (!bIsFindDlg)
                 bReplaceInitialized = TRUE;
-              bCloseDlg &= EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT || HIBYTE(GetKeyState(VK_SHIFT)));
+              bCloseDlg &= EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT);
               break;
 
             case IDC_FINDPREV: // find previous
             case IDACC_SELTOPREV:
               if (!bIsFindDlg)
                 bReplaceInitialized = TRUE;
-              bCloseDlg &= EditFindPrev(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTOPREV || HIBYTE(GetKeyState(VK_SHIFT)));
+              bCloseDlg &= EditFindPrev(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTOPREV);
               break;
 
             case IDC_REPLACE:
