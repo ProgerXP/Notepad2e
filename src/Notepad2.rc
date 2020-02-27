@@ -81,11 +81,11 @@ BEGIN
         MENUITEM "Rename To...\tAlt+F6",        ID_FILE_RENAMETO
         MENUITEM "Save Copy...\tCtrl+F6",       IDM_FILE_SAVECOPY
         MENUITEM "&Read-Only",                  IDM_FILE_READONLY
-        POPUP "Save On Lose Fo&cus"
+        POPUP "Save On Lose &Focus"
         BEGIN
             MENUITEM "&Disabled",                   ID_SAVEONLOSEFOCUS_DISABLED
             MENUITEM "&Enabled",                    ID_SAVEONLOSEFOCUS_ENABLED
-            MENUITEM "E&nabled until a new file is opened", ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE
+            MENUITEM "Enabled until a new &file is opened", ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE
         END
         MENUITEM SEPARATOR
         POPUP "&Launch"
@@ -129,7 +129,7 @@ BEGIN
         MENUITEM "Create &Desktop Link",        IDM_FILE_CREATELINK
         MENUITEM "Ele&vate...",                 IDM_FILE_ELEVATE
         MENUITEM SEPARATOR
-        POPUP "&Favorites"
+        POPUP "F&avorites"
         BEGIN
             MENUITEM "&Open Favorites...\tAlt+I",   IDM_FILE_OPENFAV
             MENUITEM "&Add Current File...\tAlt+K", IDM_FILE_ADDTOFAV
