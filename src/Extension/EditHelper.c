@@ -460,9 +460,10 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
 
     LPCWSTR psz = szFilter;
     int iFilterIndex = iOpenSaveFilterIndex;
+    int iLineIndex = 0;
     while (*psz)
     {
-      if (psz[0] == L'*')
+      if (iLineIndex % 2)
       {
         --iFilterIndex;
         if (iFilterIndex == 0)
@@ -472,6 +473,7 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
         }
       }
       psz += wcslen(psz) + 1;
+      ++iLineIndex;
     }
   }
   // [/2e]
