@@ -5302,7 +5302,25 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             case IDACC_SELTONEXT:
               if (!bIsFindDlg)
                 bReplaceInitialized = TRUE;
-              bCloseDlg &= EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT);
+              // [2e]: Find/Replace - handle Ctrl+Enter #273
+              if (HIBYTE(GetKeyState(VK_CONTROL)))
+              {
+                int iPos = SciCall_GetCurrentPos();
+                int iAnchor = SciCall_GetAnchor();
+                SciCall_SetCurrentPos(0);
+                SciCall_SetAnchor(0);
+                if (!EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT))
+                {
+                  SciCall_SetCurrentPos(iPos);
+                  SciCall_SetAnchor(iAnchor);
+                  bCloseDlg = FALSE;
+                }
+              }
+              // [/2e]
+              else
+              {
+                bCloseDlg &= EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT);
+              }
               break;
 
             case IDC_FINDPREV: // find previous

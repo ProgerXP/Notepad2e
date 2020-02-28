@@ -88,7 +88,9 @@ DeclareSciCallR1(GetSelectionNEnd, GETSELECTIONNEND, Sci_Position, int, position
 DeclareSciCallV1(GotoPos, GOTOPOS, int, position);
 DeclareSciCallV1(GotoLine, GOTOLINE, int, line);
 DeclareSciCallR0(GetCurrentPos, GETCURRENTPOS, int);
+DeclareSciCallV1(SetCurrentPos, SETCURRENTPOS, int, position);
 DeclareSciCallR0(GetAnchor, GETANCHOR, int);
+DeclareSciCallV1(SetAnchor, SETANCHOR, int, position);
 DeclareSciCallR1(LineFromPosition, LINEFROMPOSITION, int, int, position);
 DeclareSciCallR1(LineEndPosition, GETLINEENDPOSITION, int, int, line);
 DeclareSciCallR1(PositionFromLine, POSITIONFROMLINE, int, int, line);
