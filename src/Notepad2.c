@@ -3829,7 +3829,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOGOTO, 1), 0);
           DestroyWindow(hDlgFindReplace);
-          hDlgFindReplace = NULL;
         }
         if (!IsWindow(hDlgGotoLine))
         {

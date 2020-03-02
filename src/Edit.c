@@ -48,6 +48,7 @@ extern HINSTANCE g_hInstance;
 extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
 extern HWND hDlgFindReplace;
+extern HWND hDlgGotoLine;
 extern UINT cpLastFind;
 extern BOOL bReplaceInitialized;
 
@@ -6203,7 +6204,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
                   )
               {
                 EditJumpTo(hwndEdit, iNewLine, iNewCol);
-                EndDialog(hwnd, IDOK);
+                DestroyWindow(hwnd);
+                hDlgGotoLine = NULL;
               }
               else
               {
@@ -6220,8 +6222,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
           }
           break;
         case IDCANCEL:
-          EndDialog(hwnd, IDCANCEL);
           DestroyWindow(hwnd);
+          hDlgGotoLine = NULL;
           break;
 
       }
