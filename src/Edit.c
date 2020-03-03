@@ -6081,27 +6081,28 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
 //
 INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
-  LPEDITFINDREPLACE lpefr = NULL;
-
-
+  LPCGOTOPARAMS lpgoto = NULL;
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
         
+        // [2e]: Find/Replace - add Go to Go To #259
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
-        lpefr = (LPEDITFINDREPLACE)lParam;
+        lpgoto = (LPGOTOPARAMS)lParam;
 
-        if (!lpefr || !strlen(lpefr->szFindUTF8))
+        if (!lpgoto || lpgoto->bForceDefaultInit || !strlen(lpgoto->lpefr->szFindUTF8))
         {
+          lpgoto->bForceDefaultInit = FALSE;
           int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0) + 1;
           SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, FALSE);
         }
         else
         {
-          SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8);
+          SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpgoto->lpefr->szFindUTF8);
         }
+        // [/2e]
         SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
@@ -6129,16 +6130,14 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
       switch (LOWORD(wParam))
       {
 
+        // [2e]: Find/Replace - add Go to Go To #259
         case IDACC_FIND:
         case IDACC_REPLACE:
-          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-          if (!lpefr)
-          {
-            lpefr = &efrSave;
-          }
-          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8, COUNTOF(lpefr->szFindUTF8));
+          lpgoto = (LPGOTOPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
+          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpgoto->lpefr->szFindUTF8, COUNTOF(lpgoto->lpefr->szFindUTF8));
           PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG((LOWORD(wParam) == IDACC_FIND) ? IDM_EDIT_FIND : IDM_EDIT_REPLACE, 1), 0);
           break;
+        // [/2e]
 
 
         case IDACC_SAVEPOS:
@@ -6262,15 +6261,15 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 //
 //  EditLinenumDlg()
 //
-HWND EditLinenumDlg(HWND hwnd, LPCEDITFINDREPLACE lpefr)
+HWND EditLinenumDlg(HWND hwnd, LPCGOTOPARAMS lpgoto)
 {
 
   HWND hDlg;
   
-  lpefr->hwnd = NULL;
+  lpgoto->lpefr->hwnd = NULL;
 
   hDlg = CreateThemedDialogParam(g_hInstance, MAKEINTRESOURCEW(IDD_LINENUM), 
-                                 GetParent(hwnd),  EditLinenumDlgProc, (LPARAM)lpefr);
+                                 GetParent(hwnd),  EditLinenumDlgProc, (LPARAM)lpgoto);
 
   ShowWindow(hDlg, SW_SHOW);
 

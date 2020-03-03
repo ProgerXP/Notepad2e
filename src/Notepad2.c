@@ -264,6 +264,9 @@ EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, NULL };
 UINT cpLastFind = 0;
 BOOL bReplaceInitialized = FALSE;
 
+// [2e]: Find/Replace - add Go to Go To #259
+GOTOPARAMS gotoData = { TRUE, &efrData };
+
 extern NP2ENCODING mEncoding[];
 
 int iLineEndings[3] = {
@@ -3825,6 +3828,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_GOTOLINE:
       {
+        gotoData.bForceDefaultInit = !IsWindow(hDlgFindReplace);
         if (IsWindow(hDlgFindReplace))
         {
           SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOGOTO, 1), 0);
@@ -3832,7 +3836,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         if (!IsWindow(hDlgGotoLine))
         {
-          hDlgGotoLine = EditLinenumDlg(hwndEdit, &efrData);
+          hDlgGotoLine = EditLinenumDlg(hwndEdit, &gotoData);
         }
         else
         {
