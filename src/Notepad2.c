@@ -2879,6 +2879,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case ID_EDIT_UNDO_REDO:
       SendMessage(hwndEdit, SCI_UNDO, 0, 0);
       SendMessage(hwndEdit, SCI_REDO, 0, 0);
+      EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
       break;
     // [/2e]
 
