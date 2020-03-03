@@ -342,11 +342,7 @@ BEGIN
             MENUITEM "Current &Selection",          ID_SETTINGS_EVAL_SELECTION
             MENUITEM "Current Selection or &Line",  ID_SETTINGS_EVAL_LINE
         END
-        POPUP "&Ctrl+Arrow Navigation"
-        BEGIN
-            MENUITEM "&Standard",                   ID_SETTINGS_WORD_NAVIGATION_STANDARD
-            MENUITEM "&Accelerated",                ID_SETTINGS_WORD_NAVIGATION_ACCELERATED
-        END
+        MENUITEM "Accelerated &Ctrl-Arrow Navigation", ID_SETTINGS_WORD_NAVIGATION
         MENUITEM "C&trl+Wheel Scroll",          ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
         MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS

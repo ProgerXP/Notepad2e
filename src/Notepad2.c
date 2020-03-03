@@ -2181,8 +2181,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == EEM_SELECTION);
   CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == EEM_LINE);
   // [2e]: ctrl + arrow behavior toggle #89
-  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_STANDARD, iWordNavigationMode == WNM_STANDARD);
-  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION_ACCELERATED, iWordNavigationMode == WNM_ACCELERATED);
+  CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION, iWordNavigationMode == WNM_ACCELERATED);
   // [/2e]
 }
 
@@ -4470,13 +4469,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     // [2e]: ctrl + arrow behavior toggle #89
-    case ID_SETTINGS_WORD_NAVIGATION_STANDARD:
-      iWordNavigationMode = WNM_STANDARD;
-      SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
-      break;
-
-    case ID_SETTINGS_WORD_NAVIGATION_ACCELERATED:
-      iWordNavigationMode = WNM_ACCELERATED;
+    case ID_SETTINGS_WORD_NAVIGATION:
+      iWordNavigationMode = (iWordNavigationMode == WNM_STANDARD) ? WNM_ACCELERATED : WNM_STANDARD;
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     // [/2e]
