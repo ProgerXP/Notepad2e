@@ -900,7 +900,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       if (n2e_IsRectangularSelection()
         || !n2e_GetCurrentSelection(lpParams->pszCurrentSelection, COUNTOF(lpParams->pszCurrentSelection))
         || (lstrlen(lpParams->pszCurrentSelection) == 0)
-        || (wcspbrk(lpParams->pszCurrentSelection, L" \t\r\n\"") != NULL))
+        || (wcspbrk(lpParams->pszCurrentSelection, L"\t\r\n\"") != NULL))
       {
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO5), FALSE);
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO6), FALSE);

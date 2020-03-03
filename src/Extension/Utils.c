@@ -1247,6 +1247,7 @@ int n2e_GetCheckedRadioButton(const HWND hwnd, const int idFirst, const int idLa
 
 void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams)
 {
+  const BOOL bQuoteSelection = (wcschr(lpParams->pszCurrentSelection, L' ') != NULL);
   switch (lpParams->cursorPosition)
   {
   case FCP_FIRST_LINE:
@@ -1266,12 +1267,18 @@ void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams)
     break;
   case FCP_FIRST_SUBSTRING:
     PathQuoteSpaces(lpParams->pszTarget);
-    _swprintf(lpParams->pszArguments, L"/m %s %s", lpParams->pszCurrentSelection, lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments,
+              bQuoteSelection ? L"/m \"%s\" %s" : L"/m %s %s",
+              lpParams->pszCurrentSelection,
+              lpParams->pszTarget);
     _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
     break;
   case FCP_LAST_SUBSTRING:
     PathQuoteSpaces(lpParams->pszTarget);
-    _swprintf(lpParams->pszArguments, L"/m- %s %s", lpParams->pszCurrentSelection, lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments,
+              bQuoteSelection ? L"/m- \"%s\" %s" : L"/m- %s %s",
+              lpParams->pszCurrentSelection,
+              lpParams->pszTarget);
     _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
     break;
   default:
