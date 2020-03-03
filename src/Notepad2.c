@@ -5323,7 +5323,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
               iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
               c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-              if (StrChrA("()[]{}", c))
+              if (StrChrA("()[]{}<>", c))
               {
                 int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
                 if (iBrace2 != -1)
