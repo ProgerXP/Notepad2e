@@ -5310,7 +5310,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
                 int iAnchor = SciCall_GetAnchor();
                 SciCall_SetCurrentPos(0);
                 SciCall_SetAnchor(0);
-                if (!EditFindNext(lpefr->hwnd, lpefr, LOWORD(wParam) == IDACC_SELTONEXT))
+                if (!EditFindNext(lpefr->hwnd, lpefr, FALSE))
                 {
                   SciCall_SetCurrentPos(iPos);
                   SciCall_SetAnchor(iAnchor);
