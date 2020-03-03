@@ -896,7 +896,16 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       {
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO4), FALSE);
       }
-      n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO4, lpParams->cursorPosition);
+
+      if (n2e_IsRectangularSelection()
+        || !n2e_GetCurrentSelection(lpParams->pszCurrentSelection, COUNTOF(lpParams->pszCurrentSelection))
+        || (lstrlen(lpParams->pszCurrentSelection) == 0)
+        || (wcspbrk(lpParams->pszCurrentSelection, L" \t\r\n\"") != NULL))
+      {
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO5), FALSE);
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO6), FALSE);
+      }
+      n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO6, lpParams->cursorPosition);
 
       DPI_INIT();
       CenterDlgInParent(hwnd);
@@ -919,7 +928,7 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
           GetDlgItemText(hwnd, 100, lpParams->pszName,
                          MAX_PATH - 1);
           // [2e]: Add to Favorites - selection mode #249
-          lpParams->cursorPosition = (EFavoritesCursorPosition)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO4);
+          lpParams->cursorPosition = (EFavoritesCursorPosition)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO6);
           n2e_UpdateFavLnkParams(lpParams);
           // [/2e]
           EndDialog(hwnd, IDOK);

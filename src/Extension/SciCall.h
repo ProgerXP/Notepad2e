@@ -73,6 +73,7 @@ __forceinline LRESULT SciCall_##fn(type1 var1, type2 var2) {       \
 //  Selection and information
 //
 //
+DeclareSciCallR0(GetCodePage, GETCODEPAGE, int);
 DeclareSciCallR0(GetLineCount, GETLINECOUNT, int);
 DeclareSciCallR0(GetLength, GETLENGTH, int);
 DeclareSciCallR0(GetSelectionMode, GETSELECTIONMODE, int);

@@ -83,7 +83,9 @@ typedef enum
   FCP_FIRST_LINE = 0,
   FCP_LAST_LINE = 1,
   FCP_CURRENT_LINE = 2,
-  FCP_CURRENT_SELECTION = 3
+  FCP_CURRENT_SELECTION = 3,
+  FCP_FIRST_SUBSTRING = 4,
+  FCP_LAST_SUBSTRING = 5
 } EFavoritesCursorPosition;
 
 typedef struct TAddToFavoritesParams
@@ -91,6 +93,7 @@ typedef struct TAddToFavoritesParams
   WCHAR pszName[MAX_PATH];
   WCHAR pszTarget[MAX_PATH];
   WCHAR pszArguments[MAX_PATH];
+  WCHAR pszCurrentSelection[MAX_PATH];
   EFavoritesCursorPosition cursorPosition;
 } TADDFAVPARAMS, *PTADDFAVPARAMS;
 
@@ -118,6 +121,7 @@ void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_IsRectangularSelection();
+BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount);
 BOOL n2e_OpenMRULast(LPWSTR fn);
 void n2e_GetLastDir(LPTSTR out);
 LPCWSTR n2e_GetExePath();

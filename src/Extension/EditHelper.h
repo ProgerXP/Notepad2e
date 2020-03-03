@@ -46,6 +46,8 @@ BOOL n2e_IsCheckboxChecked(const HWND hwnd, const UINT nCtrlID, const BOOL bChec
 void n2e_EditFindReplaceUpdateCheckboxes(const HWND hwnd, const UINT nCtrlID);
 void n2e_EditFindReplaceInitialUpdateCheckboxes(const HWND hwnd);
 
+int n2e_MultiByteToWideChar(LPCSTR lpMultiByteStr, const int cbMultiByte, LPWSTR lpWideCharStr, const int cchWideChar);
+
 BOOL n2e_CheckWindowClassName(const HWND hwnd, LPCWSTR lpwstrClassname);
 BOOL n2e_EnableClipboardFiltering(const HWND hwnd, const UINT idEdit);
 BOOL n2e_SubclassFindEditInCombo(const HWND hwnd, const UINT idCombo);

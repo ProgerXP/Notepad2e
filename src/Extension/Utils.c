@@ -478,6 +478,26 @@ BOOL n2e_IsRectangularSelection()
   return SciCall_GetSelectionMode() == SC_SEL_RECTANGLE;
 }
 
+BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount)
+{
+  BOOL res = FALSE;
+  const int iSelStart = SciCall_GetSelStart();
+  const int iSelEnd = SciCall_GetSelEnd();
+  const int iSelLength = iSelEnd - iSelStart;
+  if ((iSelLength > 0) && (iSelLength < iCount * 4))
+  {
+    LPSTR pSelText = LocalAlloc(LPTR, iSelLength + 1);
+    struct TextRange tr = { { iSelStart, iSelEnd }, pSelText };
+    if ((SciCall_GetTextRange(0, &tr) > 0)
+      && (n2e_MultiByteToWideChar(pSelText, -1, NULL, 0) <= iCount))
+    {
+      res = (n2e_MultiByteToWideChar(pSelText, -1, buf, iCount) > 0);
+    }
+    LocalFree(pSelText);
+  }
+  return res;
+}
+
 int n2e_CompareFiles(LPCWSTR sz1, LPCWSTR sz2)
 {
   int res1, res2;
@@ -1242,6 +1262,16 @@ void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams)
   case FCP_CURRENT_SELECTION:
     PathQuoteSpaces(lpParams->pszTarget);
     _swprintf(lpParams->pszArguments, L"/gs %d:%d %s", SciCall_GetSelStart(), SciCall_GetSelEnd(), lpParams->pszTarget);
+    _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
+    break;
+  case FCP_FIRST_SUBSTRING:
+    PathQuoteSpaces(lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments, L"/m %s %s", lpParams->pszCurrentSelection, lpParams->pszTarget);
+    _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
+    break;
+  case FCP_LAST_SUBSTRING:
+    PathQuoteSpaces(lpParams->pszTarget);
+    _swprintf(lpParams->pszArguments, L"/m- %s %s", lpParams->pszCurrentSelection, lpParams->pszTarget);
     _swprintf(lpParams->pszTarget, L"%s", n2e_GetExePath());
     break;
   default:

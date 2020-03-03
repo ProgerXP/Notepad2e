@@ -949,6 +949,11 @@ void remove_char(char* str, char c)
   *pw = '\0';
 }
 
+int n2e_MultiByteToWideChar(LPCSTR lpMultiByteStr, const int cbMultiByte, LPWSTR lpWideCharStr, const int cchWideChar)
+{
+  return MultiByteToWideChar(SciCall_GetCodePage(), 0, lpMultiByteStr, cbMultiByte, lpWideCharStr, cchWideChar);
+}
+
 BOOL n2e_FilteredPasteFromClipboard(const HWND hwnd)
 {
   char *pClip = EditGetClipboardText(hwndEdit);
@@ -956,10 +961,9 @@ BOOL n2e_FilteredPasteFromClipboard(const HWND hwnd)
   {
     remove_char(pClip, '\r');
     remove_char(pClip, '\n');
-    const UINT codePage = SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0);
-    const int textLength = MultiByteToWideChar(codePage, 0, pClip, -1, NULL, 0);
+    const int textLength = n2e_MultiByteToWideChar(pClip, -1, NULL, 0);
     LPWSTR pWideText = LocalAlloc(LPTR, textLength * 2);
-    MultiByteToWideChar(codePage, 0, pClip, -1, pWideText, textLength);
+    n2e_MultiByteToWideChar(pClip, -1, pWideText, textLength);
     SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
     LocalFree(pWideText);
     LocalFree(pClip);
