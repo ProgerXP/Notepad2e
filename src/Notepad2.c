@@ -3656,14 +3656,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iBrace2 = -1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (StrChrA("()[]{}", c))
+        if (StrChrA("()[]{}<>", c))
           iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         // Try one before
         else
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-          if (StrChrA("()[]{}", c))
+          if (StrChrA("()[]{}<>", c))
             iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         }
         if (iBrace2 != -1)
@@ -3676,7 +3676,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iBrace2 = -1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (StrChrA("()[]{}", c))
+        if (StrChrA("()[]{}<>", c))
         {
           iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         }
@@ -3685,7 +3685,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-          if (StrChrA("()[]{}", c))
+          if (StrChrA("()[]{}<>", c))
             iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         }
         if (iBrace2 != -1)
@@ -5349,7 +5349,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               {
                 iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
                 c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-                if (StrChrA("()[]{}", c))
+                if (StrChrA("()[]{}<>", c))
                 {
                   int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
                   if (iBrace2 != -1)
