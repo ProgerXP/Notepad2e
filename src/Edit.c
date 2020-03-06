@@ -6617,7 +6617,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         // [2e]: Enclose Selection - add links with quotation marks #280
         LOGFONT lf = { 0 };
 
-        if (NULL == (hFontNormal = (HFONT)SendDlgItemMessage(hwnd, 200, WM_GETFONT, 0, 0)))
+        if (hFontNormal == NULL)
           hFontNormal = GetStockObject(DEFAULT_GUI_FONT);
         GetObject(hFontNormal, sizeof(LOGFONT), &lf);
         lf.lfUnderline = TRUE;
