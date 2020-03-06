@@ -39,6 +39,7 @@
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
 #include "Extension/ProcessElevationUtils.h"
+#include "Extension/UnicodeQuotes.h"
 #include "Extension/Utils.h"
 
 
@@ -6594,13 +6595,46 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
   const WCHAR* _left_braces = L"<{([";
   const WCHAR* _right_braces = L">})]";
   const WCHAR* _special_symbs = L"`~!@#%^*-_+=|\\/:;\"',.?";
+
+  // [2e]: Enclose Selection - add links with quotation marks #280
+  static int id_hover = 0;
+  static int id_capture = 0;
+  static HFONT hFontNormal = NULL;
+  static HFONT hFontHover = NULL;
+  static HCURSOR hCursorNormal = NULL;
+  static HCURSOR hCursorHover = NULL;
+  const DWORD iMinLinkID = 200;
+  const DWORD iMaxLinkID = iMinLinkID + iUnicodeQuotesCount;
   // [/2e]
+
   static PENCLOSESELDATA pdata;
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
+
+        // [2e]: Enclose Selection - add links with quotation marks #280
+        LOGFONT lf = { 0 };
+
+        if (NULL == (hFontNormal = (HFONT)SendDlgItemMessage(hwnd, 200, WM_GETFONT, 0, 0)))
+          hFontNormal = GetStockObject(DEFAULT_GUI_FONT);
+        GetObject(hFontNormal, sizeof(LOGFONT), &lf);
+        lf.lfUnderline = TRUE;
+        lf.lfHeight *= 1.25;
+        hFontHover = CreateFontIndirect(&lf);
+
+        hCursorNormal = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
+        if (!(hCursorHover = LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND))))
+          hCursorHover = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_ARROW));
+
+        for (DWORD dwId = iMinLinkID; dwId <= iMaxLinkID; ++dwId)
+        {
+          WCHAR linkText[2] = { lpwstrUnicodeQuotes[dwId - iMinLinkID], 0 };
+          SetDlgItemTextW(hwnd, dwId, linkText);
+        }
+        // [/2e]
+
         pdata = (PENCLOSESELDATA)lParam;
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
@@ -6610,6 +6644,123 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         CenterDlgInParent(hwnd);
       }
       return TRUE;
+
+    // [2e]: Enclose Selection - add links with quotation marks #280
+    case WM_DESTROY:
+      DeleteObject(hFontHover);
+      return FALSE;
+
+    case WM_NCACTIVATE:
+      if (!(BOOL)wParam)
+      {
+        if (id_hover != 0)
+        {
+          int _id_hover = id_hover;
+          id_hover = 0;
+          id_capture = 0;
+        }
+      }
+      return FALSE;
+
+    case WM_CTLCOLORSTATIC: {
+        DWORD dwId = GetWindowLong((HWND)lParam, GWL_ID);
+        HDC hdc = (HDC)wParam;
+        if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
+        {
+          SetBkMode(hdc, TRANSPARENT);
+          if (GetSysColorBrush(COLOR_HOTLIGHT))
+          {
+            SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
+          }
+          else
+          {
+            SetTextColor(hdc, RGB(0, 0, 255));
+          }
+          SelectObject(hdc, hFontHover);
+          return (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE);
+        }
+      }
+      break;
+
+    case WM_MOUSEMOVE: {
+        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
+        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
+        if (GetActiveWindow() == hwnd)
+        {
+          if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
+          {
+            if (id_capture == dwId || id_capture == 0)
+            {
+              if (id_hover != id_capture || id_hover == 0)
+              {
+                id_hover = dwId;
+              }
+            }
+            else if (id_hover != 0)
+            {
+              int _id_hover = id_hover;
+              id_hover = 0;
+            }
+          }
+          else if (id_hover != 0)
+          {
+            int _id_hover = id_hover;
+            id_hover = 0;
+          }
+          SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
+        }
+      }
+      break;
+
+    case WM_LBUTTONDOWN: {
+        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
+        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
+        if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
+        {
+          GetCapture();
+          id_hover = dwId;
+          id_capture = dwId;
+        }
+        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
+      }
+      break;
+
+    case WM_LBUTTONUP: {
+        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
+        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
+        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
+        if (id_capture != 0)
+        {
+          ReleaseCapture();
+          if (id_hover == id_capture)
+          {
+            int id_focus = GetWindowLong(GetFocus(), GWL_ID);
+            if (id_focus == 100 || id_focus == 101)
+            {
+              WCHAR wch[8];
+              GetDlgItemText(hwnd, id_capture, wch, COUNTOF(wch));
+              SendDlgItemMessage(hwnd, id_focus, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
+            }
+          }
+          id_capture = 0;
+        }
+        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
+      }
+      break;
+
+    case WM_CANCELMODE:
+      if (id_capture != 0)
+      {
+        ReleaseCapture();
+        id_hover = 0;
+        id_capture = 0;
+        SetCursor(hCursorNormal);
+      }
+      break;
+    // [/2e]
+
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
