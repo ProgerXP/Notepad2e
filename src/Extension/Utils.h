@@ -165,4 +165,4 @@ void n2e_UpdateFavLnkParams(TADDFAVPARAMS* lpParams);
 void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, const int iNewSelStart, const int iNewSelEnd);
 
 HWND n2e_ToolTipCreate(const HWND hwndParent);
-BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPSTR pszText);
+BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPTSTR pszText);

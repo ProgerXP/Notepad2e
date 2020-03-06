@@ -1314,7 +1314,7 @@ HWND n2e_ToolTipCreate(const HWND hwndParent)
           CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndParent, NULL, NULL, NULL);
 }
 
-BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPSTR pszText)
+BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPTSTR pszText)
 {
   const HWND hwndParent = GetParent(hwndToolTip);
   if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
