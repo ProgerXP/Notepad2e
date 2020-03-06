@@ -5101,6 +5101,16 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         // [2e]: Ctrl+H: Replace input behaviour #121
         n2e_SubclassFindEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassFindEditInCombo(hwnd, IDC_REPLACETEXT);
+        {
+          // [2e]: Find/Replace - add hints #274
+          const HWND hwndToolTip = n2e_ToolTipCreate(hwnd);
+          n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDOK), L"Select match (F3, Enter), Select from start (Ctrl+Enter), Select until (F2)");
+          n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_FINDPREV), L"Select match (Shift+F3), Select until (Shift+F2)");
+          if (GetDlgItem(hwnd, IDC_REPLACE) != NULL)
+          {
+            n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_REPLACE), L"Select match or replace and go to next (F4)");
+          }
+        }
         // [/2e]
       }
       return TRUE;

@@ -1307,3 +1307,27 @@ void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, cons
     SciCall_SetYCaretPolicy(CARET_EVEN, 0);
   }
 }
+
+HWND n2e_ToolTipCreate(const HWND hwndParent)
+{
+  return CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP | TTS_ALWAYSTIP,
+          CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, hwndParent, NULL, NULL, NULL);
+}
+
+BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPSTR pszText)
+{
+  const HWND hwndParent = GetParent(hwndToolTip);
+  if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
+  {
+    return FALSE;
+  }
+
+  TOOLINFO ti = { 0 };
+  ti.cbSize = sizeof(ti);
+  ti.hwnd = hwndParent;
+  ti.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+  ti.uId = (UINT_PTR)hwndControl;
+  ti.lpszText = pszText;
+
+  return SendMessage(hwndToolTip, TTM_ADDTOOL, 0, (LPARAM)&ti) == TRUE;
+}
