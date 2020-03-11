@@ -6597,14 +6597,12 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
   const WCHAR* _special_symbs = L"`~!@#%^*-_+=|\\/:;\"',.?";
 
   // [2e]: Enclose Selection - add links with quotation marks #280
-  static int id_hover = 0;
-  static int id_capture = 0;
-  static HFONT hFontNormal = NULL;
-  static HFONT hFontHover = NULL;
-  static HCURSOR hCursorNormal = NULL;
-  static HCURSOR hCursorHover = NULL;
-  const DWORD iMinLinkID = 200;
-  const DWORD iMaxLinkID = iMinLinkID + iUnicodeQuotesCount;
+  static HFONT hFontLink = NULL;
+  const DWORD iMinLinkID_SingleQuote = 200;
+  const DWORD iMaxLinkID_SingleQuote = iMinLinkID_SingleQuote + 9;
+  const DWORD iMinLinkID_DoubleQuote = iMaxLinkID_SingleQuote + 1;
+  const DWORD iMaxLinkID_DoubleQuote = iMinLinkID_DoubleQuote + 3;
+  static DWORD dwFocusID = 0;
   // [/2e]
 
   static PENCLOSESELDATA pdata;
@@ -6617,21 +6615,33 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         // [2e]: Enclose Selection - add links with quotation marks #280
         LOGFONT lf = { 0 };
 
-        if (hFontNormal == NULL)
-          hFontNormal = GetStockObject(DEFAULT_GUI_FONT);
-        GetObject(hFontNormal, sizeof(LOGFONT), &lf);
-        lf.lfUnderline = TRUE;
-        lf.lfHeight *= 1.25;
-        hFontHover = CreateFontIndirect(&lf);
-
-        hCursorNormal = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
-        if (!(hCursorHover = LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND))))
-          hCursorHover = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_ARROW));
-
-        for (DWORD dwId = iMinLinkID; dwId <= iMaxLinkID; ++dwId)
+        if (hFontLink == NULL)
         {
-          WCHAR linkText[2] = { lpwstrUnicodeQuotes[dwId - iMinLinkID], 0 };
+          HDC hdc = GetDC(hwnd);
+          GetObject(hFontLink, sizeof(LOGFONT), &lf);
+          lstrcpy(lf.lfFaceName, L"Georgia");
+          lf.lfUnderline = TRUE;
+          lf.lfHeight = -MulDiv(12, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+          ReleaseDC(hwnd, hdc);
+          hFontLink = CreateFontIndirect(&lf);
+        }
+
+        for (DWORD dwId = iMinLinkID_SingleQuote; dwId <= iMaxLinkID_SingleQuote; ++dwId)
+        {
+          WCHAR linkText[] = L"<a>X</a>";
+          linkText[3] = lpwstrUnicodeQuotes[dwId - iMinLinkID_SingleQuote];
           SetDlgItemTextW(hwnd, dwId, linkText);
+          SendDlgItemMessage(hwnd, dwId, WM_SETFONT, (WPARAM)hFontLink, 0);
+        }
+
+        for (DWORD dwId = iMinLinkID_DoubleQuote; dwId <= iMaxLinkID_DoubleQuote; ++dwId)
+        {
+          const int quoteIndex = (iMaxLinkID_SingleQuote - iMinLinkID_SingleQuote) + 1 + (dwId - iMinLinkID_DoubleQuote) * 2;
+          WCHAR linkText[] = L"<a>XX</a>";
+          linkText[3] = lpwstrUnicodeQuotes[quoteIndex];
+          linkText[4] = lpwstrUnicodeQuotes[quoteIndex + 1];
+          SetDlgItemTextW(hwnd, dwId, linkText);
+          SendDlgItemMessage(hwnd, dwId, WM_SETFONT, (WPARAM)hFontLink, 0);
         }
         // [/2e]
 
@@ -6644,122 +6654,6 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         CenterDlgInParent(hwnd);
       }
       return TRUE;
-
-    // [2e]: Enclose Selection - add links with quotation marks #280
-    case WM_DESTROY:
-      DeleteObject(hFontHover);
-      return FALSE;
-
-    case WM_NCACTIVATE:
-      if (!(BOOL)wParam)
-      {
-        if (id_hover != 0)
-        {
-          int _id_hover = id_hover;
-          id_hover = 0;
-          id_capture = 0;
-        }
-      }
-      return FALSE;
-
-    case WM_CTLCOLORSTATIC: {
-        DWORD dwId = GetWindowLong((HWND)lParam, GWL_ID);
-        HDC hdc = (HDC)wParam;
-        if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
-        {
-          SetBkMode(hdc, TRANSPARENT);
-          if (GetSysColorBrush(COLOR_HOTLIGHT))
-          {
-            SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
-          }
-          else
-          {
-            SetTextColor(hdc, RGB(0, 0, 255));
-          }
-          SelectObject(hdc, hFontHover);
-          return (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE);
-        }
-      }
-      break;
-
-    case WM_MOUSEMOVE: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (GetActiveWindow() == hwnd)
-        {
-          if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
-          {
-            if (id_capture == dwId || id_capture == 0)
-            {
-              if (id_hover != id_capture || id_hover == 0)
-              {
-                id_hover = dwId;
-              }
-            }
-            else if (id_hover != 0)
-            {
-              int _id_hover = id_hover;
-              id_hover = 0;
-            }
-          }
-          else if (id_hover != 0)
-          {
-            int _id_hover = id_hover;
-            id_hover = 0;
-          }
-          SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-        }
-      }
-      break;
-
-    case WM_LBUTTONDOWN: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (dwId >= iMinLinkID && dwId <= iMaxLinkID)
-        {
-          GetCapture();
-          id_hover = dwId;
-          id_capture = dwId;
-        }
-        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-      }
-      break;
-
-    case WM_LBUTTONUP: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (id_capture != 0)
-        {
-          ReleaseCapture();
-          if (id_hover == id_capture)
-          {
-            int id_focus = GetWindowLong(GetFocus(), GWL_ID);
-            if (id_focus == 100 || id_focus == 101)
-            {
-              WCHAR wch[8];
-              GetDlgItemText(hwnd, id_capture, wch, COUNTOF(wch));
-              SendDlgItemMessage(hwnd, id_focus, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
-            }
-          }
-          id_capture = 0;
-        }
-        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-      }
-      break;
-
-    case WM_CANCELMODE:
-      if (id_capture != 0)
-      {
-        ReleaseCapture();
-        id_hover = 0;
-        id_capture = 0;
-        SetCursor(hCursorNormal);
-      }
-      break;
-    // [/2e]
 
     case WM_COMMAND:
       switch (LOWORD(wParam))
@@ -6821,7 +6715,75 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
           EndDialog(hwnd, IDCANCEL);
           break;
       }
+
+      // [2e]: Enclose Selection - add links with quotation marks #280
+      if (((LOWORD(wParam) == 100) || (LOWORD(wParam) == 101))
+          && ((HIWORD(wParam) == EN_SETFOCUS) || (HIWORD(wParam) == EN_KILLFOCUS)))
+      {
+        dwFocusID = LOWORD(wParam);
+      }
+      // [/2e]
+
       return TRUE;
+
+    // [2e]: Enclose Selection - add links with quotation marks #280
+    case WM_NOTIFY: {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+      case NM_CLICK:
+      case NM_RETURN: {
+          const DWORD dwControlId = pnmhdr->idFrom;
+          if ((dwControlId >= iMinLinkID_SingleQuote) && (dwControlId <= iMaxLinkID_SingleQuote))
+          {
+            WCHAR wch[2] = { lpwstrUnicodeQuotes[dwControlId - iMinLinkID_SingleQuote], 0 };
+            SendDlgItemMessage(hwnd, dwFocusID, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
+            SetFocus(GetDlgItem(hwnd, dwFocusID));
+            return TRUE;
+          }
+          else if (((dwControlId >= iMinLinkID_DoubleQuote) && (dwControlId <= iMaxLinkID_DoubleQuote))
+            || (dwControlId == IDC_SYSLINK1) || (dwControlId == IDC_SYSLINK2)
+            || (dwControlId == IDC_SYSLINK3) || (dwControlId == IDC_SYSLINK4))
+          {
+            WCHAR buf1[2] = { 0 };
+            WCHAR buf2[2] = { 0 };
+            switch (dwControlId)
+            {
+            case IDC_SYSLINK1:
+              buf1[0] = lpwstrUnicodeQuotesUS[0];
+              buf2[0] = lpwstrUnicodeQuotesUS[1];
+              break;
+            case IDC_SYSLINK2:
+              buf1[0] = lpwstrUnicodeQuotesUS[2];
+              buf2[0] = lpwstrUnicodeQuotesUS[3];
+              break;
+            case IDC_SYSLINK3:
+              buf1[0] = lpwstrUnicodeQuotesRU[0];
+              buf2[0] = lpwstrUnicodeQuotesRU[1]; 
+              break;
+            case IDC_SYSLINK4:
+              buf1[0] = lpwstrUnicodeQuotesRU[2];
+              buf2[0] = lpwstrUnicodeQuotesRU[3];
+              break;
+            default:
+              {
+                const int quoteIndex = (iMaxLinkID_SingleQuote - iMinLinkID_SingleQuote) + 1 + (dwControlId - iMinLinkID_DoubleQuote) * 2;
+                buf1[0] = lpwstrUnicodeQuotes[quoteIndex];
+                buf2[0] = lpwstrUnicodeQuotes[quoteIndex + 1];
+                break;
+              }
+            }
+            SetWindowText(GetDlgItem(hwnd, 100), (LPCWSTR)&buf1);
+            SetWindowText(GetDlgItem(hwnd, 101), (LPCWSTR)&buf2);
+            SetFocus(GetDlgItem(hwnd, dwFocusID));
+            return TRUE;
+          }
+        }
+        break;
+      }
+    }
+    break;
+    // [/2e]
   }
   return FALSE;
 }

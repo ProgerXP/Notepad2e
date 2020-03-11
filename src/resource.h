@@ -143,9 +143,13 @@
 #define IDD_WORDWRAP                    122
 #define IDC_RADIO6                      122
 #define IDD_LONGLINES                   123
+#define IDC_SYSLINK1                    123
 #define IDD_TABSETTINGS                 124
+#define IDC_SYSLINK2                    124
 #define IDD_PAGESETUP                   125
+#define IDC_SYSLINK3                    125
 #define IDD_INFOBOX                     126
+#define IDC_SYSLINK4                    126
 #define IDD_INFOBOX2                    127
 #define IDD_INFOBOX3                    128
 #define IDD_ABOUT_3RD_PARTY             129
