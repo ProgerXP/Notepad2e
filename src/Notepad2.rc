@@ -1010,23 +1010,23 @@ BEGIN
     EDITTEXT        101,7,48,98,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,125,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,125,24,50,14
-    CONTROL         "<",200,"SysLink",0x0,9,72,8,10
-    CONTROL         ">",201,"SysLink",0x0,21,72,8,10
-    CONTROL         "<",202,"SysLink",0x0,33,72,8,10
-    CONTROL         ">",203,"SysLink",0x0,45,72,8,10
-    CONTROL         "<",204,"SysLink",0x0,57,72,8,10
-    CONTROL         ">",205,"SysLink",0x0,69,72,8,10
-    CONTROL         "<",206,"SysLink",0x0,81,72,8,10
-    CONTROL         ">",207,"SysLink",0x0,93,72,8,10
-    CONTROL         "<",208,"SysLink",0x0,105,72,8,10
-    CONTROL         ">",209,"SysLink",0x0,117,72,8,10
-    CONTROL         "<a>US1</a>",IDC_SYSLINK1,"SysLink",0x0,7,85,15,10
-    CONTROL         "<a>US2</a>",IDC_SYSLINK2,"SysLink",0x0,26,85,15,10
-    CONTROL         "<a>RU1</a>",IDC_SYSLINK3,"SysLink",0x0,45,85,15,10
-    CONTROL         "<a>RU2</a>",IDC_SYSLINK4,"SysLink",0x0,64,85,15,10
-    CONTROL         "<>",210,"SysLink",0x0,83,85,12,10
-    CONTROL         "<>",211,"SysLink",0x0,99,85,12,10
-    CONTROL         "<>",212,"SysLink",0x0,115,85,12,10
+    CONTROL         "<",200,"SysLink",0x0,9,72,8,11
+    CONTROL         ">",201,"SysLink",0x0,21,72,8,11
+    CONTROL         "<",202,"SysLink",0x0,33,72,8,11
+    CONTROL         ">",203,"SysLink",0x0,45,72,8,11
+    CONTROL         "<",204,"SysLink",0x0,57,72,8,11
+    CONTROL         ">",205,"SysLink",0x0,69,72,8,11
+    CONTROL         "<",206,"SysLink",0x0,81,72,8,11
+    CONTROL         ">",207,"SysLink",0x0,93,72,8,11
+    CONTROL         "<",208,"SysLink",0x0,105,72,8,11
+    CONTROL         ">",209,"SysLink",0x0,117,72,8,11
+    CONTROL         "<a>US1</a>",IDC_SYSLINK1,"SysLink",0x0,7,86,15,11
+    CONTROL         "<a>US2</a>",IDC_SYSLINK2,"SysLink",0x0,26,86,15,11
+    CONTROL         "<a>RU1</a>",IDC_SYSLINK3,"SysLink",0x0,45,86,15,11
+    CONTROL         "<a>RU2</a>",IDC_SYSLINK4,"SysLink",0x0,64,86,15,11
+    CONTROL         "<>",210,"SysLink",0x0,83,85,12,11
+    CONTROL         "<>",211,"SysLink",0x0,99,85,12,11
+    CONTROL         "<>",212,"SysLink",0x0,115,85,12,11
 END
 
 IDD_INFOBOX DIALOGEX 0, 0, 244, 71
