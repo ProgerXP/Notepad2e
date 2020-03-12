@@ -1020,13 +1020,13 @@ BEGIN
     CONTROL         ">",207,"SysLink",0x0,93,72,8,10
     CONTROL         "<",208,"SysLink",0x0,105,72,8,10
     CONTROL         ">",209,"SysLink",0x0,117,72,8,10
-    CONTROL         "<a>US1</a>",IDC_SYSLINK1,"SysLink",0x0,7,85,15,9
-    CONTROL         "<a>US2</a>",IDC_SYSLINK2,"SysLink",0x0,26,85,15,9
-    CONTROL         "<a>RU1</a>",IDC_SYSLINK3,"SysLink",0x0,45,85,15,9
-    CONTROL         "<a>RU2</a>",IDC_SYSLINK4,"SysLink",0x0,64,85,15,9
-    CONTROL         "<>",210,"SysLink",0x0,83,85,12,9
-    CONTROL         "<>",211,"SysLink",0x0,99,85,12,9
-    CONTROL         "<>",212,"SysLink",0x0,115,85,12,9
+    CONTROL         "<a>US1</a>",IDC_SYSLINK1,"SysLink",0x0,7,85,15,10
+    CONTROL         "<a>US2</a>",IDC_SYSLINK2,"SysLink",0x0,26,85,15,10
+    CONTROL         "<a>RU1</a>",IDC_SYSLINK3,"SysLink",0x0,45,85,15,10
+    CONTROL         "<a>RU2</a>",IDC_SYSLINK4,"SysLink",0x0,64,85,15,10
+    CONTROL         "<>",210,"SysLink",0x0,83,85,12,10
+    CONTROL         "<>",211,"SysLink",0x0,99,85,12,10
+    CONTROL         "<>",212,"SysLink",0x0,115,85,12,10
 END
 
 IDD_INFOBOX DIALOGEX 0, 0, 244, 71
