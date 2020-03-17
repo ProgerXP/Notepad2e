@@ -2823,17 +2823,7 @@ void EditMoveDown(HWND hwnd)
 void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 {
   char  mszPrefix1[256 * 3] = "";
-  char  mszPrefix2[256 * 3] = "";
-  BOOL  bPrefixNum = FALSE;
-  int   iPrefixNum = 0;
-  int   iPrefixNumWidth = 1;
-  char *pszPrefixNumPad = "";
   char  mszAppend1[256 * 3] = "";
-  char  mszAppend2[256 * 3] = "";
-  BOOL  bAppendNum = FALSE;
-  int   iAppendNum = 0;
-  int   iAppendNumWidth = 1;
-  char *pszAppendNumPad = "";
   int   mbcp;
 
   int iSelStart = SciCall_GetSelStart();
@@ -2858,8 +2848,6 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
   if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
-    char *p;
-    int  i;
 
     int iLine;
 
@@ -2872,155 +2860,31 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
         iLineEnd--;
     }
 
-    if (lstrlenA(mszPrefix1))
-    {
-
-      p = mszPrefix1;
-      while (!bPrefixNum && (p = StrStrA(p, "$(")))
-      {
-
-        if (StrCmpNA(p, "$(I)", CSTRLEN("$(I)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(I)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = 0;
-          for (i = iLineEnd - iLineStart; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "";
-        }
-
-        else if (StrCmpNA(p, "$(0I)", CSTRLEN("$(0I)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(0I)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = 0;
-          for (i = iLineEnd - iLineStart; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "0";
-        }
-
-        else if (StrCmpNA(p, "$(N)", CSTRLEN("$(N)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(N)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = 1;
-          for (i = iLineEnd - iLineStart + 1; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "";
-        }
-        else if (StrCmpNA(p, "$(0N)", CSTRLEN("$(0N)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(0N)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = 1;
-          for (i = iLineEnd - iLineStart + 1; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "0";
-        }
-
-        else if (StrCmpNA(p, "$(L)", CSTRLEN("$(L)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(L)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = iLineStart + 1;
-          for (i = iLineEnd + 1; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "";
-        }
-
-        else if (StrCmpNA(p, "$(0L)", CSTRLEN("$(0L)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszPrefix2, p + CSTRLEN("$(0L)"));
-          bPrefixNum = TRUE;
-          iPrefixNum = iLineStart + 1;
-          for (i = iLineEnd + 1; i >= 10; i = i / 10)
-            iPrefixNumWidth++;
-          pszPrefixNumPad = "0";
-        }
-        p += CSTRLEN("$(");
-      }
-    }
-
-    if (lstrlenA(mszAppend1))
-    {
-
-      p = mszAppend1;
-      while (!bAppendNum && (p = StrStrA(p, "$(")))
-      {
-
-        if (StrCmpNA(p, "$(I)", CSTRLEN("$(I)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(I)"));
-          bAppendNum = TRUE;
-          iAppendNum = 0;
-          for (i = iLineEnd - iLineStart; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "";
-        }
-        else if (StrCmpNA(p, "$(0I)", CSTRLEN("$(0I)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(0I)"));
-          bAppendNum = TRUE;
-          iAppendNum = 0;
-          for (i = iLineEnd - iLineStart; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "0";
-        }
-        else if (StrCmpNA(p, "$(N)", CSTRLEN("$(N)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(N)"));
-          bAppendNum = TRUE;
-          iAppendNum = 1;
-          for (i = iLineEnd - iLineStart + 1; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "";
-        }
-
-        else if (StrCmpNA(p, "$(0N)", CSTRLEN("$(0N)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(0N)"));
-          bAppendNum = TRUE;
-          iAppendNum = 1;
-          for (i = iLineEnd - iLineStart + 1; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "0";
-        }
-        else if (StrCmpNA(p, "$(L)", CSTRLEN("$(L)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(L)"));
-          bAppendNum = TRUE;
-          iAppendNum = iLineStart + 1;
-          for (i = iLineEnd + 1; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "";
-        }
-
-        else if (StrCmpNA(p, "$(0L)", CSTRLEN("$(0L)")) == 0)
-        {
-          *p = 0;
-          StrCpyA(mszAppend2, p + CSTRLEN("$(0L)"));
-          bAppendNum = TRUE;
-          iAppendNum = iLineStart + 1;
-          for (i = iLineEnd + 1; i >= 10; i = i / 10)
-            iAppendNumWidth++;
-          pszAppendNumPad = "0";
-        }
-        p += CSTRLEN("$(");
-      }
-    }
-
     SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+    
+    // [2e]: Alt+M - replace all substitutions #271
+    int iPrefixAbsZeroCounter = 1;
+    int iPrefixRelZeroCounter = 1;
+    int iPrefixRel0ZeroCounter = 1;
+
+    for (int i = iLineEnd + 1; i >= 10; i = i / 10)
+      iPrefixAbsZeroCounter++;
+    for (int i = iLineEnd - iLineStart + 1; i >= 10; i = i / 10)
+      iPrefixRelZeroCounter++;
+    for (int i = iLineEnd - iLineStart; i >= 10; i = i / 10)
+      iPrefixRel0ZeroCounter++;
+
+    char chPrefixAbsFormat[10], chPrefixAbsZeroFormat[10];
+    char chPrefixRelFormat[10], chPrefixRelZeroFormat[10];
+    char chPrefixRel0Format[10], chPrefixRel0ZeroFormat[10];
+
+    wsprintfA(chPrefixAbsFormat, "%%%ii", iPrefixAbsZeroCounter);
+    wsprintfA(chPrefixAbsZeroFormat, "%%0%ii", iPrefixAbsZeroCounter);
+    wsprintfA(chPrefixRelFormat, "%%%ii", iPrefixRelZeroCounter);
+    wsprintfA(chPrefixRelZeroFormat, "%%0%ii", iPrefixRelZeroCounter);
+    wsprintfA(chPrefixRel0Format, "%%%ii", iPrefixRel0ZeroCounter);
+    wsprintfA(chPrefixRel0ZeroFormat, "%%0%ii", iPrefixRel0ZeroCounter);
+    // [/2e]
 
     for (iLine = iLineStart; iLine <= iLineEnd; iLine++)
     {
@@ -3030,16 +2894,13 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
       {
         char mszInsert[512 * 3];
         lstrcpyA(mszInsert, mszPrefix1);
-        if (bPrefixNum)
-        {
-          char tchFmt[64];
-          char tchNum[64];
-          wsprintfA(tchFmt, "%%%s%ii", pszPrefixNumPad, iPrefixNumWidth);
-          wsprintfA(tchNum, tchFmt, iPrefixNum);
-          lstrcatA(mszInsert, tchNum);
-          lstrcatA(mszInsert, mszPrefix2);
-          iPrefixNum++;
-        }
+
+        // [2e]: Alt+M - replace all substitutions #271
+        n2e_FormatLineText(mszInsert, iLineStart, iLine,
+          chPrefixAbsFormat, chPrefixAbsZeroFormat,
+          chPrefixRelFormat, chPrefixRelZeroFormat,
+          chPrefixRel0Format, chPrefixRel0ZeroFormat);
+
         iPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
@@ -3048,19 +2909,15 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
       if (lstrlen(pwszAppend))
       {
-
         char mszInsert[512 * 3];
         lstrcpyA(mszInsert, mszAppend1);
-        if (bAppendNum)
-        {
-          char tchFmt[64];
-          char tchNum[64];
-          wsprintfA(tchFmt, "%%%s%ii", pszAppendNumPad, iAppendNumWidth);
-          wsprintfA(tchNum, tchFmt, iAppendNum);
-          lstrcatA(mszInsert, tchNum);
-          lstrcatA(mszInsert, mszAppend2);
-          iAppendNum++;
-        }
+
+        // [2e]: Alt+M - replace all substitutions #271
+        n2e_FormatLineText(mszInsert, iLineStart, iLine,
+          chPrefixAbsFormat, chPrefixAbsZeroFormat,
+          chPrefixRelFormat, chPrefixRelZeroFormat,
+          chPrefixRel0Format, chPrefixRel0ZeroFormat);
+
         iPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);

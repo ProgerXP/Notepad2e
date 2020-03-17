@@ -2,6 +2,7 @@
 #include <cassert>
 #include "CommonUtils.h"
 #include "Dialogs.h"
+#include "EditHelperEx.h"
 #include "Helpers.h"
 #include "Edit.h"
 #include "ExtSelection.h"
@@ -1422,4 +1423,18 @@ BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
   }
   return res;
 #endif
+}
+
+LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
+  LPCSTR lpPrefixAbsFormat, LPCSTR lpPrefixAbsZeroFormat,
+  LPCSTR lpPrefixRelFormat, LPCSTR lpPrefixRelZeroFormat,
+  LPCSTR lpPrefixRel0Format, LPCSTR lpPrefixRel0ZeroFormat)
+{
+  n2e_ReplaceSubstringFormat(&buf[0], "$(L)", lpPrefixAbsFormat, iLineIndex + 1);
+  n2e_ReplaceSubstringFormat(&buf[0], "$(0L)", lpPrefixAbsZeroFormat, iLineIndex + 1);
+  n2e_ReplaceSubstringFormat(&buf[0], "$(N)", lpPrefixRelFormat, iLineIndex - iLineStart + 1);
+  n2e_ReplaceSubstringFormat(&buf[0], "$(0N)", lpPrefixRelZeroFormat, iLineIndex - iLineStart + 1);
+  n2e_ReplaceSubstringFormat(&buf[0], "$(I)", lpPrefixRel0Format, iLineIndex - iLineStart);
+  n2e_ReplaceSubstringFormat(&buf[0], "$(0I)", lpPrefixRel0ZeroFormat, iLineIndex - iLineStart);
+  return buf;
 }
