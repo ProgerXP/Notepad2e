@@ -1,5 +1,9 @@
 # Notepad 2e
 
+![License: 3-clause BSD](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)
+![Status: x86 build](https://proger.me/notepad2e/status/1.svg)
+![Status: tests](https://proger.me/notepad2e/status/2.svg)
+
 *Notepad 2e* is a fork of *Notepad2* by Florian Balmer (www.flos-freeware.ch), version 4.2.25.
 
 For information about the original project please see `Readme.txt` and `Notepad2.txt`.
@@ -88,6 +92,10 @@ Finally, if the INI's parent directory doesn't exist - it's created.
 ## Extended Edition Changes
 The `[NEW]` mark indicates a new major feature introduced by *Notepad 2e*. Items without this mark are changes (or minor features added) compared to the original *Notepad2*.
 
+Marks of this form: `#123` refer to specific [issues](https://github.com/ProgerXP/Notepad2e/issues) - read them for more details behind a feature.
+
+*Notepad2* has no documentation per se but only [this FAQ](http://www.flos-freeware.ch/development-releases/notepad2-FAQs.html) that explains many interesting features.
+
 ### [NEW] Current Word Highlighting
 Word under cursor is highlighted in one of 3 modes: #27 #1
 1. One occurrence in the document. Indispensable to spot typos.
@@ -126,9 +134,10 @@ Related settings:
 ![Ctrl+Backtick - Renaming words on line](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/ctrl+backtick.gif)
 
 ### [NEW] Math Evaluation
-In certain cases (such as in current selection), the file size group in the status bar is replaced with a recognized math expression's result. Left click on the group toggles the base (bin, oct, dec, hex), right click copies result (as it appears) to the clipboard.
+In certain cases (such as in current selection), the file size group in the status bar is replaced with a recognized math expression's result. Left-click on the group copies result to the clipboard (as it appears), right-click toggles the base (bin, oct, dec, hex). #261
 
 * Selection must be shorter than 4096 symbols.
+* Evaluation can be restricted to a rectangular selection (Alt+drag). #242
 * Expression is locale-insensitive and follows English conventions so that comma is a thousands separator (and ignored) and period is a decimal part separator.
 * If expression has commas but no periods and is still valid after replacing commas with periods - then the converted version is evaluated: `12,30 + ,1` = 12.40. This allows more resistance to locale-specific delimiters.
 * If result has no fractional part - period and zeros are hidden from the status bar group. Fractional part is discarded if active base is any but decimal.
@@ -169,12 +178,15 @@ Tab's behaviour is not changed, it still indents to the column. #61
 
 ### Find Dialog
 * **[NEW]** Find (**Ctrl+F**) now has Grep/Ungrep buttons (can be quickly called with **Alt+G/R**). Find's settings including regexp mode are respected. In case of active selection these commands operate on selected lines only. Big buffers will see a progress bar in the status bar. #46 #29
-* Submission buttons are disabled in regexp mode if Search String has errors.
+* **[NEW]** Submitting Find/Replace by **Ctrl+Enter** starts the search from the beginning rather than current position. #273
+* Submission buttons are disabled in regexp mode if Search String has errors. #219
 * Checkboxes are disabled when certain combinations of flags render other flags invalid (e.g. **regexp** doesn't support **whole word**). #108
 * Search and Replace String inputs handle **Ctrl+Backspace** hotkey (delete word before cursor). #121 #50
 * **[NEW]** Find and other navigation commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
 * **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search (Find, Replace or Find Word) hits last result in that direction, regardless of the **Wrap around** flag.
 * Find respects the **Match case** flag even with Cyrillic characters in the search string. #9
+* Fixed *Notepad2* bug: **Shift+F3** called from within Find/Replace must not select text like **Shift+F2**.
+* Added hints with hotkeys to Find Next, Find Previous and Replace buttons. #274
 
 ![Grep](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/grep.gif)
 ![Ungrep](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/ungrep.gif)
@@ -232,6 +244,7 @@ When saving, if the given new file name ends on period then the file is saved wi
 ### File Dialogs
 * **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File dialog limitation, it can't be used if new name only differs in character case (an error appears if this is detected). #140
 * Open/Save File dialogs now start with the path of last opened file. #22
+* File filter can be changed using [Notepad2's](http://www.flos-freeware.ch/development-releases/notepad2-FAQs.html#ini-file-settings2) `FileDlgFilters` under `[Settings2]`, e.g. `DOC Files (.doc)|.doc|RTF Files (.rtf)|.rtf`. **[NEW]** Last used filter is now saved for both Open/Save Dialogs. #258
 * Improved directory locking - in some cases a directory could not be removed even after opening a file in another directory due to Windows' Open Dialog operation. #100
 
 ### Insert Tag (Alt+X)
@@ -254,6 +267,8 @@ When saving, if the given new file name ends on period then the file is saved wi
   4. If remainder consists of `0-9 A-F a-f` then use it as a hexadecimal offset and return.
   5. In other cases do nothing and don't close the dialog.
 * Input priority: use Offset if non-empty, else use Column+Line if Column non-empty, else use only Line.
+* Go To is disabled for an empty buffer. Also made non-modal and not combining with Find or Replace. #260
+* Added links to/from Find/Replace (preserving Line <=> Search String) and in-dialog hotkeys (**Ctrl+F/H/G**). #259
 
 ### File > Launch
 * **[NEW]** File > Launch > Shell Menu (**Ctrl+Shift+R**) command invokes Explorer's context menu for currently opened file. Current directory is set to the file's path. Setting: `ShellMenuType`. #12
@@ -284,12 +299,13 @@ When saving, if the given new file name ends on period then the file is saved wi
   * File saving
   * Replace/All/In Selection (**Ctrl+H**) #206
   * Drag & drop #222
+  * Duplicate Line #237
 
 ### PCRE Support
 * Replaced incomplete *Notepad2* regexp implementation with a fully-featured Scintilla's Boost Regex - with `(a|b)`, backreferences `\1` (both in Search and Replace Strings) and other features. #90 #114
 * One particularly useful feature is ability to change character case with new escape codes: `\l` (one next symbol becomes lower-case), `\L` (all following become lower-case), `\u` and `\U` (similar but for upper-case), `\E` (cancels effect of the preceding `\L` and `\U`). Example: replace from `(.)(.)` to `\l\1\u\2`.
 * An ICU version is available, which adds Unicode support to Boost regexps, allowing `\U` and others to work on non-ASCII symbols. #162
-    * ICU version's Find/Replace in regexp mode only support Unicode (UTF-8, etc.) buffers.
+    * ICU version's Find/Replace in regexp mode only support Unicode (UTF-8, etc.) buffers. #232 #231
     * Most other national regexp features (`\w`, `\pL`, etc.) work even in non-ICU versions.
 * Original Notepad2's regexp didn't support UTF-8 buffers (only ASCII) - Boost's does. #78
 * Boost was hacked to allow Replace string to contain NUL (`\0`) - normally it truncates the buffer.
@@ -316,6 +332,10 @@ Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there
 These changes make editing Markdown and wiki sources much more pleasant: `[[foo|bar]]`, `**foo bar**`. #37
 
 ![Alt+Q - Enclose Selection](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/enclose-sel.gif)
+
+* **[NEW]** Links to insert Unicode quotes into last focused input. #280
+  * US1/2, RU1/2 set quotes according to United States' and Russia's typography standards (see [Wikipedia](https://en.wikipedia.org/wiki/Quotation_mark)).
+  * To see Japanese quotes (`「`, etc.) on XP install the Asian support pack (Control Panel > Regional And Language Options > Languages, tick the first checkbox). Later Windows versions come with this preinstalled.
 
 ### Wrap/Unwrap Commands
 * **[NEW]** Edit > Block > Unwrap Brackes At Cursor (**Ctrl+Shift+3**) command compliments *Notepad2*'s **Ctrl+3-5**. This command removes brackets of type `( { [ <` around the caret (whichever bracket type appears first). Respects nesting. #39
@@ -353,16 +373,30 @@ Related settings:
 * `WheelScroll`
 * `WheelScrollInterval`
 
+### Favorites
+
+* Open Favorites (**Alt+I**) now selects the first item so that **Enter** opens it immediately. #240
+* **[NEW]** `/gs start:end` switch works for selection (file offset, see #233). `end` can be `-1` for EOF. #249
+  * *Notepad2* has `/g` switch to go to a specific line.
+* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial selection. This affects newly created shortcut (all but First Line reference *Notepad 2e*'s executable, not the file itself). #249
+* **Alt+K**'s confirmation message is now of type Info on success (not always Warning as in *Notepad2*). #249
+* **Alt+K**'s initial file name is made unique by appending a counter (like File > Create Desktop Link). #290
+
 ### Highlight Line
 Ability to keep current line highlighted even if the window is not focused (especially useful when using Windows' X-Mouse feature).
 
 Related settings:
 * `HighlightLineIfWindowInactive`
 
-### Drop Text
+### Drop Text And Files
 When dropping an object from another application on an empty line - line break is added automatically. #63 #110
 
-Useful when creating snippets or lists from other sources - such as from URLs; no more need to manually insert line breaks after each drop.
+* Useful when creating snippets or lists from other sources - such as from URLs; no more need to manually insert line breaks after each drop.
+
+When dropping a single file, *Notepad2* opens it. **[NEW]** When dropping multiple files, they are concatenated into a fresh (File > New) buffer. #250
+
+* Source files are opened as if using File > Open so unlike with `cat`/`copy` they can use different encoding/line breaks if *Notepad2* can detect them.
+* If any file is Unicode then new buffer is made UTF-8 regardless of File > Encoding > Default.
 
 ### Copy Add (Ctrl+E)
 * Uses single line break instead of double. #28
@@ -383,7 +417,7 @@ Go To Last Change (**Ctrl+Shift+Z**) command moves caret to the position of last
 ### Setting Commands
 * **[NEW]** Replace Settings in All Instances command makes all other instances reload the INI from disk. Useful if you have dozens of *Notepad2* windows open and need to change settings in one of them and have them saved (normally when an instance quits it overwrites the INI with its own settings). With this command you can do Save Settings Now, then Replace to ensure your new settings are not overwritten. #5
 * **[NEW]** Reload Settings from Disk (**Alt+F7**) command replaces all settings in current window with fresh version read from the INI file. #16
-* Save Settings On Exit was extended to allow a third value: Recent Files/Search Strings. This allows you to customize Notepad 2e once, Save Settings and then not worry that temporary changes (from a particular instance) will be saved, at the same time allowing the program to save file History and Find/Replace strings. #101
+* Save Settings On Exit was extended to allow a third value: Recent Files/Search Strings. This allows you to customize *Notepad 2e* once, Save Settings and then not worry that temporary changes (from a particular instance) will be saved, at the same time allowing the program to save file History and Find/Replace strings. #101
 * Save Settings On Exit can be also changed with a toolbar button (toggles between All... and Recent... values). #95
 
 ### [NEW] Language Indicator
@@ -404,13 +438,17 @@ Related settings:
 ![Menu clock](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/menu-clock.png)
 
 ### Other Changes
-* Replaced polling File Change Notification mechanism with a proper instant change listener, making the program suitable for watching log files (`tail -f`-style). #129
+* File Change Notification is more responsive (suitable for watching log files, like `tail -f`) #129 and reliable (works over network shares; no longer relies on `FindFirstChangeNotification`, only on file time polling) #241.
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
-* Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are simply inserted into a focused input instead of replacing its value. #119
+* Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are inserted into a focused input instead of replacing its value. #119
+* All Modify Lines (**Alt+M**) substitutions are replaced, not just first. #271
 * Line breaks (`\r` and `\n`) are removed from Search/Replace (of Find/Replace, **Ctrl+F/H**) and Prefix/Append (of Modify Lines, **Alt+M**) inputs (could appear after pasting). #70 #173
+* **[NEW]** Now respecting Windows' "Hide pointer while typing" setting in Control Panel > Mouse Properties > Pointer Options. #230
 * **[NEW]** Ability to retain caret position and selection on right click. Setting: `MoveCaretOnRightClick`.
-* **[NEW]** Displaying selected line count in the status bar (in regular and rectangular modes). #204
+* **[NEW]** Displaying selected line count (`L`) in the status bar (in regular and rectangular modes). `B` is for selection length in bytes. #204 #262
+* **[NEW]** Displaying current file offset (`Pos`) in the status bar. #233
 * **[NEW]** Edit > Insert > Random (**Ctrl+Shift+Alt+R**) inserts a padded number in range 1..99999 (inclusive) using the poor C's `rand()`. #221
+* Visual Brace Matching, Find/Select To Matching Brace operate on `< >` too. #283
 * "Accelerated" navigation mode for **Ctrl+Arrow** (like in Windows Notepad) that skips punctuation and other characters. Setting: `WordNavigationMode`.
 * Empty Window (**Alt+0**) no more triggers save prompt when Save Before Running Tools is enabled. #176
 * File > Encoding > UTF-8 has **Shift+F8** hotkey assigned. #21
@@ -418,11 +456,13 @@ Related settings:
 * If large file loading stops due to memory limit, an error message is produced (*Notepad2* silently stops loading it). #126
 * **[NEW]** DPI awareness - proper font scaling with crisp texts without Windows fallback mechanism. #154
 * Fixed bug of *Notepad2* in processing `[Toolbar Labels]` INI section. #150
-* Upgraded Scintilla library to a more recent version (3.6.6).
+* Upgraded Scintilla library to a more recent version (~~3.6.6~~ 3.11.2).
 * Added `<supportedOS>` manifest entries for Windows 10/8.1/8 (Server 2016/2012/R2), in addition to Windows 7/Vista (Server 2008/R2). #159
 * Reduced default *Notepad2* timeout from 1000 ms to 250 ms which sometimes allowed duplicate windows even if Single File Instance/Reuse Window were enabled. #177
 * Changed hardcoded printed page's header/footer font size from 8 pt/7 pt to 10 pt. #199
-* Reorganized `&` accelerators in File, Edit and Settings. #197
+* Grouped commands into submenus in Edit and Settings. #265
+* Reorganized `&` accelerators in File, Edit and Settings. #197 #276
+* Disabled commands when no file is opened: File > Open Next/Previous and Launch > Shell Menu #229; Launch > Open With #238; Edit > Strip/Escape HTML Tags, Find Next/Previous Word, Edit Selection/On Line #268.
 * **[NEW]** ? > 3rd-Party Code attribution dialog. #181
 * Changed *Notepad2* defaults: #167
 
@@ -441,6 +481,8 @@ Long Line | 72 | 80
 ![Pasteboard mode](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/pasteboard.gif)
 
 ### Syntax Schemes
+
+**[NEW]** Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was enabled to allow defining new syntax schemes in Lua. #251
 
 **[NEW]** These syntax schemes were added:
 * `awk` #216
@@ -463,6 +505,9 @@ CSS syntax scheme was improved:
 * Enabled `//`-inline comments (**Ctrl+Q**) that are used in LESS, SASS and other preprocessors. #4
 * Fixed brackets of nested rules not matching in some cases (visually and when using **Ctrl+B**). #4
 * Related setting: `CSSSettings`.
+
+HTML syntax scheme was improved:
+* Added HTML5 tags. #236
 
 Lua syntax scheme was improved:
 * Added single-line: `--...` and multi-line comments: `--[[...]]`. #111
