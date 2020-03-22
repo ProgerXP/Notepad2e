@@ -375,9 +375,9 @@ Related settings:
 ### Favorites
 
 * Open Favorites (**Alt+I**) now selects the first item so that **Enter** opens it immediately. #240
-* **[NEW]** `/gs start:end` switch sets initial selection. `start`/`end` are file offsets (see #233). `end` can be `-1` for EOF. #249
-  * *Notepad2* has a similar `/g` switch to set initial line by number.
-* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial selection. This affects newly created shortcut (all but First Line reference *Notepad 2e*'s executable, not the document's file directly). #249
+* **[NEW]** `/gs start:end` switch sets initial selection by file offsets (see #233). `end` can be `-1` for EOF. #249
+  * *Notepad2* has a similar `/g` switch to set initial line by its number.
+* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial line or selection. This affects newly created shortcut (all choices but First Line target *Notepad 2e*'s executable, not the document's file). #249
 * **Alt+K**'s initial file name is made unique by appending a counter (like File > Create Desktop Link). #290
 * **Alt+K**'s confirmation message is now of type Info on success (not always Warning as in *Notepad2*). #249
 
@@ -462,7 +462,7 @@ Related settings:
 * Grouped commands into submenus in Edit and Settings. #265
 * Reorganized `&` accelerators in File, Edit and Settings. #197 #276
 * Disabled commands when no file is opened: File > Open Next/Previous and Launch > Shell Menu #229; Launch > Open With #238; Edit > Strip/Escape HTML Tags, Find Next/Previous Word, Edit Selection/On Line #268.
-* **[NEW]** `?` > 3rd-Party Code attribution dialog. #181
+* **[NEW]** **?** > 3rd-Party Code attribution dialog. #181
 * Changed *Notepad2* defaults: #167
 
 Setting | Old Value | New Value
