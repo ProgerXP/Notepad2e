@@ -267,7 +267,7 @@ When saving, if the given new file name ends on period then the file is saved wi
   4. If remainder consists of `0-9 A-F a-f` then use it as a hexadecimal offset and return.
   5. In other cases do nothing and don't close the dialog.
 * Input priority: use Offset if non-empty, else use Column+Line if Column non-empty, else use only Line.
-* Go To is disabled for an empty buffer. Also made non-modal and not combining with Find or Replace. #260
+* Made Go To disabled for an empty buffer. Also made it non-modal and non-combining with Find or Replace. #260
 * Added links to/from Find/Replace (preserving Line <=> Search String) and in-dialog hotkeys (**Ctrl+F/H/G**). #259
 
 ### File > Launch
@@ -323,6 +323,9 @@ Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there
 
 ### Enclose Selection (Alt+Q)
 * Skips leading/trailing whitespace within the selection. For example, enclosing space + `foo` + space produces space + `(foo)` + space instead of `( foo )`.
+* **[NEW]** Links to insert Unicode quotes into the focused input. #280
+  * US1/2, RU1/2 set quotes according to United States' and Russia's typography standards (see [Wikipedia](https://en.wikipedia.org/wiki/Quotation_mark)).
+  * To see Japanese quotes (`「`, etc.) on XP install the Asian support pack (Control Panel > Regional And Language Options > Languages, tick the first checkbox). Later Windows versions come with this preinstalled.
 * When "before" string consists of one of these characters: `{ ( [ <` then "after" is set to the same number of `} ) ] >`.
 * When "before" consists of one of the characters below then "after" is set to the same string as "before":
 ```
@@ -332,10 +335,6 @@ Bottomline: use `\n` (n > 0) everywhere except for full-match in Replace - there
 These changes make editing Markdown and wiki sources much more pleasant: `[[foo|bar]]`, `**foo bar**`. #37
 
 ![Alt+Q - Enclose Selection](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/enclose-sel.gif)
-
-* **[NEW]** Links to insert Unicode quotes into last focused input. #280
-  * US1/2, RU1/2 set quotes according to United States' and Russia's typography standards (see [Wikipedia](https://en.wikipedia.org/wiki/Quotation_mark)).
-  * To see Japanese quotes (`「`, etc.) on XP install the Asian support pack (Control Panel > Regional And Language Options > Languages, tick the first checkbox). Later Windows versions come with this preinstalled.
 
 ### Wrap/Unwrap Commands
 * **[NEW]** Edit > Block > Unwrap Brackes At Cursor (**Ctrl+Shift+3**) command compliments *Notepad2*'s **Ctrl+3-5**. This command removes brackets of type `( { [ <` around the caret (whichever bracket type appears first). Respects nesting. #39
@@ -376,11 +375,11 @@ Related settings:
 ### Favorites
 
 * Open Favorites (**Alt+I**) now selects the first item so that **Enter** opens it immediately. #240
-* **[NEW]** `/gs start:end` switch works for selection (file offset, see #233). `end` can be `-1` for EOF. #249
-  * *Notepad2* has `/g` switch to go to a specific line.
-* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial selection. This affects newly created shortcut (all but First Line reference *Notepad 2e*'s executable, not the file itself). #249
-* **Alt+K**'s confirmation message is now of type Info on success (not always Warning as in *Notepad2*). #249
+* **[NEW]** `/gs start:end` switch sets initial selection. `start`/`end` are file offsets (see #233). `end` can be `-1` for EOF. #249
+  * *Notepad2* has a similar `/g` switch to set initial line by number.
+* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial selection. This affects newly created shortcut (all but First Line reference *Notepad 2e*'s executable, not the document's file directly). #249
 * **Alt+K**'s initial file name is made unique by appending a counter (like File > Create Desktop Link). #290
+* **Alt+K**'s confirmation message is now of type Info on success (not always Warning as in *Notepad2*). #249
 
 ### Highlight Line
 Ability to keep current line highlighted even if the window is not focused (especially useful when using Windows' X-Mouse feature).
@@ -463,7 +462,7 @@ Related settings:
 * Grouped commands into submenus in Edit and Settings. #265
 * Reorganized `&` accelerators in File, Edit and Settings. #197 #276
 * Disabled commands when no file is opened: File > Open Next/Previous and Launch > Shell Menu #229; Launch > Open With #238; Edit > Strip/Escape HTML Tags, Find Next/Previous Word, Edit Selection/On Line #268.
-* **[NEW]** ? > 3rd-Party Code attribution dialog. #181
+* **[NEW]** `?` > 3rd-Party Code attribution dialog. #181
 * Changed *Notepad2* defaults: #167
 
 Setting | Old Value | New Value
