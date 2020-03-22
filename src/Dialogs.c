@@ -964,6 +964,20 @@ BOOL AddToFavDlg(HWND hwnd, LPCWSTR lpszName, LPCWSTR lpszTarget)
   lstrcpy(params.pszName, lpszName);
   lstrcpy(params.pszTarget, lpszTarget);
 
+  // [2e]: Add to favourites - append unique suffix #290
+  WCHAR tchLnkFileName[MAX_PATH] = { 0 };
+  BOOL bMustCopy = FALSE;
+  if (SHGetNewLinkInfo(lpszTarget, tchFavoritesDir, tchLnkFileName, &bMustCopy, 0))
+  {
+    LPWSTR ptrLnkExtension = PathFindExtension(tchLnkFileName);
+    if (ptrLnkExtension && (StrCmpI(ptrLnkExtension, L".LNK") == 0))
+    {
+      ptrLnkExtension[0] = 0;
+    }
+    lstrcpy(params.pszName, PathFindFileName(tchLnkFileName));
+  }
+  // [/2e]
+
   iResult = ThemedDialogBoxParam(
     g_hInstance,
     MAKEINTRESOURCE(IDD_ADDTOFAV),
