@@ -182,10 +182,10 @@ Tab's behaviour is not changed, it still indents to the column. #61
 * Submission buttons are disabled in regexp mode if Search String has errors. #219
 * Checkboxes are disabled when certain combinations of flags render other flags invalid (e.g. **regexp** doesn't support **whole word**). #108
 * Search and Replace String inputs handle **Ctrl+Backspace** hotkey (delete word before cursor). #121 #50
-* **[NEW]** Find and other navigation commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41
+* **[NEW]** Find and other navigation commands leave certain scroll margin to preserve a customizable amount of lines (such as 33%) above and below the match. Setting: `ScrollYCaretPolicy`. #41 #279
 * **[NEW]** The Find icon on the toolbar changes to the Stop icon whenever the search (Find, Replace or Find Word) hits last result in that direction, regardless of the **Wrap around** flag.
 * Find respects the **Match case** flag even with Cyrillic characters in the search string. #9
-* Fixed *Notepad2* bug: **Shift+F3** called from within Find/Replace must not select text like **Shift+F2**.
+* Fixed *Notepad2* bug: **Shift+F3** called from within Find/Replace must not select text like **Shift+F2**. #275
 * Added hints with hotkeys to Find Next, Find Previous and Replace buttons. #274
 
 ![Grep](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/grep.gif)
@@ -232,9 +232,14 @@ Related settings:
 * `SaveOnLoseFocus`
 
 ### [NEW] Open Next/Previous
-File > Open Next/Previous commands allow opening files going before/after current in the currently opened file's directory (this is determined by regular name sorting, it doesn't depend on how Explorer or Open Dialog sorts files). #43
+File > Open Next/Previous commands allow opening files going before/after the currently opened file in its directory #43 based on last used Open/Save File Dialog filter (`Any, *.*` by default, see #258) #277.
 
 These commands have no hotkeys but they can be added as buttons to the toolbar.
+
+**Notes:**
+
+* File position is determined by sorting the file list by name. It doesn't depend on how Explorer or Open Dialog sort files.
+* `FindFirstFile()` doesn't support multiple `;`-separated filters like File Dialogs do. If such a filter was used, these buttons will not work.
 
 ### Default Save Extension
 When saving, new file's extension is determined first by `DefaultExtension` setting (as in *Notepad2*) but if current file was previously opened from or saved to disk then its old extension is used as the default (even if that extension is empty). #17
@@ -242,10 +247,10 @@ When saving, new file's extension is determined first by `DefaultExtension` sett
 When saving, if the given new file name ends on period then the file is saved without extension. Example: enter `Makefile.` to get `Makefile` on disk.
 
 ### File Dialogs
-* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File dialog limitation, it can't be used if new name only differs in character case (an error appears if this is detected). #140
-* Open/Save File dialogs now start with the path of last opened file. #22
-* File filter can be changed using [Notepad2's](http://www.flos-freeware.ch/development-releases/notepad2-FAQs.html#ini-file-settings2) `FileDlgFilters` under `[Settings2]`, e.g. `DOC Files (.doc)|.doc|RTF Files (.rtf)|.rtf`. **[NEW]** Last used filter is now saved for both Open/Save Dialogs. #258
-* Improved directory locking - in some cases a directory could not be removed even after opening a file in another directory due to Windows' Open Dialog operation. #100
+* **[NEW]** Rename To (**Alt+F6**) command acts as Save As but deletes original file on success. Due to Windows Save File Dialog limitation, it can't be used if new name only differs in character case (an error appears if this is detected). #140
+* Open/Save File Dialogs now start with the path of last opened file. #22
+* File filter can be changed using [Notepad2's](http://www.flos-freeware.ch/development-releases/notepad2-FAQs.html#ini-file-settings2) `FileDlgFilters` under `[Settings2]`, e.g. `DOC Files (.doc)|.doc|RTF Files (.rtf)|.rtf`. **[NEW]** Last used filter is now saved for Open/Save File Dialogs. #258
+* Improved directory locking - in some cases a directory could not be removed even after opening a file in another directory due to Windows' Open File Dialog operation. #100
 
 ### Insert Tag (Alt+X)
 * Skips leading/trailing whitespace within the selection. This way you don't care about selection precision and can, for example, click on line number to select a full line and wrap it in `<p>` without `</p>` appearing after the line break. #30
@@ -377,7 +382,7 @@ Related settings:
 * Open Favorites (**Alt+I**) now selects the first item so that **Enter** opens it immediately. #240
 * **[NEW]** `/gs start:end` switch sets initial selection by file offsets (see #233). `end` can be `-1` for EOF. #249
   * *Notepad2* has a similar `/g` switch to set initial line by its number.
-* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial line or selection. This affects newly created shortcut (all choices but First Line target *Notepad 2e*'s executable, not the document's file). #249
+* **[NEW]** Add To Favorites (**Alt+K**) allows choosing initial line or selection. This affects newly created shortcut (all choices but First Line target *Notepad 2e*'s executable, not the document's file). #249 #282
 * **Alt+K**'s initial file name is made unique by appending a counter (like File > Create Desktop Link). #290
 * **Alt+K**'s confirmation message is now of type Info on success (not always Warning as in *Notepad2*). #249
 
@@ -484,6 +489,7 @@ Long Line | 72 | 80
 **[NEW]** Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was enabled to allow defining new syntax schemes in Lua. #251
 
 **[NEW]** These syntax schemes were added:
+* AutoHotKey (AHK) #214
 * `awk` #216
 * ASN1
 * bash
@@ -606,6 +612,7 @@ Sets vertical margin for commands that can scroll the buffer, including:
 * **F3, F2, Ctrl+8** and their **Shift** versions
 * **Ctrl+], Ctrl+[** and their **Shift** versions
 * **Page Up, Page Down** and their **Shift**, **Alt+Shift** versions
+- **Ctrl+Alt+Shift+Z** #279
 
 Value | Meaning
 ------|--------
