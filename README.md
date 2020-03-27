@@ -442,7 +442,7 @@ Related settings:
 ![Menu clock](https://github.com/ProgerXP/Notepad2e/raw/master/doc/gif/menu-clock.png)
 
 ### Other Changes
-* File Change Notification is more responsive (suitable for watching log files, like `tail -f`) #129 and reliable (works over network shares; no longer relies on `FindFirstChangeNotification`, only on file time polling) #241.
+* **[NEW]** File Change Notification is more responsive (suitable for watching log files, like `tail -f`) #129 and reliable (works over network shares; no longer relies on `FindFirstChangeNotification`, only on file time polling) #241.
 * Sort Lines (**Alt+O**) and Modify Lines (**Alt+M**) operate on the entire document if selection is empty (*Notepad2* does nothing in this case). #133
 * Links of Modify Lines (**Alt+M**) dialog (`$(L)` and others) are inserted into a focused input instead of replacing its value. #119
 * All Modify Lines (**Alt+M**) substitutions are replaced, not just first. #271
