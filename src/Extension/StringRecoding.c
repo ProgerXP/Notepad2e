@@ -225,7 +225,7 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorithm* pRA, TextBuffer* pTB, l
     int cbDataWide = (pTB->m_iMaxPos + 1) * sizeof(WCHAR);
     LPWSTR lpDataWide = n2e_Alloc(cbDataWide);
     cbDataWide = MultiByteToWideChar(CP_UTF8, 0, pTB->m_ptr, pTB->m_iMaxPos, lpDataWide, cbDataWide / sizeof(WCHAR)) * sizeof(WCHAR);
-    lpDataWide[pTB->m_iMaxPos] = 0;
+    lpDataWide[cbDataWide / sizeof(WCHAR)] = 0;
 
 #define INVALID_UNICODE_CHAR    0xFFFD
     LPWSTR lpInvalidCharPos = wcschr(lpDataWide, INVALID_UNICODE_CHAR);
