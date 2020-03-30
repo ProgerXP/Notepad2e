@@ -5466,6 +5466,8 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
             }
           }
+          // [2e]: ScrollYCaretPolicy affecting some input commands but not others #294
+          EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
           break;
 
         case SCN_ZOOM:
@@ -5484,11 +5486,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         // [2e]: "Scroll margin"-feature
         case SCN_CARETMOVED:
-          {
-            const int iSelPos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-            const int iSelAnchor = SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
-            EditSelectEx(hwndEdit, iSelAnchor, iSelPos);
-          }
+          EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
           break;
         // [/2e]
 
