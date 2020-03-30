@@ -741,6 +741,11 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
           }
         }
       }
+      
+      if (scn->modificationType & SC_MOD_DELETETEXT)
+      {
+        EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+      }
       break;
     case SCN_SAVEPOINTREACHED:
     case SCEN_KILLFOCUS:
