@@ -730,7 +730,6 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
         DirList_Init(GetDlgItem(hwnd, IDC_FAVORITESDIR), NULL);
         DirList_Fill(GetDlgItem(hwnd, IDC_FAVORITESDIR), tchFavoritesDir, DL_ALLOBJECTS, L"", FALSE, flagNoFadeHidden, DS_NAME, FALSE);
         DirList_StartIconThread(GetDlgItem(hwnd, IDC_FAVORITESDIR));
-        ListView_SetItemState(GetDlgItem(hwnd, IDC_FAVORITESDIR), 0, LVIS_FOCUSED, LVIS_FOCUSED);
 
         MakeBitmapButton(hwnd, IDC_GETFAVORITESDIR, g_hInstance, IDB_OPEN);
         DPI_INIT();

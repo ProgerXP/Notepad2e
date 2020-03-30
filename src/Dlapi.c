@@ -366,9 +366,6 @@ int DirList_Fill(HWND hwnd, LPCWSTR lpszDir, DWORD grfFlags, LPCWSTR lpszFileSpe
   // Sort before display is updated
   DirList_Sort(hwnd, iSortFlags, fSortRev);
 
-  // [2e]: Favorites - focus first item #240:
-  ListView_SetItemState(hwnd, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
-
   // Redraw Listview
   SendMessage(hwnd, WM_SETREDRAW, 1, 0);
 
@@ -483,6 +480,9 @@ DWORD WINAPI DirList_IconThread(LPVOID lpParam)
     lpshi->lpVtbl->Release(lpshi);
 
   CoUninitialize();
+
+  // [2e]: Favorites - focus first item #240:
+  ListView_SetItemState(hwnd, 0, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED | LVIS_SELECTED);
 
   SetEvent(lpdl->hTerminatedThread);
   ExitThread(0);
