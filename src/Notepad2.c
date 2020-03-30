@@ -6938,14 +6938,19 @@ void UpdateStatusbar()
   FormatNumberStr(tchSelLines);
   lstrcpy(tchSel, tchSelLines);
 
-  if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0))
+  if (!n2e_IsRectangularSelection())
   {
-    iSel = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+    iSel = SciCall_GetSelEnd() - SciCall_GetSelStart();
     wsprintf(tchSelLines, L"%i", iSel);
     FormatNumberStr(tchSelLines);
     lstrcat(tchSel, L" L : ");
     lstrcat(tchSel, tchSelLines);
     lstrcat(tchSel, L" B");
+  }
+  else  
+  {
+    // [2e]: Update status bar selection texts #262
+    lstrcat(tchSel, L" L");
   }
   // [/2e]
 
