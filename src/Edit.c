@@ -4965,11 +4965,15 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDOK), L"Select match (F3, Enter), Select from start (Ctrl+Enter), Select until (F2)");
           n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_FINDPREV), L"Select match (Shift+F3), Select until (Shift+F2)");
           n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_FINDTRANSFORMBS), L"Replaces escape sequences: \\a \\b \\f \\n \\r \\t \\v \\xhh \\uhhhh");
+          bIsFindDlg = (GetDlgItem(hwnd, IDC_REPLACE) == NULL);
           if (bIsFindDlg)
           {
-            n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_REPLACE), L"Select match or replace and go to next (F4)");
             n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, ID_GREP), L"Keep only matching lines");
             n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, ID_UNGREP), L"Remove matching lines");
+          }
+          else
+          {
+            n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_REPLACE), L"Select match or replace and go to next (F4)");
           }
         }
         // [/2e]
