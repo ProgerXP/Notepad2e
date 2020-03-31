@@ -173,7 +173,7 @@ RECT      pagesetupMargin;
 BOOL      bSaveBeforeRunningTools;
 int       iFileWatchingMode;
 BOOL      bResetFileWatching;
-DWORD     dwFileCheckInverval;
+DWORD     dwFileCheckInterval;
 DWORD     dwAutoReloadTimeout;
 enum EEscFunction iEscFunction = EEF_IGNORE;
 BOOL      bAlwaysOnTop;
@@ -5868,8 +5868,8 @@ void LoadSettings()
   IniSectionGetString(pIniSection, L"FileDlgFilters", L"",
                       tchFileDlgFilters, COUNTOF(tchFileDlgFilters) - 2);
 
-  dwFileCheckInverval = IniSectionGetInt(pIniSection, L"FileCheckInverval", 2000);
-  dwAutoReloadTimeout = IniSectionGetInt(pIniSection, L"AutoReloadTimeout", 2000);
+  dwFileCheckInterval = IniSectionGetInt(pIniSection, L"FileCheckInterval", 500);
+  dwAutoReloadTimeout = IniSectionGetInt(pIniSection, L"AutoReloadTimeout", 100);
 
   LoadIniSection(L"Toolbar Images", pIniSection, cchIniSection);
   IniSectionGetString(pIniSection, L"BitmapDefault", L"",
@@ -8131,7 +8131,7 @@ void InstallFileWatching(LPCWSTR lpszFile)
     // No previous watching installed, so launch the timer first
     else
     {
-      SetTimer(hwndMain, ID_WATCHTIMER, dwFileCheckInverval, WatchTimerProc);
+      SetTimer(hwndMain, ID_WATCHTIMER, dwFileCheckInterval, WatchTimerProc);
     }
     lstrcpy(tchDirectory, lpszFile);
     PathRemoveFileSpec(tchDirectory);
