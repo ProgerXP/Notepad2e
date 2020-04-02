@@ -9,6 +9,7 @@
 #include "StrToQP.h"
 #include "StrToURL.h"
 
+#define MIN_RECODING_BUFFER_SIZE 8
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
 #define DEFAULT_RECODING_BUFFER_SIZE_MAX 5 * 1024 * 1024
 
@@ -546,7 +547,7 @@ void EncodingSettings_Free(EncodingData* pED)
 
 void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
 {
-  if (bufferSize > 0)
+  if (bufferSize > MIN_RECODING_BUFFER_SIZE)
   {
     iRecodingBufferSize = bufferSize;
     iRecodingBufferSizeMax = bufferSize;

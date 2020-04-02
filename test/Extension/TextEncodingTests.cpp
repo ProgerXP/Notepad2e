@@ -108,9 +108,9 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE.txt"),
         CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE_impure.txt", true, MIN_BUFFER_SIZE*30),
         CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UNICODE, "TestFile1_Hex_UnicodeLE_big.txt"),
-        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_1251.txt"),
-        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_SHIFT-JIS.txt"),
-        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT/*no need to recode file contents*/, "TestFile1_Hex_1250.txt"),
+        CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_Hex_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Hex_1251.txt"),
+        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Hex_1250.txt"),
       };
       DoRecodingTest(EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
       DoRecodingTest(DecodeHexToString, false, &data[0], _countof(data), true);
@@ -144,6 +144,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_Base64_UTF8.txt"),
         CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_Base64_UTF8_big.txt"),
         CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_Base64_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Base64_1251.txt"),
+        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Base64_1250.txt"),
       };
       DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);
@@ -172,6 +174,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_QP_UTF8.txt"),
         CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_QP_UTF8_big.txt"),
         CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_QP_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_QP_1251.txt"),
+        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_QP_1250.txt"),
       };
       DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
@@ -200,6 +204,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_UTF8.txt", CPI_UTF8, "TestFile1_URL_UTF8.txt"),
         CTestCaseData(true, "TestFile1__src_UTF8_big.txt", CPI_UTF8, "TestFile1_URL_UTF8_big.txt"),
         CTestCaseData(true, "TestFile1__src_SHIFT-JIS.txt", CPI_DEFAULT, "TestFile1_URL_SHIFT-JIS.txt"),
+        CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_URL_1251.txt"),
+        CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_URL_1250.txt"),
       };
       DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
