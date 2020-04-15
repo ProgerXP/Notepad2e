@@ -9,7 +9,7 @@
 #define FIND_INFO_INDEX 12
 
 extern BOOL bUsePrefixInOpenDialog;
-extern BOOL bHighlightSelection;
+extern EHighlightCurrentSelectionMode iHighlightSelection;
 extern ESaveOnLoseFocus iSaveOnLoseFocus;
 extern BOOL bCtrlWheelScroll;
 extern BOOL bMoveCaretOnRightClick;

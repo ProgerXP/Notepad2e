@@ -20,6 +20,7 @@
 #include "Shell32Helper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
+#define INI_SETTING_EDIT_SELECTION_UNBOUNDED L"EditSelectionUnbounded"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
 #define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
 #define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
@@ -84,7 +85,8 @@ extern int iEncoding;
 extern int iOriginalEncoding;
 extern BOOL bReadOnly;
 extern long iMaxSearchDistance;
-extern BOOL bHighlightSelection;
+extern enum EHighlightCurrentSelectionMode iHighlightSelection;
+extern BOOL bEditSelectionUnbounded;
 extern LPMRULIST pFileMRU;
 extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern enum ESaveSettingsMode nSaveSettingsMode;
@@ -237,7 +239,8 @@ void n2e_ResetSaveOnLoseFocus()
 
 void n2e_LoadINI()
 {
-  bHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  iHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
+  bEditSelectionUnbounded = IniGetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_UNBOUNDED, bEditSelectionUnbounded);
   iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
@@ -290,7 +293,8 @@ void n2e_LoadINI()
 
 void n2e_SaveINI()
 {
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, bHighlightSelection);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_UNBOUNDED, bEditSelectionUnbounded);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
@@ -1330,4 +1334,48 @@ BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPTST
   ti.lpszText = pszText;
 
   return SendMessage(hwndToolTip, TTM_ADDTOOL, 0, (LPARAM)&ti) == TRUE;
+}
+
+BOOL n2e_ToolTipAddToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo)
+{
+  const HWND hwndParent = GetParent(hwndToolTip);
+  if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
+  {
+    return FALSE;
+  }
+
+  return SendMessage(hwndToolTip, TTM_ADDTOOL, 0, (LPARAM)lpToolInfo) == TRUE;
+}
+
+BOOL n2e_ToolTipSetToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo)
+{
+  const HWND hwndParent = GetParent(hwndToolTip);
+  if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
+  {
+    return FALSE;
+  }
+
+  return SendMessage(hwndToolTip, TTM_SETTOOLINFO, 0, (LPARAM)lpToolInfo) == TRUE;
+}
+
+void n2e_ToolTipTrackPosition(const HWND hwndToolTip, const POINT pt)
+{
+  const HWND hwndParent = GetParent(hwndToolTip);
+  if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
+  {
+    return;
+  }
+
+  SendMessage(hwndToolTip, TTM_TRACKPOSITION, 0, MAKELPARAM(pt.x, pt.y));
+}
+
+void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVOID lpToolInfo)
+{
+  const HWND hwndParent = GetParent(hwndToolTip);
+  if (!hwndToolTip || !IsWindow(hwndToolTip) || !hwndParent)
+  {
+    return;
+  }
+
+  SendMessage(hwndToolTip, TTM_TRACKACTIVATE, bActivate, (LPARAM)lpToolInfo);
 }

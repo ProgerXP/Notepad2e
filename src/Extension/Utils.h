@@ -80,6 +80,15 @@ typedef enum
 
 typedef enum
 {
+  HCS_DISABLED = 0,
+  HCS_WORD = 1,
+  HCS_SELECTION = 2,
+  HCS_WORD_AND_SELECTION = 3,
+  HCS_WORD_IF_NO_SELECTION = 4
+} EHighlightCurrentSelectionMode;
+
+typedef enum
+{
   FCP_FIRST_LINE = 0,
   FCP_LAST_LINE = 1,
   FCP_CURRENT_LINE = 2,
@@ -166,3 +175,7 @@ void n2e_EditJumpTo(const HWND hwnd, const int iNewLine, const int iNewCol, cons
 
 HWND n2e_ToolTipCreate(const HWND hwndParent);
 BOOL n2e_ToolTipAddControl(const HWND hwndToolTip, const HWND hwndControl, LPTSTR pszText);
+BOOL n2e_ToolTipAddToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo);
+BOOL n2e_ToolTipSetToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo);
+void n2e_ToolTipTrackPosition(const HWND hwndToolTip, const POINT pt);
+void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVOID lpToolInfo);

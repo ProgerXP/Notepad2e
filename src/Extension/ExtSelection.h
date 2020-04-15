@@ -19,6 +19,7 @@ UINT n2e_SelectionGetSciEventMask(const BOOL range_not);
 int n2e_SelectionGetWraps(const int beg, const int end);
 void n2e_SelectionNotificationHandler(const int code, const struct SCNotification *scn);
 void n2e_SelectionUpdate(const ESelectionUpdateMode place);
+BOOL n2e_IsHighlightSelectionEnabled();
 BOOL n2e_IsSelectionEditModeOn();
 void n2e_SelectionEditStart(const BOOL highlightAll);
 BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode);

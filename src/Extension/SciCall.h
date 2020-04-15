@@ -100,6 +100,12 @@ DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, 
 DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
 DeclareSciCallR2(GetText, GETTEXT, int, int, length, char*, text);
 DeclareSciCallR2(GetTextRange, GETTEXTRANGE, int, int, unused, struct Sci_TextRange*, tr);
+DeclareSciCallR2(GetWordStartPos, WORDSTARTPOSITION, int, int, pos, BOOL, onlyWordCharacters);
+DeclareSciCallR2(GetWordEndPos, WORDENDPOSITION, int, int, pos, BOOL, onlyWordCharacters);
+DeclareSciCallR2(PointXFromPosition, POINTXFROMPOSITION, int, int, unused, int, position);
+DeclareSciCallR2(PointYFromPosition, POINTYFROMPOSITION, int, int, unused, int, position);
+DeclareSciCallR0(GetFirstVisibleLine, GETFIRSTVISIBLELINE, int);
+DeclareSciCallR1(DocLineFromVisible, DOCLINEFROMVISIBLE, int, int, displayLine);
 
 DeclareSciCallV0(ChooseCaretX, CHOOSECARETX);
 

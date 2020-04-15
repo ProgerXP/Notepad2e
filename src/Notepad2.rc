@@ -293,7 +293,14 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Visual &Brace Matching\tCtrl+Shift+V", IDM_VIEW_MATCHBRACES
         MENUITEM "Highlight C&urrent Line\tCtrl+Shift+I", IDM_VIEW_HIGHLIGHTCURRENTLINE
-        MENUITEM "Highlight Curren&t Word",     IDM_VIEW_HIGHLIGHTCURRENTWORD
+        POPUP "Highlight Curren&t Selection"
+        BEGIN
+            MENUITEM "&Disabled",                   IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED
+            MENUITEM "&Word",                       IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORD
+            MENUITEM "&Selection",                  IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION
+            MENUITEM "Word &and Selection",         IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION
+            MENUITEM "Word &If No Selection",       IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION
+        END
         MENUITEM SEPARATOR
         MENUITEM "Line &Numbers\tCtrl+Shift+N", IDM_VIEW_LINENUMBERS
         MENUITEM "Selection &Margin\tCtrl+Shift+M", IDM_VIEW_MARGIN

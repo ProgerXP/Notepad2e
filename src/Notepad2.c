@@ -2100,9 +2100,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_SELTOMATCHINGBRACE, i);
   // [2e]: Go To dialog - make similar to Find/Replace #260
   EnableCmd(hmenu, IDM_EDIT_GOTOLINE, i);
-  // [2e]: Minor: disable Edit Mode menu commands #151
-  EnableCmd(hmenu, ID_EDIT_EDITSELECTION, bHighlightSelection);
-  EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, bHighlightSelection);
   // [2e]: Disable more Edit commands on empty buffer #268
   EnableCmd(hmenu, IDM_EDIT_STRIP_HTML_TAGS, i);
   EnableCmd(hmenu, ID_SPECIAL_ESCAPEHTML, i);
@@ -2129,7 +2126,11 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHighlightCurrentLine);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTWORD, bHighlightSelection);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED, iHighlightSelection == HCS_DISABLED);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORD, iHighlightSelection == HCS_WORD);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION, iHighlightSelection == HCS_SELECTION);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION, iHighlightSelection == HCS_WORD_AND_SELECTION);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION, iHighlightSelection == HCS_WORD_IF_NO_SELECTION);
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
@@ -4115,14 +4116,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    // [2e]: Edit highlighted word #18
-    case IDM_VIEW_HIGHLIGHTCURRENTWORD:
-      bHighlightSelection = (bHighlightSelection) ? FALSE : TRUE;
-      n2e_SelectionUpdate(SUM_INIT);
-      break;
-    // [/2e]
-
-
     case IDM_VIEW_ZOOMIN:
       SendMessage(hwndEdit, SCI_ZOOMIN, 0, 0);
       break;
@@ -5270,6 +5263,33 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         bAutoStripBlanks = TRUE;
       }
       UpdateToolbar();
+      break;
+    // [/2e]
+
+    // [2e]: Improve selection/word highlighting #286
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED:
+      iHighlightSelection = HCS_DISABLED;
+      n2e_SelectionUpdate(SUM_INIT);
+      break;
+
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORD:
+      iHighlightSelection = HCS_WORD;
+      n2e_SelectionUpdate(SUM_INIT);
+      break;
+
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION:
+      iHighlightSelection = HCS_SELECTION;
+      n2e_SelectionUpdate(SUM_INIT);
+      break;
+
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION:
+      iHighlightSelection = HCS_WORD_AND_SELECTION;
+      n2e_SelectionUpdate(SUM_INIT);
+      break;
+
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION:
+      iHighlightSelection = HCS_WORD_IF_NO_SELECTION;
+      n2e_SelectionUpdate(SUM_INIT);
       break;
     // [/2e]
 

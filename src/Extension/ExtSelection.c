@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <cassert>
 #include "CommonUtils.h"
+#include "EditHelperEx.h"
 #include "ExtSelection.h"
 #include "Scintilla.h"
 #include "SciCall.h"
@@ -25,11 +26,10 @@
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_EDIT 12
 
-#define N2E_SELECT_MAX_SIZE 0xff
-#define N2E_SELECT_MAX_COUNT 0xff
-
-BOOL bHighlightSelection = TRUE;
+EHighlightCurrentSelectionMode iHighlightSelection = HCS_WORD_AND_SELECTION;
 BOOL bEditSelection = FALSE;
+BOOL bEditSelectionUnbounded = FALSE;
+int iEditSelectionFirstVisibleLine = 0;
 BOOL bHighlightAll = TRUE;
 BOOL bEditSelectionInit = FALSE;
 BOOL bEditSelectionExit = FALSE;
@@ -40,12 +40,8 @@ extern EWordNavigationMode iWordNavigationMode;
 extern HWND hwndMain;
 extern HWND hwndEdit;
 
-typedef struct tagHLSEdata
-{
-  long  pos;
-  long  len;
-  char* original;
-} SE_DATA, *LPSE_DATA;
+HWND hwndToolTipEdit = NULL;
+TOOLINFO tiEditSelection = { 0 };
 
 typedef enum
 {
@@ -54,8 +50,6 @@ typedef enum
   PCM_MODIFIED = 1 << 1
 } EProcessChangesMode;
 
-SE_DATA arrEditSelections[N2E_SELECT_MAX_COUNT];
-long iEditSelectionsCount = 0;
 struct Sci_TextRange trEditSelection;
 long iOriginalSelectionLength = 0;
 long iEditSelectionOffest = 0;
@@ -107,6 +101,13 @@ void n2e_EditSelectionInit(LPCWSTR lpSection, const int iDefaultSection, const i
 
 void n2e_EditInit()
 {
+  hwndToolTipEdit = n2e_ToolTipCreate(hwndEdit);
+
+  tiEditSelection.cbSize = sizeof(tiEditSelection);
+  tiEditSelection.hwnd = hwndEdit;
+  tiEditSelection.uFlags = TTF_TRACK;
+  n2e_ToolTipAddToolInfo(hwndToolTipEdit, &tiEditSelection);
+
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
 
@@ -154,15 +155,11 @@ void n2e_SelectionRelease()
     n2e_Free(pEditSelectionOriginalWord);
     pEditSelectionOriginalWord = 0;
   }
-  for (k = 0; k < COUNTOF(arrEditSelections); ++k)
-  {
-    SE_DATA* se = &arrEditSelections[k];
-    if (se->original)
-    {
-      n2e_Free(se->original);
-      se->original = NULL;
-    }
-  }
+
+  n2e_ClearEditSelections();
+  
+  DestroyWindow(hwndToolTipEdit);
+  hwndToolTipEdit = NULL;
 }
 
 int n2e_SelectionGetWraps(const int beg, const int end)
@@ -189,16 +186,27 @@ int n2e_HighlightWord(LPCSTR word)
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
   if (bHighlightAll)
   {
-    lstart = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-    lstart = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart, 0);
+    if (bEditSelectionInit && bEditSelectionUnbounded)
+    {
+      lstart = 0;
+    }
+    else
+    {
+      lstart = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
+      lstart = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart, 0);
+    }
   }
   else
   {
     lstart = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, curr, 0);
   }
+
   lrange = bHighlightAll
-    ? min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0))
+    ? (bEditSelectionInit && bEditSelectionUnbounded)
+      ? SciCall_GetLineCount()
+      : min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SciCall_GetLineCount())
     : 0;
+
   ttf.chrg.cpMin = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, lstart, 0);
   ttf.chrg.cpMax = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, lstart + lrange, 0) + 1;
   old = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
@@ -212,17 +220,13 @@ int n2e_HighlightWord(LPCSTR word)
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
   if (word)
   {
-    int search_opt = SCFIND_WHOLEWORD;
+    int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     int wlen = strlen(word);
     int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
     BOOL bPreviousMatchIsVisible = FALSE;
     if (bEditSelectionInit)
     {
-      iEditSelectionsCount = 0;
-      if (!bEditSelectionWholeWordMode)
-      {
-        search_opt = SCFIND_MATCHCASE;
-      }
+      n2e_ClearEditSelections();
       if (pEditSelectionOriginalWord)
       {
         if (strlen(pEditSelectionOriginalWord) != wlen + 1)
@@ -326,24 +330,17 @@ int n2e_HighlightWord(LPCSTR word)
             continue;
           }
           N2E_TRACE("[%d] line__ %d (%d , %d , %d) ", ttf.chrgText.cpMin, line, lwrap, lstart, lrange);
-          if ((line <= lrange + lstart)
-            && (iEditSelectionsCount < N2E_SELECT_MAX_COUNT - 1))
+          if (line <= lrange + lstart)
           {
-            LPSE_DATA dt = &arrEditSelections[iEditSelectionsCount++];
-            dt->pos = ttf.chrgText.cpMin;
-            dt->len = wlen;
-            if (dt->original)
-            {
-              n2e_Free(dt->original);
-            }
-            dt->original = n2e_Alloc(wlen + 1);
-            {
-              struct Sci_TextRange str;
-              str.chrg.cpMin = dt->pos;
-              str.chrg.cpMax = dt->pos + wlen;
-              str.lpstrText = dt->original;
-              SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&str);
-            }
+            SE_DATA dt = { ttf.chrgText.cpMin, wlen, n2e_Alloc(wlen + 1) };
+ 
+            struct Sci_TextRange str;
+            str.chrg.cpMin = dt.pos;
+            str.chrg.cpMax = dt.pos + wlen;
+            str.lpstrText = dt.original;
+            SciCall_GetTextRange(0, &str);
+
+            n2e_AddEditSelection(&dt);
           }
           else
           {
@@ -365,26 +362,18 @@ int n2e_HighlightWord(LPCSTR word)
   return cnt;
 }
 
-void n2e_SelectionGetWord()
+void n2e_SelectionEditInit()
 {
-  int sel_len = 0, cpos = 0;
-  if (trEditSelection.lpstrText)
+  int sel_len = 0;
+  int cpos = SciCall_GetCurrentPos();
+
+  trEditSelection.chrg.cpMin = SciCall_GetSelStart();
+  trEditSelection.chrg.cpMax = SciCall_GetSelEnd();
+  sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
+  bEditSelectionWholeWordMode = FALSE;
+  if (sel_len < 1)
   {
-    n2e_Free(trEditSelection.lpstrText);
-    trEditSelection.lpstrText = 0;
-  }
-  cpos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-  if (bEditSelectionInit)
-  {
-    trEditSelection.chrg.cpMin = SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-    trEditSelection.chrg.cpMax = SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0);
-    sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
-    iEditSelectionOffest = SciCall_GetCurrentPos();
-    bEditSelectionWholeWordMode = FALSE;
-    if (sel_len < 1)
-    {
-      sel_len = 0;
-    }
+    sel_len = 0;
   }
   if (0 == sel_len)
   {
@@ -393,7 +382,7 @@ void n2e_SelectionGetWord()
     sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
     bEditSelectionWholeWordMode = TRUE;
   }
-  if (sel_len > (!bEditSelectionInit || bEditSelectionWholeWordMode) ? 1 : 0)
+  if (sel_len > (bEditSelectionWholeWordMode ? 1 : 0))
   {
     trEditSelection.lpstrText = n2e_Alloc(sel_len + 1);
     SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&trEditSelection);
@@ -405,11 +394,84 @@ void n2e_SelectionGetWord()
   }
 }
 
-void n2e_SelectionHighlightTurn()
+void n2e_SelectionHighlightInit()
 {
-  if (bHighlightSelection)
+  const int cpos = SciCall_GetCurrentPos();
+  int sel_len = 0;
+  bEditSelectionWholeWordMode = FALSE;
+  switch (iHighlightSelection)
   {
-    n2e_SelectionGetWord();
+  case HCS_DISABLED:
+    trEditSelection.chrg.cpMin = 0;
+    trEditSelection.chrg.cpMax = 0;
+    break;
+  case HCS_WORD:
+    trEditSelection.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
+    trEditSelection.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
+    bEditSelectionWholeWordMode = TRUE;
+    break;
+  case HCS_SELECTION:
+    trEditSelection.chrg.cpMin = SciCall_GetSelStart();
+    trEditSelection.chrg.cpMax = SciCall_GetSelEnd();
+    break;
+  case HCS_WORD_AND_SELECTION:
+    trEditSelection.chrg.cpMin = SciCall_GetSelStart();
+    trEditSelection.chrg.cpMax = SciCall_GetSelEnd();
+    sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
+    if (sel_len == 0)
+    {
+      trEditSelection.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
+      trEditSelection.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
+      bEditSelectionWholeWordMode = TRUE;
+    }
+    break;
+  case HCS_WORD_IF_NO_SELECTION:
+    if (SciCall_GetSelEnd() - SciCall_GetSelStart() == 0)
+    {
+      trEditSelection.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
+      trEditSelection.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
+      bEditSelectionWholeWordMode = TRUE;
+    }
+    else
+    {
+      trEditSelection.chrg.cpMin = 0;
+      trEditSelection.chrg.cpMax = 0;
+    }
+    break;
+  default:
+    break;
+  }
+
+  sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
+  if (sel_len > 0)
+  {
+    trEditSelection.lpstrText = n2e_Alloc(sel_len + 1);
+    SciCall_GetTextRange(0, &trEditSelection);
+  }
+}
+
+void n2e_SelectionInit()
+{
+  if (trEditSelection.lpstrText)
+  {
+    n2e_Free(trEditSelection.lpstrText);
+    trEditSelection.lpstrText = 0;
+  }
+  if (bEditSelectionInit)
+  {
+    n2e_SelectionEditInit();
+  }
+  else
+  {
+    n2e_SelectionHighlightInit();
+  }
+}
+
+void n2e_SelectionHighlightTurn(const BOOL bOn)
+{
+  if (bOn)
+  {
+    n2e_SelectionInit();
     if ((n2e_HighlightWord(trEditSelection.lpstrText) < 2) && !bHighlightAll)
     {
       bHighlightAll = TRUE;
@@ -432,7 +494,7 @@ void n2e_SelectionHighlightTurn()
   }
 }
 
-BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
+BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt, BOOL* pbContentChanged)
 {
   int old_ind;
   int new_len = 0;
@@ -490,6 +552,10 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
     if (case_compare(old_word, trEditSelection.lpstrText, 0/*_hl_se_mode_whole_word*/))
     {
       N2E_TRACE("case (%d) compare exit!", bEditSelectionWholeWordMode);
+      if (pbContentChanged)
+      {
+        *pbContentChanged = FALSE;
+      }
       goto _EXIT;
     }
   }
@@ -498,10 +564,10 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
   */
   SendMessage(hwndEdit, SCI_SETMODEVENTMASK, n2e_SelectionGetSciEventMask(FALSE), 0);
   BOOL bCurSelectionProcessed = FALSE;
-  for (k = 0; k < iEditSelectionsCount; ++k)
+  for (k = 0; k < n2e_GetEditSelectionCount(); ++k)
   {
-    LPSE_DATA sePrev = (k > 0) ? &arrEditSelections[k - 1] : NULL;
-    LPSE_DATA se = &arrEditSelections[k];
+    LPSE_DATA sePrev = (k > 0) ? n2e_GetEditSelection(k - 1) : NULL;
+    LPSE_DATA se = n2e_GetEditSelection(k);
     // shifting
     N2E_TRACE("start shift: pos:%d cur:%d delta:%d", se->pos, trEditSelection.chrg.cpMin, delta_len);
     se->pos += delta_len;
@@ -600,6 +666,11 @@ _EXIT:
   return out;
 }
 
+BOOL n2e_IsHighlightSelectionEnabled()
+{
+  return iHighlightSelection != HCS_DISABLED;
+}
+
 BOOL n2e_IsSelectionEditModeOn()
 {
   return bEditSelection;
@@ -615,8 +686,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
     return;
   }
   bEditSelectionInit = TRUE;
-  iEditSelectionsCount = 0;
-  n2e_SelectionHighlightTurn();
+  n2e_SelectionHighlightTurn(TRUE);
   bEditSelectionInit = FALSE;
   if (n2e_IsSelectionEditModeOn())
   {
@@ -626,6 +696,19 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
     }
     SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
     bEditSelectionExit = FALSE;
+    iEditSelectionFirstVisibleLine = SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine());
+
+    WCHAR buf[MAX_PATH];
+    wsprintf(buf, L"Editing %d occurrences", n2e_GetEditSelectionCount());
+    tiEditSelection.lpszText = buf;
+    n2e_ToolTipSetToolInfo(hwndToolTipEdit, &tiEditSelection);
+
+    const auto caretPos = SciCall_GetCurrentPos();
+    POINT pt = { SciCall_PointXFromPosition(0, caretPos), SciCall_PointYFromPosition(0, caretPos) + 20 };
+    ClientToScreen(hwndEdit, &pt);
+
+    n2e_ToolTipTrackPosition(hwndToolTipEdit, pt);
+    n2e_ToolTipTrackActivate(hwndToolTipEdit, TRUE, &tiEditSelection);
   }
 }
 
@@ -634,9 +717,11 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
   bEditSelectionInit = FALSE;
   if (n2e_IsSelectionEditModeOn())
   {
+    n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+
     if (mode & SES_REJECT)
     {
-      n2e_SelectionProcessChanges(PCM_ROLLBACK);
+      n2e_SelectionProcessChanges(PCM_ROLLBACK, NULL);
       SciCall_SetSel(iEditSelectionOffest, iEditSelectionOffest);
     }
     else
@@ -647,7 +732,7 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
     bEditSelection = FALSE;
     bHighlightAll = TRUE;
 
-    n2e_SelectionHighlightTurn();
+    n2e_SelectionHighlightTurn(FALSE);
     SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;
   }
@@ -670,15 +755,21 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
     }
     else
     {
-      if (!n2e_SelectionProcessChanges(opt))
+      BOOL bContentChanged = TRUE;
+      if (!n2e_SelectionProcessChanges(opt, &bContentChanged))
       {
         n2e_SelectionEditStop(SES_APPLY);
+      }
+      if (bContentChanged
+        || (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
+      {
+        n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
       }
     }
   }
   else
   {
-    n2e_SelectionHighlightTurn();
+    n2e_SelectionHighlightTurn(n2e_IsHighlightSelectionEnabled());
   }
 }
 
@@ -687,7 +778,7 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
   switch (code)
   {
     case SCN_UPDATEUI:
-      if (bHighlightSelection)
+      if (n2e_IsHighlightSelectionEnabled() || n2e_IsSelectionEditModeOn())
       {
         n2e_SelectionUpdate(SUM_UPDATE);
       }
@@ -697,48 +788,45 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
       {
         PostMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)scn->token, 0);
       }
-      else if (bHighlightSelection)
+      else if (n2e_IsSelectionEditModeOn())
       {
-        if (n2e_IsSelectionEditModeOn())
+        if (scn->modificationType & SC_MOD_INSERTTEXT)
         {
-          if (scn->modificationType & SC_MOD_INSERTTEXT)
-          {
-            N2E_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-            trEditSelection.chrg.cpMax += scn->length;
-          }
-          else if (scn->modificationType & SC_MOD_DELETETEXT)
-          {
-            N2E_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-            trEditSelection.chrg.cpMax -= scn->length;
-          }
-          else if (scn->modificationType & SC_PERFORMED_USER)
-          {
-            N2E_TRACE("MODIF PERFORMED USER");
-          }
-          else if (scn->modificationType & SC_PERFORMED_UNDO)
-          {
-            N2E_TRACE("MODIF PERFORMED UNDO");
-          }
-          else if (scn->modificationType & SC_PERFORMED_REDO)
-          {
-            N2E_TRACE("MODIF PERFORMED REDO");
-          }
-          else if (scn->modificationType & SC_MOD_BEFOREINSERT)
-          {
-            N2E_TRACE("MODIF BEFORE INSERT pos:%d len%d ", scn->position, scn->length);
-          }
-          else if (scn->modificationType & SC_MOD_BEFOREDELETE)
-          {
-            N2E_TRACE("MODIF BEFORE DELETE pos:%d len%d ", scn->position, scn->length);
-          }
-          else if (scn->modificationType & SC_MULTILINEUNDOREDO)
-          {
-            N2E_TRACE("MODIF MULTILINE UNDO");
-          }
-          else if (scn->modificationType & SC_STARTACTION)
-          {
-            N2E_TRACE("MODIF START ACTION");
-          }
+          N2E_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
+          trEditSelection.chrg.cpMax += scn->length;
+        }
+        else if (scn->modificationType & SC_MOD_DELETETEXT)
+        {
+          N2E_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
+          trEditSelection.chrg.cpMax -= scn->length;
+        }
+        else if (scn->modificationType & SC_PERFORMED_USER)
+        {
+          N2E_TRACE("MODIF PERFORMED USER");
+        }
+        else if (scn->modificationType & SC_PERFORMED_UNDO)
+        {
+          N2E_TRACE("MODIF PERFORMED UNDO");
+        }
+        else if (scn->modificationType & SC_PERFORMED_REDO)
+        {
+          N2E_TRACE("MODIF PERFORMED REDO");
+        }
+        else if (scn->modificationType & SC_MOD_BEFOREINSERT)
+        {
+          N2E_TRACE("MODIF BEFORE INSERT pos:%d len%d ", scn->position, scn->length);
+        }
+        else if (scn->modificationType & SC_MOD_BEFOREDELETE)
+        {
+          N2E_TRACE("MODIF BEFORE DELETE pos:%d len%d ", scn->position, scn->length);
+        }
+        else if (scn->modificationType & SC_MULTILINEUNDOREDO)
+        {
+          N2E_TRACE("MODIF MULTILINE UNDO");
+        }
+        else if (scn->modificationType & SC_STARTACTION)
+        {
+          N2E_TRACE("MODIF START ACTION");
         }
       }
       
