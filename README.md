@@ -22,6 +22,8 @@ It's also part of [TortoiseGit](https://tortoisegit.org).
 
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
 
+**Thanks to** @muv1 (Steven Penny) for his generous donations! #286 <a name="thanks"></a>
+
 ## Downloads
 
 Stable versions are available via [GitHub releases](https://github.com/ProgerXP/Notepad2e/releases).
