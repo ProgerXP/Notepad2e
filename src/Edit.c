@@ -6048,7 +6048,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
                   iNewPos < iMaxPos)
               {
                 n2e_JumpToOffset(hwndEdit, iNewPos);
-                EndDialog(hwnd, IDOK);
+                DestroyWindow(hwnd);
+                hDlgGotoLine = NULL;
               }
               else
               {
