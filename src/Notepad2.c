@@ -2131,6 +2131,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION, iHighlightSelection == HCS_SELECTION);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION, iHighlightSelection == HCS_WORD_AND_SELECTION);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION, iHighlightSelection == HCS_WORD_IF_NO_SELECTION);
+  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_EDITWORD, bEditSelectionScope);
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
@@ -5290,6 +5291,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION:
       iHighlightSelection = HCS_WORD_IF_NO_SELECTION;
       n2e_SelectionUpdate(SUM_INIT);
+      break;
+
+    case IDM_VIEW_HIGHLIGHTCURRENTSELECTION_EDITWORD:
+      bEditSelectionScope = !bEditSelectionScope;
       break;
     // [/2e]
 

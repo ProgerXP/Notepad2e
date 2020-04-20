@@ -10,6 +10,7 @@
 
 extern BOOL bUsePrefixInOpenDialog;
 extern EHighlightCurrentSelectionMode iHighlightSelection;
+extern BOOL bEditSelectionScope;
 extern ESaveOnLoseFocus iSaveOnLoseFocus;
 extern BOOL bCtrlWheelScroll;
 extern BOOL bMoveCaretOnRightClick;

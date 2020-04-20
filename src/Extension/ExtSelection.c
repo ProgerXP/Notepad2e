@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <cassert>
 #include "CommonUtils.h"
+#include "Edit.h"
 #include "EditHelperEx.h"
 #include "ExtSelection.h"
 #include "Scintilla.h"
@@ -28,7 +29,7 @@
 
 EHighlightCurrentSelectionMode iHighlightSelection = HCS_WORD_AND_SELECTION;
 BOOL bEditSelection = FALSE;
-BOOL bEditSelectionUnbounded = FALSE;
+BOOL bEditSelectionScope = FALSE;
 int iEditSelectionFirstVisibleLine = 0;
 BOOL bHighlightAll = TRUE;
 BOOL bEditSelectionInit = FALSE;
@@ -186,7 +187,7 @@ int n2e_HighlightWord(LPCSTR word)
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
   if (bHighlightAll)
   {
-    if (bEditSelectionInit && bEditSelectionUnbounded)
+    if (bEditSelectionInit && bEditSelectionScope)
     {
       lstart = 0;
     }
@@ -202,7 +203,7 @@ int n2e_HighlightWord(LPCSTR word)
   }
 
   lrange = bHighlightAll
-    ? (bEditSelectionInit && bEditSelectionUnbounded)
+    ? (bEditSelectionInit && bEditSelectionScope)
       ? SciCall_GetLineCount()
       : min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SciCall_GetLineCount())
     : 0;
@@ -370,6 +371,7 @@ void n2e_SelectionEditInit()
   trEditSelection.chrg.cpMin = SciCall_GetSelStart();
   trEditSelection.chrg.cpMax = SciCall_GetSelEnd();
   sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
+  iEditSelectionOffest = SciCall_GetCurrentPos();
   bEditSelectionWholeWordMode = FALSE;
   if (sel_len < 1)
   {
@@ -472,11 +474,7 @@ void n2e_SelectionHighlightTurn(const BOOL bOn)
   if (bOn)
   {
     n2e_SelectionInit();
-    if ((n2e_HighlightWord(trEditSelection.lpstrText) < 2) && !bHighlightAll)
-    {
-      bHighlightAll = TRUE;
-      n2e_HighlightWord(trEditSelection.lpstrText);
-    }
+    n2e_HighlightWord(trEditSelection.lpstrText);
   }
   else
   {
@@ -698,8 +696,13 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
     bEditSelectionExit = FALSE;
     iEditSelectionFirstVisibleLine = SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine());
 
+    const int iEditSelectionCount = n2e_GetEditSelectionCount();
     WCHAR buf[MAX_PATH];
-    wsprintf(buf, L"Editing %d occurrences", n2e_GetEditSelectionCount());
+    wsprintf(buf, L"Editing %d occurrence%s (%s)", iEditSelectionCount,
+              iEditSelectionCount > 1 ? L"s" : L"",
+              highlightAll
+                    ? bEditSelectionScope ? L"document-wise" : L"visible only"
+                    : L"on line");
     tiEditSelection.lpszText = buf;
     n2e_ToolTipSetToolInfo(hwndToolTipEdit, &tiEditSelection);
 
