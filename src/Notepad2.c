@@ -2003,10 +2003,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_FILE_READONLY, bReadOnly);
 
   // [2e]: Save on deactivate #164
-  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_DISABLED, iSaveOnLoseFocus == SLF_DISABLED);
-  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_ENABLED, iSaveOnLoseFocus == SLF_ENABLED);
-  CheckCmd(hmenu, ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE, iSaveOnLoseFocus == SLF_ENABLED_UNTIL_NEW_FILE);
-  // [/2e]
+  CheckMenuRadioItem(hmenu, ID_SAVEONLOSEFOCUS_DISABLED, ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE, n2e_GetCurrentSaveOnLoseFocusMenuID(), MF_BYCOMMAND);
 
   EnableCmd(hmenu, IDM_ENCODING_RECODE, i);
   if (mEncoding[iEncoding].uFlags & NCP_UNICODE_REVERSE)
@@ -2126,12 +2123,14 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHighlightCurrentLine);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED, iHighlightSelection == HCS_DISABLED);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORD, iHighlightSelection == HCS_WORD);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION, iHighlightSelection == HCS_SELECTION);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION, iHighlightSelection == HCS_WORD_AND_SELECTION);
-  CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION, iHighlightSelection == HCS_WORD_IF_NO_SELECTION);
+
+  // [2e]: Improve selection/word highlighting #286
+  CheckMenuRadioItem(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED,
+                      IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION,
+                      n2e_GetCurrentHighlightCurrentSelectionMenuID(), MF_BYCOMMAND);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_EDITWORD, bEditSelectionScope);
+  // [/2e]
+
   i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
   CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
@@ -2159,10 +2158,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   i = lstrlen(szIniFile);
   // [2e]: Save on exit and History #101
-  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, (nSaveSettingsMode == SSM_ALL) && i);
-  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, (nSaveSettingsMode == SSM_RECENT) && i);
-  CheckCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, (nSaveSettingsMode == SSM_NO) && i);
-  // [/2e]
+  CheckMenuRadioItem(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, IDM_VIEW_SAVESETTINGS_MODE_NO, n2e_GetCurrentSaveSettingsMenuID(), MF_BYCOMMAND);
 
   EnableCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
   EnableCmd(hmenu, IDM_VIEW_STICKYWINPOS, i);
@@ -2182,9 +2178,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   // [2e]: Implement Notepad's right click behavior #54
   CheckCmd(hmenu, ID_SETTINGS_MOVE_CARET_ON_RCLICK, bMoveCaretOnRightClick);
   // [2e]: MathEval INI setting #88
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_DISABLED, iEvaluateMathExpression == EEM_DISABLED);
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_SELECTION, iEvaluateMathExpression == EEM_SELECTION);
-  CheckCmd(hmenu, ID_SETTINGS_EVAL_LINE, iEvaluateMathExpression == EEM_LINE);
+  CheckMenuRadioItem(hmenu, ID_SETTINGS_EVAL_DISABLED, ID_SETTINGS_EVAL_LINE, n2e_GetCurrentEvalMenuID(), MF_BYCOMMAND);
   // [2e]: ctrl + arrow behavior toggle #89
   CheckCmd(hmenu, ID_SETTINGS_WORD_NAVIGATION, iWordNavigationMode == WNM_ACCELERATED);
   // [/2e]

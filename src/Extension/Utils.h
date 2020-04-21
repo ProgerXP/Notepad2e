@@ -149,6 +149,10 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);
 void n2e_UpdateWindowTitle(const HWND hwnd);
 int n2e_GetCurrentShowTitleMenuID();
 int n2e_GetCurrentLanguageIndicatorMenuID();
+int n2e_GetCurrentSaveSettingsMenuID();
+int n2e_GetCurrentSaveOnLoseFocusMenuID();
+int n2e_GetCurrentHighlightCurrentSelectionMenuID();
+int n2e_GetCurrentEvalMenuID();
 
 extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;

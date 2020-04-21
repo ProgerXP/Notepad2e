@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#include <assert.h>
 #include <time.h>
 #include "Utils.h"
 #include "CommonUtils.h"
@@ -984,7 +985,77 @@ int n2e_GetCurrentLanguageIndicatorMenuID()
     case LIT_SHOW_NON_US:
       return IDM_VIEW_SHOWLANGUAGEINDICATORNONUS;
     default:
+      assert(FALSE);
       return 0;
+  }
+}
+
+int n2e_GetCurrentSaveSettingsMenuID()
+{
+  switch (nSaveSettingsMode)
+  {
+  case SSM_ALL:
+    return IDM_VIEW_SAVESETTINGS_MODE_ALL;
+  case SSM_RECENT:
+    return IDM_VIEW_SAVESETTINGS_MODE_RECENT;
+  case SSM_NO:
+    return IDM_VIEW_SAVESETTINGS_MODE_NO;
+  default:
+    assert(FALSE);
+    return 0;
+  }
+}
+
+
+int n2e_GetCurrentSaveOnLoseFocusMenuID()
+{
+  switch (iSaveOnLoseFocus)
+  {
+  case SLF_DISABLED:
+    return ID_SAVEONLOSEFOCUS_DISABLED;
+  case SLF_ENABLED:
+    return ID_SAVEONLOSEFOCUS_ENABLED;
+  case SLF_ENABLED_UNTIL_NEW_FILE:
+    return ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE;
+  default:
+    assert(FALSE);
+    return 0;
+  }
+}
+
+int n2e_GetCurrentHighlightCurrentSelectionMenuID()
+{
+  switch (iHighlightSelection)
+  {
+  case HCS_DISABLED:
+    return IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED;
+  case HCS_WORD:
+    return IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORD;
+  case HCS_SELECTION:
+    return IDM_VIEW_HIGHLIGHTCURRENTSELECTION_SELECTION;
+  case HCS_WORD_AND_SELECTION:
+    return IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDANDSELECTION;
+  case HCS_WORD_IF_NO_SELECTION:
+    return IDM_VIEW_HIGHLIGHTCURRENTSELECTION_WORDIFNOSELECTION;
+  default:
+    assert(FALSE);
+    return 0;
+  }
+}
+
+int n2e_GetCurrentEvalMenuID()
+{
+  switch (iEvaluateMathExpression)
+  {
+  case EEM_DISABLED:
+    return ID_SETTINGS_EVAL_DISABLED;
+  case EEM_SELECTION:
+    return ID_SETTINGS_EVAL_SELECTION;
+  case EEM_LINE:
+    return ID_SETTINGS_EVAL_LINE;
+  default:
+    assert(FALSE);
+    return 0;
   }
 }
 
