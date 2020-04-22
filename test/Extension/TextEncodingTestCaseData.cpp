@@ -48,9 +48,9 @@ std::wstring CPtoUCS2(const std::string &str, const UINT codePage)
 }
 
 std::map<int, std::wstring> mapEncodingNames = {
-  { CPI_DEFAULT, L"Default encoding" },
-  { CPI_UNICODE, L"Unicode encoding" },
-  { CPI_UTF8, L"UTF-8 encoding" },
+  { CPI_DEFAULT, L"Default" },
+  { CPI_UNICODE, L"Unicode" },
+  { CPI_UTF8, L"UTF-8" },
   { CPI_WINDOWS_1251, L"Windows-1251" },
   { CPI_WINDOWS_1250, L"Windows-1250" },
   { CPI_WINDOWS_KOI8_R, L"Windows-KOI8-R" }
@@ -136,6 +136,11 @@ int CTestCaseData::GetEncoding() const
   return iEncoding;
 }
 
+const std::vector<unsigned char>& CTestCaseData::GetPlainResult() const
+{
+  return vectorExpectedResult;
+}
+
 std::vector<unsigned char> CTestCaseData::GetExpectedResultText() const
 {
   if (isFile)
@@ -150,10 +155,10 @@ std::vector<unsigned char> CTestCaseData::GetExpectedResultText() const
   }
 }
 
-std::wstring CTestCaseData::GetErrorMessageText() const
+std::wstring CTestCaseData::GetEncodingName() const
 {
   static std::wstring res;
-  res = L"unknown message";
+  res = L"unknown";
   auto it = mapEncodingNames.find(iEncoding);
   assert(it != mapEncodingNames.cend());
   if (it != mapEncodingNames.cend())

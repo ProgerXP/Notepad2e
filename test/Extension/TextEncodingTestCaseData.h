@@ -71,6 +71,7 @@ public:
   const std::vector<unsigned char>& GetPlainSource() const;
   const std::vector<unsigned char>& GetSourceText() const;
   int GetEncoding() const;
+  const std::vector<unsigned char>& GetPlainResult() const;
   std::vector<unsigned char> GetExpectedResultText() const;
-  std::wstring GetErrorMessageText() const;
+  std::wstring GetEncodingName() const;
 };
