@@ -287,7 +287,14 @@ int n2e_HighlightWord(LPCSTR word)
         }
         else
         {
-          curr_indi = N2E_SELECT_INDICATOR;
+          if (bEditSelectionInit && !bHighlightAll)
+          {
+            break;
+          }
+          else
+          {
+            curr_indi = N2E_SELECT_INDICATOR;
+          }
         }
         if (ttf1.chrgText.cpMin >= ttf.chrg.cpMax && N2E_SELECT_INDICATOR == curr_indi)
         {
