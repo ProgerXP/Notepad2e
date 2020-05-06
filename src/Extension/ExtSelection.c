@@ -33,7 +33,7 @@ BOOL bEditSelectionScope = FALSE;
 int iEditSelectionFirstVisibleLine = 0;
 BOOL bHighlightAll = TRUE;
 BOOL bEditSelectionInit = FALSE;
-BOOL bEditSelectionExit = FALSE;
+BOOL bNeedUpdateInEditMode = FALSE;
 
 extern BOOL bHighlightLineIfWindowInactive;
 extern long iMaxSearchDistance;
@@ -268,33 +268,18 @@ int n2e_HighlightWord(LPCSTR word)
               curr_indi = N2E_SELECT_INDICATOR_EDIT;
               bEditSelection = TRUE;
               iOriginalSelectionLength = wlen;
-              break;
             }
             else
             {
               curr_indi = N2E_SELECT_INDICATOR_PAGE;
             }
-          }
-          else
-          {
-            curr_indi = N2E_SELECT_INDICATOR;
-            if (!bEditSelectionInit)
-            {
-              break;
-            }
-          }
-          bPreviousMatchIsVisible = TRUE;
-        }
-        else
-        {
-          if (bEditSelectionInit && !bHighlightAll)
-          {
             break;
           }
           else
           {
             curr_indi = N2E_SELECT_INDICATOR;
           }
+          bPreviousMatchIsVisible = TRUE;
         }
         if (ttf1.chrgText.cpMin >= ttf.chrg.cpMax && N2E_SELECT_INDICATOR == curr_indi)
         {
@@ -499,7 +484,7 @@ void n2e_SelectionHighlightTurn(const BOOL bOn)
   }
 }
 
-BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt, BOOL* pbContentChanged)
+BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
 {
   int old_ind;
   int new_len = 0;
@@ -554,15 +539,6 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt, BOOL* pbContentC
       trEditSelection.lpstrText = n2e_Realloc(trEditSelection.lpstrText, trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin + 1);
     }
     SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&trEditSelection);
-    if (case_compare(old_word, trEditSelection.lpstrText, 0/*_hl_se_mode_whole_word*/))
-    {
-      N2E_TRACE("case (%d) compare exit!", bEditSelectionWholeWordMode);
-      if (pbContentChanged)
-      {
-        *pbContentChanged = FALSE;
-      }
-      goto _EXIT;
-    }
   }
   /*
   clear cur edit
@@ -700,7 +676,6 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
       SendMessage(hwndEdit, SCI_SETSEL, trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
     }
     SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
-    bEditSelectionExit = FALSE;
     iEditSelectionFirstVisibleLine = SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine());
 
     const int iEditSelectionCount = n2e_GetEditSelectionCount();
@@ -731,7 +706,7 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
 
     if (mode & SES_REJECT)
     {
-      n2e_SelectionProcessChanges(PCM_ROLLBACK, NULL);
+      n2e_SelectionProcessChanges(PCM_ROLLBACK);
       SciCall_SetSel(iEditSelectionOffest, iEditSelectionOffest);
     }
     else
@@ -753,28 +728,10 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
 {
   if (n2e_IsSelectionEditModeOn())
   {
-    EProcessChangesMode opt = PCM_NONE;
-    if (bEditSelectionExit)
+    bNeedUpdateInEditMode = FALSE;
+    if (!n2e_SelectionProcessChanges(PCM_NONE))
     {
       n2e_SelectionEditStop(SES_APPLY);
-      return;
-    }
-    if (SUM_MODIF == place)
-    {
-      opt |= PCM_MODIFIED;
-    }
-    else
-    {
-      BOOL bContentChanged = TRUE;
-      if (!n2e_SelectionProcessChanges(opt, &bContentChanged))
-      {
-        n2e_SelectionEditStop(SES_APPLY);
-      }
-      if (bContentChanged
-        || (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
-      {
-        n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
-      }
     }
   }
   else
@@ -788,9 +745,20 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
   switch (code)
   {
     case SCN_UPDATEUI:
-      if (n2e_IsHighlightSelectionEnabled() || n2e_IsSelectionEditModeOn())
+      if ((n2e_IsHighlightSelectionEnabled() && !n2e_IsSelectionEditModeOn())
+        || bNeedUpdateInEditMode)
       {
+        if (bNeedUpdateInEditMode)
+        {
+          n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+        }
         n2e_SelectionUpdate(SUM_UPDATE);
+      }
+      else if ((scn->updated & (SC_UPDATE_V_SCROLL | SC_UPDATE_H_SCROLL))
+            && n2e_IsSelectionEditModeOn()
+            && (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
+      {
+        n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
       }
       break;
     case SCN_MODIFIED:
@@ -804,11 +772,13 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
         {
           N2E_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
           trEditSelection.chrg.cpMax += scn->length;
+          bNeedUpdateInEditMode = TRUE;
         }
         else if (scn->modificationType & SC_MOD_DELETETEXT)
         {
           N2E_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
           trEditSelection.chrg.cpMax -= scn->length;
+          bNeedUpdateInEditMode = TRUE;
         }
         else if (scn->modificationType & SC_PERFORMED_USER)
         {
