@@ -1699,6 +1699,7 @@ BEGIN
     63034                   "Markdown"
     63035                   "Awk Script"
     63036                   "AutoHotkey Script"
+    63037                   "LPEG Lexer"
 END
 
 STRINGTABLE

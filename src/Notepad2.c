@@ -358,6 +358,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   GetModuleFileName(NULL, wchWorkingDirectory, COUNTOF(wchWorkingDirectory));
   PathRemoveFileSpec(wchWorkingDirectory);
   SetCurrentDirectory(wchWorkingDirectory);
+  
+  // [2e]: Lua LPeg Lexers #251
+  n2e_InitLuaHomeDir();
 
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 

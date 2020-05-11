@@ -79,7 +79,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(ProjectDir)src;$(ProjectDir)src\Extension;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(ProjectDir)src;$(ProjectDir)src\Extension;$(ProjectDir)scintilla\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
@@ -106,7 +106,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LPEG_LEXER;INCLUDE_DEPRECATED_FEATURES;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -123,7 +123,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ICU_ROOT)\include;$(BOOST_ROOT_ICU);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LPEG_LEXER;INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
@@ -142,7 +142,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LPEG_LEXER;INCLUDE_DEPRECATED_FEATURES;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -166,7 +166,7 @@
     <ClCompile>
       <AdditionalIncludeDirectories>$(ICU_ROOT)\include;$(BOOST_ROOT_ICU);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>LPEG_LEXER;INCLUDE_DEPRECATED_FEATURES;ICU_BUILD;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -237,6 +237,7 @@
     <ClCompile Include="scintilla\lexers\LexLaTeX.cxx" />
     <ClCompile Include="scintilla\lexers\LexLisp.cxx" />
     <ClCompile Include="scintilla\lexers\LexLout.cxx" />
+    <ClCompile Include="scintilla\lexers\LexLPeg.cxx" />
     <ClCompile Include="scintilla\lexers\LexLua.cxx" />
     <ClCompile Include="scintilla\lexers\LexMagik.cxx" />
     <ClCompile Include="scintilla\lexers\LexMake.cxx" />
@@ -287,6 +288,44 @@
     <ClCompile Include="scintilla\lexlib\CharacterCategory.cxx" />
     <ClCompile Include="scintilla\lexlib\DefaultLexer.cxx" />
     <ClCompile Include="scintilla\lexlib\LexerNoExceptions.cxx" />
+    <ClCompile Include="scintilla\lua\src\lapi.c" />
+    <ClCompile Include="scintilla\lua\src\lauxlib.c" />
+    <ClCompile Include="scintilla\lua\src\lbaselib.c" />
+    <ClCompile Include="scintilla\lua\src\lbitlib.c" />
+    <ClCompile Include="scintilla\lua\src\lcode.c" />
+    <ClCompile Include="scintilla\lua\src\lcorolib.c" />
+    <ClCompile Include="scintilla\lua\src\lctype.c" />
+    <ClCompile Include="scintilla\lua\src\ldblib.c" />
+    <ClCompile Include="scintilla\lua\src\ldebug.c" />
+    <ClCompile Include="scintilla\lua\src\ldo.c" />
+    <ClCompile Include="scintilla\lua\src\ldump.c" />
+    <ClCompile Include="scintilla\lua\src\lfunc.c" />
+    <ClCompile Include="scintilla\lua\src\lgc.c" />
+    <ClCompile Include="scintilla\lua\src\linit.c" />
+    <ClCompile Include="scintilla\lua\src\liolib.c" />
+    <ClCompile Include="scintilla\lua\src\llex.c" />
+    <ClCompile Include="scintilla\lua\src\lmathlib.c" />
+    <ClCompile Include="scintilla\lua\src\lmem.c" />
+    <ClCompile Include="scintilla\lua\src\loadlib.c" />
+    <ClCompile Include="scintilla\lua\src\lobject.c" />
+    <ClCompile Include="scintilla\lua\src\lopcodes.c" />
+    <ClCompile Include="scintilla\lua\src\loslib.c" />
+    <ClCompile Include="scintilla\lua\src\lparser.c" />
+    <ClCompile Include="scintilla\lua\src\lpcap.c" />
+    <ClCompile Include="scintilla\lua\src\lpcode.c" />
+    <ClCompile Include="scintilla\lua\src\lpprint.c" />
+    <ClCompile Include="scintilla\lua\src\lptree.c" />
+    <ClCompile Include="scintilla\lua\src\lpvm.c" />
+    <ClCompile Include="scintilla\lua\src\lstate.c" />
+    <ClCompile Include="scintilla\lua\src\lstring.c" />
+    <ClCompile Include="scintilla\lua\src\lstrlib.c" />
+    <ClCompile Include="scintilla\lua\src\ltable.c" />
+    <ClCompile Include="scintilla\lua\src\ltablib.c" />
+    <ClCompile Include="scintilla\lua\src\ltm.c" />
+    <ClCompile Include="scintilla\lua\src\lundump.c" />
+    <ClCompile Include="scintilla\lua\src\lutf8lib.c" />
+    <ClCompile Include="scintilla\lua\src\lvm.c" />
+    <ClCompile Include="scintilla\lua\src\lzio.c" />
     <ClCompile Include="scintilla\src\CaseConvert.cxx" />
     <ClCompile Include="scintilla\src\CaseFolder.cxx" />
     <ClCompile Include="scintilla\src\DBCS.cxx" />
@@ -380,6 +419,38 @@
     <ClInclude Include="scintilla\lexlib\SparseState.h" />
     <ClInclude Include="scintilla\lexlib\StringCopy.h" />
     <ClInclude Include="scintilla\lexlib\SubStyles.h" />
+    <ClInclude Include="scintilla\lua\src\lapi.h" />
+    <ClInclude Include="scintilla\lua\src\lauxlib.h" />
+    <ClInclude Include="scintilla\lua\src\lcode.h" />
+    <ClInclude Include="scintilla\lua\src\lctype.h" />
+    <ClInclude Include="scintilla\lua\src\ldebug.h" />
+    <ClInclude Include="scintilla\lua\src\ldo.h" />
+    <ClInclude Include="scintilla\lua\src\lfunc.h" />
+    <ClInclude Include="scintilla\lua\src\lgc.h" />
+    <ClInclude Include="scintilla\lua\src\llex.h" />
+    <ClInclude Include="scintilla\lua\src\llimits.h" />
+    <ClInclude Include="scintilla\lua\src\lmem.h" />
+    <ClInclude Include="scintilla\lua\src\lobject.h" />
+    <ClInclude Include="scintilla\lua\src\lopcodes.h" />
+    <ClInclude Include="scintilla\lua\src\lparser.h" />
+    <ClInclude Include="scintilla\lua\src\lpcap.h" />
+    <ClInclude Include="scintilla\lua\src\lpcode.h" />
+    <ClInclude Include="scintilla\lua\src\lpprint.h" />
+    <ClInclude Include="scintilla\lua\src\lprefix.h" />
+    <ClInclude Include="scintilla\lua\src\lptree.h" />
+    <ClInclude Include="scintilla\lua\src\lptypes.h" />
+    <ClInclude Include="scintilla\lua\src\lpvm.h" />
+    <ClInclude Include="scintilla\lua\src\lstate.h" />
+    <ClInclude Include="scintilla\lua\src\lstring.h" />
+    <ClInclude Include="scintilla\lua\src\ltable.h" />
+    <ClInclude Include="scintilla\lua\src\ltm.h" />
+    <ClInclude Include="scintilla\lua\src\lua.h" />
+    <ClInclude Include="scintilla\lua\src\lua.hpp" />
+    <ClInclude Include="scintilla\lua\src\luaconf.h" />
+    <ClInclude Include="scintilla\lua\src\lualib.h" />
+    <ClInclude Include="scintilla\lua\src\lundump.h" />
+    <ClInclude Include="scintilla\lua\src\lvm.h" />
+    <ClInclude Include="scintilla\lua\src\lzio.h" />
     <ClInclude Include="scintilla\src\CaseConvert.h" />
     <ClInclude Include="scintilla\src\CaseFolder.h" />
     <ClInclude Include="scintilla\src\DBCS.h" />

@@ -173,3 +173,7 @@ DeclareSciCallV1(EnsureVisible, ENSUREVISIBLE, int, line);
 //
 DeclareSciCallV2(SetProperty, SETPROPERTY, const char *, key, const char *, value);
 DeclareSciCallV1(SetDPI, SETDPI, DWORD, dpi);
+DeclareSciCallV2(SetLexerLanguage, SETLEXERLANGUAGE, int, unused, const char *, language);
+DeclareSciCallV2(PrivateLexerCall, PRIVATELEXERCALL, int, operation, void *, pointer);
+DeclareSciCallR0(GetDirectFunction, GETDIRECTFUNCTION, void*);
+DeclareSciCallR0(GetDirectPointer, GETDIRECTPOINTER, void*);

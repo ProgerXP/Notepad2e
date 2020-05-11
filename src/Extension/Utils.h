@@ -117,6 +117,7 @@ extern ELanguageIndicatorMode iShowLanguageInTitle;
 void n2e_InitInstance();
 void n2e_ExitInstance();
 
+void n2e_InitLuaHomeDir();
 void n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 void n2e_SetLastRun(LPCWSTR arg);
@@ -158,6 +159,8 @@ extern int iScrollYCaretPolicy;
 extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
+extern WCHAR g_wchWorkingDirectory[MAX_PATH];
+extern char g_chLuaHome[MAX_PATH];
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

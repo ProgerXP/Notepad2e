@@ -73,6 +73,8 @@ BOOL bFindWordWrapAround = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
 
+char g_chLuaHome[MAX_PATH];
+
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
 extern WCHAR szTitleExcerpt[128];
@@ -89,7 +91,6 @@ extern long iMaxSearchDistance;
 extern enum EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
 extern LPMRULIST pFileMRU;
-extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern enum ESaveSettingsMode nSaveSettingsMode;
 
 void n2e_InitInstance()
@@ -190,6 +191,13 @@ void n2e_ReleaseClock()
     DeleteMenu(hmenu, GetMenuItemCount(hmenu) - 1, MF_BYPOSITION);
     DrawMenuBar(hwndMain);
   }
+}
+
+void n2e_InitLuaHomeDir()
+{
+  WideCharToMultiByte(CP_UTF8, 0, g_wchWorkingDirectory, COUNTOF(g_wchWorkingDirectory), g_chLuaHome, COUNTOF(g_chLuaHome), NULL, NULL);
+  PathAddBackslashA(g_chLuaHome);
+  strcat(g_chLuaHome, "lexlua");
 }
 
 void n2e_Init(const HWND hwndEdit)
