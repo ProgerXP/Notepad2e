@@ -79,6 +79,7 @@
 #define IDC_ASCIIASUTF8                 102
 #define IDC_WEBPAGE                     102
 #define IDC_POSNUM                      102
+#define IDR_DATA_LUA_LEXER              103
 #define IDD_DEFENCODING                 103
 #define IDC_FINDWORD                    103
 #define IDC_RESIZEGRIP3                 103
@@ -86,6 +87,7 @@
 #define IDC_STYLEFORE                   103
 #define IDC_AUTOSTRIPBLANKS             103
 #define IDC_ENCODINGFROMFILEVARS        103
+#define IDR_DATA_LUA_THEME              104
 #define IDD_ENCODING                    104
 #define IDC_FINDSTART                   104
 #define IDB_PICK                        104
@@ -476,6 +478,7 @@
 #define IDS_WARN_ICU_REGEX              50043
 #define IDS_ERR_ELEVATE                 50044
 #define IDS_ERR_MEMORY_ALLOCATION       50045
+#define IDS_ERR_FAILED_CREATE           50046
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects

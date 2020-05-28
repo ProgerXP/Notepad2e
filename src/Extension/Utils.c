@@ -12,6 +12,8 @@
 #include "Scintilla.h"
 #include "Helpers.h"
 #include "SciCall.h"
+#include "SciLexer.h"
+#include "Styles.h"
 #include "Notepad2.h"
 #include "Trace.h"
 #include "Subclassing.h"
@@ -39,6 +41,8 @@
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
 #define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
+#define INI_SETTING_LUA_PATH L"LuaPath"
+#define INI_SETTING_LUA_LEXERS L"LuaLexers"
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
@@ -72,8 +76,8 @@ BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
-
-char g_chLuaHome[MAX_PATH];
+WCHAR g_wchLuaHome[MAX_PATH];
+WCHAR g_wchLuaLexers[MAX_PATH];
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -92,6 +96,8 @@ extern enum EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
 extern LPMRULIST pFileMRU;
 extern enum ESaveSettingsMode nSaveSettingsMode;
+
+LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
 
 void n2e_InitInstance()
 {
@@ -193,11 +199,95 @@ void n2e_ReleaseClock()
   }
 }
 
+BOOL n2e_SaveResourceFile(const UINT nResourceID, LPCWSTR wchTargetPath)
+{
+  BOOL res = FALSE;
+  const HANDLE hFile = CreateFile(wchTargetPath, GENERIC_WRITE, 0, NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+  if (hFile == INVALID_HANDLE_VALUE)
+  {
+    return res;
+  }
+  int iDataLength = 0;
+  LPVOID lpData = LoadDataFile(nResourceID, &iDataLength);
+  if (lpData && (iDataLength > 0))
+  {
+    DWORD dwBytesWritten = 0;
+    res = WriteFile(hFile, lpData, iDataLength, &dwBytesWritten, NULL) && (dwBytesWritten == iDataLength);
+    free(lpData);
+  }
+  CloseHandle(hFile);
+  if (!res)
+  {
+    DeleteFile(wchTargetPath);
+  }
+  return res;
+}
+
 void n2e_InitLuaHomeDir()
 {
-  WideCharToMultiByte(CP_UTF8, 0, g_wchWorkingDirectory, COUNTOF(g_wchWorkingDirectory), g_chLuaHome, COUNTOF(g_chLuaHome), NULL, NULL);
-  PathAddBackslashA(g_chLuaHome);
-  strcat(g_chLuaHome, "lexlua");
+  if (!PathFileExists(g_wchLuaHome) && (SHCreateDirectoryEx(NULL, g_wchLuaHome, NULL) != ERROR_SUCCESS))
+  {
+    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"folder", g_wchLuaHome);
+    return;
+  }
+
+  WCHAR wchThemesFolder[MAX_PATH] = { 0 };
+  lstrcpy(wchThemesFolder, g_wchLuaHome);
+  lstrcat(wchThemesFolder, L"themes");
+  if (!PathFileExists(wchThemesFolder) && (SHCreateDirectoryEx(NULL, wchThemesFolder, NULL) != ERROR_SUCCESS))
+  {
+    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"folder", wchThemesFolder);
+    return;
+  }
+
+  WCHAR wchLexerFile[MAX_PATH] = { 0 };
+  lstrcpy(wchLexerFile, g_wchLuaHome);
+  lstrcat(wchLexerFile, L"lexer.lua");
+  if (!PathFileExists(wchLexerFile) && !n2e_SaveResourceFile(IDR_DATA_LUA_LEXER, wchLexerFile))
+  {
+    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"LUA file", wchLexerFile);
+    return;
+  }
+
+  WCHAR wchThemeFile[MAX_PATH] = { 0 };
+  lstrcpy(wchThemeFile, g_wchLuaHome);
+  lstrcat(wchThemeFile, L"themes\\theme.lua");
+  if (!PathFileExists(wchThemeFile) && !n2e_SaveResourceFile(IDR_DATA_LUA_THEME, wchThemeFile))
+  {
+    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"LUA file", wchThemeFile);
+    return;
+  }
+}
+
+BOOL n2e_UseLuaLexer(LPCWSTR lpszExt)
+{
+  LPCWSTR lpszExtension = lpszExt + 1; // skip leading dot char
+
+  WCHAR wchLexerFile[MAX_PATH] = { 0 };
+  lstrcpy(wchLexerFile, g_wchLuaHome);
+  lstrcat(wchLexerFile, lpszExtension);
+  lstrcat(wchLexerFile, L".lua");
+
+  return (StrStr(g_wchLuaLexers, lpszExtension) != 0) && PathFileExists(wchLexerFile);
+}
+
+char chLexerName[MAX_PATH] = { 0 };
+
+extern PEDITLEXER pLexCurrent;
+
+LPCSTR n2e_GetLuaLexerName()
+{
+  LPCWSTR lpszExt = PathFindExtension(szCurFile);
+  if (n2e_UseLuaLexer(lpszExt))
+  {
+    WideCharToMultiByte(CP_UTF8, 0, lpszExt + 1, -1, chLexerName, COUNTOF(chLexerName), NULL, NULL);
+    return chLexerName;
+  }
+  if (pLexCurrent->iLexer == SCLEX_LPEG)
+  {
+    return chLexerName;
+  }
+  return NULL;
 }
 
 void n2e_Init(const HWND hwndEdit)
@@ -210,6 +300,7 @@ void n2e_Init(const HWND hwndEdit)
   n2e_EditInit();
   n2e_Shell32Initialize();
   n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
+  n2e_InitLuaHomeDir();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
@@ -267,6 +358,24 @@ void n2e_LoadINI()
   iShowLanguageInTitle = IniGetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
+
+  WCHAR wchLuaPath[MAX_PATH] = { 0 };
+  IniGetString(N2E_INI_SECTION, INI_SETTING_LUA_PATH, L"lexlua", wchLuaPath, COUNTOF(wchLuaPath));
+  if (PathIsRelative(wchLuaPath))
+  {
+    lstrcpy(g_wchLuaHome, g_wchWorkingDirectory);
+    PathAddBackslash(g_wchLuaHome);
+    lstrcat(g_wchLuaHome, wchLuaPath);
+  }
+  else
+  {
+    lstrcpy(g_wchLuaHome, wchLuaPath);
+  }
+  PathAddBackslash(g_wchLuaHome);
+  lstrcpy(wchLuaPath, g_wchLuaHome);
+  PathCanonicalize(g_wchLuaHome, wchLuaPath);
+
+  IniGetString(N2E_INI_SECTION, INI_SETTING_LUA_LEXERS, L"", g_wchLuaLexers, COUNTOF(g_wchLuaLexers));
 
   if (iUsePrefixInOpenDialog != UPO_AUTO)
   {
@@ -1209,6 +1318,40 @@ LRESULT CALLBACK n2e_About3rdPartyRicheditWndProc(HWND hwnd, UINT uMsg, WPARAM w
     return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam) & ~DLGC_HASSETSEL;
   }
   return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
+LPVOID LoadDataFile(const UINT nResourceID, int* pLength)
+{
+  HGLOBAL hGlob = NULL;
+  LPCVOID lpData = NULL;
+  LPVOID lpResult = NULL;
+  HRSRC hRes = FindResource(g_hInstance, MAKEINTRESOURCE(nResourceID), L"DATA");
+  if (hRes)
+  {
+    hGlob = LoadResource(g_hInstance, hRes);
+  }
+  if (hGlob)
+  {
+    lpData = LockResource(hGlob);
+  }
+  if (lpData)
+  {
+    const int size = hRes ? SizeofResource(g_hInstance, hRes) : 0;
+    if (pLength)
+    {
+      *pLength = size;
+    }
+    lpResult = (size > 0) ? malloc(*pLength) : NULL;
+    if (lpResult)
+    {
+      memcpy(lpResult, lpData, size);
+    }
+  }
+  if (hGlob)
+  {
+    FreeLibrary(g_hInstance);
+  }
+  return lpResult;
 }
 
 LPCWSTR LoadAbout3rdPartyText(int* pLength)

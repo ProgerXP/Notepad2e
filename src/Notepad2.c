@@ -359,9 +359,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   PathRemoveFileSpec(wchWorkingDirectory);
   SetCurrentDirectory(wchWorkingDirectory);
   
-  // [2e]: Lua LPeg Lexers #251
-  n2e_InitLuaHomeDir();
-
   SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
 
   // check if running at least on Windows 2000

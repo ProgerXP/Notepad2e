@@ -2130,6 +2130,18 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   if (!pLexNew)
     pLexNew = pLexArray[iDefaultLexer];
 
+  // [2e]: Lua LPeg Lexers #251
+  LPSTR pszLuaLexer = NULL;
+  if (pLexNew->iLexer == SCLEX_LPEG)
+  {
+    pszLuaLexer = n2e_GetLuaLexerName();
+    if (!pszLuaLexer)
+    {
+      pLexNew = &lexDefault;
+    }
+  }
+  // [/2e]
+
   // Lexer
   SendMessage(hwnd, SCI_SETLEXER, pLexNew->iLexer, 0);
 
@@ -2139,9 +2151,12 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   // [2e]: Lua LPeg Lexers #251
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
+    char chLuaHome[MAX_PATH] = { 0 };
+    WideCharToMultiByte(CP_UTF8, 0, g_wchLuaHome, COUNTOF(g_wchLuaHome), chLuaHome, COUNTOF(chLuaHome), NULL, NULL);
+
     SciCall_SetLexerLanguage(0, "lpeg");
-    SciCall_SetProperty("lexer.lpeg.home", g_chLuaHome);
-    SciCall_SetProperty("lexer.lpeg.color.theme", "default");
+    SciCall_SetProperty("lexer.lpeg.home", chLuaHome);
+    SciCall_SetProperty("lexer.lpeg.color.theme", "theme");
     SciCall_PrivateLexerCall(SCI_GETDIRECTFUNCTION, SciCall_GetDirectFunction());
     SciCall_PrivateLexerCall(SCI_SETDOCPOINTER, SciCall_GetDirectPointer());
   }
@@ -2222,7 +2237,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   // [2e]: Lua LPeg Lexers #251
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
-    SciCall_PrivateLexerCall(SCI_SETLEXERLANGUAGE, "custom");
+    SciCall_PrivateLexerCall(SCI_SETLEXERLANGUAGE, pszLuaLexer);
   }
   // [/2e]
 
@@ -2740,6 +2755,15 @@ void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile)
   }
 
   lpszExt = PathFindExtension(lpszFile);
+
+  // [2e]: Lua LPeg Lexers #251
+  if (n2e_UseLuaLexer(lpszExt))
+  {
+    pLexNew = &lexLPEG;
+    bFound = TRUE;
+  }
+  // [/2e]
+
   if (!bFound && bAutoSelect &&
     (lpszFile && lstrlen(lpszFile) > 0 && *lpszExt))
   {
