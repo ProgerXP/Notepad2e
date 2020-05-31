@@ -117,9 +117,9 @@ extern ELanguageIndicatorMode iShowLanguageInTitle;
 void n2e_InitInstance();
 void n2e_ExitInstance();
 
-void n2e_InitLuaHomeDir();
-BOOL n2e_UseLuaLexer(LPCWSTR lpszExt);
-LPCSTR n2e_GetLuaLexerName();
+BOOL n2e_InitLPegHomeDir();
+BOOL n2e_UseLuaLexer(LPCWSTR lpszExt, LPBOOL pbLexerFileExists);
+LPSTR n2e_GetLuaLexerName();
 void n2e_Init();
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 void n2e_SetLastRun(LPCWSTR arg);
@@ -162,8 +162,7 @@ extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
 extern WCHAR g_wchWorkingDirectory[MAX_PATH];
-extern WCHAR g_wchLuaHome[MAX_PATH];
-extern WCHAR g_wchLuaLexers[MAX_PATH];
+extern WCHAR g_wchLPegHome[MAX_PATH];
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

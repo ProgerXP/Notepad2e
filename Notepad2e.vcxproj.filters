@@ -1141,10 +1141,10 @@
       <Filter>Source Files</Filter>
     </None>
     <None Include="res\About3rdParty.rtf" />
-    <None Include="res\theme.lua">
+    <None Include="res\lexer.lua">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\lexer.lua">
+    <None Include="res\default.lua">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

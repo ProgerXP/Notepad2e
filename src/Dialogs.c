@@ -68,7 +68,7 @@ int MsgBox(int iType, UINT uIdMsg, ...)
 
   if (uIdMsg == IDS_ERR_LOADFILE || uIdMsg == IDS_ERR_SAVEFILE ||
       uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL ||
-      uIdMsg == IDS_EXPORT_FAIL)
+      uIdMsg == IDS_EXPORT_FAIL || uIdMsg == IDS_ERR_FAILED_CREATE)
   {
     LPVOID lpMsgBuf;
     WCHAR wcht;

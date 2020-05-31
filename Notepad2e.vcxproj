@@ -551,7 +551,7 @@
     <None Include="res\Next.bmp" />
     <None Include="res\Notepad2.ico" />
     <None Include="res\lexer.lua" />
-    <None Include="res\theme.lua" />
+    <None Include="res\default.lua" />
     <None Include="src\Notepad2.ver" />
     <None Include="res\Open.bmp" />
     <None Include="res\Pick.bmp" />

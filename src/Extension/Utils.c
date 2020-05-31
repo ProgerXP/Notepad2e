@@ -41,8 +41,7 @@
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
 #define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
-#define INI_SETTING_LUA_PATH L"LuaPath"
-#define INI_SETTING_LUA_LEXERS L"LuaLexers"
+#define INI_SETTING_LPEG_PATH L"LPegPath"
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
@@ -76,8 +75,8 @@ BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
-WCHAR g_wchLuaHome[MAX_PATH];
-WCHAR g_wchLuaLexers[MAX_PATH];
+BOOL bLPegEnabled = FALSE;
+WCHAR g_wchLPegHome[MAX_PATH];
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -223,67 +222,114 @@ BOOL n2e_SaveResourceFile(const UINT nResourceID, LPCWSTR wchTargetPath)
   return res;
 }
 
-void n2e_InitLuaHomeDir()
+BOOL n2e_InitLPegHomeDir()
 {
-  if (!PathFileExists(g_wchLuaHome) && (SHCreateDirectoryEx(NULL, g_wchLuaHome, NULL) != ERROR_SUCCESS))
+  if (lstrlen(g_wchLPegHome) == 0)
   {
-    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"folder", g_wchLuaHome);
-    return;
+    return FALSE;
+  }
+
+  if (!PathFileExists(g_wchLPegHome) && (SHCreateDirectoryEx(NULL, g_wchLPegHome, NULL) != ERROR_SUCCESS))
+  {
+    dwLastIOError = GetLastError();
+    MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"folder", g_wchLPegHome);
+    return FALSE;
   }
 
   WCHAR wchThemesFolder[MAX_PATH] = { 0 };
-  lstrcpy(wchThemesFolder, g_wchLuaHome);
+  lstrcpy(wchThemesFolder, g_wchLPegHome);
   lstrcat(wchThemesFolder, L"themes");
   if (!PathFileExists(wchThemesFolder) && (SHCreateDirectoryEx(NULL, wchThemesFolder, NULL) != ERROR_SUCCESS))
   {
+    dwLastIOError = GetLastError();
     MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"folder", wchThemesFolder);
-    return;
+    return FALSE;
   }
 
   WCHAR wchLexerFile[MAX_PATH] = { 0 };
-  lstrcpy(wchLexerFile, g_wchLuaHome);
+  lstrcpy(wchLexerFile, g_wchLPegHome);
   lstrcat(wchLexerFile, L"lexer.lua");
   if (!PathFileExists(wchLexerFile) && !n2e_SaveResourceFile(IDR_DATA_LUA_LEXER, wchLexerFile))
   {
+    dwLastIOError = GetLastError();
     MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"LUA file", wchLexerFile);
-    return;
+    return FALSE;
   }
 
   WCHAR wchThemeFile[MAX_PATH] = { 0 };
-  lstrcpy(wchThemeFile, g_wchLuaHome);
-  lstrcat(wchThemeFile, L"themes\\theme.lua");
+  lstrcpy(wchThemeFile, g_wchLPegHome);
+  lstrcat(wchThemeFile, L"themes\\default.lua");
   if (!PathFileExists(wchThemeFile) && !n2e_SaveResourceFile(IDR_DATA_LUA_THEME, wchThemeFile))
   {
+    dwLastIOError = GetLastError();
     MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"LUA file", wchThemeFile);
-    return;
+    return FALSE;
   }
+
+  return TRUE;
 }
 
-BOOL n2e_UseLuaLexer(LPCWSTR lpszExt)
+BOOL n2e_MatchLPEGLexer(LPCWSTR lpszExtension)
+{
+  extern EDITLEXER lexLPEG;
+
+  WCHAR  tch[256 + 16];
+  WCHAR  *p1, *p2;
+  lstrcpy(tch, lexLPEG.szExtensions);
+  p1 = tch;
+  while (*p1)
+  {
+    if (p2 = StrChr(p1, L';'))
+      *p2 = L'\0';
+    else
+      p2 = StrEnd(p1);
+    StrTrim(p1, L" .");
+    if (lstrcmpi(p1, lpszExtension) == 0)
+      return TRUE;
+    p1 = p2 + 1;
+  }
+  return FALSE;
+}
+
+WCHAR wchLuaLexerFile[MAX_PATH] = { 0 };
+
+BOOL n2e_UseLuaLexer(LPCWSTR lpszExt, LPBOOL pbLexerFileExists)
 {
   LPCWSTR lpszExtension = lpszExt + 1; // skip leading dot char
+  lstrcpy(wchLuaLexerFile, g_wchLPegHome);
+  lstrcat(wchLuaLexerFile, lpszExtension);
+  lstrcat(wchLuaLexerFile, L".lua");
 
-  WCHAR wchLexerFile[MAX_PATH] = { 0 };
-  lstrcpy(wchLexerFile, g_wchLuaHome);
-  lstrcat(wchLexerFile, lpszExtension);
-  lstrcat(wchLexerFile, L".lua");
+  *pbLexerFileExists = PathFileExists(wchLuaLexerFile);
 
-  return (StrStr(g_wchLuaLexers, lpszExtension) != 0) && PathFileExists(wchLexerFile);
+  return bLPegEnabled
+    && n2e_MatchLPEGLexer(lpszExtension)
+    && *pbLexerFileExists;
 }
 
 char chLexerName[MAX_PATH] = { 0 };
 
 extern PEDITLEXER pLexCurrent;
 
-LPCSTR n2e_GetLuaLexerName()
+LPSTR n2e_GetLuaLexerName()
 {
+  if (lstrlen(szCurFile) == 0)
+  {
+    return NULL;
+  }
   LPCWSTR lpszExt = PathFindExtension(szCurFile);
-  if (n2e_UseLuaLexer(lpszExt))
+  BOOL bLexerFileExists = FALSE;
+  if (n2e_UseLuaLexer(lpszExt, &bLexerFileExists))
   {
     WideCharToMultiByte(CP_UTF8, 0, lpszExt + 1, -1, chLexerName, COUNTOF(chLexerName), NULL, NULL);
     return chLexerName;
   }
-  if (pLexCurrent->iLexer == SCLEX_LPEG)
+  if ((strlen(wchLuaLexerFile) > 0) && !bLexerFileExists)
+  {
+    MsgBox(MBWARN, IDS_ERR_LEXER_FILE_NOT_FOUND, wchLuaLexerFile);
+    return NULL;
+  }
+  if ((pLexCurrent->iLexer == SCLEX_LPEG) && (strlen(chLexerName) > 0) && bLexerFileExists)
   {
     return chLexerName;
   }
@@ -300,7 +346,7 @@ void n2e_Init(const HWND hwndEdit)
   n2e_EditInit();
   n2e_Shell32Initialize();
   n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
-  n2e_InitLuaHomeDir();
+  bLPegEnabled = n2e_InitLPegHomeDir();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
@@ -359,23 +405,34 @@ void n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 
-  WCHAR wchLuaPath[MAX_PATH] = { 0 };
-  IniGetString(N2E_INI_SECTION, INI_SETTING_LUA_PATH, L"lexlua", wchLuaPath, COUNTOF(wchLuaPath));
-  if (PathIsRelative(wchLuaPath))
+  WCHAR wchLPegPath[MAX_PATH] = { 0 };
+  IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegPath, COUNTOF(wchLPegPath));
+  if (lstrlen(wchLPegPath) > 0)
   {
-    lstrcpy(g_wchLuaHome, g_wchWorkingDirectory);
-    PathAddBackslash(g_wchLuaHome);
-    lstrcat(g_wchLuaHome, wchLuaPath);
+    WCHAR szBuf[MAX_PATH] = { 0 };
+    if (ExpandEnvironmentStrings(wchLPegPath, szBuf, COUNTOF(szBuf)))
+    {
+      lstrcpyn(wchLPegPath, szBuf, COUNTOF(wchLPegPath));
+    }
+
+    if (PathIsRelative(wchLPegPath))
+    {
+      lstrcpy(g_wchLPegHome, g_wchWorkingDirectory);
+      PathAddBackslash(g_wchLPegHome);
+      lstrcat(g_wchLPegHome, wchLPegPath);
+    }
+    else
+    {
+      lstrcpy(g_wchLPegHome, wchLPegPath);
+    }
+    PathAddBackslash(g_wchLPegHome);
+    lstrcpy(wchLPegPath, g_wchLPegHome);
+    PathCanonicalize(g_wchLPegHome, wchLPegPath);
   }
   else
   {
-    lstrcpy(g_wchLuaHome, wchLuaPath);
+    lstrcpy(wchLPegPath, g_wchLPegHome);
   }
-  PathAddBackslash(g_wchLuaHome);
-  lstrcpy(wchLuaPath, g_wchLuaHome);
-  PathCanonicalize(g_wchLuaHome, wchLuaPath);
-
-  IniGetString(N2E_INI_SECTION, INI_SETTING_LUA_LEXERS, L"", g_wchLuaLexers, COUNTOF(g_wchLuaLexers));
 
   if (iUsePrefixInOpenDialog != UPO_AUTO)
   {

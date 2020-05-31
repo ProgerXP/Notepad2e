@@ -1412,7 +1412,7 @@ IDR_ABOUT_3RD_PARTY     RTF                     "..\\res\\About3rdParty.rtf"
 // DATA
 //
 
-IDR_DATA_LUA_THEME      DATA                    "..\\res\\theme.lua"
+IDR_DATA_LUA_THEME      DATA                    "..\\res\\default.lua"
 IDR_DATA_LUA_LEXER      DATA                    "..\\res\\lexer.lua"
 
 
@@ -1554,6 +1554,7 @@ BEGIN
     IDS_ERR_ELEVATE         "Failed to run elevated instance."
     IDS_ERR_MEMORY_ALLOCATION "Failed to allocate memory buffer (%d bytes)."
     IDS_ERR_FAILED_CREATE   "Failed to create %s: %s"
+    IDS_ERR_LEXER_FILE_NOT_FOUND  "Lexer file not found: %s"
 END
 
 STRINGTABLE

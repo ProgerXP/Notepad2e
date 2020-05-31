@@ -1792,7 +1792,7 @@ EDITLEXER lexAHK = { SCLEX_AHK, 63036, L"AutoHotkey Script", L"ahk; ia; scriptle
 };
 
 // [2e]: Lua LPeg Lexers #251
-EDITLEXER lexLPEG = { SCLEX_LPEG, 63037, L"LPEG Lexer", L"", L"", &KeyWords_NULL, {
+EDITLEXER lexLPEG = { SCLEX_LPEG, 63037, L"LPEG", L"", L"", &KeyWords_NULL, {
         { 0, 63126, L"Default", L"", L"" },
         { -1, 00000, L"", L"", L"" }
       }
@@ -2151,12 +2151,12 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   // [2e]: Lua LPeg Lexers #251
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
-    char chLuaHome[MAX_PATH] = { 0 };
-    WideCharToMultiByte(CP_UTF8, 0, g_wchLuaHome, COUNTOF(g_wchLuaHome), chLuaHome, COUNTOF(chLuaHome), NULL, NULL);
+    char chLPegHome[MAX_PATH] = { 0 };
+    WideCharToMultiByte(CP_UTF8, 0, g_wchLPegHome, COUNTOF(g_wchLPegHome), chLPegHome, COUNTOF(chLPegHome), NULL, NULL);
 
     SciCall_SetLexerLanguage(0, "lpeg");
-    SciCall_SetProperty("lexer.lpeg.home", chLuaHome);
-    SciCall_SetProperty("lexer.lpeg.color.theme", "theme");
+    SciCall_SetProperty("lexer.lpeg.home", chLPegHome);
+    SciCall_SetProperty("lexer.lpeg.color.theme", "default");
     SciCall_PrivateLexerCall(SCI_GETDIRECTFUNCTION, SciCall_GetDirectFunction());
     SciCall_PrivateLexerCall(SCI_SETDOCPOINTER, SciCall_GetDirectPointer());
   }
@@ -2755,14 +2755,6 @@ void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile)
   }
 
   lpszExt = PathFindExtension(lpszFile);
-
-  // [2e]: Lua LPeg Lexers #251
-  if (n2e_UseLuaLexer(lpszExt))
-  {
-    pLexNew = &lexLPEG;
-    bFound = TRUE;
-  }
-  // [/2e]
 
   if (!bFound && bAutoSelect &&
     (lpszFile && lstrlen(lpszFile) > 0 && *lpszExt))
