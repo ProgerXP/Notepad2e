@@ -7,6 +7,10 @@
 #define lauxlib_c
 #define LUA_LIB
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 #include "lprefix.h"
 
 
@@ -712,13 +716,25 @@ LUALIB_API int luaL_loadfilex (lua_State *L, const char *filename,
   }
   else {
     lua_pushfstring(L, "@%s", filename);
+#ifdef _WIN32
+    wchar_t wfilename[MAX_PATH] = { 0 };
+    MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename) / sizeof(wchar_t));
+    lf.f = _wfopen(wfilename, L"r");
+#else
     lf.f = fopen(filename, "r");
+#endif
     if (lf.f == NULL) return errfile(L, "open", fnameindex);
   }
   if (skipcomment(&lf, &c))  /* read initial portion */
     lf.buff[lf.n++] = '\n';  /* add line to correct line numbers */
   if (c == LUA_SIGNATURE[0] && filename) {  /* binary file? */
+#ifdef _WIN32
+    wchar_t wfilename[MAX_PATH] = { 0 };
+    MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename) / sizeof(wchar_t));
+    lf.f = _wfreopen(wfilename, L"rb", lf.f);  /* reopen in binary mode */
+#else
     lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
+#endif
     if (lf.f == NULL) return errfile(L, "reopen", fnameindex);
     skipcomment(&lf, &c);  /* re-read initial portion */
   }

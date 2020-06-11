@@ -414,7 +414,13 @@ static int ll_loadlib (lua_State *L) {
 
 
 static int readable (const char *filename) {
+#ifdef _WIN32
+  wchar_t wfilename[MAX_PATH] = { 0 };
+  MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename)/sizeof(wchar_t));
+  FILE *f = _wfopen(wfilename, L"r");  /* try to open file */
+#else
   FILE *f = fopen(filename, "r");  /* try to open file */
+#endif
   if (f == NULL) return 0;  /* open failed */
   fclose(f);
   return 1;
