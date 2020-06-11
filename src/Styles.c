@@ -1792,11 +1792,13 @@ EDITLEXER lexAHK = { SCLEX_AHK, 63036, L"AutoHotkey Script", L"ahk; ia; scriptle
 };
 
 // [2e]: Lua LPeg Lexers #251
+#ifdef LPEG_LEXER
 EDITLEXER lexLPEG = { SCLEX_LPEG, 63037, L"LPEG", L"", L"", &KeyWords_NULL, {
         { 0, 63126, L"Default", L"", L"" },
         { -1, 00000, L"", L"", L"" }
       }
 };
+#endif
 // [/2e]
 
 
@@ -1837,8 +1839,10 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
     &lexVB,
     &lexHTML,
     &lexXML,
-    &lexYaml,
-    &lexLPEG
+    &lexYaml
+#ifdef LPEG_LEXER
+    , &lexLPEG
+#endif
 };
 
 
@@ -2131,6 +2135,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     pLexNew = pLexArray[iDefaultLexer];
 
   // [2e]: Lua LPeg Lexers #251
+#ifdef LPEG_LEXER
   LPSTR pszLuaLexer = NULL;
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
@@ -2140,6 +2145,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
       pLexNew = &lexDefault;
     }
   }
+#endif
   // [/2e]
 
   // Lexer
@@ -2149,6 +2155,7 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SendMessage(hwnd, SCI_SETSTYLEBITS, (WPARAM)iStyleBits, 0);
 
   // [2e]: Lua LPeg Lexers #251
+#ifdef LPEG_LEXER
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
     char chLPegHome[MAX_PATH] = { 0 };
@@ -2160,8 +2167,9 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SciCall_PrivateLexerCall(SCI_GETDIRECTFUNCTION, SciCall_GetDirectFunction());
     SciCall_PrivateLexerCall(SCI_SETDOCPOINTER, SciCall_GetDirectPointer());
   }
-  // [/2e]
   else
+#endif
+  // [/2e]
   {
     if (pLexNew->iLexer == SCLEX_XML)
       SendMessage(hwnd, SCI_SETPROPERTY, (WPARAM) "lexer.xml.allow.scripts", (LPARAM) "1");
@@ -2235,10 +2243,12 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SendMessage(hwnd, SCI_STYLECLEARALL, 0, 0);
 
   // [2e]: Lua LPeg Lexers #251
+#ifdef LPEG_LEXER
   if (pLexNew->iLexer == SCLEX_LPEG)
   {
     SciCall_PrivateLexerCall(SCI_SETLEXERLANGUAGE, pszLuaLexer);
   }
+#endif
   // [/2e]
 
   Style_SetStyles(hwnd, lexDefault.Styles[1 + iIdx].iStyle, lexDefault.Styles[1 + iIdx].szValue); // linenumber

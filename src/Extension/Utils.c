@@ -41,7 +41,9 @@
 #define INI_SETTING_LANGUAGE_INDICATOR L"TitleLanguage"
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
 #define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
+#ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
+#endif
 
 #define N2E_WHEEL_TIMER_ID  0xFF
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
@@ -224,6 +226,7 @@ BOOL n2e_SaveResourceFile(const UINT nResourceID, LPCWSTR wchTargetPath)
 
 BOOL n2e_InitLPegHomeDir()
 {
+#ifdef LPEG_LEXER
   if (lstrlen(g_wchLPegHome) == 0)
   {
     return FALSE;
@@ -265,10 +268,12 @@ BOOL n2e_InitLPegHomeDir()
     MsgBox(MBWARN, IDS_ERR_FAILED_CREATE, L"LUA file", wchThemeFile);
     return FALSE;
   }
+#endif LPEG_LEXER
 
   return TRUE;
 }
 
+#ifdef LPEG_LEXER
 BOOL n2e_MatchLPEGLexer(LPCWSTR lpszExtension)
 {
   extern EDITLEXER lexLPEG;
@@ -335,6 +340,7 @@ LPSTR n2e_GetLuaLexerName()
   }
   return NULL;
 }
+#endif
 
 void n2e_Init(const HWND hwndEdit)
 {
@@ -405,6 +411,7 @@ void n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 
+#ifdef LPEG_LEXER
   WCHAR wchLPegPath[MAX_PATH] = { 0 };
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegPath, COUNTOF(wchLPegPath));
   if (lstrlen(wchLPegPath) > 0)
@@ -433,6 +440,7 @@ void n2e_LoadINI()
   {
     lstrcpy(wchLPegPath, g_wchLPegHome);
   }
+#endif
 
   if (iUsePrefixInOpenDialog != UPO_AUTO)
   {
