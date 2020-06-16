@@ -721,3 +721,46 @@ int SurfaceD2D::DeviceHeightFont(int points) {
 [/scintilla/win32/PlatWin.cxx]
 
 [/**DPI awareness #154**]
+
+[**Lua LPeg Lexers #251**]
+
+Add ifdef-code:
+[scintilla/lua/src/lauxlib.c]
+#define LUA_LIB
+
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
+...
+
+#ifdef _WIN32
+    wchar_t wfilename[MAX_PATH] = { 0 };
+    MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename) / sizeof(wchar_t));
+    lf.f = _wfopen(wfilename, L"r");
+#else
+    lf.f = fopen(filename, "r");
+#endif
+
+...
+
+#ifdef _WIN32
+    wchar_t wfilename[MAX_PATH] = { 0 };
+    MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename) / sizeof(wchar_t));
+    lf.f = _wfreopen(wfilename, L"rb", lf.f);  /* reopen in binary mode */
+#else
+    lf.f = freopen(filename, "rb", lf.f);  /* reopen in binary mode */
+#endif
+[/scintilla/lua/src/lauxlib.c]
+
+[scintilla/lua/src/loadlib.c]
+#ifdef _WIN32
+  wchar_t wfilename[MAX_PATH] = { 0 };
+  MultiByteToWideChar(CP_UTF8, 0, filename, strlen(filename), wfilename, sizeof(wfilename)/sizeof(wchar_t));
+  FILE *f = _wfopen(wfilename, L"r");  /* try to open file */
+#else
+  FILE *f = fopen(filename, "r");  /* try to open file */
+#endif
+[/scintilla/lua/src/loadlib.c]
+
+[/**Lua LPeg Lexers #251**]
