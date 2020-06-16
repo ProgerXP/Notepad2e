@@ -480,6 +480,7 @@
 #define IDS_ERR_MEMORY_ALLOCATION       50045
 #define IDS_ERR_FAILED_CREATE           50046
 #define IDS_ERR_LEXER_FILE_NOT_FOUND    50047
+#define IDS_ERR_LPEG_NOT_CONFIGURED     50048
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects
