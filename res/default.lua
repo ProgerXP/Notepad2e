@@ -1,5 +1,5 @@
--- Copyright 2006-2019 Mitchell mitchell.att.foicica.com. See License.txt.
--- Light theme for Lua lexers.
+-- Copyright 2006-2020 Mitchell mitchell.att.foicica.com. See License.txt.
+-- Notepad2e theme (based on original light theme) for Lua lexers.
 -- Contributions by Ana Balan.
 
 local property = require('lexer').property
