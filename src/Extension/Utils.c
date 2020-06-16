@@ -329,7 +329,7 @@ LPSTR n2e_GetLuaLexerName()
     WideCharToMultiByte(CP_UTF8, 0, lpszExt + 1, -1, chLexerName, COUNTOF(chLexerName), NULL, NULL);
     return chLexerName;
   }
-  if ((strlen(wchLuaLexerFile) > 0) && !bLexerFileExists)
+  if ((wcslen(wchLuaLexerFile) > 0) && !bLexerFileExists)
   {
     MsgBox(MBWARN, IDS_ERR_LEXER_FILE_NOT_FOUND, wchLuaLexerFile);
     return NULL;
@@ -495,6 +495,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
+  IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, g_wchLPegHome);
 }
 
 void n2e_Release()
