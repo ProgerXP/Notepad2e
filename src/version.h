@@ -28,7 +28,9 @@
 #define VERSION_FILEVERSION_SHORT    L"1." VERSION_FILEVERSION_BUILD_STRING
 #define VERSION_LEGALCOPYRIGHT_SHORT L"Copyright © 2004-2011"
 #define VERSION_LEGALCOPYRIGHT_LONG  L"© Florian Balmer and contributors"
-#ifdef ICU_BUILD
+#if defined(ICU_BUILD) && defined(LPEG_LEXER)
+#define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e-ICU-LPeg"
+#elif ICU_BUILD
 #define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e-ICU"
 #elif LPEG_LEXER
 #define VERSION_FILEDESCRIPTION_BASE L"Notepad 2e-LPeg"
@@ -40,7 +42,10 @@
 #else
 #define VERSION_FILEDESCRIPTION      VERSION_FILEDESCRIPTION_BASE
 #endif
-#ifdef ICU_BUILD
+#if defined(ICU_BUILD) && defined(LPEG_LEXER)
+#define VERSION_INTERNALNAME         L"Notepad2e-ICU-LPeg"
+#define VERSION_ORIGINALFILENAME     L"Notepad2eil.exe"
+#elif ICU_BUILD
 #define VERSION_INTERNALNAME         L"Notepad2e-ICU"
 #define VERSION_ORIGINALFILENAME     L"Notepad2ei.exe"
 #elif LPEG_LEXER
