@@ -1556,7 +1556,7 @@ END
 STRINGTABLE
 BEGIN
     IDS_ERR_LPEG_NOT_CONFIGURED 
-                            "Warning: LPEG not set. See below for example:\r\nhttps://github.com/ProgerXP/Notepad2e/blob/master/bin/Notepad2e.ini"
+                            "lexlua has been disabled because no LPegPath was configured. See the project's homepage for how to set it up:\r\nhttps://github.com/ProgerXP/Notepad2e/#lpeg"
 END
 
 STRINGTABLE
@@ -1712,7 +1712,7 @@ BEGIN
     63034                   "Markdown"
     63035                   "Awk Script"
     63036                   "AutoHotkey Script"
-    63037                   "LPEG Lexer"
+    63037                   "LPeg Lexer"
 END
 
 STRINGTABLE
