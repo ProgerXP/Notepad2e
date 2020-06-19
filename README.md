@@ -525,18 +525,19 @@ Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was ena
 
 **Warning:** Lua is a fully functional language so allowing untrusted files inside `LPegPath` **IS A VERY BAD IDEA** as it allows execution of arbitrary code via Notepad 2e.
 
-* LPeg is not available in default Notepad 2e versions - download the one with LPeg support (or with LPeg + ICU if you want both).
+* LPeg is not available in default Notepad 2e versions - download the one with LPeg support (or with LPeg + ICU if you want both although ICU doesn't affect LPeg).
 * LPeg support adds ~400 KiB to the EXE file size.
 * With LPeg, Notepad 2e is no longer single-file distribution and requires certain Lua files to exist in the location configured by the `LPegPath` INI setting (that is empty by default, disabling support for LPeg).
 
 Configuration guide:
 
 * Define `LPegPath` under `[Notepad2e]` in your `Notepad2e.ini` file. Its value is relative to the EXE location and can contain `%variables%`.
-* Once done, open a new Notepad 2e window. It should have created files and folders under `LPegPath`. If you see an error message about disabled LPeg support on start-up then you failed to configure `LPegPath`.
+* Once done, open a new Notepad 2e window. It should have created files and folders under `LPegPath` (so it needs write access unless they already exist).
+  * If you see an error message about disabled LPeg support on start-up then you failed to configure `LPegPath`.
 * For every new syntax scheme you want to support, copy the lexer file to `LPegPath` under the name *file_extension + `.lua`*. For example: `pas.lua` for `*.pas` files. Then, open View > Customize Schemes (Ctrl+F12) and select `LPeg Lexer` in the end of the list and enter all extensions you want to be handled by LPeg (e.g. `pas;dpr`).
   * If you don't see `LPeg Lexer` in the list then your Notepad 2e version wasn't built with LPeg support.
 * If you want LPeg to be picked automatically when you open a file then check *Auto-select* for `LPeg Lexer` under View > Syntax Scheme (F12; it's checked by default) and make sure other schemes don't have extensions listed for `LPeg Lexer`. Else you can uncheck it and be picking LPeg manually (but you still need extensions configured - LPeg will render others as Default Text).
-* If you try to format a file and there's no lexer then you'll see an error saying which file you need to supply.
+* If Notepad 2e tries to highlight a file and there's no lexer then you'll see an error saying which file you need to supply.
 
 In the end, your `LPegPath` should contain these files:
 
@@ -544,6 +545,7 @@ In the end, your `LPegPath` should contain these files:
 themes\default.lua    - required, created by Notepad 2e if missing
 lexer.lua             - required, created by Notepad 2e if missing
 pas.lua               - lexer for *.pas files, created by you
+...                   - other lexers
 ```
 
 * `themes\` defines display colors. Notepad 2e doesn't support switching themes so it only uses `default.lua`.
