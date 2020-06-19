@@ -488,8 +488,6 @@ Long Line | 72 | 80
 
 ### Syntax Schemes
 
-**[NEW]** Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was enabled to allow defining new syntax schemes in Lua. #251
-
 **[NEW]** These syntax schemes were added:
 * AutoHotKey (AHK) #214
 * `awk` #216
@@ -518,6 +516,40 @@ HTML syntax scheme was improved:
 
 Lua syntax scheme was improved:
 * Added single-line: `--...` and multi-line comments: `--[[...]]`. #111
+
+
+## [NEW] Lua Lexers #251
+<a name="lpeg"></a>
+
+Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was enabled to allow defining new syntax schemes in Lua.
+
+**Warning:** Lua is a fully functional language so allowing untrusted files inside `LPegPath` **IS A VERY BAD IDEA** as it allows execution of arbitrary code via Notepad 2e.
+
+* LPeg is not available in default Notepad 2e versions - download the one with LPeg support (or with LPeg + ICU if you want both).
+* LPeg support adds ~400 KiB to the EXE file size.
+* With LPeg, Notepad 2e is no longer single-file distribution and requires certain Lua files to exist in the location configured by the `LPegPath` INI setting (that is empty by default, disabling support for LPeg).
+
+Configuration guide:
+
+* Define `LPegPath` under `[Notepad2e]` in your `Notepad2e.ini` file. Its value is relative to the EXE location and can contain `%variables%`.
+* Once done, open a new Notepad 2e window. It should have created files and folders under `LPegPath`. If you see an error message about disabled LPeg support on start-up then you failed to configure `LPegPath`.
+* For every new syntax scheme you want to support, copy the lexer file to `LPegPath` under the name *file_extension + `.lua`*. For example: `pas.lua` for `*.pas` files. Then, open View > Customize Schemes (Ctrl+F12) and select `LPeg Lexer` in the end of the list and enter all extensions you want to be handled by LPeg (e.g. `pas;dpr`).
+  * If you don't see `LPeg Lexer` in the list then your Notepad 2e version wasn't built with LPeg support.
+* If you want LPeg to be picked automatically when you open a file then check *Auto-select* for `LPeg Lexer` under View > Syntax Scheme (F12; it's checked by default) and make sure other schemes don't have extensions listed for `LPeg Lexer`. Else you can uncheck it and be picking LPeg manually (but you still need extensions configured - LPeg will render others as Default Text).
+* If you try to format a file and there's no lexer then you'll see an error saying which file you need to supply.
+
+In the end, your `LPegPath` should contain these files:
+
+```
+themes\default.lua    - required, created by Notepad 2e if missing
+lexer.lua             - required, created by Notepad 2e if missing
+pas.lua               - lexer for *.pas files, created by you
+```
+
+* `themes\` defines display colors. Notepad 2e doesn't support switching themes so it only uses `default.lua`.
+* We don't provide support for LPeg itself so to see how these lexers are written go to the [project's homepage](https://scintilla.sourceforge.io/LPegLexer.html).
+* Pre-made lexers are available from [Scintilla 3's source code archive](https://scintilla.sourceforge.io/LongTermDownload.html) (the `lexlua` folder, but you need to rename files in accordance to file extensions they highlight).
+* Also see the original [project's page](https://foicica.com/wiki/scintillua).
 
 
 ## Extended Edition INI Changes
@@ -781,6 +813,14 @@ Value | Meaning
 0 | Don't save
 1 | Save
 2 | Save, and when a new file is opened or created, reset this setting to **0**
+
+### LPegPath
+
+Type | Default | Set By UI
+-----|---------|----------
+str, path | *(empty)* |
+
+Enables [LPeg Lexer support](#lpeg). Ignored in non-LPeg versions. If empty, Lua is disabled.
 
 ### Current Word Highlighting
 
