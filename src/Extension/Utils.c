@@ -78,7 +78,8 @@ BOOL bFindWordWrapAround = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
 BOOL bLPegEnabled = FALSE;
-WCHAR g_wchLPegHome[MAX_PATH];
+WCHAR wchLPegHomeOrigin[MAX_PATH] = { 0 };
+WCHAR g_wchLPegHome[MAX_PATH] = { 0 };
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -318,7 +319,7 @@ extern PEDITLEXER pLexCurrent;
 
 LPSTR n2e_GetLuaLexerName()
 {
-  if (lstrlen(szCurFile) == 0)
+  if (!bLPegEnabled || (lstrlen(szCurFile) == 0))
   {
     return NULL;
   }
@@ -412,33 +413,31 @@ void n2e_LoadINI()
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
 
 #ifdef LPEG_LEXER
-  WCHAR wchLPegPath[MAX_PATH] = { 0 };
-  IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegPath, COUNTOF(wchLPegPath));
-  if (lstrlen(wchLPegPath) > 0)
+  IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
+  if (lstrlen(wchLPegHomeOrigin) > 0)
   {
     WCHAR szBuf[MAX_PATH] = { 0 };
-    if (ExpandEnvironmentStrings(wchLPegPath, szBuf, COUNTOF(szBuf)))
+    if (!ExpandEnvironmentStrings(wchLPegHomeOrigin, szBuf, COUNTOF(szBuf)))
     {
-      lstrcpyn(wchLPegPath, szBuf, COUNTOF(wchLPegPath));
+      lstrcpyn(szBuf, wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
     }
-
-    if (PathIsRelative(wchLPegPath))
+    if (PathIsRelative(szBuf))
     {
       lstrcpy(g_wchLPegHome, g_wchWorkingDirectory);
       PathAddBackslash(g_wchLPegHome);
-      lstrcat(g_wchLPegHome, wchLPegPath);
+      lstrcat(g_wchLPegHome, szBuf);
     }
     else
     {
-      lstrcpy(g_wchLPegHome, wchLPegPath);
+      lstrcpy(g_wchLPegHome, szBuf);
     }
     PathAddBackslash(g_wchLPegHome);
-    lstrcpy(wchLPegPath, g_wchLPegHome);
-    PathCanonicalize(g_wchLPegHome, wchLPegPath);
+    lstrcpy(szBuf, g_wchLPegHome);
+    PathCanonicalize(g_wchLPegHome, szBuf);
   }
   else
   {
-    lstrcpy(wchLPegPath, g_wchLPegHome);
+    lstrcpy(wchLPegHomeOrigin, g_wchLPegHome);
   }
 #endif
 
@@ -495,7 +494,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_LANGUAGE_INDICATOR, iShowLanguageInTitle);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
-  IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, g_wchLPegHome);
+  IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 }
 
 void n2e_Release()

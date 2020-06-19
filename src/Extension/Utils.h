@@ -164,6 +164,7 @@ extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;
 extern WCHAR g_wchWorkingDirectory[MAX_PATH];
+extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
 
 void n2e_CreateProgressBarInStatusBar();

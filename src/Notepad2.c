@@ -660,7 +660,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
     UpdateWindow(hwndMain);
 
 #ifdef LPEG_LEXER
-    if (lstrlen(g_wchLPegHome) == 0)
+    if (!bLPegEnabled)
     {
       InfoBox(MBWARN, L"MsgLPegNotSet", IDS_ERR_LPEG_NOT_CONFIGURED);
     }
