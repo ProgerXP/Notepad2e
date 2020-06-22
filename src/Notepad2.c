@@ -126,6 +126,8 @@ WCHAR      tchToolbarButtons[512];
 WCHAR      tchToolbarBitmap[MAX_PATH];
 WCHAR      tchToolbarBitmapHot[MAX_PATH];
 WCHAR      tchToolbarBitmapDisabled[MAX_PATH];
+// [2e]: Resize statusbar groups #304
+WCHAR      tchDocPos[MAX_PATH] = { 0 };
 enum EPathNameFormat iPathNameFormat = PNM_FILENAMEONLY;
 BOOL      fWordWrap;
 BOOL      fWordWrapG;
@@ -1958,7 +1960,8 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EndDeferWindowPos(hdwp);
 
   // Statusbar width
-  aWidth[0] = max(200, min(cx / 3, StatusCalcPaneWidth(hwndStatus, L"Ln 9'999'999 : 9'999'999   Col 9'999'999 : 999   Sel 9'999'999")));
+  // [2e]: Resize statusbar groups #304
+  aWidth[0] = max(cx/3, StatusCalcPaneWidth(hwndStatus, tchDocPos));
   aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, arrwchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
   aWidth[2] = aWidth[1] + StatusCalcPaneWidth(hwndStatus, L"Unicode BE BOM");
   aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
@@ -6922,8 +6925,7 @@ void UpdateStatusbar()
   WCHAR tchSel[32];
   WCHAR tchSelLines[32];
   WCHAR tchPos[32];
-  WCHAR tchDocPos[256];
-
+  
   int iBytes;
   WCHAR tchBytes[64];
   WCHAR tchDocSize[256];
