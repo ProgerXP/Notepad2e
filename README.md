@@ -532,6 +532,10 @@ Scintilla's [LPegLexer](https://scintilla.sourceforge.io/LPegLexer.html) was ena
 Configuration guide:
 
 * Define `LPegPath` under `[Notepad2e]` in your `Notepad2e.ini` file. Its value is relative to the EXE location and can contain `%variables%`.
+```
+[Notepad2e]
+LPegPath=lexlua
+```
 * Once done, open a new Notepad 2e window. It should have created files and folders under `LPegPath` (so it needs write access unless they already exist).
   * If you see an error message about disabled LPeg support on start-up then you failed to configure `LPegPath`.
 * For every new syntax scheme you want to support, copy the lexer file to `LPegPath` under the name *file_extension + `.lua`*. For example: `pas.lua` for `*.pas` files. Then, open View > Customize Schemes (Ctrl+F12) and select `LPeg Lexer` in the end of the list and enter all extensions you want to be handled by LPeg (e.g. `pas;dpr`).
