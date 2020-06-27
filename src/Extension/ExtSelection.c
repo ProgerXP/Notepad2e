@@ -205,7 +205,7 @@ int n2e_HighlightWord(LPCSTR word)
   lrange = bHighlightAll
     ? (bEditSelectionInit && bEditSelectionScope)
       ? SciCall_GetLineCount()
-      : min(SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0), SciCall_GetLineCount())
+      : min(SciCall_GetLinesOnScreen(), SciCall_GetLineCount())
     : 0;
 
   ttf.chrg.cpMin = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, lstart, 0);
@@ -224,7 +224,6 @@ int n2e_HighlightWord(LPCSTR word)
     int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     int wlen = strlen(word);
     int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
-    BOOL bPreviousMatchIsVisible = FALSE;
     if (bEditSelectionInit)
     {
       n2e_ClearEditSelections();
@@ -241,62 +240,45 @@ int n2e_HighlightWord(LPCSTR word)
       }
       strcpy(pEditSelectionOriginalWord, word);
     }
-    // 2 first words
+    
+    if (bEditSelectionInit)
+    {
+      curr_indi = N2E_SELECT_INDICATOR_EDIT;
+      bEditSelection = TRUE;
+      iOriginalSelectionLength = wlen;
+    }
+    else
     {
       ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - iMaxSearchDistance);
       ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + iMaxSearchDistance);
-    }
-    ttf1.lpstrText = (LPSTR)word;
-    res = SendMessage(hwndEdit, SCI_FINDTEXT, search_opt, (LPARAM)&ttf1);
-    bPreviousMatchIsVisible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
-    while (1)
-    {
-      ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
-      res = SendMessage(hwndEdit, SCI_FINDTEXT, search_opt, (LPARAM)&ttf1);
-      if (-1 != res)
+      ttf1.lpstrText = (LPSTR)word;
+      SciCall_FindText(search_opt, &ttf1);
+      const BOOL bMatchIsVisible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
+      if (bMatchIsVisible)
       {
-        // current match is visible
-        if (
-          ttf1.chrgText.cpMin >= ttf.chrg.cpMin &&
-          ttf1.chrgText.cpMin < ttf.chrg.cpMax
-          )
-        {
-          if (bPreviousMatchIsVisible)
-          {
-            if (bEditSelectionInit)
-            {
-              curr_indi = N2E_SELECT_INDICATOR_EDIT;
-              bEditSelection = TRUE;
-              iOriginalSelectionLength = wlen;
-            }
-            else
-            {
-              curr_indi = N2E_SELECT_INDICATOR_PAGE;
-            }
-            break;
-          }
-          else
-          {
-            curr_indi = N2E_SELECT_INDICATOR;
-          }
-          bPreviousMatchIsVisible = TRUE;
-        }
-        if (ttf1.chrgText.cpMin >= ttf.chrg.cpMax && N2E_SELECT_INDICATOR == curr_indi)
-        {
-          if (bEditSelectionInit)
-          {
-            bEditSelection = TRUE;
-            iOriginalSelectionLength = wlen;
-          }
-          break;
-        }
         ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
+        const BOOL bSecondMatchIsVisible = (SciCall_FindText(search_opt, &ttf1) != -1)
+          && (ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax);
+        if (bHighlightAll)
+        {
+          if (SciCall_GetLinesOnScreen() < SciCall_GetLineCount())
+          {
+            ttf1.chrg.cpMin = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, lstart + SciCall_GetLinesOnScreen(), 0) + 1;
+            ttf1.chrg.cpMax = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, SciCall_GetLineCount(), 0) + 1;
+          }
+        }
+        curr_indi = (SciCall_FindText(search_opt, &ttf1) == -1)
+            ? bSecondMatchIsVisible
+              ? N2E_SELECT_INDICATOR_PAGE
+              : N2E_SELECT_INDICATOR_SINGLE
+            : N2E_SELECT_INDICATOR;
       }
       else
       {
-        break;
+        curr_indi = N2E_SELECT_INDICATOR;
       }
     }
+
     SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
     if (bEditSelectionInit && !n2e_IsSelectionEditModeOn())
     {
@@ -437,7 +419,7 @@ void n2e_SelectionHighlightInit()
   }
 
   sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
-  if (sel_len > 0)
+  if (sel_len > 1)
   {
     trEditSelection.lpstrText = n2e_Alloc(sel_len + 1);
     SciCall_GetTextRange(0, &trEditSelection);
@@ -752,6 +734,11 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
         {
           n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
         }
+        n2e_SelectionUpdate(SUM_UPDATE);
+      }
+      else if ((scn->updated & SC_UPDATE_SELECTION)
+            && n2e_IsSelectionEditModeOn())
+      {
         n2e_SelectionUpdate(SUM_UPDATE);
       }
       else if ((scn->updated & (SC_UPDATE_V_SCROLL | SC_UPDATE_H_SCROLL))
