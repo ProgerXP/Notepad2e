@@ -22,7 +22,7 @@ It's also part of [TortoiseGit](https://tortoisegit.org).
 
 **License:** *Notepad2* uses 3-clause BSD license. *Notepad 2e* follows the same license.
 
-**Thanks to** @muv1 (Steven Penny) for his generous donations! #286 <a name="thanks"></a>
+**Thanks to** Steven Penny for his generous donations! #286 #251 <a name="thanks"></a>
 
 ## Downloads
 
