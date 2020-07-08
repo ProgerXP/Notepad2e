@@ -175,6 +175,47 @@ int n2e_SelectionGetWraps(const int beg, const int end)
   return out;
 }
 
+
+int n2e_GetWordPosImpl(const BOOL bReturnStart, LPCSTR word, const int wlen, const int cpMin, const int cpMax, const int searchDistance, const int len, const int search_opt)
+{
+  static struct Sci_TextToFind ttf = { 0 };
+  int res = -1;
+  ttf.chrg.cpMin = max(0, cpMin - searchDistance);
+  ttf.chrg.cpMax = min(len, cpMax + searchDistance);
+  ttf.lpstrText = (LPSTR)word;
+  int pos = SciCall_FindText(search_opt, &ttf);
+  if ((pos >= 0) && (ttf.chrg.cpMax <= cpMax))
+  {
+    res = bReturnStart ? pos : pos + wlen;
+  }
+  return res;
+}
+
+int n2e_GetWordStart(LPCSTR word, const int wlen, const int cpMin, const int cpMax, const int searchDistance, const int len, const int search_opt)
+{
+  return n2e_GetWordPosImpl(TRUE, word, wlen, cpMin, cpMax, searchDistance, len, search_opt);
+}
+
+int n2e_GetWordEnd(LPCSTR word, const int wlen, const int cpMin, const int cpMax, const int searchDistance, const int len, const int search_opt)
+{
+  return n2e_GetWordPosImpl(FALSE, word, wlen, cpMin, cpMax, searchDistance, len, search_opt);
+}
+
+int n2e_GetMatchVisibleCount(const int iMaxCount, LPCSTR word, const int wlen, const int _cpMin, const int _cpMax, const int searchDistance, const int len, const int search_opt)
+{
+  int res = 0;
+  int cpMin = max(0, _cpMin - searchDistance);
+  int cpMax = min(len, _cpMax + searchDistance);
+  int cpPos = n2e_GetWordEnd(word, wlen, cpMin, cpMax, searchDistance, len, search_opt);
+  while ((cpPos > 0) && (res < iMaxCount))
+  {
+    ++res;
+    cpMin = cpPos;
+    cpPos = n2e_GetWordEnd(word, wlen, cpMin, min(len, cpMax + searchDistance), 0, len, search_opt);
+  }
+  return res;
+}
+
 int n2e_HighlightWord(LPCSTR word)
 {
   int res = 0;
@@ -182,7 +223,6 @@ int n2e_HighlightWord(LPCSTR word)
   int lstart, lwrap, lrange, len, curr;
   int old;
   struct Sci_TextToFind ttf;
-  struct Sci_TextToFind ttf1;
   len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
   if (bHighlightAll)
@@ -244,42 +284,56 @@ int n2e_HighlightWord(LPCSTR word)
     if (bEditSelectionInit)
     {
       curr_indi = N2E_SELECT_INDICATOR_EDIT;
-      bEditSelection = TRUE;
       iOriginalSelectionLength = wlen;
-    }
-    else
-    {
-      ttf1.chrg.cpMin = max(0, ttf.chrg.cpMin - iMaxSearchDistance);
-      ttf1.chrg.cpMax = min(len, ttf.chrg.cpMin + iMaxSearchDistance);
-      ttf1.lpstrText = (LPSTR)word;
-      SciCall_FindText(search_opt, &ttf1);
-      const BOOL bMatchIsVisible = ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax;
-      if (bMatchIsVisible)
+      bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax, bHighlightAll ? iMaxSearchDistance : 0, len, search_opt) > 1);
+      if (!n2e_IsSelectionEditModeOn())
       {
-        ttf1.chrg.cpMin = ttf1.chrgText.cpMax;
-        const BOOL bSecondMatchIsVisible = (SciCall_FindText(search_opt, &ttf1) != -1)
-          && (ttf1.chrgText.cpMin >= ttf.chrg.cpMin && ttf1.chrgText.cpMin < ttf.chrg.cpMax);
-        if (bHighlightAll)
+        bHighlightAll = TRUE;
+      }
+    }
+
+    if (!bEditSelectionInit || !n2e_IsSelectionEditModeOn())
+    {
+      int cpMin = ttf.chrg.cpMin;
+      int cpMax = ttf.chrg.cpMax;
+      if (bHighlightAll)
+      {
+        int cpMin2 = cpMin;
+        int cpMax2 = cpMax;
+        int iSearchDistance = iMaxSearchDistance;
+        if (SciCall_GetLinesOnScreen() < SciCall_GetLineCount())
         {
-          if (SciCall_GetLinesOnScreen() < SciCall_GetLineCount())
-          {
-            ttf1.chrg.cpMin = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, lstart + SciCall_GetLinesOnScreen(), 0) + 1;
-            ttf1.chrg.cpMax = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, SciCall_GetLineCount(), 0) + 1;
-          }
+          cpMin2 = 0;
+          cpMax2 = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, SciCall_GetLineCount(), 0) + 1;
+          iSearchDistance = 0;
         }
-        curr_indi = (SciCall_FindText(search_opt, &ttf1) == -1)
-            ? bSecondMatchIsVisible
-              ? N2E_SELECT_INDICATOR_PAGE
-              : N2E_SELECT_INDICATOR_SINGLE
-            : N2E_SELECT_INDICATOR;
+
+        const int iCount = n2e_GetMatchVisibleCount(255, word, wlen, cpMin, cpMax, 0, len, search_opt);
+        const int iCount2 = n2e_GetMatchVisibleCount(iCount + 1, word, wlen, cpMin2, cpMax2, iSearchDistance, len, search_opt);
+        curr_indi = ((iCount == 1) && (iCount == iCount2))
+          ? N2E_SELECT_INDICATOR_SINGLE
+          : (iCount2 > iCount)
+            ? N2E_SELECT_INDICATOR
+            : N2E_SELECT_INDICATOR_PAGE;
       }
       else
       {
-        curr_indi = N2E_SELECT_INDICATOR;
+        int nextPos = n2e_GetWordEnd(word, wlen, cpMin, cpMax, 0, len, search_opt);
+        if (nextPos > 0)
+        {
+          nextPos = n2e_GetWordEnd(word, wlen, nextPos + wlen, cpMax, 0, len, search_opt);
+        }
+        if (nextPos > 0)
+        {
+          cpMin = nextPos + wlen;
+        }
+        const int iCount = n2e_GetMatchVisibleCount(2, word, wlen, cpMin, cpMax, 0, len, search_opt);
+        curr_indi = (iCount > 0) ? N2E_SELECT_INDICATOR_SINGLE : N2E_SELECT_INDICATOR_PAGE;
       }
     }
 
     SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
+
     if (bEditSelectionInit && !n2e_IsSelectionEditModeOn())
     {
       bEditSelectionInit = FALSE;
@@ -682,6 +736,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
 BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
 {
   bEditSelectionInit = FALSE;
+  bHighlightAll = TRUE;
   if (n2e_IsSelectionEditModeOn())
   {
     n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
@@ -697,7 +752,6 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
       SciCall_SetSel(pos, pos);
     }
     bEditSelection = FALSE;
-    bHighlightAll = TRUE;
 
     n2e_SelectionHighlightTurn(FALSE);
     SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
@@ -714,6 +768,7 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
     if (!n2e_SelectionProcessChanges(PCM_NONE))
     {
       n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionHighlightTurn(n2e_IsHighlightSelectionEnabled());
     }
   }
   else
