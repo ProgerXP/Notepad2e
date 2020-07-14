@@ -175,7 +175,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
         return TRUE;
       }
     }
-    else if (iCount > 0)
+    else if (lstrlen(pszText) > 0)
     {
       wcsncpy_s(tchBuffer, bufferSize - 1, arrwchExpressionValue, wcslen(arrwchExpressionValue));
       return TRUE;
