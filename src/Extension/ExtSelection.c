@@ -852,7 +852,7 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
         }
       }
       
-      if (scn->modificationType & SC_MOD_DELETETEXT)
+      if (!n2e_IsRectangularSelection() && (scn->modificationType & SC_MOD_DELETETEXT))
       {
         EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
       }
