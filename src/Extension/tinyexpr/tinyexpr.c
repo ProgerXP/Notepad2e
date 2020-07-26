@@ -102,6 +102,7 @@ void te_free(te_expr *n) {
 
 static double pi() {return 3.14159265358979323846;}
 static double e() {return 2.71828182845904523536;}
+static double __not(double a) { return ~(int)a; }
 
 #pragma function (ceil)
 #pragma function (floor)
@@ -121,6 +122,7 @@ static const te_variable functions[] = {
     {"floor", floor,  TE_FUNCTION1 | TE_FLAG_PURE},
     {"ln", log,       TE_FUNCTION1 | TE_FLAG_PURE},
     {"log", log10,    TE_FUNCTION1 | TE_FLAG_PURE},
+    {"not", __not,    TE_FUNCTION1 | TE_FLAG_PURE},
     {"pi", pi,        TE_FUNCTION0 | TE_FLAG_PURE},
     {"pow", pow,      TE_FUNCTION2 | TE_FLAG_PURE},
     {"sin", sin,      TE_FUNCTION1 | TE_FLAG_PURE},
@@ -171,7 +173,6 @@ static double mul(double a, double b) {return a * b;}
 static double divide(double a, double b) {return a / b;}
 static double negate(double a) {return -a;}
 static double comma(double a, double b) {return b;}
-static double __not(double a) { return ~(int)a; }
 
 static double __div(double a, double b) {
   if ((int)b == 0)
@@ -200,8 +201,7 @@ static const te_operator operators[] = {
   { "shr", __shr },
   { "and", __and },
   { "or", __or },
-  { "xor", __xor },
-  { "not", __not, }
+  { "xor", __xor }
 };
 
 static const te_operator *find_operator(const char *name, int len)
@@ -573,27 +573,19 @@ static te_expr *base(state *s) {
 static te_expr *power(state *s) {
     /* <power>     =    {("-" | "+")} <base> */
     int sign = 1;
-    while (s->type == TOK_INFIX && (s->function == add || s->function == sub || s->function == __not)) {
+    while (s->type == TOK_INFIX && (s->function == add || s->function == sub)) {
         if (s->function == sub) sign = -sign;
-        else if (s->function == __not) sign = 2;
         next_token(s);
     }
 
     te_expr *ret;
 
-    switch (sign)
-    {
-    case 1:
-      ret = base(s);
-      break;
-    case -1:
-      ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
-      ret->function = negate;
-      break;
-    case 2:
-      ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
-      ret->function = __not;
-      break;
+    if (sign == 1) {
+        ret = base(s);
+    }
+    else {
+        ret = NEW_EXPR(TE_FUNCTION1 | TE_FLAG_PURE, base(s));
+        ret->function = negate;
     }
 
     return ret;
@@ -620,8 +612,8 @@ static te_expr *term(state *s) {
     te_expr *ret = factor(s);
 
     while (s->type == TOK_INFIX
-           && (s->function == mul || s->function == divide || s->function == fmod
-               || (find_operator_by_function(s->function) && (s->function != __not)))) {
+        && (s->function == mul || s->function == divide || s->function == fmod
+            || find_operator_by_function(s->function))) {
         te_fun2 t = s->function;
         next_token(s);
         ret = NEW_EXPR(TE_FUNCTION2 | TE_FLAG_PURE, ret, factor(s));
