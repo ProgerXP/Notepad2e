@@ -887,12 +887,15 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_NCPAINT:
     case WM_PAINT:
     case WM_ERASEBKGND:
-    case WM_NCMOUSEMOVE:
     case WM_NCLBUTTONDOWN:
     case WM_WINDOWPOSCHANGING:
     case WM_WINDOWPOSCHANGED:
       return DefWindowProc(hwnd, umsg, wParam, lParam);
 
+    // [2e]: Pointer remains hidden when moving cursor over window caption #314
+    case WM_NCMOUSEMOVE:
+      n2e_OnMouseVanishEvent(TRUE);
+      return DefWindowProc(hwnd, umsg, wParam, lParam);
 
     // [2e]: DPI awareness #154
     case WM_NCCREATE:
