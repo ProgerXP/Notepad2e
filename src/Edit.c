@@ -5678,7 +5678,6 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
   char szFind2[512];
   char *pszReplace2;
-  BOOL bRegexStartOfLine;
   BOOL bRegexStartOrEndOfLine;
 
   if (!lstrlenA(lpefr->szFind))
@@ -5702,8 +5701,6 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     return FALSE;
   }
 
-  bRegexStartOfLine =
-    (szFind2[0] == '^');
   bRegexStartOrEndOfLine =
     (lpefr->fuFlags & SCFIND_REGEXP &&
     (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
@@ -5730,6 +5727,22 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
+  // [2e]: Recursive Regexp Replace on $ #307
+  int skipLinesCounter = 0;
+  if ((lpefr->fuFlags & SCFIND_REGEXP) && strstr(pszReplace2, "\\n"))
+  {
+    const int iFind2Length = lstrlenA(szFind2);
+    const int isRegexEOL = (szFind2[iFind2Length - 1] == '$') && ((iFind2Length < 2) || (szFind2[iFind2Length - 2] != '\\'));
+    skipLinesCounter = isRegexEOL ? 1 : 0;
+    char *psz = pszReplace2;
+    while (psz = strstr(psz, "\\n"))
+    {
+      skipLinesCounter++;
+      psz++;
+    }
+  }
+  // [/2e]
+
   while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf)) != -1)
   {
     int iReplacedLen;
@@ -5750,7 +5763,11 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     }
     SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
     SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
+
+    const int iOriginalLineCount = SciCall_GetLineCount();
     iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
+    const int iNewLineCount = SciCall_GetLineCount();
+
     ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
     ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
     if (ttf.chrg.cpMin == ttf.chrg.cpMax)
@@ -5759,15 +5776,15 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     if (ttf.chrgText.cpMin == ttf.chrgText.cpMax &&
         !(bRegexStartOrEndOfLine && iReplacedLen > 0))
       ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONAFTER, ttf.chrg.cpMin, 0);
-    if (bRegexStartOfLine)
+
+    // [2e]: Recursive Regexp Replace on $ #307
+    if (skipLinesCounter > 0)
     {
-      int iLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)ttf.chrg.cpMin, 0);
-      int ilPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
-      if (ilPos == ttf.chrg.cpMin)
-        ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine + 1, 0);
-      if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-        break;
+      ttf.chrg.cpMin = SciCall_PositionFromLine(
+                          SciCall_LineFromPosition(SendMessage(hwnd, SCI_GETTARGETEND, 0, 0))
+                          + skipLinesCounter - (iNewLineCount - iOriginalLineCount));
     }
+    // [/2e]
   }
 
   if (iCount)
