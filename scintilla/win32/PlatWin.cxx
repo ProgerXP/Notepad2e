@@ -621,7 +621,7 @@ void SurfaceGDI::SetFont(const Font &font_) noexcept {
 }
 
 int SurfaceGDI::LogPixelsY() {
-	return ::GetDeviceCaps(hdc, LOGPIXELSY);
+	return GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
