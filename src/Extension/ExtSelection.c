@@ -111,6 +111,7 @@ void n2e_EditInit()
 
   SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+  SendMessage(hwndEdit, SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0);
 
 #define DEFAULT_SECTION 6
 #define EXTENDED_SECTION 7
