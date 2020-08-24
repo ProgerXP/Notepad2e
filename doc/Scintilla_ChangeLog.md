@@ -764,13 +764,3 @@ Add ifdef-code:
 [/scintilla/lua/src/loadlib.c]
 
 [/**Lua LPeg Lexers #251**]
-
-
-[**Copying to clipboard in ANSI charset results in bad charset #308**]
-
-Rollback change in CodePageFromCharSet() (came from Scintilla 3.11.2):
-[scintilla/win32/ScintillaWin.cxx]
-case SC_CHARSET_DEFAULT: return documentCodePage;
-[/scintilla/win32/ScintillaWin.cxx]
-
-[/**Copying to clipboard in ANSI charset results in bad charset #308**]

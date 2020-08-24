@@ -5939,19 +5939,16 @@ void LoadSettings()
   LocalFree(pIniSection);
 
   iDefaultCodePage = 0;
-  {
-    int acp = GetACP();
-    if (acp == 932 || acp == 936 || acp == 949 || acp == 950 || acp == 1361)
-      iDefaultCodePage = acp;
-  }
 
-  {
-    CHARSETINFO ci;
-    if (TranslateCharsetInfo((DWORD *)(UINT_PTR)iDefaultCodePage, &ci, TCI_SRCCODEPAGE))
-      iDefaultCharSet = ci.ciCharset;
-    else
-      iDefaultCharSet = ANSI_CHARSET;
-  }
+  int acp = GetACP();
+  if (acp == 932 || acp == 936 || acp == 949 || acp == 950 || acp == 1361)
+    iDefaultCodePage = acp;
+
+  CHARSETINFO ci = { 0 };
+  if (TranslateCharsetInfo((DWORD *)(UINT_PTR)acp, &ci, TCI_SRCCODEPAGE))
+    iDefaultCharSet = ci.ciCharset;
+  else
+    iDefaultCharSet = ANSI_CHARSET;
 
   // Scintilla Styles
   Style_Load();
