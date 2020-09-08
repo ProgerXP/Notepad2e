@@ -3708,7 +3708,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
-          if ((iBraceAtPos != (iBrace2 > iPos)) && (iFindSelectToMatchingBraceMode != FSM_LEGACY))
+          if ((iBraceAtPos != (iBrace2 > iPos))
+            && ((iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT)
+             || (iFindSelectToMatchingBraceMode == FSM_IMPROVED_SELECT)))
           {
             if (iBrace2 > iPos)
             {
