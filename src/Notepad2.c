@@ -3667,42 +3667,61 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_FINDMATCHINGBRACE: {
         int iBrace2 = -1;
+        int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (StrChrA("()[]{}<>", c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
-        // Try one before
-        else
+        if (!StrChrA("()[]{}<>", c))
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-          if (StrChrA("()[]{}<>", c))
-            iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+          iBraceAtPos = 0;
         }
+        if (StrChrA("()[]{}<>", c))
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         if (iBrace2 != -1)
+        {
+          // [2e]: Find/Select To Matching Brace - depend on caret location #293
+          if (iBraceAtPos && (iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT))
+          {
+            iBrace2 = SendMessage(hwndEdit, SCI_POSITIONAFTER, iBrace2, 0);
+          }
+          // [/2e]
           SendMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)iBrace2, 0);
+        }
       }
       break;
 
 
     case IDM_EDIT_SELTOMATCHINGBRACE: {
         int iBrace2 = -1;
+        int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (StrChrA("()[]{}<>", c))
-        {
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
-        }
-        // Try one before
-        else
+        if (!StrChrA("()[]{}<>", c))
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-          if (StrChrA("()[]{}<>", c))
-            iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+          iBraceAtPos = 0;
         }
+        if (StrChrA("()[]{}<>", c))
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
         if (iBrace2 != -1)
         {
+          // [2e]: Find/Select To Matching Brace - depend on caret location #293
+          if ((iBraceAtPos != (iBrace2 > iPos)) && (iFindSelectToMatchingBraceMode != FSM_LEGACY))
+          {
+            if (iBrace2 > iPos)
+            {
+              iBrace2 = SendMessage(hwndEdit, SCI_POSITIONBEFORE, iBrace2, 0);
+              iPos = SendMessage(hwndEdit, SCI_POSITIONAFTER, iPos, 0);
+            }
+            else
+            {
+              iBrace2 = SendMessage(hwndEdit, SCI_POSITIONAFTER, iBrace2, 0);
+              iPos = SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
+            }
+          }
+          // [/2e]
           if (iBrace2 > iPos)
             SendMessage(hwndEdit, SCI_SETSEL, (WPARAM)iPos, (LPARAM)iBrace2 + 1);
           else

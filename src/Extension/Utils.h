@@ -80,6 +80,13 @@ typedef enum
 
 typedef enum
 {
+  FSM_LEGACY = 0,
+  FSM_IMPROVED_FIND_SELECT = 1,
+  FSM_IMPROVED_SELECT = 2
+} EFindSelectToMatchingBraceMode;
+
+typedef enum
+{
   HCS_DISABLED = 0,
   HCS_WORD = 1,
   HCS_SELECTION = 2,
@@ -113,6 +120,7 @@ typedef struct TAddToFavoritesParams
 
 extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
+extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
 
 void n2e_InitInstance();
 void n2e_ExitInstance();
