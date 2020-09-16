@@ -1912,6 +1912,20 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
 // Statusbar
 int aWidth[6];
 
+// [2e]: Resize statusbar groups #304
+void UpdateStatusbarWidth(const int cx)
+{
+  aWidth[0] = max(cx / 3, StatusCalcPaneWidth(hwndStatus, tchDocPos));
+  aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, arrwchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
+  aWidth[2] = aWidth[1] + StatusCalcPaneWidth(hwndStatus, L"Unicode BE BOM");
+  aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
+  aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
+  aWidth[5] = -1;
+
+  SendMessage(hwndStatus, SB_SETPARTS, COUNTOF(aWidth), (LPARAM)aWidth);
+}
+// [/2e]
+
 //=============================================================================
 //
 //  MsgSize() - Handles WM_SIZE
@@ -1962,16 +1976,8 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   EndDeferWindowPos(hdwp);
 
-  // Statusbar width
-  // [2e]: Resize statusbar groups #304
-  aWidth[0] = max(cx/3, StatusCalcPaneWidth(hwndStatus, tchDocPos));
-  aWidth[1] = aWidth[0] + max(StatusCalcPaneWidth(hwndStatus, arrwchExpressionValue), StatusCalcPaneWidth(hwndStatus, L"9'999'999 Bytes"));
-  aWidth[2] = aWidth[1] + StatusCalcPaneWidth(hwndStatus, L"Unicode BE BOM");
-  aWidth[3] = aWidth[2] + StatusCalcPaneWidth(hwndStatus, L"CR+LF");
-  aWidth[4] = aWidth[3] + StatusCalcPaneWidth(hwndStatus, L"OVR");
-  aWidth[5] = -1;
+  UpdateStatusbarWidth(cx);
 
-  SendMessage(hwndStatus, SB_SETPARTS, COUNTOF(aWidth), (LPARAM)aWidth);
   // [2e]: Progress indication for Grep/Ungrep
   if (bShowProgressBar && hwndStatusProgressBar)
   {
@@ -7048,6 +7054,10 @@ void UpdateStatusbar()
   StatusSetText(hwndStatus, STATUS_EOLMODE, tchEOLMode);
   StatusSetText(hwndStatus, STATUS_OVRMODE, tchOvrMode);
   StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressBarTaskName : tchLexerName);
+
+  const RECT rcMain = { 0 };
+  GetWindowRect(hwndMain, &rcMain);
+  UpdateStatusbarWidth(rcMain.right - rcMain.left);
 }
 
 
