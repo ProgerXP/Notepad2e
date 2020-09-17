@@ -67,7 +67,7 @@ int n2e_GetExpressionTextRange(int* piStart, int* piEnd);
 
 BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr);
 
-LPCSTR n2e_FormatLineText(LPCSTR buf, const int iLineStart, const int iLineIndex,
+LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   LPCSTR lpPrefixAbsFormat, LPCSTR lpPrefixAbsZeroFormat,
   LPCSTR lpPrefixRelFormat, LPCSTR lpPrefixRelZeroFormat,
   LPCSTR lpPrefixRel0Format, LPCSTR lpPrefixRel0ZeroFormat);

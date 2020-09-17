@@ -204,7 +204,7 @@ extern "C"
         break;
       }
       str.replace(index, strFrom.length(), strTo);
-      index += std::min<int>(strFrom.length(), strTo.length());
+      index += std::min<size_t>(strFrom.length(), strTo.length());
     }
     lstrcpyA(buf, str.c_str());
   }

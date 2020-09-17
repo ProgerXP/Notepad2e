@@ -14,6 +14,7 @@
 #include "StrToQP.h"
 #include "StrToURL.h"
 #include "StringRecoding.h"
+#include "Styles.h"
 #include "Subclassing.h"
 #include "Trace.h"
 #include "Utils.h"

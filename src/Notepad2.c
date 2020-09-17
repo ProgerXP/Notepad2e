@@ -7055,7 +7055,7 @@ void UpdateStatusbar()
   StatusSetText(hwndStatus, STATUS_OVRMODE, tchOvrMode);
   StatusSetText(hwndStatus, STATUS_LEXER, bShowProgressBar ? tchProgressBarTaskName : tchLexerName);
 
-  const RECT rcMain = { 0 };
+  RECT rcMain = { 0 };
   GetWindowRect(hwndMain, &rcMain);
   UpdateStatusbarWidth(rcMain.right - rcMain.left);
 }
