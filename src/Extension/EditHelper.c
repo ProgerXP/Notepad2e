@@ -279,7 +279,6 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
 {
   struct Sci_TextRange tr;
   struct Sci_TextToFind ttf;
-  static char* szPrevWord = NULL;
   int searchflags = 0;
   BOOL has = FALSE;
 #define _N2E_SEARCH_FOR_WORD_LIMIT 0x100
@@ -301,17 +300,6 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
 
   n2e_Free(tr.lpstrText);
 
-  if (iSelCount > 0)
-  {
-    const size_t prevWordLength = szPrevWord ? strlen(szPrevWord) + 1 : 0;
-    if (szPrevWord && (prevWordLength > 0))
-    {
-      tr.lpstrText = (char*)n2e_Alloc(prevWordLength);
-      lstrcpynA(tr.lpstrText, szPrevWord, prevWordLength);
-      ttf.lpstrText = tr.lpstrText;
-      res = 1;
-    }
-  }
   if (res == 0)
   {
     has = wlen > 0;
@@ -375,6 +363,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
   if (res)
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
+    n2e_FindMRUAdd(ttf.lpstrText);
     if (next)
     {
       ttf.chrg.cpMin = tr.chrg.cpMax;
@@ -417,13 +406,6 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
     else
     {
       SendMessage(hwnd, SCI_SETCURRENTPOS, cpos, 0);
-    }
-    if (ttf.lpstrText)
-    {
-      const char* lpstrText = ttf.lpstrText;
-      n2e_Free(szPrevWord);
-      szPrevWord = (char*)n2e_Alloc(strlen(lpstrText) + 1);
-      lstrcpynA(szPrevWord, lpstrText, strlen(lpstrText) + 1);
     }
     if (tr.lpstrText)
     {

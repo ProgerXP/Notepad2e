@@ -199,3 +199,5 @@ BOOL n2e_ToolTipAddToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo);
 BOOL n2e_ToolTipSetToolInfo(const HWND hwndToolTip, LPVOID lpToolInfo);
 void n2e_ToolTipTrackPosition(const HWND hwndToolTip, const POINT pt);
 void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVOID lpToolInfo);
+
+BOOL n2e_FindMRUAdd(LPCSTR pszNew);
