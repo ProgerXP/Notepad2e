@@ -31,6 +31,7 @@ extern HWND hwndToolbar;
 extern HWND hwndMain;
 extern HWND hDlgFindReplace;
 extern int iOpenSaveFilterIndex;
+extern EDITFINDREPLACE efrData;
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -286,18 +287,25 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
   N2E_TRACE(L"look for next(%d) word", next);
   ZeroMemory(&ttf, sizeof(ttf));
   ttf.lpstrText = 0;
-  const int cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  const int doclen = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
-  tr.chrg.cpMin = SendMessage(hwnd, SCI_WORDSTARTPOSITION, cpos, TRUE);
-  tr.chrg.cpMax = SendMessage(hwnd, SCI_WORDENDPOSITION, cpos, TRUE);
+  const int cpos = SciCall_GetCurrentPos();
+  const int doclen = SciCall_GetLength();
+  if (SciCall_GetSelEnd() - SciCall_GetSelStart() > 0)
+  {
+    tr.chrg.cpMin = SciCall_GetSelStart();
+    tr.chrg.cpMax = SciCall_GetSelEnd();
+    searchflags = SCFIND_NONE;
+  }
+  else
+  {
+    tr.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
+    tr.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
+    searchflags = SCFIND_WHOLEWORD;
+  }
   int wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   int res = 0;
 
   tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
-
-  const int iSelCount = (int)SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) -
-                        (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  SciCall_GetTextRange(0, &tr);
 
   n2e_Free(tr.lpstrText);
 
@@ -317,7 +325,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
         char symb;
         //
         tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-        SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+        SciCall_GetTextRange(0, &tr);
         counter = 0;
         while (counter <= wlen)
         {
@@ -355,7 +363,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
     else
     {
       tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-      SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+      SciCall_GetTextRange(0, &tr);
       ttf.lpstrText = tr.lpstrText;
       res = 1;
     }
@@ -365,6 +373,8 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
     n2e_FindMRUAdd(ttf.lpstrText);
+    lstrcpyA(efrData.szFind, ttf.lpstrText);
+    lstrcpyA(efrData.szFindUTF8, ttf.lpstrText);
     if (next)
     {
       ttf.chrg.cpMin = tr.chrg.cpMax;
@@ -375,7 +385,6 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
       ttf.chrg.cpMin = tr.chrg.cpMin;
       ttf.chrg.cpMax = 0;
     }
-    searchflags = SCFIND_WHOLEWORD;
     if (bFindWordMatchCase)
     {
       searchflags |= SCFIND_MATCHCASE;
@@ -406,7 +415,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
     }
     else
     {
-      SendMessage(hwnd, SCI_SETCURRENTPOS, cpos, 0);
+      SciCall_SetCurrentPos(cpos);
     }
     if (tr.lpstrText)
     {
