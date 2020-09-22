@@ -91,7 +91,7 @@ BOOL   Style_StrGetCase(LPCWSTR, int*);
 BOOL   Style_StrGetAlpha(LPCWSTR, int*);
 BOOL   Style_SelectFont(HWND, LPWSTR, int, BOOL);
 BOOL   Style_SelectColor(HWND, BOOL, LPWSTR, int);
-void   Style_SetStyles(HWND, int, LPCWSTR);
+void   Style_SetStyles(HWND, int, int, LPCWSTR);
 void   Style_SetFontQuality(HWND, LPCWSTR);
 void   Style_GetCurrentLexerName(LPWSTR, int);
 int    Style_GetLexerIconId(PEDITLEXER);
