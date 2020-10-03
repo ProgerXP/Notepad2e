@@ -4849,8 +4849,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_FINDNEXTSEL:
     case CMD_FINDPREVSEL:
     case IDM_EDIT_SAVEFIND: {
-        int cchSelection = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-                           (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+        // [2e]: Save Find Text (Alt+F3) - remove selection #321
+        const int iAnchor = SciCall_GetAnchor();
+        const int iSelectionStart = SciCall_GetSelStart();
+        const int iSelectionEnd = SciCall_GetSelEnd();
+        // [/2e]
+        int cchSelection = iSelectionEnd - iSelectionStart;
         if (cchSelection == 0)
         {
           SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
@@ -4895,6 +4899,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           switch (LOWORD(wParam))
           {
             case IDM_EDIT_SAVEFIND:
+              // [2e]: Save Find Text (Alt+F3) - remove selection #321
+              if (iAnchor == iSelectionStart)
+                SciCall_SetSel(iSelectionStart, iSelectionEnd);
+              else
+                SciCall_SetSel(iSelectionEnd, iSelectionStart);
+              // [/2e]
               break;
 
             case CMD_FINDNEXTSEL:
