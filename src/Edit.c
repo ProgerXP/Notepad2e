@@ -6061,7 +6061,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
             {
               if (n2e_GetGotoNumber(wsPos, &iNewPos, TRUE) &&
                   iNewPos >= 0 &&
-                  iNewPos < iMaxPos)
+                  iNewPos <= iMaxPos)
               {
                 n2e_JumpToOffset(hwndEdit, iNewPos);
                 DestroyWindow(hwnd);
