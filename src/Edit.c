@@ -5386,6 +5386,10 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
+  // [2e]: Do not clear new selection on exit from Edit mode #318
+  if (n2e_IsSelectionEditModeOn())
+    n2e_SelectionEditStop(SES_APPLY);
+
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
