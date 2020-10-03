@@ -4636,15 +4636,10 @@ void EditJumpTo(HWND hwnd, int iNewLine, int iNewCol)
       iNewPos = (int)SendMessage(hwnd, SCI_POSITIONAFTER, (WPARAM)iNewPos, 0);
     }
 
-    SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 5);
-
     iNewPos = min(iNewPos, iLineEndPos);
-    SendMessage(hwnd, SCI_GOTOPOS, (WPARAM)iNewPos, 0);
-    SendMessage(hwnd, SCI_CHOOSECARETX, 0, 0);
 
-    SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0);
+    // [2e]: Ctrl+G - respect ScrollYCaretPolicy #322
+    EditSelectEx(hwnd, iNewPos, iNewPos);
   }
 }
 

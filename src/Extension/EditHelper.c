@@ -257,7 +257,7 @@ void n2e_AdjustOffset(const int pos)
 void n2e_JumpToOffset(const HWND hwnd, const int iNewPos)
 {
   n2e_AdjustOffset(iNewPos);
-  SendMessage(hwnd, SCI_GOTOPOS, (WPARAM)iNewPos, 0);
+  EditSelectEx(hwnd, iNewPos, iNewPos);
 }
 
 int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf)
