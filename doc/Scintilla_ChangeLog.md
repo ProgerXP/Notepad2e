@@ -630,14 +630,14 @@ Add message handler and replace some code:
     drtp.dpiX = 96.0;
     drtp.dpiY = 96.0;
 >>
-    drtp.dpiX = GetDpiX();
-    drtp.dpiY = GetDpiY();
+    drtp.dpiX = DEFAULT_SCREEN_DPI;
+    drtp.dpiY = DEFAULT_SCREEN_DPI;
 
 ...
 
         96.0f, 96.0f, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
 >>
-        GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+        DEFAULT_SCREEN_DPI, DEFAULT_SCREEN_DPI, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
 
 ...
 
@@ -654,8 +654,8 @@ Add message handler and replace some code:
             drtp.dpiX = 96.0;
             drtp.dpiY = 96.0;
 >>
-            drtp.dpiX = GetDpiX();
-            drtp.dpiY = GetDpiY();
+            drtp.dpiX = DEFAULT_SCREEN_DPI;
+            drtp.dpiY = DEFAULT_SCREEN_DPI;
 [/scintilla/win32/ScintillaWin.cxx]
 
 Add required subroutines:

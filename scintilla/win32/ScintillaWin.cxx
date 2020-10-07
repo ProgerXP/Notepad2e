@@ -563,8 +563,8 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 		drtp.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 		drtp.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 		drtp.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-		drtp.dpiX = GetDpiX();
-		drtp.dpiY = GetDpiY();
+		drtp.dpiX = DEFAULT_SCREEN_DPI;
+		drtp.dpiY = DEFAULT_SCREEN_DPI;
 		drtp.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 		drtp.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
@@ -603,9 +603,9 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 			D2D1::RenderTargetProperties(
 				D2D1_RENDER_TARGET_TYPE_DEFAULT ,
 				D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
-				GetDpiSystemScaleFactorX(), GetDpiSystemScaleFactorY(), D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
+				DEFAULT_SCREEN_DPI, DEFAULT_SCREEN_DPI, D2D1_RENDER_TARGET_USAGE_NONE, D2D1_FEATURE_LEVEL_DEFAULT),
 			D2D1::HwndRenderTargetProperties(hw, size),
-			&pRenderTarget);
+			(ID2D1HwndRenderTarget**)&pRenderTarget);
 #endif
 		// Pixmaps were created to be compatible with previous render target so
 		// need to be recreated.

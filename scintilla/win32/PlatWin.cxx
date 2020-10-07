@@ -1217,11 +1217,11 @@ void SurfaceD2D::SetFont(const Font &font_) {
 }
 
 int SurfaceD2D::LogPixelsY() {
-	return logPixelsY;
+	return GetDpiY();
 }
 
 int SurfaceD2D::DeviceHeightFont(int points) {
-	return ::MulDiv(points, LogPixelsY(), GetDpiFont());
+	return ::MulDiv(points, LogPixelsY(), DEFAULT_FONT_DPI);
 }
 
 void SurfaceD2D::MoveTo(int x_, int y_) {

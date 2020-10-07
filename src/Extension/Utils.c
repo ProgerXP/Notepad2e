@@ -42,6 +42,7 @@
 #define INI_SETTING_WORD_NAVIGATION_MODE L"WordNavigationMode"
 #define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
 #define INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE L"FindSelectToMatchingBraceMode"
+#define INI_SETTING_USE_DIRECTWRITE L"UseDirectWrite"
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
 #endif
@@ -77,6 +78,7 @@ EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
+BOOL bUseDirectWrite = TRUE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
 BOOL bLPegEnabled = FALSE;
@@ -415,6 +417,7 @@ void n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
+  bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -499,6 +502,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 #endif
