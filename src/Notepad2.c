@@ -3003,48 +3003,40 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
         if (iSel > 0)
           break;
-        int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-        if (iSel == 0)
+        // [2e]: Always select closest word #205
+        const int iPos = SciCall_GetCurrentPos();
+        const int iLine = SciCall_LineFromPosition(iPos);
+        int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
+        int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
+        if (iWordStart == iWordEnd)
         {
-          int iWordStart = (int)SendMessage(hwndEdit, SCI_WORDSTARTPOSITION, iPos, TRUE);
-          int iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iPos, TRUE);
-          if (iWordStart == iWordEnd)  // we are in whitespace salad...
+          // search forward
+          const int iLineEndPos = SciCall_LineEndPosition(iLine);
+          int i = iPos;
+          while ((i < iLineEndPos) && (iWordStart == iWordEnd))
           {
-            iWordStart = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iPos, FALSE);
-            iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
-            // [2e]: Always select closest word #205
-            const int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0);
-            const int iLineEndPos = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLine, 0);
-            while ((iWordStart == iWordEnd) && (iWordStart < iLineEndPos))
-            {
-              iWordStart = (int)SendMessage(hwndEdit, SCI_WORDSTARTPOSITION, iWordEnd + 1, TRUE);
-              iWordEnd = (int)SendMessage(hwndEdit, SCI_WORDENDPOSITION, iWordStart, TRUE);
-            }
-            // [/2e]
-          }
-          if (iWordStart != iWordEnd)
-          {
-            SendMessage(hwndEdit, SCI_SETSEL, iWordStart, iWordEnd);
-          }
-
-          iSel =
-            (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-            (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-          if (iSel == 0)
-          {
-            int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0);
-            int iLineStart = (int)SendMessage(hwndEdit, SCI_GETLINEINDENTPOSITION, iLine, 0);
-            int iLineEnd = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLine, 0);
-            SendMessage(hwndEdit, SCI_SETSEL, iLineStart, iLineEnd);
+            iWordStart = SciCall_GetWordStartPos(i, TRUE);
+            iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+            i = iWordEnd + 1;
           }
         }
-        else
+        if (iWordStart == iWordEnd)
         {
-          int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0);
-          int iLineStart = (int)SendMessage(hwndEdit, SCI_GETLINEINDENTPOSITION, iLine, 0);
-          int iLineEnd = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, iLine, 0);
-          SendMessage(hwndEdit, SCI_SETSEL, iLineStart, iLineEnd);
+          // search backward
+          const int iLineStartPos = SciCall_PositionFromLine(iLine);
+          int i = iPos;
+          while ((i > iLineStartPos) && (iWordStart == iWordEnd))
+          {
+            iWordEnd = SciCall_GetWordEndPos(i, TRUE);
+            iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
+            i = iWordStart - 1;
+          }
         }
+        if (iWordStart != iWordEnd)
+        {
+          SciCall_SetSel(iWordStart, iWordEnd);
+        }
+        // [/2e]
       }
 
       break;
