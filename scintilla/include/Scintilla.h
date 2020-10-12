@@ -1047,6 +1047,8 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_DESCRIPTIONOFSTYLE 4032
 #define SCI_SETSKIPUIUPDATE 9000
 #define SCI_SETDPI 9001
+#define SCI_ALTWORDLEFT 9002
+#define SCI_ALTWORDRIGHT 9003
 #define SC_MOD_NONE 0x0
 #define SC_MOD_INSERTTEXT 0x1
 #define SC_MOD_DELETETEXT 0x2

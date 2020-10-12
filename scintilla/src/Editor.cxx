@@ -3501,11 +3501,13 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 				break;
 			case SCI_WORDLEFT:
 			case SCI_WORDLEFTEXTEND:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1));
+			case SCI_ALTWORDLEFT:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, iMessage == SCI_ALTWORDLEFT));
 				break;
 			case SCI_WORDRIGHT:
 			case SCI_WORDRIGHTEXTEND:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1));
+			case SCI_ALTWORDRIGHT:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, iMessage == SCI_ALTWORDRIGHT));
 				break;
 			case SCI_WORDLEFTEND:
 			case SCI_WORDLEFTENDEXTEND:
@@ -3585,7 +3587,9 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 				break;
 
 			case SCI_WORDLEFT:
+			case SCI_ALTWORDLEFT:
 			case SCI_WORDRIGHT:
+			case SCI_ALTWORDRIGHT:
 			case SCI_WORDLEFTEND:
 			case SCI_WORDRIGHTEND:
 			case SCI_WORDPARTLEFT:
@@ -3672,13 +3676,13 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 		switch (iMessage) {
 		case SCI_DELWORDLEFT:
 			rangeDelete = Range(
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1),
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
 				sel.Range(r).caret.Position());
 			break;
 		case SCI_DELWORDRIGHT:
 			rangeDelete = Range(
 				sel.Range(r).caret.Position(),
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1));
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
 			break;
 		case SCI_DELWORDRIGHTEND:
 			rangeDelete = Range(
@@ -3761,8 +3765,10 @@ int Editor::KeyCommand(unsigned int iMessage) {
 	case SCI_CHARRIGHTEXTEND:
 	case SCI_CHARRIGHTRECTEXTEND:
 	case SCI_WORDLEFT:
+	case SCI_ALTWORDLEFT:
 	case SCI_WORDLEFTEXTEND:
 	case SCI_WORDRIGHT:
+	case SCI_ALTWORDRIGHT:
 	case SCI_WORDRIGHTEXTEND:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:
@@ -7567,8 +7573,10 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_CHARRIGHT:
 	case SCI_CHARRIGHTEXTEND:
 	case SCI_WORDLEFT:
+	case SCI_ALTWORDLEFT:
 	case SCI_WORDLEFTEXTEND:
 	case SCI_WORDRIGHT:
+	case SCI_ALTWORDRIGHT:
 	case SCI_WORDRIGHTEXTEND:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:

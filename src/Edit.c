@@ -208,6 +208,9 @@ HWND EditCreate(HWND hwndParent)
   SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_HOME + (SCMOD_SHIFT << 16)), SCI_VCHOMEWRAPEXTEND);
   SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_END + (SCMOD_SHIFT << 16)), SCI_LINEENDWRAPEXTEND);
 
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_LEFT + (SCMOD_ALT << 16)), SCI_ALTWORDLEFT);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_RIGHT + (SCMOD_ALT << 16)), SCI_ALTWORDRIGHT);
+
   // Init default values for printing
   EditPrintInit();
 
