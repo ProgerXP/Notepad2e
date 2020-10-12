@@ -316,8 +316,8 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
     // look up for new word for search
     if (!has)
     {
-      tr.chrg.cpMin = next ? cpos : max(cpos - _N2E_SEARCH_FOR_WORD_LIMIT, 0);
-      tr.chrg.cpMax = next ? min(cpos + _N2E_SEARCH_FOR_WORD_LIMIT, doclen) : cpos;
+      tr.chrg.cpMin = cpos;
+      tr.chrg.cpMax = min(cpos + _N2E_SEARCH_FOR_WORD_LIMIT, doclen);
       wlen = tr.chrg.cpMax - tr.chrg.cpMin;
       if (wlen > 0)
       {
@@ -330,7 +330,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
         while (counter <= wlen)
         {
           ++counter;
-          symb = next ? tr.lpstrText[counter] : tr.lpstrText[wlen - counter];
+          symb = tr.lpstrText[counter];
           if (N2E_IS_LITERAL(symb))
           {
             if (!res)
@@ -342,17 +342,15 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
           {
             if (res)
             {
+              tr.lpstrText[counter] = '\0';
+              ttf.lpstrText = tr.lpstrText + res;
               if (next)
               {
-                tr.chrg.cpMax = cpos + counter;
-                tr.lpstrText[counter] = '\0';
-                ttf.lpstrText = tr.lpstrText + res;
+                tr.chrg.cpMax = cpos + counter;                
               }
               else
               {
-                tr.chrg.cpMin = cpos - res;
-                tr.lpstrText[wlen - res + 1] = '\0';
-                ttf.lpstrText = tr.lpstrText + wlen - counter + 1;
+                tr.chrg.cpMin = cpos;
               }
               break;
             }
