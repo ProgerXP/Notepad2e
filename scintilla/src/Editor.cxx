@@ -3398,6 +3398,18 @@ Sci::Position Editor::LineEndWrapPosition(Sci::Position position) {
 		return endPos;
 }
 
+static bool IsAltWordMessage(unsigned int iMessage) noexcept {
+	switch (iMessage) {
+	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHTEXTEND:
+		return true;
+	default:
+		return false;
+	}
+}
+
 int Editor::HorizontalMove(unsigned int iMessage) {
 	if (sel.selType == Selection::selLines) {
 		return 0; // horizontal moves with line selection have no effect
@@ -3502,12 +3514,14 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 			case SCI_WORDLEFT:
 			case SCI_WORDLEFTEXTEND:
 			case SCI_ALTWORDLEFT:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, iMessage == SCI_ALTWORDLEFT));
+			case SCI_ALTWORDLEFTEXTEND:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, IsAltWordMessage(iMessage)));
 				break;
 			case SCI_WORDRIGHT:
 			case SCI_WORDRIGHTEXTEND:
 			case SCI_ALTWORDRIGHT:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, iMessage == SCI_ALTWORDRIGHT));
+			case SCI_ALTWORDRIGHTEXTEND:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, IsAltWordMessage(iMessage)));
 				break;
 			case SCI_WORDLEFTEND:
 			case SCI_WORDLEFTENDEXTEND:
@@ -3609,7 +3623,9 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 			case SCI_CHARLEFTEXTEND:
 			case SCI_CHARRIGHTEXTEND:
 			case SCI_WORDLEFTEXTEND:
+			case SCI_ALTWORDLEFTEXTEND:
 			case SCI_WORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHTEXTEND:
 			case SCI_WORDLEFTENDEXTEND:
 			case SCI_WORDRIGHTENDEXTEND:
 			case SCI_WORDPARTLEFTEXTEND:
@@ -3767,9 +3783,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 	case SCI_WORDLEFT:
 	case SCI_ALTWORDLEFT:
 	case SCI_WORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND:
 	case SCI_WORDRIGHT:
 	case SCI_ALTWORDRIGHT:
 	case SCI_WORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:
 	case SCI_WORDRIGHTEND:
@@ -7575,9 +7593,11 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_WORDLEFT:
 	case SCI_ALTWORDLEFT:
 	case SCI_WORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND:
 	case SCI_WORDRIGHT:
 	case SCI_ALTWORDRIGHT:
 	case SCI_WORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:
 	case SCI_WORDRIGHTEND:

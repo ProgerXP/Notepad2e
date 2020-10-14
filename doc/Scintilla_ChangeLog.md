@@ -764,3 +764,99 @@ Add ifdef-code:
 [/scintilla/lua/src/loadlib.c]
 
 [/**Lua LPeg Lexers #251**]
+
+
+[**Alt+Arrow to invert accelerated mode for single navigation #323**]
+
+Add new messages:
+[scintilla/include/Scintilla.h]
+#define SCI_ALTWORDLEFT 9002
+#define SCI_ALTWORDLEFTEXTEND 9003
+#define SCI_ALTWORDRIGHT 9004
+#define SCI_ALTWORDRIGHTEXTEND 9005
+[/scintilla/include/Scintilla.h]
+
+Add changes:
+[scintilla/src/Document.h]
+...
+    Sci::Position NextWordStart(Sci::Position pos, int delta, bool useAlternativeNavigation) const;
+...
+    void SetWordNavigationMode(const int iMode);
+    int CalcWordNavigationMode(const bool invertMode) const;
+...
+[/scintilla/src/Document.h]
+
+[scintilla/src/Document.cxx]
+...
+Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlternativeNavigation) const {
+    if (delta < 0) {
+        // [2e]: ctrl+arrow behavior toggle #89
+        switch (CalcWordNavigationMode(useAlternativeNavigation))
+...
+
+// [2e]: Alt + Arrow to invert accelerated mode for single navigation #323
+int Document::CalcWordNavigationMode(const bool invertMode) const
+{
+    if (!invertMode)
+        return wordNavigationMode;
+
+    return (wordNavigationMode != 0) ? 0 : 1;
+}
+...
+[/scintilla/src/Document.cxx]
+
+[scintilla/src/Editor.cxx]
+...
+static bool IsAltWordMessage(unsigned int iMessage) noexcept {
+    switch (iMessage) {
+    case SCI_ALTWORDLEFT:
+    case SCI_ALTWORDLEFTEXTEND:
+    case SCI_ALTWORDRIGHT:
+    case SCI_ALTWORDRIGHTEXTEND:
+        return true;
+    default:
+        return false;
+    }
+}
+
+int Editor::HorizontalMove(unsigned int iMessage) {
+...
+            case SCI_WORDLEFT:
+            case SCI_WORDLEFTEXTEND:
+            case SCI_ALTWORDLEFT:
+            case SCI_ALTWORDLEFTEXTEND:
+                spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, IsAltWordMessage(iMessage)));
+                break;
+            case SCI_WORDRIGHT:
+            case SCI_WORDRIGHTEXTEND:
+            case SCI_ALTWORDRIGHT:
+            case SCI_ALTWORDRIGHTEXTEND:
+                spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, IsAltWordMessage(iMessage)));
+                break;
+...
+
+            case SCI_WORDLEFT:
+            case SCI_ALTWORDLEFT:
+            case SCI_WORDRIGHT:
+            case SCI_ALTWORDRIGHT:
+...
+            case SCI_WORDLEFTEXTEND:
+            case SCI_ALTWORDLEFTEXTEND:
+            case SCI_WORDRIGHTEXTEND:
+            case SCI_ALTWORDRIGHTEXTEND:
+...
+
+        case SCI_DELWORDLEFT:
+            rangeDelete = Range(
+                pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
+                sel.Range(r).caret.Position());
+            break;
+        case SCI_DELWORDRIGHT:
+            rangeDelete = Range(
+                sel.Range(r).caret.Position(),
+                pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
+            break;
+...
+[/scintilla/src/Editor.cxx]
+
+[/**Alt+Arrow to invert accelerated mode for single navigation #323**]
