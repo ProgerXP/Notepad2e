@@ -949,6 +949,7 @@ BOOL IsUnicode(const char *pBuffer, int cb, LPBOOL lpbBOM, LPBOOL lpbReverse)
       !((i & IS_TEXT_UNICODE_UNICODE_MASK) && (i & IS_TEXT_UNICODE_REVERSE_MASK)) &&
       !(i & IS_TEXT_UNICODE_ODD_LENGTH) &&
       !(i & IS_TEXT_UNICODE_ILLEGAL_CHARS && !(i & IS_TEXT_UNICODE_REVERSE_SIGNATURE)) &&
+      // [2e]: Invalid file charset detection under Japanese locale #270
       !((i & IS_TEXT_UNICODE_UNICODE_MASK) == IS_TEXT_UNICODE_STATISTICS) &&
       !((i & IS_TEXT_UNICODE_REVERSE_MASK) == IS_TEXT_UNICODE_REVERSE_STATISTICS)))
   {
