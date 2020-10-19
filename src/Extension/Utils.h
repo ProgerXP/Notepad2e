@@ -201,3 +201,4 @@ void n2e_ToolTipTrackPosition(const HWND hwndToolTip, const POINT pt);
 void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVOID lpToolInfo);
 
 BOOL n2e_FindMRUAdd(LPCSTR pszNew);
+void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars);

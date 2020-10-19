@@ -4420,7 +4420,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
     pmsz = LocalAlloc(LPTR, cchm + 1);
     SendMessage(hwnd, SCI_GETLINE, (WPARAM)iLine, (LPARAM)pmsz);
-    StrTrimA(pmsz, "\r\n");
+    // Sorting adds line breaks under Japanese locale #269
+    n2e_StrTrimA(pmsz, "\r\n");
     cchTotal += cchm;
     ichlMax = max(ichlMax, cchm);
 
