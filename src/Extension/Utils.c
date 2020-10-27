@@ -457,25 +457,29 @@ void n2e_LoadINI()
     bUsePrefixInOpenDialog = TRUE;
     if (IsWindows7OrGreater())
     {
-      HKEY hKey;
-      if (SUCCEEDED(RegOpenKey(HKEY_CURRENT_USER,
-                               L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoComplete",
-                               &hKey)))
+      BOOL bAutoCompleteValue = FALSE;
+      HKEY hKey = INVALID_HANDLE_VALUE;
+      if (RegOpenKeyExW(HKEY_CURRENT_USER,
+                        L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoComplete",
+                        0,
+                        KEY_READ,
+                        &hKey) == ERROR_SUCCESS)
       {
         DWORD dwType = REG_SZ;
         WCHAR wchValue[MAX_PATH] = { 0 };
         DWORD cbValue = sizeof(wchValue);
-        if (SUCCEEDED(RegQueryValueEx(hKey,
-                                      L"Append Completion",
-                                      NULL,
-                                      &dwType,
-                                      (LPBYTE)&wchValue,
-                                      &cbValue)))
+        if (RegQueryValueEx(hKey,
+                            L"Append Completion",
+                            NULL,
+                            &dwType,
+                            (LPBYTE)&wchValue,
+                            &cbValue) == ERROR_SUCCESS)
         {
-          bUsePrefixInOpenDialog = (StrStrI(wchValue, L"yes") != wchValue);
+          bAutoCompleteValue = (StrStrI(wchValue, L"yes") == wchValue);
         }
         RegCloseKey(hKey);
       }
+      bUsePrefixInOpenDialog = !bAutoCompleteValue;
     }
   }
 }
@@ -839,6 +843,10 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
               {
                 WCHAR out[MAX_PATH];
                 LPWSTR final_str = buf;
+                while (final_str[0] == L'\"')
+                {
+                  ++final_str;
+                }
                 if (wcsstr(last_selected, buf))
                 {
                   final_str = last_selected;
