@@ -839,7 +839,7 @@ UINT_PTR CALLBACK n2e_OFNHookProc(HWND hdlg, UINT uiMsg, WPARAM wParam, LPARAM l
               }
               SetWindowLongPtr(hdlg, DWLP_MSGRESULT, 1);
               N2E_TRACE("OFN OK '%S' ", buf);
-              if (len)
+              if (len && !PathIsDirectory(buf))
               {
                 WCHAR out[MAX_PATH];
                 LPWSTR final_str = buf;
