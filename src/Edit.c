@@ -5680,6 +5680,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
   char szFind2[512];
   char *pszReplace2;
+  BOOL bRegexStartOfLine;
   BOOL bRegexStartOrEndOfLine;
 
   if (!lstrlenA(lpefr->szFind))
@@ -5703,6 +5704,9 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     return FALSE;
   }
 
+  bRegexStartOfLine =
+    (lpefr->fuFlags & SCFIND_REGEXP &&
+    (szFind2[0] == '^'));
   bRegexStartOrEndOfLine =
     (lpefr->fuFlags & SCFIND_REGEXP &&
     (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
@@ -5778,6 +5782,12 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     if (ttf.chrgText.cpMin == ttf.chrgText.cpMax &&
         !(bRegexStartOrEndOfLine && iReplacedLen > 0))
       ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONAFTER, ttf.chrg.cpMin, 0);
+
+    if (bRegexStartOfLine)
+    {
+      ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin) + 1);
+      SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrg.cpMin, 0);
+    }
 
     // [2e]: Recursive Regexp Replace on $ #307
     if (skipLinesCounter > 0)
