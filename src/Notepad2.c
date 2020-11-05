@@ -2073,10 +2073,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
   EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i);
   EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
-  EnableCmd(hmenu, IDM_EDIT_CONVERTUPPERCASE, i);
-  EnableCmd(hmenu, IDM_EDIT_CONVERTLOWERCASE, i);
-  EnableCmd(hmenu, IDM_EDIT_INVERTCASE, i);
-  EnableCmd(hmenu, IDM_EDIT_TITLECASE, i);
   EnableCmd(hmenu, IDM_EDIT_SENTENCECASE, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES, i);
@@ -3285,6 +3281,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_CONVERTUPPERCASE:
       BeginWaitCursor();
+      // [2e]: Case commands to work on empty selection (next word) #319
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
       SendMessage(hwndEdit, SCI_UPPERCASE, 0, 0);
       EndWaitCursor();
       break;
@@ -3292,6 +3290,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_CONVERTLOWERCASE:
       BeginWaitCursor();
+      // [2e]: Case commands to work on empty selection (next word) #319
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
       SendMessage(hwndEdit, SCI_LOWERCASE, 0, 0);
       EndWaitCursor();
       break;
@@ -3299,6 +3299,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_INVERTCASE:
       BeginWaitCursor();
+      // [2e]: Case commands to work on empty selection (next word) #319
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
       EditInvertCase(hwndEdit);
       EndWaitCursor();
       break;
@@ -3306,6 +3308,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_TITLECASE:
       BeginWaitCursor();
+      // [2e]: Case commands to work on empty selection (next word) #319
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
       EditTitleCase(hwndEdit);
       EndWaitCursor();
       break;
