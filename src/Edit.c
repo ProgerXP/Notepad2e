@@ -6431,6 +6431,7 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         if (hFontLink == NULL)
         {
           HDC hdc = GetDC(hwnd);
+          hFontLink = (HFONT)SendMessage(hwnd, WM_GETFONT, 0, 0);
           GetObject(hFontLink, sizeof(LOGFONT), &lf);
           lstrcpy(lf.lfFaceName, L"Georgia");
           lf.lfUnderline = TRUE;
