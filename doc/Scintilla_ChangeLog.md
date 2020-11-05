@@ -764,3 +764,14 @@ Add ifdef-code:
 [/scintilla/lua/src/loadlib.c]
 
 [/**Lua LPeg Lexers #251**]
+
+[**Inconsistent behaviour in navigation on a line containing Japanese symbols #247**]
+Replace code:
+[scintilla/src/EditView.cxx]
+posRet = ll->LineStart(subLine + 1) + posLineStart - 1;
+
+->
+
+posRet = model.pdoc->MovePositionOutsideChar(ll->LineStart(subLine + 1) + posLineStart - 1, -1, false);
+[/scintilla/src/EditView.cxx]
+[/**Inconsistent behaviour in navigation on a line containing Japanese symbols #247**]
