@@ -989,15 +989,15 @@ BEGIN
     EDITTEXT        101,7,48,98,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,125,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,125,24,50,14
-    LTEXT           "$(L)",200,7,72,14,8
-    LTEXT           "$(0L)",201,30,72,18,8
-    LTEXT           "Document line number.",IDC_STATIC,57,72,74,8
-    LTEXT           "$(N)",202,7,82,15,8
-    LTEXT           "$(0N)",203,30,82,19,8
-    LTEXT           "Continuous number.",IDC_STATIC,57,82,66,8
-    LTEXT           "$(I)",204,7,92,13,8
-    LTEXT           "$(0I)",205,30,92,17,8
-    LTEXT           "Continuous number (zero-based).",IDC_STATIC,57,92,109,8
+    CONTROL         "$(L)",200,"SysLink",0x0,7,72,14,8
+    CONTROL         "$(0L)",201,"SysLink",0x0,30,72,18,8
+    LTEXT           "Document line number.",IDC_STATIC,57,72,118,8
+    CONTROL         "$(N)",202,"SysLink",0x0,7,82,15,8
+    CONTROL         "$(0N)",203,"SysLink",0x0,30,82,19,8
+    LTEXT           "Continuous number.",IDC_STATIC,57,82,118,8
+    CONTROL         "$(I)",204,"SysLink",0x0,7,92,13,8
+    CONTROL         "$(0I)",205,"SysLink",0x0,30,92,17,8
+    LTEXT           "Continuous number (zero-based).",IDC_STATIC,57,92,118,8
 END
 
 IDD_INSERTTAG DIALOGEX 0, 0, 182, 70

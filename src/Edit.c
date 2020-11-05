@@ -6201,34 +6201,33 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 {
   static PMODLINESDATA pdata;
 
-  static int id_hover;
-  static int id_capture;
-
-  static HFONT hFontNormal;
-  static HFONT hFontHover;
-
-  static HCURSOR hCursorNormal;
-  static HCURSOR hCursorHover;
+  // [2e]: Modify Lines - use Syslink #289
+  const DWORD iMinLinkID = 200;
+  const DWORD iMaxLinkID = 205;
+  const LPCWSTR lpcwstrNumberFormats[] = {
+    L"$(L)", L"$(0L)", L"$(N)", L"$(0N)", L"$(I)", L"$(0I)"
+  };
+  static DWORD dwFocusID = 0;
+  // [/2e]
 
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
 
     case WM_INITDIALOG: {
-        LOGFONT lf;
 
-        id_hover = 0;
-        id_capture = 0;
-
-        if (NULL == (hFontNormal = (HFONT)SendDlgItemMessage(hwnd, 200, WM_GETFONT, 0, 0)))
-          hFontNormal = GetStockObject(DEFAULT_GUI_FONT);
-        GetObject(hFontNormal, sizeof(LOGFONT), &lf);
-        lf.lfUnderline = TRUE;
-        hFontHover = CreateFontIndirect(&lf);
-
-        hCursorNormal = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
-        if (!(hCursorHover = LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND))))
-          hCursorHover = LoadCursor(g_hInstance, MAKEINTRESOURCE(IDC_ARROW));
+        // [2e]: Modify Lines - use Syslink #289
+        for (DWORD dwId = iMinLinkID; dwId <= iMaxLinkID; ++dwId)
+        {
+          const int iFormatIndex = dwId - iMinLinkID;
+          WCHAR linkText[MAX_PATH] = { 0 };
+          LPCWSTR lpcwstrFormat = lpcwstrNumberFormats[iFormatIndex];
+          wcscpy(linkText, L"<a>");
+          wcsncat(linkText, lpcwstrFormat, wcslen(lpcwstrFormat));
+          wcscat(linkText, L"</a>");
+          SetDlgItemTextW(hwnd, dwId, linkText);
+        }
+        // [/2e]
 
         pdata = (PMODLINESDATA)lParam;
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
@@ -6246,115 +6245,6 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
       }
       return TRUE;
 
-    case WM_DESTROY:
-      DeleteObject(hFontHover);
-      return FALSE;
-
-    case WM_NCACTIVATE:
-      if (!(BOOL)wParam)
-      {
-        if (id_hover != 0)
-        {
-          int _id_hover = id_hover;
-          id_hover = 0;
-          id_capture = 0;
-        }
-      }
-      return FALSE;
-    case WM_CTLCOLORSTATIC: {
-        DWORD dwId = GetWindowLong((HWND)lParam, GWL_ID);
-        HDC hdc = (HDC)wParam;
-        if (dwId >= 200 && dwId <= 205)
-        {
-          SetBkMode(hdc, TRANSPARENT);
-          if (GetSysColorBrush(COLOR_HOTLIGHT))
-          {
-            SetTextColor(hdc, GetSysColor(COLOR_HOTLIGHT));
-          }
-          else
-          {
-            SetTextColor(hdc, RGB(0, 0, 255));
-          }
-          SelectObject(hdc, hFontHover);
-          return (LONG_PTR)GetSysColorBrush(COLOR_BTNFACE);
-        }
-      }
-      break;
-    case WM_MOUSEMOVE: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (GetActiveWindow() == hwnd)
-        {
-          if (dwId >= 200 && dwId <= 205)
-          {
-            if (id_capture == dwId || id_capture == 0)
-            {
-              if (id_hover != id_capture || id_hover == 0)
-              {
-                id_hover = dwId;
-              }
-            }
-            else if (id_hover != 0)
-            {
-              int _id_hover = id_hover;
-              id_hover = 0;
-            }
-          }
-          else if (id_hover != 0)
-          {
-            int _id_hover = id_hover;
-            id_hover = 0;
-          }
-          SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-        }
-      }
-      break;
-    case WM_LBUTTONDOWN: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (dwId >= 200 && dwId <= 205)
-        {
-          GetCapture();
-          id_hover = dwId;
-          id_capture = dwId;
-        }
-        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-      }
-      break;
-    case WM_LBUTTONUP: {
-        POINT pt = { LOWORD(lParam), HIWORD(lParam) };
-        HWND hwndHover = ChildWindowFromPoint(hwnd, pt);
-        DWORD dwId = GetWindowLong(hwndHover, GWL_ID);
-        if (id_capture != 0)
-        {
-          ReleaseCapture();
-          if (id_hover == id_capture)
-          {
-            int id_focus = GetWindowLong(GetFocus(), GWL_ID);
-            if (id_focus == 100 || id_focus == 101)
-            {
-              WCHAR wch[8];
-              GetDlgItemText(hwnd, id_capture, wch, COUNTOF(wch));
-              SendDlgItemMessage(hwnd, id_focus, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)wch);
-            }
-          }
-          id_capture = 0;
-        }
-        SetCursor(id_hover != 0 ? hCursorHover : hCursorNormal);
-      }
-      break;
-
-    case WM_CANCELMODE:
-      if (id_capture != 0)
-      {
-        ReleaseCapture();
-        id_hover = 0;
-        id_capture = 0;
-        SetCursor(hCursorNormal);
-      }
-      break;
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
@@ -6368,7 +6258,36 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
           EndDialog(hwnd, IDCANCEL);
           break;
       }
+      // [2e]: Modify Lines - use Syslink #289
+      if (((LOWORD(wParam) == 100) || (LOWORD(wParam) == 101))
+        && ((HIWORD(wParam) == EN_SETFOCUS) || (HIWORD(wParam) == EN_KILLFOCUS)))
+      {
+        dwFocusID = LOWORD(wParam);
+      }
+      // [/2e]
       return TRUE;
+
+    // [2e]: Modify Lines - use Syslink #289
+    case WM_NOTIFY: {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+      case NM_CLICK:
+      case NM_RETURN: {
+          const DWORD dwControlId = pnmhdr->idFrom;
+          if ((dwControlId >= iMinLinkID) && (dwControlId <= iMaxLinkID))
+          {
+            const int iFormatIndex = dwControlId - iMinLinkID;
+            SendDlgItemMessage(hwnd, dwFocusID, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)lpcwstrNumberFormats[iFormatIndex]);
+            SetFocus(GetDlgItem(hwnd, dwFocusID));
+            return TRUE;
+          }
+        }
+        break;
+      }
+    }
+    break;
+    // [/2e]
   }
   return FALSE;
 }
