@@ -3013,7 +3013,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             iWordStart = SciCall_GetWordStartPos(i, TRUE);
             iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
-            i = iWordEnd + 1;
+            i = SciCall_PositionAfter(iWordEnd);
           }
         }
         if (iWordStart == iWordEnd)
@@ -3025,7 +3025,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             iWordEnd = SciCall_GetWordEndPos(i, TRUE);
             iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
-            i = iWordStart - 1;
+            i = SciCall_PositionBefore(iWordStart);
           }
         }
         if (iWordStart != iWordEnd)

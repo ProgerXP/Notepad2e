@@ -96,6 +96,8 @@ DeclareSciCallV1(SetAnchor, SETANCHOR, int, position);
 DeclareSciCallR1(LineFromPosition, LINEFROMPOSITION, int, int, position);
 DeclareSciCallR1(LineEndPosition, GETLINEENDPOSITION, int, int, line);
 DeclareSciCallR1(PositionFromLine, POSITIONFROMLINE, int, int, line);
+DeclareSciCallV1(PositionAfter, POSITIONAFTER, int, position);
+DeclareSciCallV1(PositionBefore, POSITIONBEFORE, int, position);
 DeclareSciCallV2(DeleteRange, DELETERANGE, int, start, int, lengthDelete);
 DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, ft);
 DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
