@@ -87,6 +87,12 @@ typedef enum
 
 typedef enum
 {
+  TQB_DISABLED = 0,
+  TQB_ENABLED = 0,
+} ETreatQuotesAsBraces;
+
+typedef enum
+{
   HCS_DISABLED = 0,
   HCS_WORD = 1,
   HCS_SELECTION = 2,
@@ -121,6 +127,7 @@ typedef struct TAddToFavoritesParams
 extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
+extern ETreatQuotesAsBraces iTreatQuotesAsBraces;
 
 void n2e_InitInstance();
 void n2e_ExitInstance();

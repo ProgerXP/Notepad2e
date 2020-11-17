@@ -71,3 +71,6 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   LPCSTR lpPrefixAbsFormat, LPCSTR lpPrefixAbsZeroFormat,
   LPCSTR lpPrefixRelFormat, LPCSTR lpPrefixRelZeroFormat,
   LPCSTR lpPrefixRel0Format, LPCSTR lpPrefixRel0ZeroFormat);
+
+LPCSTR n2e_GetBracesList();
+BOOL n2e_TreatQuoteAsBraces();

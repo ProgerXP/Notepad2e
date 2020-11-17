@@ -19,6 +19,9 @@
 #include "Trace.h"
 #include "Utils.h"
 
+#define BRACES "()[]{}<>"
+#define BRACES_WITH_QUOTES BRACES "'\"`"
+
 WCHAR wchLastHTMLTag[0xff] = L"<tag>";
 WCHAR wchLastHTMLEndTag[0xff] = L"</tag>";
 
@@ -1427,4 +1430,14 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   n2e_ReplaceSubstringFormat(&buf[0], "$(I)", lpPrefixRel0Format, iLineIndex - iLineStart);
   n2e_ReplaceSubstringFormat(&buf[0], "$(0I)", lpPrefixRel0ZeroFormat, iLineIndex - iLineStart);
   return buf;
+}
+
+BOOL n2e_TreatQuoteAsBraces()
+{
+  return iTreatQuotesAsBraces != TQB_DISABLED;
+}
+
+LPCSTR n2e_GetBracesList()
+{
+  return n2e_TreatQuoteAsBraces() ? BRACES_WITH_QUOTES : BRACES;
 }

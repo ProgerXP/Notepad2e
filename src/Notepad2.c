@@ -3672,14 +3672,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (!StrChrA("()[]{}<>", c))
+        // [2e]: Treat quotes as braces #287
+        if (!StrChrA(n2e_GetBracesList(), c))
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
           iBraceAtPos = 0;
         }
-        if (StrChrA("()[]{}<>", c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+        // [2e]: Treat quotes as braces #287
+        if (StrChrA(n2e_GetBracesList(), c))
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3699,14 +3701,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        if (!StrChrA("()[]{}<>", c))
+        // [2e]: Treat quotes as braces #287
+        if (!StrChrA(n2e_GetBracesList(), c))
         {
           iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
           c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
           iBraceAtPos = 0;
         }
-        if (StrChrA("()[]{}<>", c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+        // [2e]: Treat quotes as braces #287
+        if (StrChrA(n2e_GetBracesList(), c))
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
