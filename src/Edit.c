@@ -240,9 +240,8 @@ HWND EditCreate(HWND hwndParent, HWND* phwndEditParent)
       HWND hwnd1 = _EditCreate(hwndParent);
       HWND hwnd2 = _EditCreate(hwndParent);
       HWND hwnd3 = _EditCreate(hwndParent);
-      HWND hwndSplitter1 = CreateSplitterWnd(hwndParent, hwnd1, hwnd2, TRUE);
-      HWND hwndSplitter2 = CreateSplitterWnd(hwndParent, hwndSplitter1, hwnd3, FALSE);
-      *phwndEditParent = hwndSplitter2;
+      HWND hwndSplitter2 = CreateSplitterWnd(hwndParent, hwnd2, hwnd3, TRUE);
+      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwndSplitter2, FALSE);
       return hwnd1;
     }
   }
@@ -278,13 +277,14 @@ HWND ScintillaWindowByIndex(const int index)
     }
   case SVM_3_IN_1:
     {
-      HWND hwndSplitter = GetFirstChild(hwndEditParent);
-      HWND hwnd1 = GetFirstChild(hwndSplitter);
+      HWND hwnd1 = GetFirstChild(hwndEditParent);
       if (index == 0)
         return hwnd1;
+      HWND hwndSplitter = GetNextSibling(hwnd1);
+      HWND hwnd2 = GetFirstChild(hwndSplitter);
       if (index == 1)
-        return GetNextSibling(hwnd1);
-      return GetNextSibling(hwndSplitter);
+        return hwnd2;
+      return GetNextSibling(hwnd2);
     }
   }
 }
