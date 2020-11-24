@@ -27,6 +27,7 @@
 /************************************************************************/
 #define N2E_SELECT_INDICATOR_EDIT 12
 
+ESplitViewMode iSplitViewMode = SVM_DISABLED;
 EHighlightCurrentSelectionMode iHighlightSelection = HCS_WORD_AND_SELECTION;
 BOOL bEditSelection = FALSE;
 BOOL bEditSelectionScope = FALSE;

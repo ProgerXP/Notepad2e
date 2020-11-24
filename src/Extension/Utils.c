@@ -22,6 +22,7 @@
 #include "ProcessElevationUtils.h"
 #include "Shell32Helper.h"
 
+#define INI_SETTING_SPLIT_VIEW_MODE L"SplitViewMode"
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_EDIT_SELECTION_SCOPE L"EditSelectionScope"
 #define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
@@ -399,6 +400,7 @@ void n2e_ResetSaveOnLoseFocus()
 
 void n2e_LoadINI()
 {
+  iSplitViewMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_VIEW_MODE, iSplitViewMode);
   iHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   bEditSelectionScope = IniGetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
   iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
@@ -489,6 +491,7 @@ void n2e_LoadINI()
 
 void n2e_SaveINI()
 {
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_VIEW_MODE, iSplitViewMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
@@ -1222,6 +1225,22 @@ int n2e_GetCurrentSaveOnLoseFocusMenuID()
     return ID_SAVEONLOSEFOCUS_ENABLED;
   case SLF_ENABLED_UNTIL_NEW_FILE:
     return ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE;
+  default:
+    assert(FALSE);
+    return 0;
+  }
+}
+
+int n2e_GetSplitViewMenuID()
+{
+  switch (iSplitViewMode)
+  {
+  case SVM_DISABLED:
+    return ID_SPLITVIEW_DISABLED;
+  case SVM_SIDE_BY_SIDE:
+    return ID_SPLITVIEW_SIDEBYSIDE;
+  case SVM_3_IN_1:
+    return ID_SPLITVIEW_3IN1;
   default:
     assert(FALSE);
     return 0;

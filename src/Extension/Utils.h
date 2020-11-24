@@ -102,6 +102,13 @@ typedef enum
 
 typedef enum
 {
+  SVM_DISABLED = 0,
+  SVM_SIDE_BY_SIDE = 1,
+  SVM_3_IN_1 = 2,
+} ESplitViewMode;
+
+typedef enum
+{
   FCP_FIRST_LINE = 0,
   FCP_LAST_LINE = 1,
   FCP_CURRENT_LINE = 2,
@@ -171,6 +178,7 @@ int n2e_GetCurrentShowTitleMenuID();
 int n2e_GetCurrentLanguageIndicatorMenuID();
 int n2e_GetCurrentSaveSettingsMenuID();
 int n2e_GetCurrentSaveOnLoseFocusMenuID();
+int n2e_GetSplitViewMenuID();
 int n2e_GetCurrentHighlightCurrentSelectionMenuID();
 int n2e_GetCurrentEvalMenuID();
 

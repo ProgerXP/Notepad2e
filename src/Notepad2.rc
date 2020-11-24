@@ -283,6 +283,13 @@ BEGIN
     END
     POPUP "&View"
     BEGIN
+        POPUP "Split View"
+        BEGIN
+            MENUITEM "Disabled",                    ID_SPLITVIEW_DISABLED
+            MENUITEM "Side by side",                ID_SPLITVIEW_SIDEBYSIDE
+            MENUITEM "3 in 1",                      ID_SPLITVIEW_3IN1
+        END
+        MENUITEM SEPARATOR
         MENUITEM "&Syntax Scheme...\tF12",      IDM_VIEW_SCHEME
         MENUITEM "&2nd Default Scheme\tShift+F12", IDM_VIEW_USE2NDDEFAULT
         MENUITEM "&Customize Schemes...\tCtrl+F12", IDM_VIEW_SCHEMECONFIG

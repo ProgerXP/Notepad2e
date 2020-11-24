@@ -451,6 +451,7 @@
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\ProcessElevationUtils.c" />
     <ClCompile Include="src\Extension\Shell32Helper.c" />
+    <ClCompile Include="src\Extension\SplitterWnd.c" />
     <ClCompile Include="src\Extension\StringRecoding.c" />
     <ClCompile Include="src\Extension\StrToBase64.c" />
     <ClCompile Include="src\Extension\StrToHex.c" />
@@ -580,6 +581,7 @@
     <ClInclude Include="src\Extension\ProcessElevationUtils.h" />
     <ClInclude Include="src\Extension\SciCall.h" />
     <ClInclude Include="src\Extension\Shell32Helper.h" />
+    <ClInclude Include="src\Extension\SplitterWnd.h" />
     <ClInclude Include="src\Extension\stdafx.h" />
     <ClInclude Include="src\Extension\StringRecoding.h" />
     <ClInclude Include="src\Extension\StrToBase64.h" />

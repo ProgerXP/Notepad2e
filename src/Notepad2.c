@@ -61,6 +61,7 @@ HWND      hwndStatus;
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      hwndEdit;
+HWND      hwndEditParent;
 HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
@@ -1579,7 +1580,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   HINSTANCE hInstance;
   hInstance = ((LPCREATESTRUCT)lParam)->hInstance;
   // Setup edit control
-  hwndEdit = EditCreate(hwnd);
+  hwndEdit = EditCreate(hwnd, &hwndEditParent);
   _MsgCreate();
 
   hwndEditFrame = CreateWindowEx(
@@ -1598,8 +1599,8 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     bIsAppThemed = TRUE;
 
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (IsVista())
     {
@@ -1664,7 +1665,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   mruReplace = MRU_Create(L"Recent Replace", MRU_UTF8, 16);
   MRU_Load(mruReplace);
 
-  if (hwndEdit == NULL || hwndEditFrame == NULL ||
+  if (hwndEdit == NULL || hwndEditFrame == NULL || hwndEditParent == NULL ||
       hwndStatus == NULL || hwndToolbar == NULL || hwndReBar == NULL)
     return (-1);
 
@@ -1866,8 +1867,8 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   if (PrivateIsAppThemed())
   {
     bIsAppThemed = TRUE;
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
     if (IsVista())
     {
       cxEditFrame = 0;
@@ -1887,8 +1888,8 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   {
     bIsAppThemed = FALSE;
 
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, WS_EX_CLIENTEDGE | GetWindowLongPtr(hwndEdit, GWL_EXSTYLE));
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, WS_EX_CLIENTEDGE | GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE));
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     cxEditFrame = 0;
     cyEditFrame = 0;
@@ -1970,7 +1971,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   DeferWindowPos(hdwp, hwndEditFrame, NULL, x, y, cx, cy,
                  SWP_NOZORDER | SWP_NOACTIVATE);
 
-  DeferWindowPos(hdwp, hwndEdit, NULL, x + cxEditFrame, y + cyEditFrame,
+  DeferWindowPos(hdwp, hwndEditParent, NULL, x + cxEditFrame, y + cyEditFrame,
                  cx - 2 * cxEditFrame, cy - 2 * cyEditFrame,
                  SWP_NOZORDER | SWP_NOACTIVATE);
 
@@ -2138,6 +2139,12 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHighlightCurrentLine);
+
+  // [2e]: Split view #316
+  CheckMenuRadioItem(hmenu, ID_SPLITVIEW_DISABLED,
+    ID_SPLITVIEW_3IN1,
+    n2e_GetSplitViewMenuID(), MF_BYCOMMAND);
+  // [/2e]
 
   // [2e]: Improve selection/word highlighting #286
   CheckMenuRadioItem(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED,
@@ -3883,6 +3890,24 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SetForegroundWindow(hDlgGotoLine);
         }
       }
+      break;
+
+
+    case ID_SPLITVIEW_DISABLED:
+      iSplitViewMode = SVM_DISABLED;
+      ReloadView();
+      break;
+
+
+    case ID_SPLITVIEW_SIDEBYSIDE:
+      iSplitViewMode = SVM_SIDE_BY_SIDE;
+      ReloadView();
+      break;
+
+
+    case ID_SPLITVIEW_3IN1:
+      iSplitViewMode = SVM_3_IN_1;
+      ReloadView();
       break;
 
 
@@ -6944,6 +6969,40 @@ void UpdateToolbar()
   // [/2e]
 }
 
+
+void ReloadView()
+{
+  BOOL _bShowStatusbar = bShowStatusbar;
+
+  CREATESTRUCT cs = { 0 };
+  cs.hInstance = GetModuleHandle(NULL);
+
+  DestroyWindow(hwndStatus);
+  DestroyWindow(hwndToolbar);
+  DestroyWindow(hwndReBar);
+  DestroyWindow(hwndEditFrame);
+  DestroyWindow(hwndEditParent);
+
+  MsgCreate(hwndMain, 0, (LPARAM)&cs);
+  n2e_InitInstance();
+  n2e_ScintillaDPIInit(hwndMain);
+
+  RECT rc = { 0 };
+  GetClientRect(hwndMain, &rc);
+  MsgSize(hwndMain, SIZE_RESTORED, MAKELPARAM(rc.right-rc.left, rc.bottom-rc.top));
+
+  bShowStatusbar = _bShowStatusbar;
+  UpdateStatusbar();
+}
+
+void UpdateView()
+{
+  LRESULT pDoc = (LRESULT)SendMessage(hwndEdit, SCI_GETDOCPOINTER, 0, 0);
+  for (int i = 1; i < ScintillaWindowsCount(); ++i)
+  {
+    SendMessage(ScintillaWindowByIndex(i), SCI_SETDOCPOINTER, 0, pDoc);
+  }
+}
 
 //=============================================================================
 //

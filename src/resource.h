@@ -33,6 +33,9 @@
 #define ID_SAVEONLOSEFOCUS_ENABLED      58
 #define ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE 59
 #define IDM_FILE_ELEVATE                60
+#define ID_SPLITVIEW_DISABLED           61
+#define ID_SPLITVIEW_SIDEBYSIDE         62
+#define ID_SPLITVIEW_3IN1               63
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -489,7 +492,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         60
+#define _APS_NEXT_COMMAND_VALUE         64
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

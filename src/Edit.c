@@ -19,6 +19,7 @@
 ******************************************************************************/
 #define _WIN32_WINNT 0x501
 #include <windows.h>
+#include <windowsx.h>
 #include <shlwapi.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -38,6 +39,7 @@
 #include "Extension/ExtSelection.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
+#include "Extension/SplitterWnd.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/UnicodeQuotes.h"
 #include "Extension/Utils.h"
@@ -45,6 +47,7 @@
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
+extern HWND  hwndEditParent;
 extern HINSTANCE g_hInstance;
 extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
@@ -166,7 +169,7 @@ extern LPMRULIST mruReplace;
 //
 //  EditCreate()
 //
-HWND EditCreate(HWND hwndParent)
+HWND _EditCreate(HWND hwndParent)
 {
 
   HWND hwnd;
@@ -213,6 +216,77 @@ HWND EditCreate(HWND hwndParent)
 
   return (hwnd);
 
+}
+
+HWND EditCreate(HWND hwndParent, HWND* phwndEditParent)
+{
+  switch (iSplitViewMode)
+  {
+  case SVM_DISABLED:
+  default:
+    {
+      *phwndEditParent = _EditCreate(hwndParent);
+      return *phwndEditParent;
+    }
+  case SVM_SIDE_BY_SIDE:
+    {
+      HWND hwnd1 = _EditCreate(hwndParent);
+      HWND hwnd2 = _EditCreate(hwndParent);
+      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwnd2, TRUE);
+      return hwnd1;
+    }
+  case SVM_3_IN_1:
+    {
+      HWND hwnd1 = _EditCreate(hwndParent);
+      HWND hwnd2 = _EditCreate(hwndParent);
+      HWND hwnd3 = _EditCreate(hwndParent);
+      HWND hwndSplitter1 = CreateSplitterWnd(hwndParent, hwnd1, hwnd2, TRUE);
+      HWND hwndSplitter2 = CreateSplitterWnd(hwndParent, hwndSplitter1, hwnd3, FALSE);
+      *phwndEditParent = hwndSplitter2;
+      return hwnd1;
+    }
+  }
+}
+
+int ScintillaWindowsCount()
+{
+  switch (iSplitViewMode)
+  {
+  case SVM_DISABLED:
+  default:
+    return 1;
+  case SVM_SIDE_BY_SIDE:
+    return 2;
+  case SVM_3_IN_1:
+    return 3;
+  }
+}
+
+HWND ScintillaWindowByIndex(const int index)
+{
+  switch (iSplitViewMode)
+  {
+  case SVM_DISABLED:
+  default:
+    return hwndEdit;
+  case SVM_SIDE_BY_SIDE:
+    {
+      HWND hwnd1 = GetFirstChild(hwndEditParent);
+      if (index == 0)
+        return hwnd1;
+      return GetNextSibling(hwnd1);
+    }
+  case SVM_3_IN_1:
+    {
+      HWND hwndSplitter = GetFirstChild(hwndEditParent);
+      HWND hwnd1 = GetFirstChild(hwndSplitter);
+      if (index == 0)
+        return hwnd1;
+      if (index == 1)
+        return GetNextSibling(hwnd1);
+      return GetNextSibling(hwndSplitter);
+    }
+  }
 }
 
 
@@ -1413,6 +1487,7 @@ BOOL EditLoadFile(
     }
   }
 
+  UpdateView();
   iSrcEncoding = -1;
   iWeakSrcEncoding = -1;
   return TRUE;

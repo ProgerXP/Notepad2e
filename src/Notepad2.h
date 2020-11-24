@@ -125,6 +125,7 @@ int  CreateIniFile();
 int  CreateIniFileEx(LPCWSTR);
 
 
+void ReloadView();
 void UpdateStatusbar();
 void UpdateToolbar();
 void UpdateLineNumberWidth();
