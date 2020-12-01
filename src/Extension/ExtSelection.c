@@ -77,7 +77,7 @@ int n2e_SelectionKeyAction(int key, int msg)
     {
       if (WM_CHAR == msg)
       {
-        n2e_SelectionEditStop(SES_APPLY);
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       }
       return 0;
     }
@@ -703,7 +703,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   // if mode already ON - then turn it OFF
   if (n2e_IsSelectionEditModeOn())
   {
-    n2e_SelectionEditStop(SES_APPLY);
+    n2e_SelectionEditStop(hwndEdit, SES_APPLY);
     return;
   }
   bEditSelectionInit = TRUE;
@@ -737,7 +737,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   }
 }
 
-BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
+BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
 {
   bEditSelectionInit = FALSE;
   bHighlightAll = TRUE;
@@ -758,7 +758,7 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
     bEditSelection = FALSE;
 
     n2e_SelectionHighlightTurn(FALSE);
-    SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;
   }
   return FALSE;
@@ -771,7 +771,7 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
     bNeedUpdateInEditMode = FALSE;
     if (!n2e_SelectionProcessChanges(PCM_NONE))
     {
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       n2e_SelectionHighlightTurn(n2e_IsHighlightSelectionEnabled());
     }
   }
@@ -781,7 +781,7 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
   }
 }
 
-void n2e_SelectionNotificationHandler(const int code, const struct SCNotification *scn)
+void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const struct SCNotification *scn)
 {
   switch (code)
   {
@@ -810,7 +810,7 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
     case SCN_MODIFIED:
       if ((scn->modificationType & (SC_MOD_CONTAINER|SC_PERFORMED_UNDO)) == (SC_MOD_CONTAINER|SC_PERFORMED_UNDO))
       {
-        PostMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)scn->token, 0);
+        PostMessage(hwnd, SCI_GOTOPOS, (WPARAM)scn->token, 0);
       }
       else if (n2e_IsSelectionEditModeOn())
       {
@@ -858,12 +858,12 @@ void n2e_SelectionNotificationHandler(const int code, const struct SCNotificatio
       
       if (!n2e_IsRectangularSelection() && (scn->modificationType & SC_MOD_DELETETEXT))
       {
-        EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+        EditSelectEx(hwnd, SciCall_GetAnchor(), SciCall_GetCurrentPos());
       }
       break;
     case SCN_SAVEPOINTREACHED:
     case SCEN_KILLFOCUS:
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwnd, SES_APPLY);
       break;
   }
 }

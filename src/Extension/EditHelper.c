@@ -184,7 +184,7 @@ void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInse
 
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
 {
-  if (n2e_SelectionEditStop(SES_APPLY))
+  if (n2e_SelectionEditStop(hwnd, SES_APPLY))
   {
     return;
   }

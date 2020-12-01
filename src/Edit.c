@@ -19,7 +19,6 @@
 ******************************************************************************/
 #define _WIN32_WINNT 0x501
 #include <windows.h>
-#include <windowsx.h>
 #include <shlwapi.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -39,10 +38,10 @@
 #include "Extension/ExtSelection.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
-#include "Extension/SplitterWnd.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/UnicodeQuotes.h"
 #include "Extension/Utils.h"
+#include "Extension/ViewHelper.h"
 
 
 extern HWND  hwndMain;
@@ -169,7 +168,7 @@ extern LPMRULIST mruReplace;
 //
 //  EditCreate()
 //
-HWND _EditCreate(HWND hwndParent)
+HWND EditCreate(HWND hwndParent)
 {
 
   HWND hwnd;
@@ -216,77 +215,6 @@ HWND _EditCreate(HWND hwndParent)
 
   return (hwnd);
 
-}
-
-HWND EditCreate(HWND hwndParent, HWND* phwndEditParent)
-{
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-  default:
-    {
-      *phwndEditParent = _EditCreate(hwndParent);
-      return *phwndEditParent;
-    }
-  case SVM_SIDE_BY_SIDE:
-    {
-      HWND hwnd1 = _EditCreate(hwndParent);
-      HWND hwnd2 = _EditCreate(hwndParent);
-      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwnd2, TRUE);
-      return hwnd1;
-    }
-  case SVM_3_IN_1:
-    {
-      HWND hwnd1 = _EditCreate(hwndParent);
-      HWND hwnd2 = _EditCreate(hwndParent);
-      HWND hwnd3 = _EditCreate(hwndParent);
-      HWND hwndSplitter2 = CreateSplitterWnd(hwndParent, hwnd2, hwnd3, TRUE);
-      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwndSplitter2, FALSE);
-      return hwnd1;
-    }
-  }
-}
-
-int ScintillaWindowsCount()
-{
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-  default:
-    return 1;
-  case SVM_SIDE_BY_SIDE:
-    return 2;
-  case SVM_3_IN_1:
-    return 3;
-  }
-}
-
-HWND ScintillaWindowByIndex(const int index)
-{
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-  default:
-    return hwndEdit;
-  case SVM_SIDE_BY_SIDE:
-    {
-      HWND hwnd1 = GetFirstChild(hwndEditParent);
-      if (index == 0)
-        return hwnd1;
-      return GetNextSibling(hwnd1);
-    }
-  case SVM_3_IN_1:
-    {
-      HWND hwnd1 = GetFirstChild(hwndEditParent);
-      if (index == 0)
-        return hwnd1;
-      HWND hwndSplitter = GetNextSibling(hwnd1);
-      HWND hwnd2 = GetFirstChild(hwndSplitter);
-      if (index == 1)
-        return hwnd2;
-      return GetNextSibling(hwnd2);
-    }
-  }
 }
 
 
@@ -1487,7 +1415,8 @@ BOOL EditLoadFile(
     }
   }
 
-  UpdateView();
+  // [2e]: Split view #316
+  n2e_UpdateView();
   iSrcEncoding = -1;
   iWeakSrcEncoding = -1;
   return TRUE;
@@ -5461,7 +5390,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 
   // [2e]: Do not clear new selection on exit from Edit mode #318
   if (n2e_IsSelectionEditModeOn())
-    n2e_SelectionEditStop(SES_APPLY);
+    n2e_SelectionEditStop(hwnd, SES_APPLY);
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
@@ -5723,7 +5652,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  UpdateLineNumberWidth(hwnd);
   if (iPos != -1)
     EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
@@ -5878,7 +5807,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  UpdateLineNumberWidth(hwnd);
   // Remove wait cursor
   EndWaitCursor();
 
@@ -6036,7 +5965,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  UpdateLineNumberWidth(hwnd);
   // Remove wait cursor
   EndWaitCursor();
 

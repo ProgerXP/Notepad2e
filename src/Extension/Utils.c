@@ -351,7 +351,7 @@ LPSTR n2e_GetLuaLexerName()
 }
 #endif
 
-void n2e_Init(const HWND hwndEdit)
+void n2e_Init(const HWND hwnd)
 {
   srand((UINT)GetTickCount());
   n2e_InitializeTrace();
@@ -360,7 +360,7 @@ void n2e_Init(const HWND hwndEdit)
   n2e_ResetLastRun();
   n2e_EditInit();
   n2e_Shell32Initialize();
-  n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
+  n2e_SubclassWindow(hwnd, n2e_ScintillaSubclassWndProc);
   bLPegEnabled = n2e_InitLPegHomeDir();
 }
 
@@ -1114,7 +1114,7 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
   }
 
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
-  UpdateLineNumberWidth();
+  UpdateLineNumberWidth(lpf->hwnd);
   n2e_HideProgressBarInStatusBar();
   EndWaitCursor();
   return TRUE;

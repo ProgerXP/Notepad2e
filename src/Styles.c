@@ -2121,7 +2121,7 @@ BOOL Style_Export(HWND hwnd)
 //
 //  Style_SetLexer()
 //
-void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
+void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
 {
   int i;
   int rgb;
@@ -4051,7 +4051,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
             }
 
             Style_SetLexer(hwndEdit, pLexCurrent);
-            UpdateLineNumberWidth();
+            UpdateLineNumberWidth(hwndEdit);
           }
           break;
 

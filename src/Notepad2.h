@@ -128,7 +128,7 @@ int  CreateIniFileEx(LPCWSTR);
 void ReloadView();
 void UpdateStatusbar();
 void UpdateToolbar();
-void UpdateLineNumberWidth();
+void UpdateLineNumberWidth(HWND);
 
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 BOOL FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR);
