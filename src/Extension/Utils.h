@@ -145,6 +145,7 @@ BOOL n2e_UseLuaLexer(LPCWSTR lpszExt, LPBOOL pbLexerFileExists);
 LPSTR n2e_GetLuaLexerName();
 #endif
 void n2e_Init();
+void n2e_InitScintilla(const HWND hwnd);
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault);
 void n2e_SetLastRun(LPCWSTR arg);
 void n2e_ResetLastRun();

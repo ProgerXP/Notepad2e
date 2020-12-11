@@ -13,7 +13,7 @@ typedef enum
   SES_REJECT = 1 << 1
 } ESelectionEditStopMode;
 
-void n2e_EditInit();
+void n2e_EditInit(const HWND hwnd);
 void n2e_SelectionRelease();
 UINT n2e_SelectionGetSciEventMask(const BOOL range_not);
 int n2e_SelectionGetWraps(const int beg, const int end);

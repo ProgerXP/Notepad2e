@@ -62,6 +62,7 @@ HWND      hwndStatus;
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      _hwndEdit;
+HWND      hwndLastActiveEdit = NULL;
 HWND      hwndEditParent;
 HWND      hwndEditFrame;
 HWND      hwndMain;
@@ -643,9 +644,6 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 
   n2e_InitInstance();
 
-  // [2e]: DPI awareness #154
-  n2e_ScintillaDPIInit(hwndMain);
-
   if (wi.max)
     nCmdShow = SW_SHOWMAXIMIZED;
 
@@ -874,7 +872,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   {
     // [2e]: DPI awareness #154
     case WM_DPICHANGED:
-      n2e_ScintillaDPIUpdate(hwndEdit, wParam);
+      n2e_UpdateViewsDPI(wParam);
       DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
       MsgThemeChanged(hwnd, 0, 0);
       return 0;
@@ -917,7 +915,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       if (!wParam)
       {
-        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
+        hwndLastActiveEdit = hwndEdit;
+        n2e_SelectionEditStop(hwndLastActiveEdit, SES_APPLY);
         // [2e]: Save on deactivate #164
         if (!bReadOnly && bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
@@ -1032,7 +1031,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SETFOCUS:
-      SetFocus(hwndEdit);
+      // [2e]: Split view #316
+      SetFocus(hwndLastActiveEdit ? hwndLastActiveEdit : hwndEdit);
 
       UpdateToolbar();
       UpdateStatusbar();
@@ -5392,6 +5392,18 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
   {
 
     case IDC_EDIT:
+
+      // [2e]: Split view #316
+      switch (pnmh->code)
+      {
+      case SCN_SAVEPOINTREACHED:
+      case SCN_SAVEPOINTLEFT:
+        if (pnmh->hwndFrom != _hwndEdit)
+          return 0; // process main edit only
+      default:
+        break;
+      }
+      // [/2e]
 
       switch (pnmh->code)
       {

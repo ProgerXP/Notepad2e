@@ -9,6 +9,7 @@ const wchar_t SETTINGS[] = { L"SplitterSettings" };
 
 #define HTSPLITTER_MOVE 25
 const int SPLITTER_WIDTH = 5;
+const int SPLITTER_PANE_MIN_SIZE = 100;
 
 ATOM InitSplitter()
 {
@@ -105,7 +106,7 @@ LRESULT CALLBACK SplitterProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
     {
       const LRESULT lRes = DefWindowProc(hWnd, uMsg, wParam, lParam);
       const SplitterSettings* pSettings = GetSettings(hWnd);
-      POINT ptMouse = { LOWORD(lParam), HIWORD(lParam) };
+      POINT ptMouse = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
       ScreenToClient(hWnd, &ptMouse);
       return ((lRes == HTCLIENT) && PtInRect(&pSettings->rcSplitter, ptMouse)) ? HTSPLITTER_MOVE : lRes;
     }
@@ -128,6 +129,19 @@ LRESULT CALLBACK SplitterProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       {
         if (wParam == HTSPLITTER_MOVE)
         {
+          RECT rcWindow = { 0 };
+          GetWindowRect(hWnd, &rcWindow);
+          if (pSettings->bHorizontal)
+          {
+            rcWindow.left += SPLITTER_PANE_MIN_SIZE;
+            rcWindow.right -= SPLITTER_PANE_MIN_SIZE;
+          }
+          else
+          {
+            rcWindow.top += SPLITTER_PANE_MIN_SIZE;
+            rcWindow.bottom -= SPLITTER_PANE_MIN_SIZE;
+          }
+          ClipCursor(&rcWindow);
           SetCapture(hWnd);
           POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
           ScreenToClient(hWnd, &pt);
@@ -140,7 +154,7 @@ LRESULT CALLBACK SplitterProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
   case WM_MOUSEMOVE:
     {
       SplitterSettings* pSettings = GetSettings(hWnd);
-      if (pSettings)
+      if (pSettings && (GetCapture() == hWnd))
       {
         pSettings->ptMoving.x = pSettings->ptResizingCurrent.x + pSettings->ptResizingStart.x - GET_X_LPARAM(lParam);
         pSettings->ptMoving.y = pSettings->ptResizingCurrent.y + pSettings->ptResizingStart.y - GET_Y_LPARAM(lParam);
@@ -154,6 +168,7 @@ LRESULT CALLBACK SplitterProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       SplitterSettings* pSettings = GetSettings(hWnd);
       if (pSettings && pSettings->bResizing)
       {
+        ClipCursor(NULL);
         ReleaseCapture();
         pSettings->ptResizingCurrent = pSettings->ptMoving;
         pSettings->bResizing = FALSE;
@@ -170,6 +185,29 @@ LRESULT CALLBACK SplitterProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam
       }
     }
     break;
+  case WM_NOTIFY:
+    {
+      LPNMHDR lpNMHDR = (LPNMHDR)lParam;
+      SplitterSettings* pSettings = GetSettings(hWnd);
+      if ((lpNMHDR->hwndFrom == pSettings->children[0].hwnd)
+         || (lpNMHDR->hwndFrom == pSettings->children[1].hwnd))
+      {
+        const HWND hWndTarget = GetAncestor(hWnd, GA_ROOTOWNER);
+        return SendMessage(hWndTarget, uMsg, wParam, lParam);
+      }
+    }
+    break;
+  case WM_CONTEXTMENU:
+    {
+      const HWND hwndFrom = (HWND)wParam;
+      SplitterSettings* pSettings = GetSettings(hWnd);
+      if ((hwndFrom == pSettings->children[0].hwnd)
+        || (hwndFrom == pSettings->children[1].hwnd))
+      {
+        const HWND hWndTarget = GetAncestor(hWnd, GA_ROOTOWNER);
+        return SendMessage(hWndTarget, uMsg, wParam, lParam);
+      }
+    }
   default:
     break;
   }

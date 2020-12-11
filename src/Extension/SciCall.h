@@ -1,3 +1,5 @@
+#pragma once
+
 /******************************************************************************
 *
 *
@@ -14,16 +16,21 @@
 ******************************************************************************/
 
 #include "Scintilla.h"
+#include "Extension/ViewHelper.h"
 //=============================================================================
 //
 //  g_hScintilla
 //
 //
-extern HANDLE g_hScintilla;
 
 __forceinline void InitScintillaHandle(HWND hwnd)
 {
-  g_hScintilla = (HANDLE)SendMessage(hwnd, SCI_GETDIRECTPOINTER, 0, 0);
+  SetProp(hwnd, L"SCINTILLA_DIRECTPOINTER", (HANDLE)SendMessage(hwnd, SCI_GETDIRECTPOINTER, 0, 0));
+}
+
+__forceinline HANDLE GetScintillaHandle(HWND hwnd)
+{
+  return (HANDLE)GetProp(hwnd, L"SCINTILLA_DIRECTPOINTER");
 }
 
 //=============================================================================
@@ -32,7 +39,7 @@ __forceinline void InitScintillaHandle(HWND hwnd)
 //
 //
 LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
-#define SciCall(m, w, l) Scintilla_DirectFunction(g_hScintilla, m, w, l)
+#define SciCall(m, w, l) Scintilla_DirectFunction(GetScintillaHandle(hwndEdit), m, w, l)
 
 //=============================================================================
 //

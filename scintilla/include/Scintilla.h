@@ -11,8 +11,8 @@
 #ifndef SCINTILLA_H
 #define SCINTILLA_H
 
-typedef void ( * wheel_action ) ( int );
-typedef int ( * key_action ) ( int , int );
+typedef void ( * wheel_action ) ( void*, int );
+typedef int ( * key_action ) ( void*, int , int );
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -2,6 +2,9 @@
 #include <windowsx.h>
 #include "SplitterWnd.h"
 #include "Scintilla.h"
+#include "SciCall.h"
+#include "DPIHelperScintilla.h"
+#include "ExtSelection.h"
 #include "Helpers.h"
 #include "Styles.h"
 #include "Utils.h"
@@ -121,7 +124,20 @@ void n2e_UpdateView()
     const HWND hwnd = n2e_ScintillaWindowByIndex(i);
     SendMessage(hwnd, SCI_SETDOCPOINTER, 0, pDoc);
     n2e_UpdateLexer(hwnd);
+    InitScintillaHandle(hwnd);
+    n2e_InitScintilla(hwnd);
+    n2e_EditInit(hwnd);
+    n2e_ScintillaDPIInit(hwnd);
     UpdateLineNumberWidth(hwnd);
+  }
+}
+
+void n2e_UpdateViewsDPI(const WPARAM dpi)
+{
+  for (int i = 0; i < n2e_ScintillaWindowsCount(); ++i)
+  {
+    const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+    n2e_ScintillaDPIUpdate(hwnd, dpi);
   }
 }
 
