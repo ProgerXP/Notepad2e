@@ -106,6 +106,9 @@ extern BOOL bEditSelectionScope;
 extern LPMRULIST pFileMRU;
 extern LPMRULIST mruFind;
 extern enum ESaveSettingsMode nSaveSettingsMode;
+extern int fWordWrap;
+extern int fWordWrapG;
+extern int iWordWrapMode;
 
 LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
 
@@ -1239,22 +1242,6 @@ int n2e_GetCurrentSaveOnLoseFocusMenuID()
   }
 }
 
-int n2e_GetSplitViewMenuID()
-{
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-    return ID_SPLITVIEW_DISABLED;
-  case SVM_SIDE_BY_SIDE:
-    return ID_SPLITVIEW_SIDEBYSIDE;
-  case SVM_3_IN_1:
-    return ID_SPLITVIEW_3IN1;
-  default:
-    assert(FALSE);
-    return 0;
-  }
-}
-
 int n2e_GetCurrentHighlightCurrentSelectionMenuID()
 {
   switch (iHighlightSelection)
@@ -1740,4 +1727,87 @@ void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars)
     --end;
 
   end[1] = '\0';
+}
+
+void n2e_SetWordWrap(HWND hwnd)
+{
+  if (!fWordWrap)
+    SendMessage(hwnd, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+  else
+    SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+}
+
+void n2e_SetLongLineMarker(HWND hwnd)
+{
+  extern BOOL bMarkLongLines;
+  extern int iLongLineMode;
+  if (bMarkLongLines)
+  {
+    SendMessage(hwnd, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    Style_SetLongLineColors(hwnd);
+  }
+  else
+    SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
+}
+
+void n2e_SetMarginWidthN(HWND hwnd)
+{
+  extern BOOL bShowSelectionMargin;
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+}
+
+void n2e_ShowWhiteSpace(HWND hwnd)
+{
+  extern BOOL bViewWhiteSpace;
+  SendMessage(hwnd, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+}
+
+void n2e_SetViewEOL(HWND hwnd)
+{
+  extern BOOL bViewEOLs;
+  SendMessage(hwnd, SCI_SETVIEWEOL, bViewEOLs, 0);
+}
+
+void n2e_SetShowWordWrapSymbols(HWND hwnd)
+{
+  extern BOOL bShowWordWrapSymbols;
+  extern int  iWordWrapSymbols;
+  if (bShowWordWrapSymbols)
+  {
+    int wrapVisualFlags = 0;
+    int wrapVisualFlagsLocation = 0;
+    if (iWordWrapSymbols == 0)
+      iWordWrapSymbols = 22;
+    switch (iWordWrapSymbols % 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      break;
+    }
+    switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      break;
+    }
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+  }
+  else
+  {
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, 0, 0);
+  }
+}
+
+void n2e_HideMatchBraces(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
 }

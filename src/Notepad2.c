@@ -74,8 +74,8 @@ BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
 
-#define NUMTOOLBITMAPS  28
-#define NUMINITIALTOOLS 25
+#define NUMTOOLBITMAPS  31
+#define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -96,6 +96,10 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {12, IDT_VIEW_ZOOMIN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {13, IDT_VIEW_ZOOMOUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {28, IDT_SPLIT_VERTICALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {29, IDT_SPLIT_HORIZONTALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {30, IDT_CLOSE_SPLIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {14, IDT_VIEW_SCHEME, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {15, IDT_VIEW_SCHEMECONFIG, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -1476,7 +1480,7 @@ void _MsgCreate()
   SendMessage(hwndEdit, SCI_SETTABWIDTH, iTabWidth, 0);
   SendMessage(hwndEdit, SCI_SETINDENT, iIndentWidth, 0);
   // Indent Guides
-  Style_SetIndentGuides(hwndEdit, bShowIndentGuides);
+  Style_SetIndentGuides(hwndEdit);
   // Word wrap
   if (!fWordWrap)
   {
@@ -2141,12 +2145,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
   CheckCmd(hmenu, IDM_VIEW_AUTOCLOSETAGS, bAutoCloseTags);
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTLINE, bHighlightCurrentLine);
-
-  // [2e]: Split view #316
-  CheckMenuRadioItem(hmenu, ID_SPLITVIEW_DISABLED,
-    ID_SPLITVIEW_3IN1,
-    n2e_GetSplitViewMenuID(), MF_BYCOMMAND);
-  // [/2e]
 
   // [2e]: Improve selection/word highlighting #286
   CheckMenuRadioItem(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_DISABLED,
@@ -3895,21 +3893,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    case ID_SPLITVIEW_DISABLED:
-      n2e_SwitchView(iSplitViewMode, SVM_DISABLED);
-      break;
-
-
-    case ID_SPLITVIEW_SIDEBYSIDE:
-      n2e_SwitchView(iSplitViewMode, SVM_SIDE_BY_SIDE);
-      break;
-
-
-    case ID_SPLITVIEW_3IN1:
-      n2e_SwitchView(iSplitViewMode, SVM_3_IN_1);
-      break;
-
-
     case IDM_VIEW_SCHEME:
       Style_SelectLexerDlg(hwndEdit);
       UpdateStatusbar();
@@ -3940,10 +3923,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_WORDWRAP:
       fWordWrap = (fWordWrap) ? FALSE : TRUE;
-      if (!fWordWrap)
-        SendMessage(hwndEdit, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
-      else
-        SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+      n2e_ApplyViewCommand(n2e_SetWordWrap);
       fWordWrapG = fWordWrap;
       UpdateToolbar();
       break;
@@ -4018,13 +3998,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
-      if (bMarkLongLines)
-      {
-        SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
-        Style_SetLongLineColors(hwndEdit);
-      }
-      else
-        SendMessage(hwndEdit, SCI_SETEDGEMODE, EDGE_NONE, 0);
+      n2e_ApplyViewCommand(n2e_SetLongLineMarker);
       UpdateStatusbar();
       break;
 
@@ -4081,7 +4055,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_SHOWINDENTGUIDES:
       bShowIndentGuides = (bShowIndentGuides) ? FALSE : TRUE;
-      Style_SetIndentGuides(hwndEdit, bShowIndentGuides);
+      n2e_ApplyViewCommand(Style_SetIndentGuides);
       break;
 
 
@@ -4092,63 +4066,31 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LINENUMBERS:
       bShowLineNumbers = (bShowLineNumbers) ? FALSE : TRUE;
-      UpdateLineNumberWidth(hwndEdit);
+      n2e_ApplyViewCommand(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+      n2e_ApplyViewCommand(n2e_SetMarginWidthN);
       break;
 
 
     case IDM_VIEW_SHOWWHITESPACE:
       bViewWhiteSpace = (bViewWhiteSpace) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+      n2e_ApplyViewCommand(n2e_ShowWhiteSpace);
       break;
 
 
     case IDM_VIEW_SHOWEOLS:
       bViewEOLs = (bViewEOLs) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
+      n2e_ApplyViewCommand(n2e_SetViewEOL);
       break;
 
 
     case IDM_VIEW_WORDWRAPSYMBOLS:
       bShowWordWrapSymbols = (bShowWordWrapSymbols) ? 0 : 1;
-      if (bShowWordWrapSymbols)
-      {
-        int wrapVisualFlags = 0;
-        int wrapVisualFlagsLocation = 0;
-        if (iWordWrapSymbols == 0)
-          iWordWrapSymbols = 22;
-        switch (iWordWrapSymbols % 10)
-        {
-          case 1:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
-            wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
-            break;
-          case 2:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
-            break;
-        }
-        switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
-        {
-          case 1:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
-            wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
-            break;
-          case 2:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
-            break;
-        }
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
-      }
-      else
-      {
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, 0, 0);
-      }
+      n2e_ApplyViewCommand(n2e_SetShowWordWrapSymbols);
       break;
 
 
@@ -4164,7 +4106,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
       }
       else
-        SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+        n2e_ApplyViewCommand(n2e_HideMatchBraces);
       break;
 
 
@@ -4175,7 +4117,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_HIGHLIGHTCURRENTLINE:
       bHighlightCurrentLine = (bHighlightCurrentLine) ? FALSE : TRUE;
-      Style_SetCurrentLineBackground(hwndEdit);
+      n2e_ApplyViewCommand(Style_SetCurrentLineBackground);
       break;
 
 
@@ -5321,6 +5263,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       else
         MessageBeep(0);
       break;
+
+
+    // [2e]: Binary Save Options button #170
+    case IDT_SPLIT_VERTICALLY:
+      n2e_SwitchView(SVM_SIDE_BY_SIDE);
+      UpdateToolbar();
+      break;
+    case IDT_SPLIT_HORIZONTALLY:
+      n2e_SwitchView(SVM_3_IN_1);
+      UpdateToolbar();
+      break;
+    case IDT_CLOSE_SPLIT:
+      n2e_SwitchView(SVM_DISABLED);
+      UpdateToolbar();
+      break;
+    // [/2e]
 
 
     // [2e]: Binary Save Options button #170
@@ -6978,7 +6936,8 @@ void UpdateToolbar()
   }
   // [2e]: Binary Save Options button #170
   CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
-  // [/2e]
+  // [2e]: Split view #316
+  EnableTool(IDT_CLOSE_SPLIT, iSplitViewMode != SVM_DISABLED);
 }
 
 

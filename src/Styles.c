@@ -2453,7 +2453,14 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   }
 
   if (SendMessage(hwnd, SCI_GETINDENTATIONGUIDES, 0, 0) != SC_IV_NONE)
-    Style_SetIndentGuides(hwnd, TRUE);
+  {
+    // [2e]: Split view #316
+    extern BOOL bShowIndentGuides;
+    BOOL bShowIndentGuidesOrigin = bShowIndentGuides;
+    bShowIndentGuides = TRUE;
+    Style_SetIndentGuides(hwnd);
+    bShowIndentGuides = bShowIndentGuidesOrigin;
+  }
 
   if (pLexNew->iLexer != SCLEX_NULL)
   {
@@ -2927,12 +2934,13 @@ BOOL Style_GetUse2ndDefault(HWND hwnd)
 //
 //  Style_SetIndentGuides()
 //
+extern BOOL bShowIndentGuides;
 extern int flagSimpleIndentGuides;
 
-void Style_SetIndentGuides(HWND hwnd, BOOL bShow)
+void Style_SetIndentGuides(HWND hwnd)
 {
   int iIndentView = SC_IV_NONE;
-  if (bShow)
+  if (bShowIndentGuides)
   {
     if (!flagSimpleIndentGuides)
     {

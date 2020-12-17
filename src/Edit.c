@@ -4983,6 +4983,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
       return TRUE;
 
 
+    // [2e]: Split view #316
+    case WM_ACTIVATE:
+      if (wParam != WA_INACTIVE)
+      {
+        lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+        lpefr->hwnd = hwndEdit;
+      }
+      break;
+    // [/2e]
+
+
     case WM_COMMAND:
 
       switch (LOWORD(wParam))

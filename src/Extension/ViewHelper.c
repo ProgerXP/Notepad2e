@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <windowsx.h>
+#include "Edit.h"
 #include "SplitterWnd.h"
 #include "Scintilla.h"
 #include "SciCall.h"
@@ -13,6 +14,7 @@
 extern ESplitViewMode iSplitViewMode;
 extern HWND _hwndEdit;
 extern HWND hwndEditParent;
+extern FILEVARS fvCurFile;
 
 HWND EditCreate(HWND hwndParent);
 
@@ -92,7 +94,7 @@ HWND n2e_ScintillaWindowByIndex(const int index)
   }
 }
 
-void n2e_SwitchView(const ESplitViewMode modeOld, const ESplitViewMode modeNew)
+void n2e_SwitchView(const ESplitViewMode modeNew)
 {
   extern HWND hwndMain;
   void MsgSize(HWND, WPARAM, LPARAM);
@@ -129,6 +131,8 @@ void n2e_UpdateView()
     n2e_EditInit(hwnd);
     n2e_ScintillaDPIInit(hwnd);
     UpdateLineNumberWidth(hwnd);
+    
+    FileVars_Apply(hwnd, &fvCurFile);
   }
 }
 
@@ -155,6 +159,14 @@ void Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   for (int i = 0; i < n2e_ScintillaWindowsCount(); ++i)
   {
     _Style_SetLexer(n2e_ScintillaWindowByIndex(i), pLexNew);
+  }
+}
+
+void n2e_ApplyViewCommand(ViewCommandHandler lpHandler)
+{
+  for (int i = 0; i < n2e_ScintillaWindowsCount(); ++i)
+  {
+    lpHandler(n2e_ScintillaWindowByIndex(i));
   }
 }
 

@@ -179,7 +179,6 @@ int n2e_GetCurrentShowTitleMenuID();
 int n2e_GetCurrentLanguageIndicatorMenuID();
 int n2e_GetCurrentSaveSettingsMenuID();
 int n2e_GetCurrentSaveOnLoseFocusMenuID();
-int n2e_GetSplitViewMenuID();
 int n2e_GetCurrentHighlightCurrentSelectionMenuID();
 int n2e_GetCurrentEvalMenuID();
 
@@ -218,3 +217,10 @@ void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVO
 
 BOOL n2e_FindMRUAdd(LPCSTR pszNew);
 void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars);
+void n2e_SetWordWrap(HWND hwnd);
+void n2e_SetLongLineMarker(HWND hwnd);
+void n2e_SetMarginWidthN(HWND hwnd);
+void n2e_ShowWhiteSpace(HWND hwnd);
+void n2e_SetViewEOL(HWND hwnd);
+void n2e_SetShowWordWrapSymbols(HWND hwnd);
+void n2e_HideMatchBraces(HWND hwnd);
