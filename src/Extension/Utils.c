@@ -411,7 +411,6 @@ void n2e_ResetSaveOnLoseFocus()
 
 void n2e_LoadINI()
 {
-  iSplitViewMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_VIEW_MODE, iSplitViewMode);
   iHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   bEditSelectionScope = IniGetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
   iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
@@ -502,7 +501,6 @@ void n2e_LoadINI()
 
 void n2e_SaveINI()
 {
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_VIEW_MODE, iSplitViewMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);

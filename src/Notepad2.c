@@ -5265,17 +5265,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    // [2e]: Binary Save Options button #170
+    // [2e]: Split view #316
     case IDT_SPLIT_VERTICALLY:
-      n2e_SwitchView(SVM_SIDE_BY_SIDE);
+      n2e_SplitView(TRUE);
       UpdateToolbar();
       break;
     case IDT_SPLIT_HORIZONTALLY:
-      n2e_SwitchView(SVM_3_IN_1);
+      n2e_SplitView(FALSE);
       UpdateToolbar();
       break;
     case IDT_CLOSE_SPLIT:
-      n2e_SwitchView(SVM_DISABLED);
+      n2e_CloseView();
       UpdateToolbar();
       break;
     // [/2e]
@@ -6937,7 +6937,7 @@ void UpdateToolbar()
   // [2e]: Binary Save Options button #170
   CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
   // [2e]: Split view #316
-  EnableTool(IDT_CLOSE_SPLIT, iSplitViewMode != SVM_DISABLED);
+  EnableTool(IDT_CLOSE_SPLIT, hwndEdit != _hwndEdit);
 }
 
 

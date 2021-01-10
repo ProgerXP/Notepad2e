@@ -1,5 +1,6 @@
 #include <Windows.h>
 #include <windowsx.h>
+#include <assert.h>
 #include "Edit.h"
 #include "SplitterWnd.h"
 #include "Scintilla.h"
@@ -11,104 +12,60 @@
 #include "Utils.h"
 #include "ViewHelper.h"
 
-extern ESplitViewMode iSplitViewMode;
+extern HWND hwndMain;
 extern HWND _hwndEdit;
 extern HWND hwndEditParent;
 extern FILEVARS fvCurFile;
 
 HWND EditCreate(HWND hwndParent);
 
-HWND n2e_EditCreateImpl(HWND hwndParent, HWND* phwndEditParent, const BOOL bInitialCall)
+HWND n2e_EditCreateImpl(HWND hwndEditActive, HWND hwndParent, const BOOL bHorizontally, HWND* phwndEditParent)
 {
-  switch (iSplitViewMode)
+  if (!hwndEditActive)
   {
-  case SVM_DISABLED:
-  default:
-    {
-      *phwndEditParent = bInitialCall ? EditCreate(hwndParent) : hwndEditParent;
-      return *phwndEditParent;
-    }
-  case SVM_SIDE_BY_SIDE:
-    {
-      HWND hwnd1 = bInitialCall ? EditCreate(hwndParent) : _hwndEdit;
-      HWND hwnd2 = EditCreate(hwndParent);
-      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwnd2, TRUE);
-      return hwnd1;
-    }
-  case SVM_3_IN_1:
-    {
-      HWND hwnd1 = bInitialCall ? EditCreate(hwndParent) : _hwndEdit;
-      HWND hwnd2 = EditCreate(hwndParent);
-      HWND hwnd3 = EditCreate(hwndParent);
-      HWND hwndSplitter2 = CreateSplitterWnd(hwndParent, hwnd2, hwnd3, TRUE);
-      *phwndEditParent = CreateSplitterWnd(hwndParent, hwnd1, hwndSplitter2, FALSE);
-      return hwnd1;
-    }
+    *phwndEditParent = EditCreate(hwndParent);
+    return *phwndEditParent;
+  }
+  else
+  {
+    HWND hwnd1 = hwndEditActive;
+    HWND hwnd2 = EditCreate(hwndMain);
+    *phwndEditParent = IsSplitterWnd(hwndParent)
+      ? AddSplitterChild(hwndParent, hwnd1, hwnd2, bHorizontally)
+      : CreateSplitterWnd(hwndParent, hwnd1, hwnd2, bHorizontally);
+    return hwnd1;
   }
 }
 
 HWND n2e_EditCreate(HWND hwndParent, HWND* phwndEditParent)
 {
-  return n2e_EditCreateImpl(hwndParent, phwndEditParent, TRUE);
+  return n2e_EditCreateImpl(NULL, hwndParent, TRUE, phwndEditParent);
 }
 
 int n2e_ScintillaWindowsCount()
 {
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-  default:
-    return 1;
-  case SVM_SIDE_BY_SIDE:
-    return 2;
-  case SVM_3_IN_1:
-    return 3;
-  }
+  const HWND hwndParent = GetTopSplitterWnd(_hwndEdit);
+  return (hwndParent != _hwndEdit)
+    ? SendMessage(hwndParent, WM_SPLITTER_CHILDREN_COUNT, 0, 0)
+    : 1;
 }
 
 HWND n2e_ScintillaWindowByIndex(const int index)
 {
-  switch (iSplitViewMode)
-  {
-  case SVM_DISABLED:
-  default:
-    return _hwndEdit;
-  case SVM_SIDE_BY_SIDE:
-    {
-      HWND hwnd1 = GetFirstChild(hwndEditParent);
-      if (index == 0)
-        return hwnd1;
-      return GetNextSibling(hwnd1);
-    }
-  case SVM_3_IN_1:
-  {
-    HWND hwnd1 = GetFirstChild(hwndEditParent);
-    if (index == 0)
-      return hwnd1;
-    HWND hwndSplitter = GetNextSibling(hwnd1);
-    HWND hwnd2 = GetFirstChild(hwndSplitter);
-    if (index == 1)
-      return hwnd2;
-    return GetNextSibling(hwnd2);
-  }
-  }
+  const HWND hwndParent = GetTopSplitterWnd(_hwndEdit);
+  return (hwndParent != _hwndEdit)
+    ? (HWND)SendMessage(hwndParent, WM_SPLITTER_CHILD_BY_INDEX, (WPARAM)index, 0)
+    : _hwndEdit;
 }
 
-void n2e_SwitchView(const ESplitViewMode modeNew)
+void n2e_SplitView(const BOOL bHorizontally)
 {
   extern HWND hwndMain;
   void MsgSize(HWND, WPARAM, LPARAM);
-
-  SetParent(_hwndEdit, hwndMain);
-  if (iSplitViewMode != SVM_DISABLED)
-  {
-    // destroy top-level splitter
-    DestroyWindow(hwndEditParent);
-  }
-
-  iSplitViewMode = modeNew;
-  hwndEditParent = _hwndEdit;
-  _hwndEdit = n2e_EditCreateImpl(hwndMain, &hwndEditParent, FALSE);
+  
+  HWND hwndEditActive = hwndEdit;
+  hwndEditParent = GetParent(hwndEditActive);
+  n2e_EditCreateImpl(hwndEditActive, hwndEditParent, bHorizontally, &hwndEditParent);
   SetWindowPos(hwndEditParent, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
 
   RECT rc = { 0 };
@@ -124,6 +81,7 @@ void n2e_UpdateView()
   for (int i = 1; i < n2e_ScintillaWindowsCount(); ++i)
   {
     const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+    assert(hwnd != _hwndEdit);
     SendMessage(hwnd, SCI_SETDOCPOINTER, 0, pDoc);
     n2e_UpdateLexer(hwnd);
     InitScintillaHandle(hwnd);
@@ -142,6 +100,16 @@ void n2e_UpdateViewsDPI(const WPARAM dpi)
   {
     const HWND hwnd = n2e_ScintillaWindowByIndex(i);
     n2e_ScintillaDPIUpdate(hwnd, dpi);
+  }
+}
+
+void n2e_CloseView()
+{
+  const HWND hwnd = hwndEdit;
+  if (hwnd != _hwndEdit)
+  {
+    SendMessage(hwnd, SCI_SETDOCPOINTER, 0, 0);
+    DeleteSplitterChild(hwnd, _hwndEdit, &hwndEditParent);
   }
 }
 

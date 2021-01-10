@@ -1094,10 +1094,10 @@
     <ClCompile Include="scintilla\lua\src\lzio.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\Extension\SplitterWnd.c">
-      <Filter>Source Files\Extension</Filter>
-    </ClCompile>
     <ClCompile Include="src\Extension\ViewHelper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\SplitterWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

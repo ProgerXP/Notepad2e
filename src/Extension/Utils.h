@@ -102,13 +102,6 @@ typedef enum
 
 typedef enum
 {
-  SVM_DISABLED = 0,
-  SVM_SIDE_BY_SIDE = 1,
-  SVM_3_IN_1 = 2,
-} ESplitViewMode;
-
-typedef enum
-{
   FCP_FIRST_LINE = 0,
   FCP_LAST_LINE = 1,
   FCP_CURRENT_LINE = 2,

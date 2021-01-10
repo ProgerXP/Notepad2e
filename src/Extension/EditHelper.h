@@ -9,7 +9,6 @@
 #define FIND_INFO_INDEX 12
 
 extern BOOL bUsePrefixInOpenDialog;
-extern ESplitViewMode iSplitViewMode;
 extern EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
 extern ESaveOnLoseFocus iSaveOnLoseFocus;

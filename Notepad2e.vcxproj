@@ -451,7 +451,7 @@
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\ProcessElevationUtils.c" />
     <ClCompile Include="src\Extension\Shell32Helper.c" />
-    <ClCompile Include="src\Extension\SplitterWnd.c" />
+    <ClCompile Include="src\Extension\SplitterWnd.cpp" />
     <ClCompile Include="src\Extension\StringRecoding.c" />
     <ClCompile Include="src\Extension\StrToBase64.c" />
     <ClCompile Include="src\Extension\StrToHex.c" />
