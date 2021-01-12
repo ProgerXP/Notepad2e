@@ -1,5 +1,7 @@
-#include "MainWndHelper.h"
 #include <math.h>
+
+#include "MainWndHelper.h"
+#include "CommonUtils.h"
 #include "EditHelper.h"
 #include "Notepad2.h"
 #include "resource.h"
@@ -162,7 +164,20 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
             FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, arrwchExpressionValue);
             break;
           case EVM_DEC:
-            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, exprValue);
+            {
+              LPWSTR pszDecimalValue = n2e_Alloc(sizeof(WCHAR)*(bufferSize * 2 + 1));
+              FormatString(pszDecimalValue, bufferSize * 2, idExpressionFormatString, exprValue);
+              LPNUMBERFMT lpFormat = NULL;
+              NUMBERFMT format = { 0 };
+              if (idExpressionFormatString == IDS_EXPRESSION_VALUE_INTEGER)
+              {
+                n2e_GetNumberFormat(&format);
+                format.NumDigits = 0;
+                lpFormat = &format;
+              }
+              GetNumberFormat(LOCALE_USER_DEFAULT, 0, pszDecimalValue, lpFormat, tchBuffer, bufferSize - 1);
+              n2e_Free(pszDecimalValue);
+            }
             break;
           case EVM_HEX:
           case EVM_OCT:

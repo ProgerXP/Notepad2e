@@ -1714,3 +1714,35 @@ void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars)
 
   end[1] = '\0';
 }
+
+void n2e_GetNumberFormat(LPNUMBERFMT lpFormat)
+{
+  static NUMBERFMT g_defaultNumberFormat = { 0 };
+  if ((lpFormat != &g_defaultNumberFormat) && !g_defaultNumberFormat.lpDecimalSep && !g_defaultNumberFormat.lpThousandSep)
+  {
+    n2e_GetNumberFormat(&g_defaultNumberFormat);
+  }
+  if (lpFormat == &g_defaultNumberFormat)
+  {
+    const LCID lcid = LOCALE_USER_DEFAULT;
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IDIGITS | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->NumDigits, sizeof(lpFormat->NumDigits) / sizeof(WCHAR));
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILZERO | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->LeadingZero, sizeof(lpFormat->LeadingZero) / sizeof(WCHAR));
+    WCHAR szGrouping[32] = L"";
+    GetLocaleInfo(lcid, LOCALE_SGROUPING, szGrouping, ARRAYSIZE(szGrouping));
+    lpFormat->Grouping = (lstrcmp(szGrouping, L"3") == 0) || (lstrcmp(szGrouping, L"3;0") == 0) ? 3
+      : (lstrcmp(szGrouping, L"3;2;0") == 0) ? 32
+      : 0;
+    lpFormat->lpDecimalSep = n2e_Alloc(sizeof(WCHAR) * 16);
+    GetLocaleInfo(lcid, LOCALE_SDECIMAL, lpFormat->lpDecimalSep, 15);
+    lpFormat->lpThousandSep = n2e_Alloc(sizeof(WCHAR) * 16);
+    GetLocaleInfo(lcid, LOCALE_STHOUSAND, lpFormat->lpThousandSep, 15);
+    GetLocaleInfo(lcid, LOCALE_INEGNUMBER | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->NegativeOrder, sizeof(lpFormat->NegativeOrder) / sizeof(WCHAR));
+    return;
+  }
+  lpFormat->NumDigits = g_defaultNumberFormat.NumDigits;
+  lpFormat->LeadingZero = g_defaultNumberFormat.LeadingZero;
+  lpFormat->Grouping = g_defaultNumberFormat.Grouping;
+  lpFormat->lpDecimalSep = g_defaultNumberFormat.lpDecimalSep;
+  lpFormat->lpThousandSep = g_defaultNumberFormat.lpThousandSep;
+  lpFormat->NegativeOrder = g_defaultNumberFormat.NegativeOrder;
+}
