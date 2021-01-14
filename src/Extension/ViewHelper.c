@@ -58,20 +58,24 @@ HWND n2e_ScintillaWindowByIndex(const int index)
     : _hwndEdit;
 }
 
-void n2e_SplitView(const BOOL bHorizontally)
+void n2e_UpdateMainWindow()
 {
   extern HWND hwndMain;
   void MsgSize(HWND, WPARAM, LPARAM);
   
+  RECT rc = { 0 };
+  GetClientRect(hwndMain, &rc);
+  MsgSize(hwndMain, SIZE_RESTORED, MAKELPARAM(rc.right - rc.left, rc.bottom - rc.top));
+}
+
+void n2e_SplitView(const BOOL bHorizontally)
+{
   HWND hwndEditActive = hwndEdit;
   hwndEditParent = GetParent(hwndEditActive);
   n2e_EditCreateImpl(hwndEditActive, hwndEditParent, bHorizontally, &hwndEditParent);
   SetWindowPos(hwndEditParent, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
 
-  RECT rc = { 0 };
-  GetClientRect(hwndMain, &rc);
-  MsgSize(hwndMain, SIZE_RESTORED, MAKELPARAM(rc.right - rc.left, rc.bottom - rc.top));
-
+  n2e_UpdateMainWindow();
   n2e_UpdateView();
 }
 
@@ -110,6 +114,10 @@ void n2e_CloseView()
   {
     SendMessage(hwnd, SCI_SETDOCPOINTER, 0, 0);
     DeleteSplitterChild(hwnd, _hwndEdit, &hwndEditParent);
+    if (hwndEditParent == _hwndEdit)
+    {
+      n2e_UpdateMainWindow();
+    }
   }
 }
 
