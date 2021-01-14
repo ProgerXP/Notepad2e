@@ -16,7 +16,7 @@ UINT WM_SPLITTER_CHILDREN_COUNT = RegisterWindowMessage(L"WM_GET_SPLITTER_CHILDR
 UINT WM_SPLITTER_CHILD_BY_INDEX = RegisterWindowMessage(L"WM_SPLITTER_CHILD_BY_INDEX");
 
 #define HTSPLITTER_MOVE 25
-const int SPLITTER_GRIP_SIZE = 5;
+const int SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) / 4;
 const int SPLITTER_MIN_PANE_SIZE = 100;
 
 #define INIT_SELF() auto pSelf = CSplitterWindow::FromHWND(hWnd);
@@ -58,17 +58,17 @@ public:
 
   HWND GetChildHWND() const { return m_hwndChild; }
   void SetChildHWND(const HWND hwnd) { m_hwndChild = hwnd; }
-  int GetSize() const { return m_size + SPLITTER_GRIP_SIZE; }
-  void SetSize(const int size) { m_size = size - SPLITTER_GRIP_SIZE; }
+  int GetSize() const { return m_size; }
+  void SetSize(const int size) { m_size = size; }
   int UpdateChild(const Rect& rc, const bool isHorizontalSplitter, const int paneOffset, const bool isLastPane) {
     if (isHorizontalSplitter)
     {
-      m_rcChild = { rc.left + paneOffset, rc.top, rc.left + paneOffset + m_size, rc.bottom };
+      m_rcChild = { rc.left + paneOffset, rc.top, rc.left + paneOffset + m_size - SPLITTER_GRIP_SIZE, rc.bottom };
       m_rcGrip = { m_rcChild.right, m_rcChild.top, m_rcChild.right + SPLITTER_GRIP_SIZE, m_rcChild.bottom };
     }
     else
     {
-      m_rcChild = { rc.left, rc.top + paneOffset, rc.right, rc.top + paneOffset + m_size };
+      m_rcChild = { rc.left, rc.top + paneOffset, rc.right, rc.top + paneOffset + m_size - SPLITTER_GRIP_SIZE };
       m_rcGrip = { m_rcChild.left, m_rcChild.bottom, m_rcChild.right, m_rcChild.bottom + SPLITTER_GRIP_SIZE };
     }
     if (isLastPane)
