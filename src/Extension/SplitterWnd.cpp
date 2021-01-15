@@ -170,7 +170,7 @@ public:
         DestroyWindow(hwndChild);
       }
       m_panes.erase(it);
-      UpdatePanes();
+      ScalePanes();
     }
   }
 
@@ -507,6 +507,7 @@ HWND AddSplitterChild(HWND hwndParent, const HWND hwndChildActive, const HWND hw
   if (pSplitter->IsHorizontal() == (bool)bHorizontal)
   {
     pSplitter->AddChild(hwndChild);
+    pSplitter->UpdatePanes();
   }
   else
   {
@@ -514,8 +515,8 @@ HWND AddSplitterChild(HWND hwndParent, const HWND hwndChildActive, const HWND hw
     hwndSplitter = CreateSplitterWnd(pSplitter->GetHWND(), hwndChildActive, hwndChild, bHorizontal);
     SetWindowPos(hwndSplitter, hwndPrev, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
     pSplitter->SwitchChild(hwndChildActive, hwndSplitter);
+    pSplitter->ScalePanes();
   }
-  pSplitter->UpdatePanes();
 
   hwndParent = hwndSplitter;
   while (IsSplitterWnd(hwndParent))
@@ -533,7 +534,7 @@ bool ChildToTopSplitter(HWND hwndChild, CSplitterWindow* pSplitter, CSplitterWin
     pSplitter->DeleteChild(hwndChild, false);
     SetParent(hwndChild, pTopSplitter->GetHWND());
     pTopSplitter->SwitchChild(pSplitter->GetHWND(), hwndChild);
-    pTopSplitter->UpdatePanes();
+    pTopSplitter->ScalePanes();
     return true;
   }
   else
@@ -581,6 +582,6 @@ void DeleteSplitterChild(HWND hwndChild, HWND hwndParentForLast, HWND* phwndEdit
   }
   else
   {
-    pSplitter->UpdatePanes();
+    pSplitter->ScalePanes();
   }
 }
