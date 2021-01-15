@@ -77,7 +77,7 @@ BOOL bHighlightLineIfWindowInactive = FALSE;
 long iMaxSearchDistance = DEFAULT_MAX_SEARCH_DISTANCE_KB * BYTES_IN_KB;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
-ETreatQuotesAsBraces iTreatQuotesAsBraces = TQB_DISABLED;
+BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 BOOL bUseDirectWrite = TRUE;
@@ -419,7 +419,7 @@ void n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
-  iTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, iTreatQuotesAsBraces);
+  bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 
 #ifdef LPEG_LEXER
@@ -509,7 +509,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, iTreatQuotesAsBraces);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);

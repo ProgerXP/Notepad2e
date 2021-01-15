@@ -3681,7 +3681,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3710,7 +3710,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293

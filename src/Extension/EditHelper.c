@@ -1432,12 +1432,7 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   return buf;
 }
 
-BOOL n2e_TreatQuoteAsBraces()
-{
-  return iTreatQuotesAsBraces != TQB_DISABLED;
-}
-
 LPCSTR n2e_GetBracesList()
 {
-  return n2e_TreatQuoteAsBraces() ? BRACES_WITH_QUOTES : BRACES;
+  return bTreatQuotesAsBraces ? BRACES_WITH_QUOTES : BRACES;
 }
