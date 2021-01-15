@@ -1816,10 +1816,10 @@ Sci::Position Document::ExtendWordSelect(Sci::Position pos, int delta, bool only
  * additional movement to transit white space.
  * Used by cursor movement by word commands.
  */
-Sci::Position Document::NextWordStart(Sci::Position pos, int delta) const {
+Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlternativeNavigation) const {
 	if (delta < 0) {
 		// [2e]: ctrl+arrow behavior toggle #89
-		switch (wordNavigationMode)
+		switch (CalcWordNavigationMode(useAlternativeNavigation))
 		{
 		case 0:
 			// standard navigation
@@ -1881,7 +1881,7 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta) const {
 		}
 	} else {
 		// [2e]: ctrl+arrow behavior toggle #89
-		switch (wordNavigationMode)
+		switch (CalcWordNavigationMode(useAlternativeNavigation))
 		{
 		case 0:
 			// standard navigation
@@ -2782,6 +2782,15 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
 void Document::SetWordNavigationMode(const int iMode)
 {
 	wordNavigationMode = iMode;
+}
+
+// [2e]: Alt + Arrow to invert accelerated mode for single navigation #323
+int Document::CalcWordNavigationMode(const bool invertMode) const
+{
+	if (!invertMode)
+		return wordNavigationMode;
+
+	return (wordNavigationMode != 0) ? 0 : 1;
 }
 // [/2e]
 
