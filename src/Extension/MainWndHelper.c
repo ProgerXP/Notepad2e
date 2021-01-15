@@ -164,20 +164,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
             FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, arrwchExpressionValue);
             break;
           case EVM_DEC:
-            {
-              LPWSTR pszDecimalValue = n2e_Alloc(sizeof(WCHAR)*(bufferSize * 2 + 1));
-              FormatString(pszDecimalValue, bufferSize * 2, idExpressionFormatString, exprValue);
-              LPNUMBERFMT lpFormat = NULL;
-              NUMBERFMT format = { 0 };
-              if (idExpressionFormatString == IDS_EXPRESSION_VALUE_INTEGER)
-              {
-                n2e_GetNumberFormat(&format);
-                format.NumDigits = 0;
-                lpFormat = &format;
-              }
-              GetNumberFormat(LOCALE_USER_DEFAULT, 0, pszDecimalValue, lpFormat, tchBuffer, bufferSize - 1);
-              n2e_Free(pszDecimalValue);
-            }
+            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, exprValue);
             break;
           case EVM_HEX:
           case EVM_OCT:
@@ -187,6 +174,18 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
         modePrevExpressionValue = modeExpressionValue;
         strncpy_s(arrchPrevExpressionText, COUNTOF(arrchPrevExpressionText) - 1, pszText, strlen(pszText));
         wcsncpy_s(arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1, tchBuffer, bufferSize - 1);
+        if (modeExpressionValue == EVM_DEC)
+        {
+            LPNUMBERFMT lpFormat = NULL;
+            NUMBERFMT format = { 0 };
+            if (idExpressionFormatString == IDS_EXPRESSION_VALUE_INTEGER)
+            {
+              n2e_GetNumberFormat(&format);
+              format.NumDigits = 0;
+              lpFormat = &format;
+            }
+            GetNumberFormat(LOCALE_USER_DEFAULT, 0, arrwchExpressionValue, lpFormat, tchBuffer, bufferSize - 1);
+        }
         return TRUE;
       }
     }
