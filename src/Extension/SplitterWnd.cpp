@@ -16,7 +16,7 @@ UINT WM_SPLITTER_CHILDREN_COUNT = RegisterWindowMessage(L"WM_GET_SPLITTER_CHILDR
 UINT WM_SPLITTER_CHILD_BY_INDEX = RegisterWindowMessage(L"WM_SPLITTER_CHILD_BY_INDEX");
 
 #define HTSPLITTER_MOVE 25
-const int SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) / 4;
+const int SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) * 3 / 8; // = 37.5%
 const int SPLITTER_MIN_PANE_SIZE = 20;
 
 #define INIT_SELF() auto pSelf = CSplitterWindow::FromHWND(hWnd);
