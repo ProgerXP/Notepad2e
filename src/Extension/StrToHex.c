@@ -41,51 +41,45 @@ BOOL Hex_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
 BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   long iCharsProcessed = 0;
+  char chEncoded[4] = { 0 };
+  const int iEncodedChars = n2e_IsUnicodeEncodingMode() ? 4 : 2;
+  for (int i = 0; i < iEncodedChars; ++i)
+  {
+    if (!TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded[i], &iCharsProcessed))
+    {
+      for (int j = 0; j < iCharsProcessed; ++j)
+      {
+        TextBuffer_DecPos(&pED->m_tb);
+      }
+      return FALSE;
+    }
+  }
+
   if (n2e_IsUnicodeEncodingMode())
   {
-    char chEncoded1, chEncoded2, chEncoded3, chEncoded4;
-    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, &iCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, &iCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded3, &iCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded4, &iCharsProcessed))
+    const char chDecoded1 = IntByHexDigit(chEncoded[0]) * 16 + IntByHexDigit(chEncoded[1]);
+    const char chDecoded2 = IntByHexDigit(chEncoded[2]) * 16 + IntByHexDigit(chEncoded[3]);
+    if (IsReverseUnicodeEncodingMode())
     {
-      const char chDecoded1 = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
-      const char chDecoded2 = IntByHexDigit(chEncoded3) * 16 + IntByHexDigit(chEncoded4);
-      if (IsReverseUnicodeEncodingMode())
-      {
-        TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
-        TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
-      }
-      else
-      {
-        TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
-        TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
-      }
-      if (piCharsProcessed)
-      {
-        (*piCharsProcessed) += iCharsProcessed;
-      }
-      return TRUE;
+      TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
+      TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
     }
-    return FALSE;
+    else
+    {
+      TextBuffer_PushChar(&pED->m_tbRes, chDecoded2);
+      TextBuffer_PushChar(&pED->m_tbRes, chDecoded1);
+    }
   }
   else
   {
-    char chEncoded1, chEncoded2;
-    if (TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded1, &iCharsProcessed)
-        && TextBuffer_GetLiteralChar(&pED->m_tb, &chEncoded2, &iCharsProcessed))
-    {
-      const char chDecoded = IntByHexDigit(chEncoded1) * 16 + IntByHexDigit(chEncoded2);
-      TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
-      if (piCharsProcessed)
-      {
-        (*piCharsProcessed) += iCharsProcessed;
-      }
-      return TRUE;
-    }
-    return FALSE;
+    const char chDecoded = IntByHexDigit(chEncoded[0]) * 16 + IntByHexDigit(chEncoded[1]);
+    TextBuffer_PushChar(&pED->m_tbRes, chDecoded);
   }
-  return FALSE;
+  if (piCharsProcessed)
+  {
+    (*piCharsProcessed) += iCharsProcessed;
+  }
+  return TRUE;
 }
 
 static StringSource ss = { 0 };

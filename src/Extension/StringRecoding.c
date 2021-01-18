@@ -245,7 +245,7 @@ void TextBuffer_NormalizeBeforeEncode(RecodingAlgorithm* pRA, TextBuffer* pTB, l
         break;
       }
       // invalid char is a part of truncated UTF-8 sequence
-      if (lpInvalidCharPos && (lpInvalidCharPos < lpDataWide + pTB->m_iMaxPos - 2))
+      if (lpInvalidCharPos && (lpInvalidCharPos < lpDataWide + pTB->m_iMaxPos))
       {
         cbDataWide = (lpInvalidCharPos - lpDataWide) * sizeof(WCHAR);
         lpInvalidCharPos[0] = 0;

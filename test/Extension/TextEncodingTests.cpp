@@ -107,8 +107,9 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         ss << L"Source: " << CPtoUCS2(StringFromVector(info.GetPlainSource()), CP_ACP) << std::endl;
 
         int resultLength = 0;
-        LPCSTR result = proc((LPCSTR)info.GetSourceText().data(),
-                                info.GetSourceText().size(),
+        const auto srcData = info.GetSourceText();
+        LPCSTR result = proc((LPCSTR)srcData.data(),
+                                srcData.size(),
                                 info.GetEncoding(),
                                 bufferSize,
                                 &resultLength);
@@ -123,8 +124,9 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         ss << L"Source: " << CPtoUCS2(StringFromVector(info.GetPlainResult()), CP_ACP) << std::endl;
 
         int resultLength = 0;
-        LPCSTR result = proc((LPCSTR)info.GetExpectedResultText().data(),
-                             info.GetExpectedResultText().size(),
+        const auto srcData = info.GetExpectedResultText();
+        LPCSTR result = proc((LPCSTR)srcData.data(),
+                             srcData.size(),
                              info.GetEncoding(),
                              bufferSize,
                              &resultLength);
