@@ -185,7 +185,7 @@ BEGIN
             MENUITEM SEPARATOR
             MENUITEM "&Modify Lines...\tAlt+M",     IDM_EDIT_MODIFYLINES
             MENUITEM "Alig&n Lines...\tAlt+J",      IDM_EDIT_ALIGN
-            MENUITEM "S&ort Lines...\tAlt+O",       IDM_EDIT_SORTLINES
+            MENUITEM "S&ort/Deduplicate Lines...\tAlt+O",       IDM_EDIT_SORTLINES
         END
         POPUP "C&onvert"
         BEGIN
@@ -1485,6 +1485,7 @@ BEGIN
     IDT_FILE_OPEN_PREV      "Open Previous"
     IDT_SETTINGS_SAVE_ON_EXIT "Save Settings On Exit"
     IDT_BINARY_SAFE_SAVE    "Binary-Safe Save"
+    IDM_VIEW_ALWAYSONTOP    "Always On Top"
 END
 
 STRINGTABLE

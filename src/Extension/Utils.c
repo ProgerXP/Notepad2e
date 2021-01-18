@@ -361,6 +361,7 @@ void n2e_Init(const HWND hwndEdit)
   n2e_Shell32Initialize();
   n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
   bLPegEnabled = n2e_InitLPegHomeDir();
+  n2e_UpdateAlwaysOnTopButton();
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
