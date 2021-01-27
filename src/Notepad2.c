@@ -2185,6 +2185,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, i);
+  // [2e]: New command: Ope&n INI File #330
+  EnableCmd(hmenu, CMD_OPENINIFILE, i);
   // [/2e]
 
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);

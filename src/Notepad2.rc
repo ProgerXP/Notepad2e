@@ -378,6 +378,7 @@ BEGIN
             MENUITEM "Save Settings Now\tF7",       IDM_VIEW_SAVESETTINGSNOW
             MENUITEM "Reload From Disk\tAlt+F7",    ID_SETTINGS_RELOADFROMDISK
             MENUITEM "Replace In Other Instances\tShift+F7", ID_SETTINGS_REPLACESETTINGSINALLINSTANCES
+            MENUITEM "Ope&n INI File\tCtrl+F7",     CMD_OPENINIFILE
         END
     END
     POPUP "&?"
