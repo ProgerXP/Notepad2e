@@ -5405,9 +5405,10 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
               iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
               c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-              if (StrChrA("()[]{}<>", c))
+              // [2e]: Treat quotes as braces #287
+              if (StrChrA(n2e_GetBracesList(), c))
               {
-                int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+                int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                 if (iBrace2 != -1)
                 {
                   int col1 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0);
@@ -5426,9 +5427,10 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               {
                 iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
                 c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-                if (StrChrA("()[]{}<>", c))
+                // [2e]: Treat quotes as braces #287
+                if (StrChrA(n2e_GetBracesList(), c))
                 {
-                  int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, 0);
+                  int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                   if (iBrace2 != -1)
                   {
                     int col1 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0);
