@@ -19,6 +19,7 @@ EExpressionValueMode modePrevExpressionValue = EVM_DEC;
 char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH] = { 0 };
 EExpressionValueMode modeExpressionValue = EVM_DEC;
 WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
+WCHAR arrwchExpressionStatusbarValue[MAX_PATH] = { 0 };
 
 extern HWND hwndMain;
 extern int aWidth[6];
@@ -92,6 +93,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
   if (n2e_IsExpressionEvaluationEnabled())
   {
     char *pszText = NULL;
+    BOOL bValidExpression = FALSE;
     if (n2e_IsRectangularSelection())
     {
       pszText = LocalAlloc(LPTR, MAX_EXPRESSION_LENGTH + 1);
@@ -131,11 +133,14 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
       }
     }
 
+    bValidExpression = (strlen(arrchPrevExpressionText) > 0) && (iCount > 0) && (strcmp(pszText, arrchPrevExpressionText) == 0);
     if ((iCount > 0) && (iCount <= MAX_EXPRESSION_LENGTH) && 
-        ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
+      ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
     {
       double exprValue = 0.0;
-      if (is_valid_expression(pszText, 1, &exprValue))
+      bValidExpression = is_valid_expression(pszText, 1, &exprValue);
+      if (bValidExpression && 
+        ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
       {
         UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
         switch (modeExpressionValue)
@@ -174,32 +179,37 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
         modePrevExpressionValue = modeExpressionValue;
         strncpy_s(arrchPrevExpressionText, COUNTOF(arrchPrevExpressionText) - 1, pszText, strlen(pszText));
         wcsncpy_s(arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1, tchBuffer, bufferSize - 1);
+        wcsncpy_s(arrwchExpressionStatusbarValue, COUNTOF(arrwchExpressionStatusbarValue) - 1, arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1);
         if (modeExpressionValue == EVM_DEC)
         {
-            LPNUMBERFMT lpFormat = NULL;
-            NUMBERFMT format = { 0 };
-            if (idExpressionFormatString == IDS_EXPRESSION_VALUE_INTEGER)
-            {
-              n2e_GetNumberFormat(&format);
-              format.NumDigits = 0;
-              lpFormat = &format;
-            }
-            GetNumberFormat(LOCALE_USER_DEFAULT, 0, arrwchExpressionValue, lpFormat, tchBuffer, bufferSize - 1);
+          LPNUMBERFMT lpFormat = NULL;
+          NUMBERFMT format = { 0 };
+          if (idExpressionFormatString == IDS_EXPRESSION_VALUE_INTEGER)
+          {
+            n2e_GetNumberFormat(&format);
+            format.NumDigits = 0;
+            lpFormat = &format;
+          }
+          GetNumberFormat(LOCALE_USER_DEFAULT, 0, arrwchExpressionValue, lpFormat, tchBuffer, bufferSize - 1);
+          wcsncpy_s(arrwchExpressionStatusbarValue, COUNTOF(arrwchExpressionStatusbarValue) - 1, tchBuffer, bufferSize - 1);
         }
+        LocalFree(pszText);
         return TRUE;
       }
     }
-    else if (lstrlenA(pszText) > 0)
+    
+    LocalFree(pszText);
+    if (bValidExpression)
     {
-      wcsncpy_s(tchBuffer, bufferSize - 1, arrwchExpressionValue, wcslen(arrwchExpressionValue));
+      wcsncpy_s(tchBuffer, bufferSize - 1, arrwchExpressionStatusbarValue, wcslen(arrwchExpressionStatusbarValue));
       return TRUE;
     }
-    LocalFree(pszText);
   }
   else
   {
     memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
     memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
+    memset(arrwchExpressionStatusbarValue, 0, sizeof(arrwchExpressionStatusbarValue));
   }
   return FALSE;
 }
