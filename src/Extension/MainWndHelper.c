@@ -133,7 +133,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
       }
     }
 
-    bValidExpression = (strlen(arrchPrevExpressionText) > 0) && (iCount > 0) && (strcmp(pszText, arrchPrevExpressionText) == 0);
+    bValidExpression = (strlen(arrchPrevExpressionText) > 0) && pszText && (strcmp(pszText, arrchPrevExpressionText) == 0);
     if ((iCount > 0) && (iCount <= MAX_EXPRESSION_LENGTH) && 
       ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
     {
