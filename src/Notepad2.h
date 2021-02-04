@@ -124,7 +124,7 @@ int  TestIniFile();
 int  CreateIniFile();
 int  CreateIniFileEx(LPCWSTR);
 
-
+void EditInit(HWND hwnd);
 void ReloadView();
 void UpdateStatusbar();
 void UpdateToolbar();

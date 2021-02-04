@@ -62,7 +62,6 @@ HWND      hwndStatus;
 HWND      hwndToolbar;
 HWND      hwndReBar;
 HWND      _hwndEdit;
-HWND      hwndLastActiveEdit = NULL;
 HWND      hwndEditParent;
 HWND      hwndEditFrame;
 HWND      hwndMain;
@@ -337,8 +336,6 @@ int flagUseSystemMRU = 0;
 int flagRelaunchElevated = 0;
 int flagDisplayHelp = 0;
 
-
-void _MsgCreate();
 
 //=============================================================================
 //
@@ -919,14 +916,19 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       if (!wParam)
       {
-        hwndLastActiveEdit = hwndEdit;
-        n2e_SelectionEditStop(hwndLastActiveEdit, SES_APPLY);
+        n2e_SaveActiveEdit();
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
         // [2e]: Save on deactivate #164
         if (!bReadOnly && bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
         }
+      }
+      else
+      {
+        // [2e]: Split view #316
+        n2e_RestoreActiveEdit();
       }
       break;
     // [/2e]
@@ -1035,9 +1037,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SETFOCUS:
-      // [2e]: Split view #316
-      SetFocus(hwndLastActiveEdit ? hwndLastActiveEdit : hwndEdit);
-
       UpdateToolbar();
       UpdateStatusbar();
 
@@ -1448,7 +1447,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_N2E_RELOAD_SETTINGS: {
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
-        _MsgCreate();
+        VIEW_COMMAND(EditInit);
         n2e_Reset();
         n2e_UpdateWindowTitle(hwnd);
       }
@@ -1471,32 +1470,32 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 }
 
 // [2e]: Edit initialization subroutine
-void _MsgCreate()
+void EditInit(HWND hwnd)
 {
   // Tabs
-  SendMessage(hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0);
-  SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
-  SendMessage(hwndEdit, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
-  SendMessage(hwndEdit, SCI_SETTABWIDTH, iTabWidth, 0);
-  SendMessage(hwndEdit, SCI_SETINDENT, iIndentWidth, 0);
+  SendMessage(hwnd, SCI_SETUSETABS, !bTabsAsSpaces, 0);
+  SendMessage(hwnd, SCI_SETTABINDENTS, bTabIndents, 0);
+  SendMessage(hwnd, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
+  SendMessage(hwnd, SCI_SETTABWIDTH, iTabWidth, 0);
+  SendMessage(hwnd, SCI_SETINDENT, iIndentWidth, 0);
   // Indent Guides
-  Style_SetIndentGuides(hwndEdit);
+  Style_SetIndentGuides(hwnd);
   // Word wrap
   if (!fWordWrap)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+    SendMessage(hwnd, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+    SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
   }
   if (iWordWrapIndent == 5)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
   }
   else if (iWordWrapIndent == 6)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
   }
   else
   {
@@ -1516,8 +1515,8 @@ void _MsgCreate()
         i = (iIndentWidth) ? 2 * iIndentWidth : 2 * iTabWidth;
         break;
     }
-    SendMessage(hwndEdit, SCI_SETWRAPSTARTINDENT, i, 0);
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_FIXED, 0);
+    SendMessage(hwnd, SCI_SETWRAPSTARTINDENT, i, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_FIXED, 0);
   }
   if (bShowWordWrapSymbols)
   {
@@ -1547,31 +1546,31 @@ void _MsgCreate()
         wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
         break;
     }
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, 0, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, 0, 0);
   }
   // Long Lines
   if (bMarkLongLines)
   {
-    SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    SendMessage(hwnd, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETEDGEMODE, EDGE_NONE, 0);
+    SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
   }
-  SendMessage(hwndEdit, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
+  SendMessage(hwnd, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
   // Margins
-  SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 2, 0);
-  SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
-  UpdateLineNumberWidth(hwndEdit);
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, 0);
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Nonprinting characters
-  SendMessage(hwndEdit, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
-  SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
-  SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+  SendMessage(hwnd, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+  SendMessage(hwnd, SCI_SETVIEWEOL, bViewEOLs, 0);
+  SendMessage(hwnd, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
 // [/2e]
 
@@ -1586,7 +1585,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   hInstance = ((LPCREATESTRUCT)lParam)->hInstance;
   // Setup edit control
   _hwndEdit = n2e_EditCreate(hwnd, &hwndEditParent);
-  _MsgCreate();
+  EditInit(_hwndEdit);
 
   hwndEditFrame = CreateWindowEx(
     WS_EX_CLIENTEDGE,
@@ -1674,7 +1673,7 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
       hwndStatus == NULL || hwndToolbar == NULL || hwndReBar == NULL)
     return (-1);
 
-  n2e_UpdateView();
+  n2e_UpdateViews();
   return (0);
 }
 
@@ -3820,26 +3819,26 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         switch (LOWORD(wParam))
         {
           case IDM_EDIT_FINDNEXT:
-            EditFindNext(hwndEdit, &efrData, FALSE);
+            EditFindNext(n2e_GetActiveEditCheckFocus(), &efrData, FALSE);
             break;
 
           case IDM_EDIT_FINDPREV:
-            EditFindPrev(hwndEdit, &efrData, FALSE);
+            EditFindPrev(n2e_GetActiveEditCheckFocus(), &efrData, FALSE);
             break;
 
           case IDM_EDIT_REPLACENEXT:
             if (bReplaceInitialized)
-              EditReplace(hwndEdit, &efrData);
+              EditReplace(n2e_GetActiveEditCheckFocus(), &efrData);
             else
               SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
             break;
 
           case IDM_EDIT_SELTONEXT:
-            EditFindNext(hwndEdit, &efrData, TRUE);
+            EditFindNext(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);
             break;
 
           case IDM_EDIT_SELTOPREV:
-            EditFindPrev(hwndEdit, &efrData, TRUE);
+            EditFindPrev(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);
             break;
         }
       }
@@ -3896,34 +3895,34 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SCHEME:
       Style_SelectLexerDlg(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_USE2NDDEFAULT:
       Style_ToggleUse2ndDefault(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_SCHEMECONFIG:
       Style_ConfigDlg(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_FONT:
       Style_SetDefaultFont(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_WORDWRAP:
       fWordWrap = (fWordWrap) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(n2e_SetWordWrap);
+      VIEW_COMMAND(n2e_SetWordWrap);
       fWordWrapG = fWordWrap;
       UpdateToolbar();
       break;
@@ -3998,7 +3997,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(n2e_SetLongLineMarker);
+      VIEW_COMMAND(n2e_SetLongLineMarker);
       UpdateStatusbar();
       break;
 
@@ -4055,7 +4054,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_SHOWINDENTGUIDES:
       bShowIndentGuides = (bShowIndentGuides) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(Style_SetIndentGuides);
+      VIEW_COMMAND(Style_SetIndentGuides);
       break;
 
 
@@ -4066,31 +4065,31 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LINENUMBERS:
       bShowLineNumbers = (bShowLineNumbers) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(UpdateLineNumberWidth);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(n2e_SetMarginWidthN);
+      VIEW_COMMAND(n2e_SetMarginWidthN);
       break;
 
 
     case IDM_VIEW_SHOWWHITESPACE:
       bViewWhiteSpace = (bViewWhiteSpace) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(n2e_ShowWhiteSpace);
+      VIEW_COMMAND(n2e_ShowWhiteSpace);
       break;
 
 
     case IDM_VIEW_SHOWEOLS:
       bViewEOLs = (bViewEOLs) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(n2e_SetViewEOL);
+      VIEW_COMMAND(n2e_SetViewEOL);
       break;
 
 
     case IDM_VIEW_WORDWRAPSYMBOLS:
       bShowWordWrapSymbols = (bShowWordWrapSymbols) ? 0 : 1;
-      n2e_ApplyViewCommand(n2e_SetShowWordWrapSymbols);
+      VIEW_COMMAND(n2e_SetShowWordWrapSymbols);
       break;
 
 
@@ -4106,7 +4105,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
       }
       else
-        n2e_ApplyViewCommand(n2e_HideMatchBraces);
+        VIEW_COMMAND(n2e_HideMatchBraces);
       break;
 
 
@@ -4117,7 +4116,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_HIGHLIGHTCURRENTLINE:
       bHighlightCurrentLine = (bHighlightCurrentLine) ? FALSE : TRUE;
-      n2e_ApplyViewCommand(Style_SetCurrentLineBackground);
+      VIEW_COMMAND(Style_SetCurrentLineBackground);
       break;
 
 
@@ -4668,21 +4667,21 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_LEXDEFAULT:
       Style_SetDefaultLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case CMD_LEXHTML:
       Style_SetHTMLLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case CMD_LEXXML:
       Style_SetXMLLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth(hwndEdit);
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
@@ -5539,7 +5538,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           break;
 
         case SCN_ZOOM:
-          UpdateLineNumberWidth(hwndFrom);
+          VIEW_COMMAND(UpdateLineNumberWidth);
           break;
 
         case SCN_SAVEPOINTREACHED:
@@ -5560,7 +5559,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         // [2e]: "Update gutter width"-feature
         case SCN_LINECOUNTCHANGED:
-          UpdateLineNumberWidth(hwndFrom);
+          VIEW_COMMAND(UpdateLineNumberWidth);
           break;
         // [/2e]
       }
@@ -6937,7 +6936,7 @@ void UpdateToolbar()
   // [2e]: Binary Save Options button #170
   CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
   // [2e]: Split view #316
-  EnableTool(IDT_CLOSE_SPLIT, hwndEdit != _hwndEdit);
+  EnableTool(IDT_CLOSE_SPLIT, n2e_GetActiveEditCheckFocus() != _hwndEdit);
 }
 
 
@@ -7169,7 +7168,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     FileVars_Init(NULL, 0, &fvCurFile);
     EditSetNewText(hwndEdit, "", 0);
     Style_SetLexer(hwndEdit, NULL);
-    UpdateLineNumberWidth(hwndEdit);
+    VIEW_COMMAND(UpdateLineNumberWidth);
     bModified = FALSE;
     bReadOnly = FALSE;
     iEOLMode = iLineEndings[iDefaultEOLMode];
@@ -7280,7 +7279,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       lstrcpy(szTitleExcerpt, L"");
     if (!flagLexerSpecified) // flag will be cleared
       Style_SetLexerFromFile(hwndEdit, szCurFile);
-    UpdateLineNumberWidth(hwndEdit);
+    VIEW_COMMAND(UpdateLineNumberWidth);
     iOriginalEncoding = iEncoding;
     bModified = FALSE;
     SendMessage(hwndEdit, SCI_SETEOLMODE, iEOLMode, 0);
@@ -7449,7 +7448,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
             lstrcpy(szTitleExcerpt, L"");
           Style_SetLexerFromFile(hwndEdit, szCurFile);
           UpdateStatusbar();
-          UpdateLineNumberWidth(hwndEdit);
+          VIEW_COMMAND(UpdateLineNumberWidth);
         }
         else
         {

@@ -1416,7 +1416,7 @@ BOOL EditLoadFile(
   }
 
   // [2e]: Split view #316
-  n2e_UpdateView();
+  n2e_UpdateViews();
   iSrcEncoding = -1;
   iWeakSrcEncoding = -1;
   return TRUE;
@@ -5663,7 +5663,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth(hwnd);
+  VIEW_COMMAND(UpdateLineNumberWidth);
   if (iPos != -1)
     EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
@@ -5818,7 +5818,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth(hwnd);
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Remove wait cursor
   EndWaitCursor();
 
@@ -5976,7 +5976,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth(hwnd);
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Remove wait cursor
   EndWaitCursor();
 

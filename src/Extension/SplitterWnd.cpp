@@ -1,6 +1,7 @@
 #include "SplitterWnd.h"
 #include <assert.h>
 #include <windowsx.h>
+#include <CommCtrl.h>
 
 #include <algorithm>
 #include <sstream>
@@ -8,6 +9,8 @@
 #include <vector>
 
 #include "CommonUtils.h"
+#include "Scintilla.h"
+#include "ViewHelper.h"
 
 const wchar_t UC_SPLITTER[] = { L"SplitterWnd" };
 const wchar_t SETTINGS[] = { L"SplitterSettings" };
@@ -227,7 +230,7 @@ public:
       auto& pane = *it;
       const bool isLastPane = std::distance(it, m_panes.end()) == 1;
       const int paneSize = isLastPane
-        ? denominator - paneOffset
+        ? numerator - paneOffset
         : MulDiv(pane.GetSize(), numerator, denominator);
       pane.SetSize(paneSize);
       paneOffset += pane.UpdateChild(rc, m_isHorizontal, paneOffset, isLastPane);
@@ -428,6 +431,14 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
             ? ((LPNMHDR)lParam)->hwndFrom
             : (HWND)wParam))
     {
+      if (uMsg == WM_NOTIFY)
+      {
+        LPNMHDR lpNMHDR = (LPNMHDR)lParam;
+        if (n2e_IsScintillaWindow(lpNMHDR->hwndFrom) && (lpNMHDR->code == SCN_FOCUSIN))
+        {
+          n2e_SetActiveEdit(lpNMHDR->hwndFrom);
+        }
+      }
       const HWND hWndTarget = GetAncestor(hWnd, GA_ROOTOWNER);
       return SendMessage(hWndTarget, uMsg, wParam, lParam);
     }

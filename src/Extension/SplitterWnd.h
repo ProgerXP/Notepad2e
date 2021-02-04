@@ -5,6 +5,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "ViewHelper.h"
+
   extern UINT WM_SPLITTER_CHILDREN_COUNT;
   extern UINT WM_SPLITTER_CHILD_BY_INDEX;
 

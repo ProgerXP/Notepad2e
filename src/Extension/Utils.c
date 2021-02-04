@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
+#include "DPIHelperScintilla.h"
 #include "ExtSelection.h"
 #include "EditHelper.h"
 #include "InlineProgressBarCtrl.h"

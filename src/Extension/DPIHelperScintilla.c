@@ -14,9 +14,7 @@ void n2e_ScintillaDPIInit(const HWND hwndScintilla)
   RECT rc = { 0 };
   GetWindowRect(hwnd, &rc);
   const POINT pt = { rc.left, rc.top };
-  const HWND hwndPrev = SetFocus(hwndScintilla);
-  SciCall_SetDPI(GetDPIFromMonitor(MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY), hwnd));
-  SetFocus(hwndPrev);
+  SendMessage(hwnd, SCI_SETDPI, GetDPIFromMonitor(MonitorFromPoint(pt, MONITOR_DEFAULTTOPRIMARY), hwnd), 0);
 }
 
 void n2e_ScintillaDPIUpdate(const HWND hwnd, const WPARAM dpi)
@@ -25,7 +23,5 @@ void n2e_ScintillaDPIUpdate(const HWND hwnd, const WPARAM dpi)
   {
     return;
   }
-  const HWND hwndPrev = SetFocus(hwnd);
-  SciCall_SetDPI(dpi);
-  SetFocus(hwndPrev);
+  SendMessage(hwnd, SCI_SETDPI, dpi, 0);
 }
