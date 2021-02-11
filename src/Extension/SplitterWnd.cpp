@@ -12,6 +12,7 @@
 #include "Scintilla.h"
 #include "ViewHelper.h"
 
+const wchar_t UC_SPLITTER_INDICATOR[] = { L"SplitterIndicatorWnd" };
 const wchar_t UC_SPLITTER[] = { L"SplitterWnd" };
 const wchar_t SETTINGS[] = { L"SplitterSettings" };
 
@@ -49,6 +50,30 @@ struct Rect : public RECT
   }
 };
 
+class CSplitterResizingIndicator
+{
+private:
+  static ATOM s_classAtom;
+  HWND m_hwnd = NULL;
+public:
+  CSplitterResizingIndicator()
+  {
+    if (!s_classAtom)
+    {
+      WNDCLASS wc = { 0, DefWindowProc, 0, 0, GetModuleHandle(NULL), NULL, NULL, GetSysColorBrush(COLOR_GRAYTEXT), NULL, UC_SPLITTER_INDICATOR };
+      s_classAtom = RegisterClass(&wc);
+    }
+
+    m_hwnd = CreateWindowEx(WS_EX_TOPMOST | WS_EX_LAYERED, UC_SPLITTER_INDICATOR, NULL, WS_POPUP, 0, 0, 0, 0, NULL, NULL, NULL, NULL);
+    SetLayeredWindowAttributes(m_hwnd, RGB(0, 0, 0), 128, LWA_ALPHA);
+  }
+  void Show(const Rect& rc)
+  {
+    SetWindowPos(m_hwnd, NULL, rc.left, rc.top, rc.width(), rc.height(), SWP_SHOWWINDOW | SWP_NOZORDER);
+  }
+  void Hide() { ShowWindow(m_hwnd, SW_HIDE); }
+};
+
 class CSplitterPane
 {
 private:
@@ -63,7 +88,7 @@ public:
   void SetChildHWND(const HWND hwnd) { m_hwndChild = hwnd; }
   int GetSize() const { return m_size; }
   void SetSize(const int size) { m_size = size; }
-  int UpdateChild(const Rect& rc, const bool isHorizontalSplitter, const int paneOffset, const bool isLastPane) {
+  int UpdateChild(const Rect& rc, const bool isHorizontalSplitter, const int paneOffset, const bool isLastPane, HDWP* lpHDWP) {
     if (isHorizontalSplitter)
     {
       m_rcChild = { rc.left + paneOffset, rc.top, rc.left + paneOffset + m_size - SPLITTER_GRIP_SIZE, rc.bottom };
@@ -79,7 +104,7 @@ public:
       UnionRect(&m_rcChild, &m_rcChild, &m_rcGrip);
       m_rcGrip = {};
     }
-    SetWindowPos(m_hwndChild, NULL, m_rcChild.left, m_rcChild.top, m_rcChild.width(), m_rcChild.height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER | SWP_SHOWWINDOW);
+    *lpHDWP = DeferWindowPos(*lpHDWP, m_hwndChild, NULL, m_rcChild.left, m_rcChild.top, m_rcChild.width(), m_rcChild.height(), SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOZORDER);
     return GetSize();
   }
   const Rect& GetRect() const { return m_rcChild; }
@@ -93,6 +118,8 @@ private:
 
   HWND m_hwnd = NULL;
   bool m_isHorizontal = true;
+  CSplitterResizingIndicator m_resizingIndicator;
+  int m_resizingDiff = 0;
 
   Rect m_rcUpdate;
   typedef std::vector<CSplitterPane> TPanes;
@@ -205,12 +232,14 @@ public:
     const int paneCount = max(PaneCount(), 1);
     const int paneSize = (m_isHorizontal ? m_rcUpdate.width() : m_rcUpdate.height()) / paneCount;
     int paneOffset = 0;
+    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
     for (auto it = m_panes.begin(); it != m_panes.end(); ++it)
     {
       auto& pane = *it;
       pane.SetSize(paneSize);
-      paneOffset += pane.UpdateChild(m_rcUpdate, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1);
+      paneOffset += pane.UpdateChild(m_rcUpdate, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
     }
+    EndDeferWindowPos(hWinPosInfo);
   }
 
   void ScalePanes() {
@@ -225,6 +254,7 @@ public:
     const int denominator = (m_isHorizontal ? m_rcUpdate.width() : m_rcUpdate.height());
     const int numerator = (m_isHorizontal ? rc.width() : rc.height());
     int paneOffset = 0;
+    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
     for (auto it = m_panes.begin(); it != m_panes.end(); ++it)
     {
       auto& pane = *it;
@@ -233,8 +263,10 @@ public:
         ? numerator - paneOffset
         : MulDiv(pane.GetSize(), numerator, denominator);
       pane.SetSize(paneSize);
-      paneOffset += pane.UpdateChild(rc, m_isHorizontal, paneOffset, isLastPane);
+      paneOffset += pane.UpdateChild(rc, m_isHorizontal, paneOffset, isLastPane, &hWinPosInfo);
     }
+    EndDeferWindowPos(hWinPosInfo);
+
     m_rcUpdate = rc;
   }
 
@@ -278,34 +310,50 @@ public:
   }
 
   void ProcessPaneResizing(const POINT& pt) {
-    const int diff = (m_isHorizontal ? m_ptResizingStart.x - pt.x : m_ptResizingStart.y - pt.y);
+    m_resizingDiff = (m_isHorizontal ? m_ptResizingStart.x - pt.x : m_ptResizingStart.y - pt.y);
     if (m_paneResizingMode
-      && diff != 0
       && (m_hotPane != m_panes.cend())
       && (std::distance(m_hotPane, m_panes.end()) >= 1))
     {
-      auto& paneHot = *m_hotPane;
-      auto& paneNext = *(m_hotPane + 1);
-      paneHot.SetSize(m_hotPaneSizeOriginal - diff);
-      paneNext.SetSize(m_nextPaneSizeOriginal + diff);
-      int paneOffset = 0;
-      for (auto it = m_panes.begin(); it != m_hotPane; ++it)
+      Rect rc = m_hotPane->GetGripRect();
+      if (m_isHorizontal)
       {
-        paneOffset += it->GetSize();
+        rc.left -= m_resizingDiff;
+        rc.right -= m_resizingDiff;
       }
-      Rect rc;
-      GetClientRect(m_hwnd, &rc);
-      for (auto it = m_hotPane; it != m_panes.end(); ++it)
+      else
       {
-        paneOffset += it->UpdateChild(rc, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1);
+        rc.top -= m_resizingDiff;
+        rc.bottom -= m_resizingDiff;
       }
+      rc.ClientToScreen(m_hwnd);
+      m_resizingIndicator.Show(rc);
     }
   }
 
   void StopPaneSizing() {
+    m_resizingIndicator.Hide();
     m_paneResizingMode = false;
     ClipCursor(NULL);
     ReleaseCapture();
+
+    auto& paneHot = *m_hotPane;
+    auto& paneNext = *(m_hotPane + 1);
+    paneHot.SetSize(m_hotPaneSizeOriginal - m_resizingDiff);
+    paneNext.SetSize(m_nextPaneSizeOriginal + m_resizingDiff);
+    int paneOffset = 0;
+    for (auto it = m_panes.begin(); it != m_hotPane; ++it)
+    {
+      paneOffset += it->GetSize();
+    }
+    Rect rc;
+    GetClientRect(m_hwnd, &rc);
+    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
+    for (auto it = m_hotPane; it != m_panes.end(); ++it)
+    {
+      paneOffset += it->UpdateChild(rc, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
+    }
+    EndDeferWindowPos(hWinPosInfo);
   }
 
   void ProcessDoubleClick(const POINT& ptMouse) {
@@ -336,6 +384,7 @@ public:
 };
 
 ATOM CSplitterWindow::s_classAtom = 0;
+ATOM CSplitterResizingIndicator::s_classAtom = 0;
 
 BOOL IsSplitterWnd(const HWND hwnd)
 {
