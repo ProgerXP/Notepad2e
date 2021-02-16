@@ -347,8 +347,8 @@ BEGIN
         POPUP "Esc &Key Function"
         BEGIN
             MENUITEM "&None",                       IDM_VIEW_NOESCFUNC
-            MENUITEM "&Minimize Notepad2",          IDM_VIEW_ESCMINIMIZE
-            MENUITEM "E&xit Notepad2",              IDM_VIEW_ESCEXIT
+            MENUITEM "&Minimize Notepad 2e",        IDM_VIEW_ESCMINIMIZE
+            MENUITEM "E&xit Notepad 2e",            IDM_VIEW_ESCEXIT
         END
         POPUP "Evaluate &Math Expressions"
         BEGIN
@@ -1496,7 +1496,7 @@ BEGIN
     IDS_ERR_BROWSE          "No file browser plugin was found.\nThe metapath file browser plugin can be downloaded from http://www.flos-freeware.ch."
     IDS_ERR_MRUDLG          "No access to the selected file!\nWould you like to remove it from the list?"
     IDS_ERR_CREATELINK      "Error creating the Desktop link."
-    IDS_ERR_PREVWINDISABLED "Existing Notepad 2e window is busy or has an active dialog box.\nWould you like to open another Notepad2 window?"
+    IDS_ERR_PREVWINDISABLED "Existing Notepad 2e window is busy or has an active dialog box.\nWould you like to open another Notepad 2e window?"
     IDS_SELRECT             "This operation can't be perfomed within a rectangular selection."
     IDS_BUFFERTOOSMALL      "This operation can't be performed (lines too long)."
     IDS_FIND_WRAPFW         "Reached the end of the document, restarting search at the beginning."
