@@ -6,6 +6,7 @@
 #include "ExtSelection.h"
 #include "Scintilla.h"
 #include "SciCall.h"
+#include "Styles.h"
 #include "Helpers.h"
 #include "Trace.h"
 #include "Utils.h"
@@ -792,6 +793,11 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
   {
     case SCN_FOCUSIN:
       hwndPrev = hwnd;
+      Style_SetCurrentLineBackground(hwnd);
+      break;
+
+    case SCN_FOCUSOUT:
+      Style_SetCurrentLineBackground(hwnd);
       break;
 
     case SCN_UPDATEUI:

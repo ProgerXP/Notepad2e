@@ -236,8 +236,9 @@ public:
     for (auto it = m_panes.begin(); it != m_panes.end(); ++it)
     {
       auto& pane = *it;
+      const bool isLastPane = std::distance(it, m_panes.end()) == 1;
       pane.SetSize(paneSize);
-      paneOffset += pane.UpdateChild(m_rcUpdate, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
+      paneOffset += pane.UpdateChild(m_rcUpdate, m_isHorizontal, paneOffset, isLastPane, &hWinPosInfo);
     }
     EndDeferWindowPos(hWinPosInfo);
   }
@@ -276,6 +277,11 @@ public:
     {
       m_hotPaneSizeOriginal = m_hotPane->GetSize();
       m_nextPaneSizeOriginal = (m_hotPane + 1)->GetSize();
+    }
+    else
+    {
+      m_hotPaneSizeOriginal = m_nextPaneSizeOriginal = 0;
+      m_resizingDiff = 0;
     }
   }
 
@@ -336,36 +342,43 @@ public:
     m_paneResizingMode = false;
     ClipCursor(NULL);
     ReleaseCapture();
-
-    auto& paneHot = *m_hotPane;
-    auto& paneNext = *(m_hotPane + 1);
-    paneHot.SetSize(m_hotPaneSizeOriginal - m_resizingDiff);
-    paneNext.SetSize(m_nextPaneSizeOriginal + m_resizingDiff);
-    int paneOffset = 0;
-    for (auto it = m_panes.begin(); it != m_hotPane; ++it)
+    if (std::distance(m_hotPane, m_panes.end()) > 1)
     {
-      paneOffset += it->GetSize();
+      auto& paneHot = *m_hotPane;
+      auto& paneNext = *(m_hotPane + 1);
+      paneHot.SetSize(m_hotPaneSizeOriginal - m_resizingDiff);
+      paneNext.SetSize(m_nextPaneSizeOriginal + m_resizingDiff);
+      int paneOffset = 0;
+      for (auto it = m_panes.begin(); it != m_hotPane; ++it)
+      {
+        paneOffset += it->GetSize();
+      }
+      Rect rc;
+      GetClientRect(m_hwnd, &rc);
+      HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
+      for (auto it = m_hotPane; it != m_panes.end(); ++it)
+      {
+        paneOffset += it->UpdateChild(rc, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
+      }
+      EndDeferWindowPos(hWinPosInfo);
     }
-    Rect rc;
-    GetClientRect(m_hwnd, &rc);
-    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
-    for (auto it = m_hotPane; it != m_panes.end(); ++it)
-    {
-      paneOffset += it->UpdateChild(rc, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
-    }
-    EndDeferWindowPos(hWinPosInfo);
+    SetHotPane(m_panes.end());
   }
 
-  void ProcessDoubleClick(const POINT& ptMouse) {
+  void ProcessDoubleClick() {
     if (std::distance(m_hotPane, m_panes.end()) > 1)
     {
       auto it = m_hotPane;
       auto& pane1 = *it;
       auto& pane2 = *(++it);
       const auto paneAverageSize = (pane1.GetSize() + pane2.GetSize()) / 2;
+
       pane1.SetSize(paneAverageSize);
       pane2.SetSize(paneAverageSize);
       ScalePanes();
+
+      SetHotPane(m_panes.end());
+      StopPaneSizing();
     }
   }
 
@@ -448,14 +461,14 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
       POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
       ScreenToClient(hWnd, &pt);
       pSelf->StartPaneResizing(pt);
+      return 0;
     }
     break;
   case WM_NCLBUTTONDBLCLK:
     if (wParam == HTSPLITTER_MOVE) 
     {
-      POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-      ScreenToClient(hWnd, &pt);
-      pSelf->ProcessDoubleClick(pt);
+      pSelf->ProcessDoubleClick();
+      return 0;
     }
     break;
   case WM_MOUSEMOVE:
@@ -469,6 +482,7 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
     if (pSelf->IsPaneResizing())
     {
       pSelf->StopPaneSizing();
+      return 0;
     }
     break;
   case WM_WINDOWPOSCHANGED:

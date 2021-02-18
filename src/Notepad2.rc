@@ -2014,6 +2014,8 @@ BEGIN
     63358                   "Keys & buttons"
     63359                   "Built-in variables"
     63360                   "Variable keyword"
+    63361                   "Current Line, Inactive View (Color)"
+    63362                   "2nd Current Line, Inactive View (Color)"
 END
 
 #endif    // English (United States) resources
