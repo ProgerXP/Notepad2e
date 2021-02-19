@@ -74,7 +74,7 @@ public:
   }
   void Show(const Rect& rc)
   {
-    SetWindowPos(m_hwnd, NULL, rc.left, rc.top, rc.width(), rc.height(), SWP_SHOWWINDOW | SWP_NOZORDER);
+    SetWindowPos(m_hwnd, NULL, rc.left, rc.top, rc.width(), rc.height(), SWP_SHOWWINDOW | SWP_NOZORDER | SWP_NOACTIVATE);
   }
   void Hide() { ShowWindow(m_hwnd, SW_HIDE); }
 };
@@ -123,7 +123,6 @@ private:
 
   HWND m_hwnd = NULL;
   bool m_isHorizontal = true;
-  HWND m_hwndOriginalFocusedHWND = NULL;
   CSplitterResizingIndicator m_resizingIndicator;
   int m_resizingDiff = 0;
 
@@ -146,13 +145,6 @@ private:
   }
 
   void setHWND(const HWND hwnd) { m_hwnd = hwnd; }
-  void setOriginalFocusedHWND(const HWND hwnd) {
-    if (hwnd != m_resizingIndicator.GetHWND())
-      m_hwndOriginalFocusedHWND = hwnd;
-  }
-  HWND getOriginalFocusedHWND() const { 
-    return m_hwndOriginalFocusedHWND;
-  }
 
   static LRESULT CALLBACK SplitterProc(HWND hWndSplitter, UINT Message, WPARAM wParam, LPARAM lParam);
 
@@ -177,7 +169,7 @@ private:
 public:
   CSplitterWindow(const HWND hwndParent, bool isHorizontal) : m_isHorizontal(isHorizontal) {
     init();
-    CreateWindow(UC_SPLITTER, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwndParent, NULL, GetModuleHandle(NULL), (LPVOID)this);
+    CreateWindowEx(WS_EX_NOACTIVATE, UC_SPLITTER, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN, 0, 0, 0, 0, hwndParent, NULL, GetModuleHandle(NULL), (LPVOID)this);
     m_resizingIndicator.SetParent(m_hwnd);
   }
 
@@ -378,7 +370,6 @@ public:
       EndDeferWindowPos(hWinPosInfo);
     }
     SetHotPane(m_panes.end());
-    SetFocus(getOriginalFocusedHWND());
   }
 
   void ProcessDoubleClick() {
@@ -445,9 +436,6 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
       CSplitterWindow::AttachToHWND(hWnd, pSelf);
     }
     return 0;
-  case WM_MOUSEACTIVATE:
-    pSelf->setOriginalFocusedHWND(GetFocus());
-    break;
   case WM_NCHITTEST:
     {
       const LRESULT lRes = DefWindowProc(hWnd, uMsg, wParam, lParam);
