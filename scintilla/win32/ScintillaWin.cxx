@@ -3232,7 +3232,7 @@ STDMETHODIMP ScintillaWin::Drop(LPDATAOBJECT pIDataSource, DWORD grfKeyState,
 		}
 		DropAt(movePos, &data[0], data.size() - 1, *pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
 		if (bAddNewLine) {
-			KeyCommand(SCI_CHARRIGHT);
+			KeyCommand(SCI_CHARLEFTEXTEND);
 		}
 
 		// Free data
