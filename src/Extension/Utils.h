@@ -87,12 +87,6 @@ typedef enum
 
 typedef enum
 {
-  TQB_DISABLED = 0,
-  TQB_ENABLED = 0,
-} ETreatQuotesAsBraces;
-
-typedef enum
-{
   HCS_DISABLED = 0,
   HCS_WORD = 1,
   HCS_SELECTION = 2,
@@ -127,7 +121,7 @@ typedef struct TAddToFavoritesParams
 extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
-extern ETreatQuotesAsBraces iTreatQuotesAsBraces;
+extern BOOL bTreatQuotesAsBraces;
 
 void n2e_InitInstance();
 void n2e_ExitInstance();
@@ -210,6 +204,9 @@ void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVO
 
 BOOL n2e_FindMRUAdd(LPCSTR pszNew);
 void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars);
+
+void n2e_GetNumberFormat(LPNUMBERFMT lpFormat);
+
 void n2e_SetWordWrap(HWND hwnd);
 void n2e_SetLongLineMarker(HWND hwnd);
 void n2e_SetMarginWidthN(HWND hwnd);

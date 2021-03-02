@@ -103,6 +103,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {14, IDT_VIEW_SCHEME, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {15, IDT_VIEW_SCHEMECONFIG, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {31, IDM_VIEW_ALWAYSONTOP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {25, IDT_SETTINGS_SAVE_ON_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {16, IDT_FILE_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -2190,6 +2191,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_ALL, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_RECENT, i);
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGS_MODE_NO, i);
+  // [2e]: New command: Ope&n INI File #330
+  EnableCmd(hmenu, CMD_OPENINIFILE, i);
   // [/2e]
 
   i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
@@ -3687,7 +3690,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3716,7 +3719,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, n2e_TreatQuoteAsBraces());
+          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -4246,6 +4249,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         flagAlwaysOnTop = 0;
         SetWindowPos(hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
       }
+      n2e_UpdateAlwaysOnTopButton();
       break;
 
 
@@ -5395,9 +5399,10 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
               iPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
               c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
-              if (StrChrA("()[]{}<>", c))
+              // [2e]: Treat quotes as braces #287
+              if (StrChrA(n2e_GetBracesList(), c))
               {
-                int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, 0);
+                int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                 if (iBrace2 != -1)
                 {
                   int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
@@ -5416,9 +5421,10 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               {
                 iPos = (int)SendMessage(hwndFrom, SCI_POSITIONBEFORE, iPos, 0);
                 c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
-                if (StrChrA("()[]{}<>", c))
+                // [2e]: Treat quotes as braces #287
+                if (StrChrA(n2e_GetBracesList(), c))
                 {
-                  int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, 0);
+                  int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                   if (iBrace2 != -1)
                   {
                     int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
@@ -6926,6 +6932,8 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
+  // [2e]: Function requirements #333
+  n2e_UpdateAlwaysOnTopButton();
   // [2e]: Save on exit and History #101
   const BOOL bCommandEnabled = IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL);
   EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, bCommandEnabled);

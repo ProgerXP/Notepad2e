@@ -268,7 +268,7 @@ int n2e_HighlightWord(LPCSTR word)
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, N2E_SELECT_INDICATOR_SINGLE, 0);
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
-  if (word)
+  if (word && (strlen(word) > 0))
   {
     int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     int wlen = strlen(word);
@@ -876,7 +876,9 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
           }
         }
 
-        if (!n2e_IsRectangularSelection() && (scn->modificationType & SC_MOD_DELETETEXT))
+      if (!n2e_IsRectangularSelection()
+        && (scn->modificationType & SC_MOD_DELETETEXT)
+        && (scn->modificationType & SC_STARTACTION))
         {
           EditSelectEx(hwnd, SciCall_GetAnchor(), SciCall_GetCurrentPos());
         }

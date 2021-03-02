@@ -17,7 +17,8 @@ extern HHOOK hShellHook;
 extern EExpressionValueMode modePrevExpressionValue;
 extern char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH];
 extern EExpressionValueMode modeExpressionValue;
-extern WCHAR arrwchExpressionValue[MAX_PATH];
+extern WCHAR arrwchExpressionValue[MAX_PATH];             // text for clipboard copy
+extern WCHAR arrwchExpressionStatusbarValue[MAX_PATH];    // text displayed in status bar
 BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt);
 void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick);
 LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam);

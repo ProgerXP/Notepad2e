@@ -423,7 +423,7 @@ public:
 	void GetHighlightDelimiters(HighlightDelimiter &highlightDelimiter, Sci::Line line, Sci::Line lastLine);
 
 	Sci::Position ExtendWordSelect(Sci::Position pos, int delta, bool onlyWordCharacters=false) const;
-	Sci::Position NextWordStart(Sci::Position pos, int delta) const;
+	Sci::Position NextWordStart(Sci::Position pos, int delta, bool useAlternativeNavigation) const;
 	Sci::Position NextWordEnd(Sci::Position pos, int delta) const;
 	Sci_Position SCI_METHOD Length() const override { return cb.Length(); }
 	Sci::Position LengthNoExcept() const noexcept { return cb.Length(); }
@@ -499,6 +499,7 @@ public:
 	Sci::Position BraceMatch(Sci::Position position, bool treatQuotesAsBraces) noexcept;
 	// [2e]: ctrl+arrow behavior toggle #89
 	void SetWordNavigationMode(const int iMode);
+	int CalcWordNavigationMode(const bool invertMode) const;
 
 private:
 	void NotifyModifyAttempt();

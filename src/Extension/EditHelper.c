@@ -35,6 +35,8 @@ extern HWND hwndMain;
 extern HWND hDlgFindReplace;
 extern int iOpenSaveFilterIndex;
 extern EDITFINDREPLACE efrData;
+extern BOOL bAlwaysOnTop;
+extern int flagAlwaysOnTop;
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -768,6 +770,11 @@ void n2e_ResetFindIcon()
   n2e_UpdateFindIcon(TRUE);
 }
 
+void n2e_UpdateAlwaysOnTopButton()
+{
+  SendMessage(hwndToolbar, TB_SETSTATE, IDM_VIEW_ALWAYSONTOP, MAKELPARAM(TBSTATE_ENABLED | (((bAlwaysOnTop || flagAlwaysOnTop == 2) && flagAlwaysOnTop != 1) ? TBSTATE_PRESSED : 0), 0));
+}
+
 void n2e_EditString2Hex(const HWND hwnd)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
@@ -1432,12 +1439,7 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   return buf;
 }
 
-BOOL n2e_TreatQuoteAsBraces()
-{
-  return iTreatQuotesAsBraces != TQB_DISABLED;
-}
-
 LPCSTR n2e_GetBracesList()
 {
-  return n2e_TreatQuoteAsBraces() ? BRACES_WITH_QUOTES : BRACES;
+  return bTreatQuotesAsBraces ? BRACES_WITH_QUOTES : BRACES;
 }

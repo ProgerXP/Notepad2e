@@ -79,7 +79,7 @@ BOOL bHighlightLineIfWindowInactive = FALSE;
 long iMaxSearchDistance = DEFAULT_MAX_SEARCH_DISTANCE_KB * BYTES_IN_KB;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
-ETreatQuotesAsBraces iTreatQuotesAsBraces = TQB_DISABLED;
+BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 BOOL bUseDirectWrite = TRUE;
@@ -369,6 +369,7 @@ void n2e_Init()
   n2e_ResetLastRun();
   n2e_Shell32Initialize();
   bLPegEnabled = n2e_InitLPegHomeDir();
+  n2e_UpdateAlwaysOnTopButton();
 }
 
 void n2e_InitScintilla(const HWND hwnd)
@@ -432,7 +433,7 @@ void n2e_LoadINI()
   iWordNavigationMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
-  iTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, iTreatQuotesAsBraces);
+  bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 
 #ifdef LPEG_LEXER
@@ -522,7 +523,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WORD_NAVIGATION_MODE, iWordNavigationMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, iTreatQuotesAsBraces);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
@@ -1726,6 +1727,38 @@ void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars)
     --end;
 
   end[1] = '\0';
+}
+
+void n2e_GetNumberFormat(LPNUMBERFMT lpFormat)
+{
+  static NUMBERFMT g_defaultNumberFormat = { 0 };
+  if ((lpFormat != &g_defaultNumberFormat) && !g_defaultNumberFormat.lpDecimalSep && !g_defaultNumberFormat.lpThousandSep)
+  {
+    n2e_GetNumberFormat(&g_defaultNumberFormat);
+  }
+  if (lpFormat == &g_defaultNumberFormat)
+  {
+    const LCID lcid = LOCALE_USER_DEFAULT;
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IDIGITS | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->NumDigits, sizeof(lpFormat->NumDigits) / sizeof(WCHAR));
+    GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_ILZERO | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->LeadingZero, sizeof(lpFormat->LeadingZero) / sizeof(WCHAR));
+    WCHAR szGrouping[32] = L"";
+    GetLocaleInfo(lcid, LOCALE_SGROUPING, szGrouping, ARRAYSIZE(szGrouping));
+    lpFormat->Grouping = (lstrcmp(szGrouping, L"3") == 0) || (lstrcmp(szGrouping, L"3;0") == 0) ? 3
+      : (lstrcmp(szGrouping, L"3;2;0") == 0) ? 32
+      : 0;
+    lpFormat->lpDecimalSep = n2e_Alloc(sizeof(WCHAR) * 16);
+    GetLocaleInfo(lcid, LOCALE_SDECIMAL, lpFormat->lpDecimalSep, 15);
+    lpFormat->lpThousandSep = n2e_Alloc(sizeof(WCHAR) * 16);
+    GetLocaleInfo(lcid, LOCALE_STHOUSAND, lpFormat->lpThousandSep, 15);
+    GetLocaleInfo(lcid, LOCALE_INEGNUMBER | LOCALE_RETURN_NUMBER, (LPWSTR)&lpFormat->NegativeOrder, sizeof(lpFormat->NegativeOrder) / sizeof(WCHAR));
+    return;
+  }
+  lpFormat->NumDigits = g_defaultNumberFormat.NumDigits;
+  lpFormat->LeadingZero = g_defaultNumberFormat.LeadingZero;
+  lpFormat->Grouping = g_defaultNumberFormat.Grouping;
+  lpFormat->lpDecimalSep = g_defaultNumberFormat.lpDecimalSep;
+  lpFormat->lpThousandSep = g_defaultNumberFormat.lpThousandSep;
+  lpFormat->NegativeOrder = g_defaultNumberFormat.NegativeOrder;
 }
 
 void n2e_SetWordWrap(HWND hwnd)
