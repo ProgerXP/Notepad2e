@@ -478,7 +478,7 @@ BOOL EditCopyAppend(HWND hwnd)
 
   // [2e]: "Copy Add (Ctrl+E)" not working when clipboard is empty
   const BOOL bClipboardDataAvailable = IsClipboardFormatAvailable(CF_UNICODETEXT);
-  const WCHAR *pszSep = bClipboardDataAvailable ? L"\r\n" : L"";
+  const WCHAR *pszSep = L"\r\n";
   UINT  uCodePage;
 
   int iCurPos;
@@ -525,8 +525,10 @@ BOOL EditCopyAppend(HWND hwnd)
   if (cchTextW > 0)
   {
     pszTextW = LocalAlloc(LPTR, sizeof(WCHAR) * (lstrlen(pszSep) + cchTextW + 1));
-    lstrcpy(pszTextW, pszSep);
+    // [2e]: Copy Add (Ctrl+E) to insert line break after, not before #344
     MultiByteToWideChar(uCodePage, 0, pszText, -1, StrEnd(pszTextW), (int)LocalSize(pszTextW) / sizeof(WCHAR));
+    lstrcatW(pszTextW, pszSep);
+    // [/2e]
   }
   else
   {
