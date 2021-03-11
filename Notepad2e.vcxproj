@@ -451,6 +451,7 @@
     <ClCompile Include="src\Extension\MainWndHelper.c" />
     <ClCompile Include="src\Extension\ProcessElevationUtils.c" />
     <ClCompile Include="src\Extension\Shell32Helper.c" />
+    <ClCompile Include="src\Extension\SplitterWnd.cpp" />
     <ClCompile Include="src\Extension\StringRecoding.c" />
     <ClCompile Include="src\Extension\StrToBase64.c" />
     <ClCompile Include="src\Extension\StrToHex.c" />
@@ -461,6 +462,7 @@
     <ClCompile Include="src\Extension\Trace.c" />
     <ClCompile Include="src\Extension\Utils.c" />
     <ClCompile Include="src\Extension\VersionHelper.c" />
+    <ClCompile Include="src\Extension\ViewHelper.c" />
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\Notepad2.c" />
     <ClCompile Include="src\Print.cpp" />
@@ -580,6 +582,7 @@
     <ClInclude Include="src\Extension\ProcessElevationUtils.h" />
     <ClInclude Include="src\Extension\SciCall.h" />
     <ClInclude Include="src\Extension\Shell32Helper.h" />
+    <ClInclude Include="src\Extension\SplitterWnd.h" />
     <ClInclude Include="src\Extension\stdafx.h" />
     <ClInclude Include="src\Extension\StringRecoding.h" />
     <ClInclude Include="src\Extension\StrToBase64.h" />
@@ -591,6 +594,7 @@
     <ClInclude Include="src\Extension\Trace.h" />
     <ClInclude Include="src\Extension\Utils.h" />
     <ClInclude Include="src\Extension\VersionHelper.h" />
+    <ClInclude Include="src\Extension\ViewHelper.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\Notepad2.h" />
     <ClInclude Include="src\SciCall.h" />

@@ -19,7 +19,7 @@
 *
 ******************************************************************************/
 
-
+#include "ViewHelper.h"
 
 extern HINSTANCE g_hInstance;
 extern UINT16 g_uWinVer;
@@ -58,8 +58,6 @@ __inline BOOL IniSectionSetInt(LPWSTR lpCachedIniSection, LPCWSTR lpName, int i)
   return IniSectionSetString(lpCachedIniSection, lpName, tch);
 }
 
-
-extern HWND hwndEdit;
 __inline void BeginWaitCursor()
 {
   SendMessage(hwndEdit, SCI_SETCURSOR, (WPARAM)SC_CURSORWAIT, 0);

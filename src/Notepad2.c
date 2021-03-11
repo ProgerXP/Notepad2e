@@ -49,6 +49,7 @@
 #include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
 #include "Extension/VersionHelper.h"
+#include "Extension/ViewHelper.h"
 
 
 
@@ -60,7 +61,8 @@
 HWND      hwndStatus;
 HWND      hwndToolbar;
 HWND      hwndReBar;
-HWND      hwndEdit;
+HWND      _hwndEdit;
+HWND      hwndEditParent;
 HWND      hwndEditFrame;
 HWND      hwndMain;
 HWND      hwndNextCBChain = NULL;
@@ -71,8 +73,8 @@ BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
 
-#define NUMTOOLBITMAPS  28
-#define NUMINITIALTOOLS 25
+#define NUMTOOLBITMAPS  31
+#define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {1, IDT_FILE_OPEN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -94,10 +96,14 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {12, IDT_VIEW_ZOOMIN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {13, IDT_VIEW_ZOOMOUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
+    {28, IDT_SPLIT_VERTICALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {29, IDT_SPLIT_HORIZONTALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {30, IDT_CLOSE_SPLIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {14, IDT_VIEW_SCHEME, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {15, IDT_VIEW_SCHEMECONFIG, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
-    {28, IDM_VIEW_ALWAYSONTOP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {31, IDM_VIEW_ALWAYSONTOP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {25, IDT_SETTINGS_SAVE_ON_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {16, IDT_FILE_EXIT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -331,8 +337,6 @@ int flagUseSystemMRU = 0;
 int flagRelaunchElevated = 0;
 int flagDisplayHelp = 0;
 
-
-void _MsgCreate();
 
 //=============================================================================
 //
@@ -642,9 +646,6 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 
   n2e_InitInstance();
 
-  // [2e]: DPI awareness #154
-  n2e_ScintillaDPIInit(hwndMain);
-
   if (wi.max)
     nCmdShow = SW_SHOWMAXIMIZED;
 
@@ -873,7 +874,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   {
     // [2e]: DPI awareness #154
     case WM_DPICHANGED:
-      n2e_ScintillaDPIUpdate(hwndEdit, wParam);
+      n2e_UpdateViewsDPI(wParam);
       DPIChanged_WindowProcHandler(hwnd, wParam, lParam);
       MsgThemeChanged(hwnd, 0, 0);
       return 0;
@@ -916,7 +917,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_ACTIVATEAPP:
       if (!wParam)
       {
-        n2e_SelectionEditStop(SES_APPLY);
+        n2e_SaveActiveEdit();
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
         // [2e]: Save on deactivate #164
         if (!bReadOnly && bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
@@ -924,12 +926,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
         }
       }
+      else
+      {
+        // [2e]: Split view #316
+        n2e_RestoreActiveEdit();
+      }
       break;
     // [/2e]
 
 
     case WM_MOUSEACTIVATE:
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       // [2e]: Broken X-Mouse #113
       return DefWindowProc(hwnd, umsg, wParam, lParam);
     // [/2e]
@@ -1031,8 +1038,6 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SETFOCUS:
-      SetFocus(hwndEdit);
-
       UpdateToolbar();
       UpdateStatusbar();
 
@@ -1443,7 +1448,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
     case WM_N2E_RELOAD_SETTINGS: {
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
-        _MsgCreate();
+        VIEW_COMMAND(EditInit);
         n2e_Reset();
         n2e_UpdateWindowTitle(hwnd);
       }
@@ -1466,32 +1471,32 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 }
 
 // [2e]: Edit initialization subroutine
-void _MsgCreate()
+void EditInit(HWND hwnd)
 {
   // Tabs
-  SendMessage(hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0);
-  SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
-  SendMessage(hwndEdit, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
-  SendMessage(hwndEdit, SCI_SETTABWIDTH, iTabWidth, 0);
-  SendMessage(hwndEdit, SCI_SETINDENT, iIndentWidth, 0);
+  SendMessage(hwnd, SCI_SETUSETABS, !bTabsAsSpaces, 0);
+  SendMessage(hwnd, SCI_SETTABINDENTS, bTabIndents, 0);
+  SendMessage(hwnd, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
+  SendMessage(hwnd, SCI_SETTABWIDTH, iTabWidth, 0);
+  SendMessage(hwnd, SCI_SETINDENT, iIndentWidth, 0);
   // Indent Guides
-  Style_SetIndentGuides(hwndEdit, bShowIndentGuides);
+  Style_SetIndentGuides(hwnd);
   // Word wrap
   if (!fWordWrap)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+    SendMessage(hwnd, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+    SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
   }
   if (iWordWrapIndent == 5)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_SAME, 0);
   }
   else if (iWordWrapIndent == 6)
   {
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_INDENT, 0);
   }
   else
   {
@@ -1511,8 +1516,8 @@ void _MsgCreate()
         i = (iIndentWidth) ? 2 * iIndentWidth : 2 * iTabWidth;
         break;
     }
-    SendMessage(hwndEdit, SCI_SETWRAPSTARTINDENT, i, 0);
-    SendMessage(hwndEdit, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_FIXED, 0);
+    SendMessage(hwnd, SCI_SETWRAPSTARTINDENT, i, 0);
+    SendMessage(hwnd, SCI_SETWRAPINDENTMODE, SC_WRAPINDENT_FIXED, 0);
   }
   if (bShowWordWrapSymbols)
   {
@@ -1542,31 +1547,31 @@ void _MsgCreate()
         wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
         break;
     }
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, 0, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, 0, 0);
   }
   // Long Lines
   if (bMarkLongLines)
   {
-    SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    SendMessage(hwnd, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
   }
   else
   {
-    SendMessage(hwndEdit, SCI_SETEDGEMODE, EDGE_NONE, 0);
+    SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
   }
-  SendMessage(hwndEdit, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
+  SendMessage(hwnd, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
   // Margins
-  SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 2, 0);
-  SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
-  UpdateLineNumberWidth();
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, 0);
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Nonprinting characters
-  SendMessage(hwndEdit, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
-  SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
-  SendMessage(hwndEdit, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
+  SendMessage(hwnd, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+  SendMessage(hwnd, SCI_SETVIEWEOL, bViewEOLs, 0);
+  SendMessage(hwnd, SCI_MOVECARETONRCLICK, bMoveCaretOnRightClick, 0);
 }
 // [/2e]
 
@@ -1580,8 +1585,8 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   HINSTANCE hInstance;
   hInstance = ((LPCREATESTRUCT)lParam)->hInstance;
   // Setup edit control
-  hwndEdit = EditCreate(hwnd);
-  _MsgCreate();
+  _hwndEdit = n2e_EditCreate(hwnd, &hwndEditParent);
+  EditInit(_hwndEdit);
 
   hwndEditFrame = CreateWindowEx(
     WS_EX_CLIENTEDGE,
@@ -1599,8 +1604,8 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     bIsAppThemed = TRUE;
 
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     if (IsVista())
     {
@@ -1665,10 +1670,11 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
   mruReplace = MRU_Create(L"Recent Replace", MRU_UTF8, 16);
   MRU_Load(mruReplace);
 
-  if (hwndEdit == NULL || hwndEditFrame == NULL ||
+  if (hwndEdit == NULL || hwndEditFrame == NULL || hwndEditParent == NULL ||
       hwndStatus == NULL || hwndToolbar == NULL || hwndReBar == NULL)
     return (-1);
 
+  n2e_UpdateViews();
   return (0);
 }
 
@@ -1867,8 +1873,8 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   if (PrivateIsAppThemed())
   {
     bIsAppThemed = TRUE;
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndEdit, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE) & ~WS_EX_CLIENTEDGE);
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE);
     if (IsVista())
     {
       cxEditFrame = 0;
@@ -1888,8 +1894,8 @@ void MsgThemeChanged(HWND hwnd, WPARAM wParam, LPARAM lParam)
   {
     bIsAppThemed = FALSE;
 
-    SetWindowLongPtr(hwndEdit, GWL_EXSTYLE, WS_EX_CLIENTEDGE | GetWindowLongPtr(hwndEdit, GWL_EXSTYLE));
-    SetWindowPos(hwndEdit, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
+    SetWindowLongPtr(hwndEditParent, GWL_EXSTYLE, WS_EX_CLIENTEDGE | GetWindowLongPtr(hwndEditParent, GWL_EXSTYLE));
+    SetWindowPos(hwndEditParent, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
     cxEditFrame = 0;
     cyEditFrame = 0;
@@ -1971,7 +1977,7 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
   DeferWindowPos(hdwp, hwndEditFrame, NULL, x, y, cx, cy,
                  SWP_NOZORDER | SWP_NOACTIVATE);
 
-  DeferWindowPos(hdwp, hwndEdit, NULL, x + cxEditFrame, y + cyEditFrame,
+  DeferWindowPos(hdwp, hwndEditParent, NULL, x + cxEditFrame, y + cyEditFrame,
                  cx - 2 * cxEditFrame, cy - 2 * cyEditFrame,
                  SWP_NOZORDER | SWP_NOACTIVATE);
 
@@ -2877,7 +2883,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
-        n2e_SelectionEditStop(SES_REJECT);
+        n2e_SelectionEditStop(hwndEdit, SES_REJECT);
       }
       // [/2e]
       else
@@ -3078,7 +3084,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_DUPLICATELINE:
       // [2e]: Edit highlighted word #18
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
       break;
 
@@ -3816,26 +3822,26 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         switch (LOWORD(wParam))
         {
           case IDM_EDIT_FINDNEXT:
-            EditFindNext(hwndEdit, &efrData, FALSE);
+            EditFindNext(n2e_GetActiveEditCheckFocus(), &efrData, FALSE);
             break;
 
           case IDM_EDIT_FINDPREV:
-            EditFindPrev(hwndEdit, &efrData, FALSE);
+            EditFindPrev(n2e_GetActiveEditCheckFocus(), &efrData, FALSE);
             break;
 
           case IDM_EDIT_REPLACENEXT:
             if (bReplaceInitialized)
-              EditReplace(hwndEdit, &efrData);
+              EditReplace(n2e_GetActiveEditCheckFocus(), &efrData);
             else
               SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
             break;
 
           case IDM_EDIT_SELTONEXT:
-            EditFindNext(hwndEdit, &efrData, TRUE);
+            EditFindNext(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);
             break;
 
           case IDM_EDIT_SELTOPREV:
-            EditFindPrev(hwndEdit, &efrData, TRUE);
+            EditFindPrev(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);
             break;
         }
       }
@@ -3892,37 +3898,34 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_SCHEME:
       Style_SelectLexerDlg(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_USE2NDDEFAULT:
       Style_ToggleUse2ndDefault(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_SCHEMECONFIG:
       Style_ConfigDlg(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_FONT:
       Style_SetDefaultFont(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_WORDWRAP:
       fWordWrap = (fWordWrap) ? FALSE : TRUE;
-      if (!fWordWrap)
-        SendMessage(hwndEdit, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
-      else
-        SendMessage(hwndEdit, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+      VIEW_COMMAND(SetWordWrap);
       fWordWrapG = fWordWrap;
       UpdateToolbar();
       break;
@@ -3997,13 +4000,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
-      if (bMarkLongLines)
-      {
-        SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
-        Style_SetLongLineColors(hwndEdit);
-      }
-      else
-        SendMessage(hwndEdit, SCI_SETEDGEMODE, EDGE_NONE, 0);
+      VIEW_COMMAND(SetLongLineMarker);
       UpdateStatusbar();
       break;
 
@@ -4060,7 +4057,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_SHOWINDENTGUIDES:
       bShowIndentGuides = (bShowIndentGuides) ? FALSE : TRUE;
-      Style_SetIndentGuides(hwndEdit, bShowIndentGuides);
+      VIEW_COMMAND(Style_SetIndentGuides);
       break;
 
 
@@ -4071,63 +4068,31 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LINENUMBERS:
       bShowLineNumbers = (bShowLineNumbers) ? FALSE : TRUE;
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+      VIEW_COMMAND(SetMarginWidthN);
       break;
 
 
     case IDM_VIEW_SHOWWHITESPACE:
       bViewWhiteSpace = (bViewWhiteSpace) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+      VIEW_COMMAND(ShowWhiteSpace);
       break;
 
 
     case IDM_VIEW_SHOWEOLS:
       bViewEOLs = (bViewEOLs) ? FALSE : TRUE;
-      SendMessage(hwndEdit, SCI_SETVIEWEOL, bViewEOLs, 0);
+      VIEW_COMMAND(SetViewEOL);
       break;
 
 
     case IDM_VIEW_WORDWRAPSYMBOLS:
       bShowWordWrapSymbols = (bShowWordWrapSymbols) ? 0 : 1;
-      if (bShowWordWrapSymbols)
-      {
-        int wrapVisualFlags = 0;
-        int wrapVisualFlagsLocation = 0;
-        if (iWordWrapSymbols == 0)
-          iWordWrapSymbols = 22;
-        switch (iWordWrapSymbols % 10)
-        {
-          case 1:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
-            wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
-            break;
-          case 2:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
-            break;
-        }
-        switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
-        {
-          case 1:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
-            wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
-            break;
-          case 2:
-            wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
-            break;
-        }
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
-      }
-      else
-      {
-        SendMessage(hwndEdit, SCI_SETWRAPVISUALFLAGS, 0, 0);
-      }
+      VIEW_COMMAND(SetShowWordWrapSymbols);
       break;
 
 
@@ -4143,7 +4108,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
       }
       else
-        SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+        VIEW_COMMAND(HideMatchBraces);
       break;
 
 
@@ -4154,7 +4119,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_HIGHLIGHTCURRENTLINE:
       bHighlightCurrentLine = (bHighlightCurrentLine) ? FALSE : TRUE;
-      Style_SetCurrentLineBackground(hwndEdit);
+      VIEW_COMMAND(Style_SetCurrentLineBackground);
       break;
 
 
@@ -4535,7 +4500,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
-        n2e_SelectionEditStop(SES_REJECT);
+        n2e_SelectionEditStop(hwndEdit, SES_REJECT);
       }
       // [/2e]
       else
@@ -4567,7 +4532,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [2e]: Edit highlighted word #18
       if (n2e_IsSelectionEditModeOn())
       {
-        n2e_SelectionEditStop(SES_APPLY);
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       }
       // [/2e]
       else
@@ -4706,21 +4671,21 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_LEXDEFAULT:
       Style_SetDefaultLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case CMD_LEXHTML:
       Style_SetHTMLLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
     case CMD_LEXXML:
       Style_SetXMLLexer(hwndEdit);
       UpdateStatusbar();
-      UpdateLineNumberWidth();
+      VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
 
@@ -5303,6 +5268,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Split view #316
+    case IDT_SPLIT_VERTICALLY:
+      n2e_SplitView(TRUE);
+      UpdateToolbar();
+      break;
+    case IDT_SPLIT_HORIZONTALLY:
+      n2e_SplitView(FALSE);
+      UpdateToolbar();
+      break;
+    case IDT_CLOSE_SPLIT:
+      n2e_CloseView();
+      UpdateToolbar();
+      break;
+    // [/2e]
+
+
     // [2e]: Binary Save Options button #170
     case IDT_BINARY_SAFE_SAVE:
       if (bFixLineEndings || bAutoStripBlanks)
@@ -5366,11 +5347,24 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   LPNMHDR pnmh = (LPNMHDR)lParam;
   struct SCNotification *scn = (struct SCNotification *) lParam;
+  const HWND hwndFrom = pnmh->hwndFrom;
 
   switch (pnmh->idFrom)
   {
 
     case IDC_EDIT:
+
+      // [2e]: Split view #316
+      switch (pnmh->code)
+      {
+      case SCN_SAVEPOINTREACHED:
+      case SCN_SAVEPOINTLEFT:
+        if (pnmh->hwndFrom != _hwndEdit)
+          return 0; // process main edit only
+      default:
+        break;
+      }
+      // [/2e]
 
       switch (pnmh->code)
       {
@@ -5382,13 +5376,13 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             UpdateStatusbar();
 
             // Invalidate invalid selections
-            if (SendMessage(hwndEdit, SCI_GETSELECTIONS, 0, 0) > 1 &&
-                SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0) != SC_SEL_RECTANGLE)
+            if (SendMessage(hwndFrom, SCI_GETSELECTIONS, 0, 0) > 1 &&
+                SendMessage(hwndFrom, SCI_GETSELECTIONMODE, 0, 0) != SC_SEL_RECTANGLE)
             {
-              int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-              SendMessage(hwndEdit, WM_CANCELMODE, 0, 0);
-              SendMessage(hwndEdit, SCI_CLEARSELECTIONS, 0, 0);
-              SendMessage(hwndEdit, SCI_SETSELECTION, (WPARAM)iCurPos, (LPARAM)iCurPos);
+              int iCurPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+              SendMessage(hwndFrom, WM_CANCELMODE, 0, 0);
+              SendMessage(hwndFrom, SCI_CLEARSELECTIONS, 0, 0);
+              SendMessage(hwndFrom, SCI_SETSELECTION, (WPARAM)iCurPos, (LPARAM)iCurPos);
             }
 
             // Brace Match
@@ -5396,58 +5390,58 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             {
               int iPos;
               char c;
-              int iEndStyled = (int)SendMessage(hwndEdit, SCI_GETENDSTYLED, 0, 0);
-              if (iEndStyled < (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0))
+              int iEndStyled = (int)SendMessage(hwndFrom, SCI_GETENDSTYLED, 0, 0);
+              if (iEndStyled < (int)SendMessage(hwndFrom, SCI_GETLENGTH, 0, 0))
               {
-                int iLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iEndStyled, 0);
-                int iEndStyled = (int)SendMessage(hwndEdit, SCI_POSITIONFROMLINE, iLine, 0);
-                SendMessage(hwndEdit, SCI_COLOURISE, iEndStyled, -1);
+                int iLine = (int)SendMessage(hwndFrom, SCI_LINEFROMPOSITION, iEndStyled, 0);
+                int iEndStyled = (int)SendMessage(hwndFrom, SCI_POSITIONFROMLINE, iLine, 0);
+                SendMessage(hwndFrom, SCI_COLOURISE, iEndStyled, -1);
               }
-              iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-              c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
+              iPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+              c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
               // [2e]: Treat quotes as braces #287
               if (StrChrA(n2e_GetBracesList(), c))
               {
-                int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
+                int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                 if (iBrace2 != -1)
                 {
-                  int col1 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0);
-                  int col2 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iBrace2, 0);
-                  SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
-                  SendMessage(hwndEdit, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
+                  int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
+                  int col2 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iBrace2, 0);
+                  SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
+                  SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
                 }
                 else
                 {
-                  SendMessage(hwndEdit, SCI_BRACEBADLIGHT, iPos, 0);
-                  SendMessage(hwndEdit, SCI_SETHIGHLIGHTGUIDE, 0, 0);
+                  SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
+                  SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
               }
               // Try one before
               else
               {
-                iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
-                c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
+                iPos = (int)SendMessage(hwndFrom, SCI_POSITIONBEFORE, iPos, 0);
+                c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
                 // [2e]: Treat quotes as braces #287
                 if (StrChrA(n2e_GetBracesList(), c))
                 {
-                  int iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
+                  int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
                   if (iBrace2 != -1)
                   {
-                    int col1 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iPos, 0);
-                    int col2 = (int)SendMessage(hwndEdit, SCI_GETCOLUMN, iBrace2, 0);
-                    SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
-                    SendMessage(hwndEdit, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
+                    int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
+                    int col2 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iBrace2, 0);
+                    SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
+                    SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
                   }
                   else
                   {
-                    SendMessage(hwndEdit, SCI_BRACEBADLIGHT, iPos, 0);
-                    SendMessage(hwndEdit, SCI_SETHIGHLIGHTGUIDE, 0, 0);
+                    SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
+                    SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                   }
                 }
                 else
                 {
-                  SendMessage(hwndEdit, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
-                  SendMessage(hwndEdit, SCI_SETHIGHLIGHTGUIDE, 0, 0);
+                  SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+                  SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
               }
             }
@@ -5463,14 +5457,14 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             {
               char *pLineBuf;
               char *pPos;
-              int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-              int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
+              int iCurPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
+              int iCurLine = (int)SendMessage(hwndFrom, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
               if (iCurLine > 0)
               {
-                int iPrevLineLength = (int)SendMessage(hwndEdit, SCI_LINELENGTH, iCurLine - 1, 0);
+                int iPrevLineLength = (int)SendMessage(hwndFrom, SCI_LINELENGTH, iCurLine - 1, 0);
                 if (pLineBuf = GlobalAlloc(GPTR, iPrevLineLength + 1))
                 {
-                  SendMessage(hwndEdit, SCI_GETLINE, iCurLine - 1, (LPARAM)pLineBuf);
+                  SendMessage(hwndFrom, SCI_GETLINE, iCurLine - 1, (LPARAM)pLineBuf);
                   *(pLineBuf + iPrevLineLength) = '\0';
                   for (pPos = pLineBuf; *pPos; pPos++)
                   {
@@ -5481,9 +5475,9 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                   }
                   if (*pLineBuf)
                   {
-                    SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
-                    SendMessage(hwndEdit, SCI_ADDTEXT, lstrlenA(pLineBuf), (LPARAM)pLineBuf);
-                    SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+                    SendMessage(hwndFrom, SCI_BEGINUNDOACTION, 0, 0);
+                    SendMessage(hwndFrom, SCI_ADDTEXT, lstrlenA(pLineBuf), (LPARAM)pLineBuf);
+                    SendMessage(hwndFrom, SCI_ENDUNDOACTION, 0, 0);
                   }
                   GlobalFree(pLineBuf);
                 }
@@ -5497,14 +5491,14 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             wchar_t wchBuf[512];
             char tchIns[516] = "</";
             int  cchIns = 2;
-            int  iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+            int  iCurPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
             int  iHelper = iCurPos - (COUNTOF(tchBuf) - 1);
             int  iStartPos = max(0, iHelper);
             int  iSize = iCurPos - iStartPos;
             if (iSize >= 3)
             {
               struct TextRange tr = { { iStartPos, iCurPos }, tchBuf };
-              SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+              SendMessage(hwndFrom, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
               if (tchBuf[iSize - 2] != '/')
               {
                 const char *pBegin = &tchBuf[0];
@@ -5517,7 +5511,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 {
                   pCur++;
                   // [2e]: Autoclose XML corrupts UTF-8 #112
-                  const BOOL bIsUTF8 = (SendMessage(hwndEdit, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8);
+                  const BOOL bIsUTF8 = (SendMessage(hwndFrom, SCI_GETCODEPAGE, 0, 0) == SC_CP_UTF8);
                   MultiByteToWideChar(bIsUTF8 ? CP_UTF8 : CP_ACP, 0, pCur, strlen(pCur), wchBuf, _countof(wchBuf));
                   const wchar_t *pCurW = &wchBuf[0];
                   while (StrChrA(":_-.", *pCur) || 
@@ -5537,20 +5531,20 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 tchIns[cchIns] = 0;
                 if (cchIns > 3 && n2e_IsValidClosingTagA(tchIns))
                 {
-                  SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
-                  SendMessage(hwndEdit, SCI_REPLACESEL, 0, (LPARAM)tchIns);
-                  SendMessage(hwndEdit, SCI_SETSEL, iCurPos, iCurPos);
-                  SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+                  SendMessage(hwndFrom, SCI_BEGINUNDOACTION, 0, 0);
+                  SendMessage(hwndFrom, SCI_REPLACESEL, 0, (LPARAM)tchIns);
+                  SendMessage(hwndFrom, SCI_SETSEL, iCurPos, iCurPos);
+                  SendMessage(hwndFrom, SCI_ENDUNDOACTION, 0, 0);
                 }
               }
             }
           }
           // [2e]: ScrollYCaretPolicy affecting some input commands but not others #294
-          EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+          EditSelectEx(hwndFrom, SciCall_GetAnchor(), SciCall_GetCurrentPos());
           break;
 
         case SCN_ZOOM:
-          UpdateLineNumberWidth();
+          VIEW_COMMAND(UpdateLineNumberWidth);
           break;
 
         case SCN_SAVEPOINTREACHED:
@@ -5565,17 +5559,17 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         // [2e]: "Scroll margin"-feature
         case SCN_CARETMOVED:
-          EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+          EditSelectEx(hwndFrom, SciCall_GetAnchor(), SciCall_GetCurrentPos());
           break;
         // [/2e]
 
         // [2e]: "Update gutter width"-feature
         case SCN_LINECOUNTCHANGED:
-          UpdateLineNumberWidth();
+          VIEW_COMMAND(UpdateLineNumberWidth);
           break;
         // [/2e]
       }
-      n2e_SelectionNotificationHandler(pnmh->code, scn);
+      n2e_SelectionNotificationHandler(hwndFrom, pnmh->code, scn);
       break;
 
 
@@ -6938,6 +6932,8 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
+  // [2e]: Function requirements #333
+  n2e_UpdateAlwaysOnTopButton();
   // [2e]: Save on exit and History #101
   const BOOL bCommandEnabled = IsCmdEnabled(hwndMain, IDM_VIEW_SAVESETTINGS_MODE_ALL);
   EnableTool(IDT_SETTINGS_SAVE_ON_EXIT, bCommandEnabled);
@@ -6947,7 +6943,8 @@ void UpdateToolbar()
   }
   // [2e]: Binary Save Options button #170
   CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
-  // [/2e]
+  // [2e]: Split view #316
+  EnableTool(IDT_CLOSE_SPLIT, n2e_GetActiveEditCheckFocus() != _hwndEdit);
 }
 
 
@@ -7082,7 +7079,7 @@ void UpdateStatusbar()
 //  UpdateLineNumberWidth()
 //
 //
-void UpdateLineNumberWidth()
+void UpdateLineNumberWidth(HWND hwnd)
 {
   char tchLines[32];
   int  iLineMarginWidthNow;
@@ -7090,21 +7087,98 @@ void UpdateLineNumberWidth()
 
   if (bShowLineNumbers)
   {
-    wsprintfA(tchLines, "_%i_", SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0));
+    wsprintfA(tchLines, "_%i_", SendMessage(hwnd, SCI_GETLINECOUNT, 0, 0));
 
-    iLineMarginWidthNow = (int)SendMessage(hwndEdit, SCI_GETMARGINWIDTHN, 0, 0);
-    iLineMarginWidthFit = (int)SendMessage(hwndEdit, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchLines);
+    iLineMarginWidthNow = (int)SendMessage(hwnd, SCI_GETMARGINWIDTHN, 0, 0);
+    iLineMarginWidthFit = (int)SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchLines);
 
     if (iLineMarginWidthNow != iLineMarginWidthFit)
     {
-      SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 0, iLineMarginWidthFit);
+      SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, iLineMarginWidthFit);
     }
   }
 
   else
-    SendMessage(hwndEdit, SCI_SETMARGINWIDTHN, 0, 0);
+    SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, 0);
 }
 
+
+void SetWordWrap(HWND hwnd)
+{
+  if (!fWordWrap)
+    SendMessage(hwnd, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+  else
+    SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+}
+
+void SetLongLineMarker(HWND hwnd)
+{
+  if (bMarkLongLines)
+  {
+    SendMessage(hwnd, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    Style_SetLongLineColors(hwnd);
+  }
+  else
+    SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
+}
+
+void SetMarginWidthN(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+}
+
+void ShowWhiteSpace(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+}
+
+void SetViewEOL(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETVIEWEOL, bViewEOLs, 0);
+}
+
+void SetShowWordWrapSymbols(HWND hwnd)
+{
+  if (bShowWordWrapSymbols)
+  {
+    int wrapVisualFlags = 0;
+    int wrapVisualFlagsLocation = 0;
+    if (iWordWrapSymbols == 0)
+      iWordWrapSymbols = 22;
+    switch (iWordWrapSymbols % 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      break;
+    }
+    switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      break;
+    }
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+  }
+  else
+  {
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, 0, 0);
+  }
+
+}
+
+void HideMatchBraces(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+}
 
 //=============================================================================
 //
@@ -7179,7 +7253,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     FileVars_Init(NULL, 0, &fvCurFile);
     EditSetNewText(hwndEdit, "", 0);
     Style_SetLexer(hwndEdit, NULL);
-    UpdateLineNumberWidth();
+    VIEW_COMMAND(UpdateLineNumberWidth);
     bModified = FALSE;
     bReadOnly = FALSE;
     iEOLMode = iLineEndings[iDefaultEOLMode];
@@ -7290,7 +7364,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       lstrcpy(szTitleExcerpt, L"");
     if (!flagLexerSpecified) // flag will be cleared
       Style_SetLexerFromFile(hwndEdit, szCurFile);
-    UpdateLineNumberWidth();
+    VIEW_COMMAND(UpdateLineNumberWidth);
     iOriginalEncoding = iEncoding;
     bModified = FALSE;
     SendMessage(hwndEdit, SCI_SETEOLMODE, iEOLMode, 0);
@@ -7459,7 +7533,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
             lstrcpy(szTitleExcerpt, L"");
           Style_SetLexerFromFile(hwndEdit, szCurFile);
           UpdateStatusbar();
-          UpdateLineNumberWidth();
+          VIEW_COMMAND(UpdateLineNumberWidth);
         }
         else
         {

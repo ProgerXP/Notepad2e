@@ -1475,6 +1475,9 @@ BEGIN
     IDT_FILE_SAVEAS         "Save As"
     IDT_FILE_SAVECOPY       "Save Copy"
     IDT_EDIT_CLEAR          "Clear"
+    IDT_SPLIT_VERTICALLY    "Split Vertically"
+    IDT_SPLIT_HORIZONTALLY  "Split Horizontally"
+    IDT_CLOSE_SPLIT         "Close Split"
 END
 
 STRINGTABLE
@@ -2013,6 +2016,8 @@ BEGIN
     63358                   "Keys & buttons"
     63359                   "Built-in variables"
     63360                   "Variable keyword"
+    63361                   "Current Line, Inactive View (Color)"
+    63362                   "2nd Current Line, Inactive View (Color)"
 END
 
 #endif    // English (United States) resources

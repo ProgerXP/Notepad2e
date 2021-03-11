@@ -40,8 +40,8 @@ Add file:
 
 [Scintilla/include/Scintilla.h]:
 ```
-typedef void ( * wheel_action ) ( int );
-typedef int ( * key_action ) ( int , int );
+typedef void ( * wheel_action ) ( void*, int );
+typedef int ( * key_action ) ( void*, int , int );
 extern wheel_action hl_wheel_action ;
 extern key_action hl_proc_action;
 ```
@@ -57,7 +57,7 @@ key_action hl_proc_action = 0;
             // Zoom! We play with the font sizes in the styles.
             // Number of steps/line is ignored, we just care if sizing up or down
             if ( hl_wheel_action ) {
-                hl_wheel_action ( linesToScroll );
+                hl_wheel_action ( MainHWND(), linesToScroll );
             } else {
                 if ( linesToScroll < 0 ) {
                     KeyCommand ( SCI_ZOOMIN );
@@ -73,7 +73,7 @@ key_action hl_proc_action = 0;
         if (hl_proc_action)
 	{
 
-		int ret = hl_proc_action(wParam, WM_CHAR);
+		int ret = hl_proc_action(MainHWND(), wParam, WM_CHAR);
 
 		if (ret >= 0)
 		{
@@ -90,7 +90,7 @@ key_action hl_proc_action = 0;
 
           {
 
-            int ret = hl_proc_action(wParam, WM_KEYDOWN);
+            int ret = hl_proc_action(MainHWND(), wParam, WM_KEYDOWN);
 
             if (ret >= 0)
 

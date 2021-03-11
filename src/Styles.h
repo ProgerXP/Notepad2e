@@ -79,7 +79,7 @@ void   Style_SetLexerFromID(HWND, int);
 void   Style_SetDefaultFont(HWND);
 void   Style_ToggleUse2ndDefault(HWND);
 BOOL   Style_GetUse2ndDefault(HWND);
-void   Style_SetIndentGuides(HWND, BOOL);
+void   Style_SetIndentGuides(HWND);
 BOOL   Style_GetOpenDlgFilterStr(LPWSTR, int);
 BOOL   Style_StrGetFont(LPCWSTR, LPWSTR, int);
 BOOL   Style_StrGetFontQuality(LPCWSTR, LPWSTR, int);

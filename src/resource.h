@@ -430,6 +430,9 @@
 #define IDT_FILE_OPEN_PREV              40724
 #define IDT_SETTINGS_SAVE_ON_EXIT       40725
 #define IDT_BINARY_SAFE_SAVE            40726
+#define IDT_SPLIT_VERTICALLY            40727
+#define IDT_SPLIT_HORIZONTALLY          40728
+#define IDT_CLOSE_SPLIT                 40729
 #define SC_SAVEPOS                      40800
 #define SC_RESETPOS                     40801
 #define IDS_ERR_LOADFILE                50000
@@ -489,7 +492,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         60
+#define _APS_NEXT_COMMAND_VALUE         61
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

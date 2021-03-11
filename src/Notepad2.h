@@ -124,10 +124,17 @@ int  TestIniFile();
 int  CreateIniFile();
 int  CreateIniFileEx(LPCWSTR);
 
-
+void EditInit(HWND);
 void UpdateStatusbar();
 void UpdateToolbar();
-void UpdateLineNumberWidth();
+void UpdateLineNumberWidth(HWND);
+void SetWordWrap(HWND);
+void SetLongLineMarker(HWND);
+void SetMarginWidthN(HWND);
+void ShowWhiteSpace(HWND);
+void SetViewEOL(HWND);
+void SetShowWordWrapSymbols(HWND);
+void HideMatchBraces(HWND);
 
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 BOOL FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR);

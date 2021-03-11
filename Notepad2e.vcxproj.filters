@@ -432,6 +432,12 @@
     <ClInclude Include="scintilla\lua\src\lzio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\SplitterWnd.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\ViewHelper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -1086,6 +1092,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="scintilla\lua\src\lzio.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\ViewHelper.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\SplitterWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

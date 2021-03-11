@@ -41,10 +41,12 @@
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/UnicodeQuotes.h"
 #include "Extension/Utils.h"
+#include "Extension/ViewHelper.h"
 
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
+extern HWND  hwndEditParent;
 extern HINSTANCE g_hInstance;
 extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
@@ -1422,6 +1424,8 @@ BOOL EditLoadFile(
     }
   }
 
+  // [2e]: Split view #316
+  n2e_UpdateViews();
   iSrcEncoding = -1;
   iWeakSrcEncoding = -1;
   return TRUE;
@@ -4988,6 +4992,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
       return TRUE;
 
 
+    // [2e]: Split view #316
+    case WM_ACTIVATE:
+      if (wParam != WA_INACTIVE)
+      {
+        lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+        lpefr->hwnd = hwndEdit;
+      }
+      break;
+    // [/2e]
+
+
     case WM_COMMAND:
 
       switch (LOWORD(wParam))
@@ -5395,7 +5410,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 
   // [2e]: Do not clear new selection on exit from Edit mode #318
   if (n2e_IsSelectionEditModeOn())
-    n2e_SelectionEditStop(SES_APPLY);
+    n2e_SelectionEditStop(hwnd, SES_APPLY);
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
@@ -5657,7 +5672,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  VIEW_COMMAND(UpdateLineNumberWidth);
   if (iPos != -1)
     EditSelectEx(hwnd, ttf.chrgText.cpMin, ttf.chrgText.cpMax);
 
@@ -5812,7 +5827,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Remove wait cursor
   EndWaitCursor();
 
@@ -5970,7 +5985,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   }
 
   // [2e]: Gutter not updated on Replace #206
-  UpdateLineNumberWidth();
+  VIEW_COMMAND(UpdateLineNumberWidth);
   // Remove wait cursor
   EndWaitCursor();
 

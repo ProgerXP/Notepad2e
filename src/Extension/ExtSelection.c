@@ -6,6 +6,7 @@
 #include "ExtSelection.h"
 #include "Scintilla.h"
 #include "SciCall.h"
+#include "Styles.h"
 #include "Helpers.h"
 #include "Trace.h"
 #include "Utils.h"
@@ -68,7 +69,7 @@ BOOL case_compare(const char* a, const char* b, BOOL ignore_case)
   return 0 == strcmp(a, b);
 }
 
-int n2e_SelectionKeyAction(int key, int msg)
+int n2e_SelectionKeyAction(HWND hwnd, int key, int msg)
 {
   if (n2e_IsSelectionEditModeOn())
   {
@@ -76,7 +77,7 @@ int n2e_SelectionKeyAction(int key, int msg)
     {
       if (WM_CHAR == msg)
       {
-        n2e_SelectionEditStop(SES_APPLY);
+        n2e_SelectionEditStop(hwnd, SES_APPLY);
       }
       return 0;
     }
@@ -84,7 +85,8 @@ int n2e_SelectionKeyAction(int key, int msg)
   return -1;
 }
 
-void n2e_EditSelectionInit(LPCWSTR lpSection, const int iDefaultSection, const int iIndicator,
+void n2e_EditSelectionInit(const HWND hwnd,
+  LPCWSTR lpSection, const int iDefaultSection, const int iIndicator,
   LPCWSTR lpAlphaSetting, const int iDefaultAlpha,
   LPCWSTR lpLineAlphaSetting, const int iDefaultLineAlpha,
   LPCWSTR lpColorSetting, const COLORREF iDefaultColor,
@@ -93,50 +95,54 @@ void n2e_EditSelectionInit(LPCWSTR lpSection, const int iDefaultSection, const i
   const int indi_style = IniGetInt(N2E_INI_SECTION, lpSection, iDefaultSection);
   if (indi_style >= 0)
   {
-    SendMessage(hwndEdit, SCI_INDICSETSTYLE, iIndicator, indi_style);
-    SendMessage(hwndEdit, SCI_INDICSETALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpAlphaSetting, iDefaultAlpha));
-    SendMessage(hwndEdit, SCI_INDICSETOUTLINEALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpLineAlphaSetting, iDefaultLineAlpha));
-    SendMessage(hwndEdit, SCI_INDICSETFORE, iIndicator, IniGetInt(N2E_INI_SECTION, lpColorSetting, iDefaultColor));
-    SendMessage(hwndEdit, SCI_INDICSETUNDER, iIndicator, IniGetInt(N2E_INI_SECTION, lpUnderSetting, iDefaultUnder));
+    SendMessage(hwnd, SCI_INDICSETSTYLE, iIndicator, indi_style);
+    SendMessage(hwnd, SCI_INDICSETALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpAlphaSetting, iDefaultAlpha));
+    SendMessage(hwnd, SCI_INDICSETOUTLINEALPHA, iIndicator, IniGetInt(N2E_INI_SECTION, lpLineAlphaSetting, iDefaultLineAlpha));
+    SendMessage(hwnd, SCI_INDICSETFORE, iIndicator, IniGetInt(N2E_INI_SECTION, lpColorSetting, iDefaultColor));
+    SendMessage(hwnd, SCI_INDICSETUNDER, iIndicator, IniGetInt(N2E_INI_SECTION, lpUnderSetting, iDefaultUnder));
   }
 }
 
-void n2e_EditInit()
+void n2e_EditInit(const HWND hwnd)
 {
-  hwndToolTipEdit = n2e_ToolTipCreate(hwndEdit);
+  hwndToolTipEdit = n2e_ToolTipCreate(hwnd);
 
   tiEditSelection.cbSize = sizeof(tiEditSelection);
-  tiEditSelection.hwnd = hwndEdit;
+  tiEditSelection.hwnd = hwnd;
   tiEditSelection.uFlags = TTF_TRACK;
   n2e_ToolTipAddToolInfo(hwndToolTipEdit, &tiEditSelection);
 
-  SendMessage(hwndEdit, SCI_SETTECHNOLOGY, bUseDirectWrite ? SC_TECHNOLOGY_DIRECTWRITE : SC_TECHNOLOGY_DEFAULT, 0);
-  SendMessage(hwndEdit, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
-  SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
-  SendMessage(hwndEdit, SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0);
+  SendMessage(hwnd, SCI_SETTECHNOLOGY, bUseDirectWrite ? SC_TECHNOLOGY_DIRECTWRITE : SC_TECHNOLOGY_DEFAULT, 0);
+  SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
+  SendMessage(hwnd, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
+  SendMessage(hwnd, SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0);
 
 #define DEFAULT_SECTION 6
 #define EXTENDED_SECTION 7
 
-  n2e_EditSelectionInit(L"SelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR,
+  n2e_EditSelectionInit(hwnd,
+                        L"SelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR,
                         L"SelectionAlpha", 0,
                         L"SelectionLineAlpha", 0,
                         L"SelectionColor", RGB(0x00, 0xAA, 0x00),
                         L"SelectionUnder", 0);
   
-  n2e_EditSelectionInit(L"SingleSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_SINGLE,
+  n2e_EditSelectionInit(hwnd,
+                        L"SingleSelectionType", DEFAULT_SECTION, N2E_SELECT_INDICATOR_SINGLE,
                         L"SingleSelectionAlpha", 0,
                         L"SingleSelectionLineAlpha", 0,
                         L"SingleSelectionColor", RGB(0x90, 0x00, 0x00),
                         L"SingleSelectionUnder", 0);
 
-  n2e_EditSelectionInit(L"PageSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_PAGE,
+  n2e_EditSelectionInit(hwnd, 
+                        L"PageSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_PAGE,
                         L"PageSelectionAlpha", 50,
                         L"PageSelectionLineAlpha", 255,
                         L"PageSelectionColor", RGB(0x99, 0x99, 0x00),
                         L"PageSelectionUnder", 1);
 
-  n2e_EditSelectionInit(L"EditSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_EDIT,
+  n2e_EditSelectionInit(hwnd, 
+                        L"EditSelectionType", EXTENDED_SECTION, N2E_SELECT_INDICATOR_EDIT,
                         L"EditSelectionAlpha", 50,
                         L"EditSelectionLineAlpha", 255,
                         L"EditSelectionColor", RGB(0x00, 0x00, 0xFF),
@@ -702,7 +708,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   // if mode already ON - then turn it OFF
   if (n2e_IsSelectionEditModeOn())
   {
-    n2e_SelectionEditStop(SES_APPLY);
+    n2e_SelectionEditStop(hwndEdit, SES_APPLY);
     return;
   }
   bEditSelectionInit = TRUE;
@@ -736,7 +742,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
   }
 }
 
-BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
+BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
 {
   bEditSelectionInit = FALSE;
   bHighlightAll = TRUE;
@@ -757,7 +763,7 @@ BOOL n2e_SelectionEditStop(const ESelectionEditStopMode mode)
     bEditSelection = FALSE;
 
     n2e_SelectionHighlightTurn(FALSE);
-    SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
+    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;
   }
   return FALSE;
@@ -770,7 +776,7 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
     bNeedUpdateInEditMode = FALSE;
     if (!n2e_SelectionProcessChanges(PCM_NONE))
     {
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
       n2e_SelectionHighlightTurn(n2e_IsHighlightSelectionEnabled());
     }
   }
@@ -780,91 +786,107 @@ void n2e_SelectionUpdate(const ESelectionUpdateMode place)
   }
 }
 
-void n2e_SelectionNotificationHandler(const int code, const struct SCNotification *scn)
+void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const struct SCNotification *scn)
 {
+  static HWND hwndPrev = NULL;
   switch (code)
   {
+    case SCN_FOCUSIN:
+      hwndPrev = hwnd;
+      Style_SetCurrentLineBackground(hwnd);
+      break;
+
+    case SCN_FOCUSOUT:
+      Style_SetCurrentLineBackground(hwnd);
+      break;
+
     case SCN_UPDATEUI:
-      if ((n2e_IsHighlightSelectionEnabled() && !n2e_IsSelectionEditModeOn())
-        || bNeedUpdateInEditMode)
+      if (hwnd == hwndPrev)
       {
-        if (bNeedUpdateInEditMode)
+        if ((n2e_IsHighlightSelectionEnabled() && !n2e_IsSelectionEditModeOn())
+          || bNeedUpdateInEditMode)
+        {
+          if (bNeedUpdateInEditMode)
+          {
+            n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+          }
+          n2e_SelectionUpdate(SUM_UPDATE);
+        }
+        else if ((scn->updated & SC_UPDATE_SELECTION)
+          && n2e_IsSelectionEditModeOn())
+        {
+          n2e_SelectionUpdate(SUM_UPDATE);
+        }
+        else if ((scn->updated & (SC_UPDATE_V_SCROLL | SC_UPDATE_H_SCROLL))
+          && n2e_IsSelectionEditModeOn()
+          && (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
         {
           n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
         }
-        n2e_SelectionUpdate(SUM_UPDATE);
-      }
-      else if ((scn->updated & SC_UPDATE_SELECTION)
-            && n2e_IsSelectionEditModeOn())
-      {
-        n2e_SelectionUpdate(SUM_UPDATE);
-      }
-      else if ((scn->updated & (SC_UPDATE_V_SCROLL | SC_UPDATE_H_SCROLL))
-            && n2e_IsSelectionEditModeOn()
-            && (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
-      {
-        n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
       }
       break;
     case SCN_MODIFIED:
-      if ((scn->modificationType & (SC_MOD_CONTAINER|SC_PERFORMED_UNDO)) == (SC_MOD_CONTAINER|SC_PERFORMED_UNDO))
+      if (hwnd == hwndPrev)
       {
-        PostMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)scn->token, 0);
-      }
-      else if (n2e_IsSelectionEditModeOn())
-      {
-        if (scn->modificationType & SC_MOD_INSERTTEXT)
+        if ((scn->modificationType & (SC_MOD_CONTAINER | SC_PERFORMED_UNDO)) == (SC_MOD_CONTAINER | SC_PERFORMED_UNDO))
         {
-          N2E_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-          trEditSelection.chrg.cpMax += scn->length;
-          bNeedUpdateInEditMode = TRUE;
+          PostMessage(hwnd, SCI_GOTOPOS, (WPARAM)scn->token, 0);
         }
-        else if (scn->modificationType & SC_MOD_DELETETEXT)
+        else if (n2e_IsSelectionEditModeOn())
         {
-          N2E_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
-          trEditSelection.chrg.cpMax -= scn->length;
-          bNeedUpdateInEditMode = TRUE;
+          if (scn->modificationType & SC_MOD_INSERTTEXT)
+          {
+            N2E_TRACE("MODIF INSERT pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
+            trEditSelection.chrg.cpMax += scn->length;
+            bNeedUpdateInEditMode = TRUE;
+          }
+          else if (scn->modificationType & SC_MOD_DELETETEXT)
+          {
+            N2E_TRACE("MODIF DELETE pos:%d len%d lines:%d text:%s", scn->position, scn->length, scn->linesAdded, scn->text);
+            trEditSelection.chrg.cpMax -= scn->length;
+            bNeedUpdateInEditMode = TRUE;
+          }
+          else if (scn->modificationType & SC_PERFORMED_USER)
+          {
+            N2E_TRACE("MODIF PERFORMED USER");
+          }
+          else if (scn->modificationType & SC_PERFORMED_UNDO)
+          {
+            N2E_TRACE("MODIF PERFORMED UNDO");
+          }
+          else if (scn->modificationType & SC_PERFORMED_REDO)
+          {
+            N2E_TRACE("MODIF PERFORMED REDO");
+          }
+          else if (scn->modificationType & SC_MOD_BEFOREINSERT)
+          {
+            N2E_TRACE("MODIF BEFORE INSERT pos:%d len%d ", scn->position, scn->length);
+          }
+          else if (scn->modificationType & SC_MOD_BEFOREDELETE)
+          {
+            N2E_TRACE("MODIF BEFORE DELETE pos:%d len%d ", scn->position, scn->length);
+          }
+          else if (scn->modificationType & SC_MULTILINEUNDOREDO)
+          {
+            N2E_TRACE("MODIF MULTILINE UNDO");
+          }
+          else if (scn->modificationType & SC_STARTACTION)
+          {
+            N2E_TRACE("MODIF START ACTION");
+          }
         }
-        else if (scn->modificationType & SC_PERFORMED_USER)
-        {
-          N2E_TRACE("MODIF PERFORMED USER");
-        }
-        else if (scn->modificationType & SC_PERFORMED_UNDO)
-        {
-          N2E_TRACE("MODIF PERFORMED UNDO");
-        }
-        else if (scn->modificationType & SC_PERFORMED_REDO)
-        {
-          N2E_TRACE("MODIF PERFORMED REDO");
-        }
-        else if (scn->modificationType & SC_MOD_BEFOREINSERT)
-        {
-          N2E_TRACE("MODIF BEFORE INSERT pos:%d len%d ", scn->position, scn->length);
-        }
-        else if (scn->modificationType & SC_MOD_BEFOREDELETE)
-        {
-          N2E_TRACE("MODIF BEFORE DELETE pos:%d len%d ", scn->position, scn->length);
-        }
-        else if (scn->modificationType & SC_MULTILINEUNDOREDO)
-        {
-          N2E_TRACE("MODIF MULTILINE UNDO");
-        }
-        else if (scn->modificationType & SC_STARTACTION)
-        {
-          N2E_TRACE("MODIF START ACTION");
-        }
-      }
-      
+
       if (!n2e_IsRectangularSelection()
         && (scn->modificationType & SC_MOD_DELETETEXT)
         && (scn->modificationType & SC_STARTACTION))
-      {
-        EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+        {
+          EditSelectEx(hwnd, SciCall_GetAnchor(), SciCall_GetCurrentPos());
+        }
       }
       break;
     case SCN_SAVEPOINTREACHED:
     case SCEN_KILLFOCUS:
-      n2e_SelectionEditStop(SES_APPLY);
+      n2e_SelectionEditStop(hwnd, SES_APPLY);
       break;
   }
 }

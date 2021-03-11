@@ -4,6 +4,7 @@
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
+#include "DPIHelperScintilla.h"
 #include "ExtSelection.h"
 #include "EditHelper.h"
 #include "InlineProgressBarCtrl.h"
@@ -108,10 +109,15 @@ extern enum ESaveSettingsMode nSaveSettingsMode;
 
 LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
 
+extern HWND _hwndEdit;
+
 void n2e_InitInstance()
 {
-  InitScintillaHandle(hwndEdit);
-  n2e_Init(hwndEdit);
+  n2e_Init();
+  InitScintillaHandle(_hwndEdit);
+  n2e_InitScintilla(_hwndEdit);
+  n2e_EditInit(_hwndEdit);
+  n2e_ScintillaDPIInit(_hwndEdit);
   hShellHook = SetWindowsHookEx(WH_SHELL, n2e_ShellProc, NULL, GetCurrentThreadId());
 }
 
@@ -350,18 +356,21 @@ LPSTR n2e_GetLuaLexerName()
 }
 #endif
 
-void n2e_Init(const HWND hwndEdit)
+void n2e_Init()
 {
   srand((UINT)GetTickCount());
   n2e_InitializeTrace();
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_InitClock();
   n2e_ResetLastRun();
-  n2e_EditInit();
   n2e_Shell32Initialize();
-  n2e_SubclassWindow(hwndEdit, n2e_ScintillaSubclassWndProc);
   bLPegEnabled = n2e_InitLPegHomeDir();
   n2e_UpdateAlwaysOnTopButton();
+}
+
+void n2e_InitScintilla(const HWND hwnd)
+{
+  n2e_SubclassWindow(hwnd, n2e_ScintillaSubclassWndProc);
 }
 
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
@@ -617,7 +626,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
   return 0;
 }
 
-void n2e_WheelScrollWorker(int lines)
+void n2e_WheelScrollWorker(HWND hwnd, int lines)
 {
   int anch, sel = 0;
   if (bWheelTimerActive)
@@ -627,14 +636,14 @@ void n2e_WheelScrollWorker(int lines)
   }
   bWheelTimerActive = TRUE;
   SetTimer(NULL, N2E_WHEEL_TIMER_ID, iWheelScrollInterval, n2e_WheelTimerProc);
-  anch = SendMessage(hwndEdit, SCI_LINESONSCREEN, 0, 0);
+  anch = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
   if (lines > 0)
   {
-    SendMessage(hwndEdit, SCI_LINESCROLL, 0, anch);
+    SendMessage(hwnd, SCI_LINESCROLL, 0, anch);
   }
   else if (lines < 0)
   {
-    SendMessage(hwndEdit, SCI_LINESCROLL, 0, -anch);
+    SendMessage(hwnd, SCI_LINESCROLL, 0, -anch);
   }
 }
 
@@ -1112,7 +1121,7 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
   }
 
   SendMessage(lpf->hwnd, SCI_ENDUNDOACTION, 0, 0);
-  UpdateLineNumberWidth();
+  UpdateLineNumberWidth(lpf->hwnd);
   n2e_HideProgressBarInStatusBar();
   EndWaitCursor();
   return TRUE;
