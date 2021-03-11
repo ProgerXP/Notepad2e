@@ -3925,7 +3925,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_WORDWRAP:
       fWordWrap = (fWordWrap) ? FALSE : TRUE;
-      VIEW_COMMAND(n2e_SetWordWrap);
+      VIEW_COMMAND(SetWordWrap);
       fWordWrapG = fWordWrap;
       UpdateToolbar();
       break;
@@ -4000,7 +4000,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
-      VIEW_COMMAND(n2e_SetLongLineMarker);
+      VIEW_COMMAND(SetLongLineMarker);
       UpdateStatusbar();
       break;
 
@@ -4074,25 +4074,25 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
-      VIEW_COMMAND(n2e_SetMarginWidthN);
+      VIEW_COMMAND(SetMarginWidthN);
       break;
 
 
     case IDM_VIEW_SHOWWHITESPACE:
       bViewWhiteSpace = (bViewWhiteSpace) ? FALSE : TRUE;
-      VIEW_COMMAND(n2e_ShowWhiteSpace);
+      VIEW_COMMAND(ShowWhiteSpace);
       break;
 
 
     case IDM_VIEW_SHOWEOLS:
       bViewEOLs = (bViewEOLs) ? FALSE : TRUE;
-      VIEW_COMMAND(n2e_SetViewEOL);
+      VIEW_COMMAND(SetViewEOL);
       break;
 
 
     case IDM_VIEW_WORDWRAPSYMBOLS:
       bShowWordWrapSymbols = (bShowWordWrapSymbols) ? 0 : 1;
-      VIEW_COMMAND(n2e_SetShowWordWrapSymbols);
+      VIEW_COMMAND(SetShowWordWrapSymbols);
       break;
 
 
@@ -4108,7 +4108,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         SendMessage(hwnd, WM_NOTIFY, IDC_EDIT, (LPARAM)&scn);
       }
       else
-        VIEW_COMMAND(n2e_HideMatchBraces);
+        VIEW_COMMAND(HideMatchBraces);
       break;
 
 
@@ -7102,6 +7102,83 @@ void UpdateLineNumberWidth(HWND hwnd)
     SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, 0);
 }
 
+
+void SetWordWrap(HWND hwnd)
+{
+  if (!fWordWrap)
+    SendMessage(hwnd, SCI_SETWRAPMODE, SC_WRAP_NONE, 0);
+  else
+    SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
+}
+
+void SetLongLineMarker(HWND hwnd)
+{
+  if (bMarkLongLines)
+  {
+    SendMessage(hwnd, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
+    Style_SetLongLineColors(hwnd);
+  }
+  else
+    SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
+}
+
+void SetMarginWidthN(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+}
+
+void ShowWhiteSpace(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETVIEWWS, (bViewWhiteSpace) ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
+}
+
+void SetViewEOL(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETVIEWEOL, bViewEOLs, 0);
+}
+
+void SetShowWordWrapSymbols(HWND hwnd)
+{
+  if (bShowWordWrapSymbols)
+  {
+    int wrapVisualFlags = 0;
+    int wrapVisualFlagsLocation = 0;
+    if (iWordWrapSymbols == 0)
+      iWordWrapSymbols = 22;
+    switch (iWordWrapSymbols % 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_END_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_END;
+      break;
+    }
+    switch (((iWordWrapSymbols % 100) - (iWordWrapSymbols % 10)) / 10)
+    {
+    case 1:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      wrapVisualFlagsLocation |= SC_WRAPVISUALFLAGLOC_START_BY_TEXT;
+      break;
+    case 2:
+      wrapVisualFlags |= SC_WRAPVISUALFLAG_START;
+      break;
+    }
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGSLOCATION, wrapVisualFlagsLocation, 0);
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, wrapVisualFlags, 0);
+  }
+  else
+  {
+    SendMessage(hwnd, SCI_SETWRAPVISUALFLAGS, 0, 0);
+  }
+
+}
+
+void HideMatchBraces(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+}
 
 //=============================================================================
 //

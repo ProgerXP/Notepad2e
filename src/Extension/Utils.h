@@ -206,11 +206,3 @@ BOOL n2e_FindMRUAdd(LPCSTR pszNew);
 void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars);
 
 void n2e_GetNumberFormat(LPNUMBERFMT lpFormat);
-
-void n2e_SetWordWrap(HWND hwnd);
-void n2e_SetLongLineMarker(HWND hwnd);
-void n2e_SetMarginWidthN(HWND hwnd);
-void n2e_ShowWhiteSpace(HWND hwnd);
-void n2e_SetViewEOL(HWND hwnd);
-void n2e_SetShowWordWrapSymbols(HWND hwnd);
-void n2e_HideMatchBraces(HWND hwnd);

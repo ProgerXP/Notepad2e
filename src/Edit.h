@@ -72,7 +72,7 @@ typedef struct _gotoparams
 #define SORT_COLUMN   128
 
 
-HWND  EditCreate(HWND, HWND*);
+HWND  EditCreate(HWND);
 void  EditSetNewText(HWND, char*, DWORD);
 BOOL  EditConvertText(HWND, UINT, UINT, BOOL);
 BOOL  EditSetNewEncoding(HWND, int, int, BOOL, BOOL);
