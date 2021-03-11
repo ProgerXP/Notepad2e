@@ -4263,55 +4263,45 @@ void EditJoinLinesEx(HWND hwnd)
 //
 typedef struct _SORTLINE
 {
+  int iIndex;
   WCHAR *pwszLine;
   WCHAR *pwszSortEntry;
 } SORTLINE;
 
 static FARPROC pfnStrCmpLogicalW;
 typedef int(__stdcall *FNSTRCMP) (LPCWSTR, LPCWSTR);
+typedef int(__stdcall *FNSTRCMPN) (LPCWSTR, LPCWSTR, int);
 
-int CmpStd(const void *s1, const void *s2)
+typedef struct _SORTSETTINGS
 {
-  int cmp = StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  return (cmp) ? cmp : StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-}
+  BOOL bReversedOrder;
+  BOOL bUseColumnSort;
+  UINT iSortColumn;
+  int iSortColumnWidth;
+  FNSTRCMPN fnCompareN;
+  FNSTRCMP fnCompare;
+} SORTSETTINGS, *LPSORTSETTINGS;
 
-int CmpStdRev(const void *s1, const void *s2)
+int CmpGeneral(const LPSORTSETTINGS pSettings, const SORTLINE *line1, const SORTLINE *line2)
 {
-  int cmp = -1 * StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  return (cmp) ? cmp : -1 * StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-}
+  int cmp = pSettings->bUseColumnSort
+    ? pSettings->fnCompareN(line1->pwszSortEntry, line2->pwszSortEntry, pSettings->iSortColumnWidth)
+    : pSettings->fnCompare(line1->pwszSortEntry, line2->pwszSortEntry);
+  if (pSettings->bReversedOrder)
+    cmp *= -1;
 
-int CmpLogical(const void *s1, const void *s2)
-{
-  int cmp = (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  if (cmp == 0)
-  {
-    cmp = (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
-  if (cmp)
+  if (!pSettings->bUseColumnSort || (cmp != 0))
     return cmp;
-  else
-  {
-    cmp = StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-    return (cmp) ? cmp : StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
-}
 
-int CmpLogicalRev(const void *s1, const void *s2)
-{
-  int cmp = -1 * (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  if (cmp == 0)
-  {
-    cmp = -1 * (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
-  if (cmp)
-    return cmp;
-  else
-  {
-    cmp = -1 * StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-    return (cmp) ? cmp : -1 * StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
+  cmp = (pSettings->bUseColumnSort && (cmp == 0))
+    ? (line1->iIndex > line2->iIndex)
+      ? 1
+      : -1
+    : pSettings->fnCompare(line1->pwszLine, line2->pwszLine);
+  if (pSettings->bReversedOrder)
+    cmp *= -1;
+
+  return cmp;
 }
 
 void EditSortLines(HWND hwnd, int iSortFlags)
@@ -4343,7 +4333,6 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   char mszEOL[] = "\r\n";
 
   UINT iTabWidth;
-  UINT iSortColumn;
 
   BOOL bLastDup = FALSE;
   FNSTRCMP pfnStrCmp;
@@ -4354,9 +4343,21 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
 
+  SORTSETTINGS sortSettings = {
+    iSortFlags & SORT_DESCENDING,
+    SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0),
+    0,
+    0,
+    (iSortFlags & SORT_NOCASE) ? StrCmpNIW : StrCmpNW,
+    (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW) ? pfnStrCmpLogicalW : pfnStrCmp
+  };
+
   // [2e]: Alt+O: sort all on no selection #133
-  if ((iCurPos != iAnchorPos) && (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0)))
+  if ((iCurPos != iAnchorPos) && sortSettings.bUseColumnSort)
   {
+    sortSettings.iSortColumnWidth = abs(
+      (int)SendMessage(hwnd, SCI_GETSELECTIONNEND, 0, 0) - (int)SendMessage(hwnd, SCI_GETSELECTIONNSTART, 0, 0)
+    );
 
     iRcCurLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
     iRcAnchorLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iAnchorPos, 0);
@@ -4369,7 +4370,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     iLineStart = min(iRcCurLine, iRcAnchorLine);
     iLineEnd = max(iRcCurLine, iRcAnchorLine);
 
-    iSortColumn = min(iRcCurCol, iRcAnchorCol);
+    sortSettings.iSortColumn = min(iRcCurCol, iRcAnchorCol);
   }
 
   else
@@ -4395,7 +4396,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     if (iSelEnd <= SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineEnd, 0))
       iLineEnd--;
 
-    iSortColumn = (UINT)SendMessage(hwnd, SCI_GETCOLUMN,
+    sortSettings.iSortColumn = (UINT)SendMessage(hwnd, SCI_GETCOLUMN,
                                     (WPARAM)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0), 0);
   }
 
@@ -4424,6 +4425,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
   pLines = LocalAlloc(LPTR, sizeof(SORTLINE) * iLineCount);
   i = 0;
+
   for (iLine = iLineStart; iLine <= iLineEnd; iLine++)
   {
 
@@ -4442,16 +4444,17 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     if (cchw > 0)
     {
       UINT col = 0, tabs = iTabWidth;
+      pLines[i].iIndex = i;
       pLines[i].pwszLine = LocalAlloc(LPTR, sizeof(WCHAR) * (cchw + 1));
       MultiByteToWideChar(uCodePage, 0, pmsz, -1, pLines[i].pwszLine, (int)LocalSize(pLines[i].pwszLine) / sizeof(WCHAR));
       pLines[i].pwszSortEntry = pLines[i].pwszLine;
-      if (iSortFlags & SORT_COLUMN)
+      if (sortSettings.bUseColumnSort)
       {
         while (*(pLines[i].pwszSortEntry))
         {
           if (*(pLines[i].pwszSortEntry) == L'\t')
           {
-            if (col + tabs <= iSortColumn)
+            if (col + tabs <= sortSettings.iSortColumn)
             {
               col += tabs;
               tabs = iTabWidth;
@@ -4460,7 +4463,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
             else
               break;
           }
-          else if (col < iSortColumn)
+          else if (col < sortSettings.iSortColumn)
           {
             col++;
             if (--tabs == 0)
@@ -4482,10 +4485,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   }
   if (iSortFlags & SORT_DESCENDING)
   {
-    if (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW)
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpLogicalRev);
-    else
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpStdRev);
+    sortSettings.bReversedOrder = TRUE;
+    qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
   else if (iSortFlags & SORT_SHUFFLE)
   {
@@ -4503,18 +4504,16 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   }
   else
   {
-    if (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW)
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpLogical);
-    else
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpStd);
+    qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
 
   pmszResult = LocalAlloc(LPTR, cchTotal + 2 * iLineCount + 1);
   pmszBuf = LocalAlloc(LPTR, ichlMax + 1);
 
+  BOOL bDropNextLine = FALSE;
   for (i = 0; i < iLineCount; i++)
   {
-    BOOL bDropLine = FALSE;
+    BOOL bDropLine = bDropNextLine;
     if (pLines[i].pwszLine && ((iSortFlags & SORT_SHUFFLE) || lstrlen(pLines[i].pwszLine)))
     {
       if (!(iSortFlags & SORT_SHUFFLE))
@@ -4523,20 +4522,28 @@ void EditSortLines(HWND hwnd, int iSortFlags)
         {
           if (i < iLineCount - 1)
           {
-            if (pfnStrCmp(pLines[i].pwszLine, pLines[i + 1].pwszLine) == 0)
+            if ((sortSettings.bUseColumnSort && (sortSettings.fnCompareN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0))
+              || (!sortSettings.bUseColumnSort && (sortSettings.fnCompare(pLines[i].pwszLine, pLines[i + 1].pwszLine) == 0)))
             {
+              if (!bDropLine)
+                bDropLine = (iSortFlags & SORT_UNIQDUP);
+              bDropNextLine = (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP);
               bLastDup = TRUE;
-              bDropLine = (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP);
             }
             else
             {
-              bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
+              bDropNextLine = (iSortFlags & SORT_UNIQUNIQ);
+              if (!bLastDup)
+              {
+                bDropLine = bDropNextLine;
+              }
               bLastDup = FALSE;
             }
           }
           else
           {
-            bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
+            if (!bDropLine)
+              bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
             bLastDup = FALSE;
           }
         }
