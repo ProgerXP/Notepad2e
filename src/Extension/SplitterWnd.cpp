@@ -70,7 +70,7 @@ public:
   HWND GetHWND() const { return m_hwnd; }
   void SetParent(const HWND hwndParent)
   {
-    SetWindowLong(m_hwnd, GWL_HWNDPARENT, (LONG)hwndParent);
+    SetWindowLongPtr(m_hwnd, GWLP_HWNDPARENT, (LONG_PTR)hwndParent);
   }
   void Show(const Rect& rc)
   {
@@ -236,10 +236,10 @@ public:
 
   void UpdatePanes() {
     GetClientRect(m_hwnd, &m_rcUpdate);
-    const int paneCount = max(PaneCount(), 1);
+    const int paneCount = (int)max(PaneCount(), 1);
     const int paneSize = (m_isHorizontal ? m_rcUpdate.width() : m_rcUpdate.height()) / paneCount;
     int paneOffset = 0;
-    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
+    HDWP hWinPosInfo = BeginDeferWindowPos((int)m_panes.size());
     for (auto it = m_panes.begin(); it != m_panes.end(); ++it)
     {
       auto& pane = *it;
@@ -262,7 +262,7 @@ public:
     const int denominator = (m_isHorizontal ? m_rcUpdate.width() : m_rcUpdate.height());
     const int numerator = (m_isHorizontal ? rc.width() : rc.height());
     int paneOffset = 0;
-    HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
+    HDWP hWinPosInfo = BeginDeferWindowPos((int)m_panes.size());
     for (auto it = m_panes.begin(); it != m_panes.end(); ++it)
     {
       auto& pane = *it;
@@ -362,7 +362,7 @@ public:
       }
       Rect rc;
       GetClientRect(m_hwnd, &rc);
-      HDWP hWinPosInfo = BeginDeferWindowPos(m_panes.size());
+      HDWP hWinPosInfo = BeginDeferWindowPos((int)m_panes.size());
       for (auto it = m_hotPane; it != m_panes.end(); ++it)
       {
         paneOffset += it->UpdateChild(rc, m_isHorizontal, paneOffset, std::distance(it, m_panes.end()) == 1, &hWinPosInfo);
@@ -516,13 +516,13 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
   default:
     if (uMsg == WM_SPLITTER_CHILDREN_COUNT)
     {
-      int res = pSelf->PaneCount();
+      int res = (int)pSelf->PaneCount();
       for (const auto& pane : pSelf->m_panes)
       {
         const HWND hwndChild = pane.GetChildHWND();
         if (IsSplitterWnd(hwndChild))
         {
-          res += SendMessage(hwndChild, WM_SPLITTER_CHILDREN_COUNT, 0, 0) - 1;
+          res += (int)SendMessage(hwndChild, WM_SPLITTER_CHILDREN_COUNT, 0, 0) - 1;
         }
       }
       return res;
@@ -536,7 +536,7 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
         const HWND hwndChild = pane.GetChildHWND();
         if (IsSplitterWnd(hwndChild))
         {
-          const int innerChildren = SendMessage(hwndChild, WM_SPLITTER_CHILDREN_COUNT, 0, 0);
+          const int innerChildren = (int)SendMessage(hwndChild, WM_SPLITTER_CHILDREN_COUNT, 0, 0);
           if (index < innerChildren)
           {
             return (LRESULT)SendMessage(hwndChild, WM_SPLITTER_CHILD_BY_INDEX, index, 0);
@@ -641,7 +641,7 @@ void DeleteSplitterChild(HWND hwndChild, HWND hwndParentForLast, HWND* phwndEdit
       const bool isHorizontal = pChildSplitter->IsHorizontal();
       for (size_t i = 0; i < pChildSplitter->PaneCount(); ++i)
       {
-        const auto hwndChild = pChildSplitter->GetChild(i);
+        const auto hwndChild = pChildSplitter->GetChild((int)i);
         pSplitter->AddChild(hwndChild);
       }
       pSplitter->DeleteChild(hwndLastChild, true);
