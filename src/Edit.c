@@ -4268,8 +4268,8 @@ typedef struct _SORTLINE
   WCHAR *pwszSortEntry;
 } SORTLINE;
 
-static FARPROC pfnStrCmpLogicalW;
-typedef int(__stdcall *FNSTRCMP) (LPCWSTR, LPCWSTR);
+static FARPROC pfnStrCmpLogicalW = NULL;
+
 typedef int(__stdcall *FNSTRCMPN) (LPCWSTR, LPCWSTR, int);
 
 typedef struct _SORTSETTINGS
@@ -4279,14 +4279,11 @@ typedef struct _SORTSETTINGS
   UINT iSortColumn;
   int iSortColumnWidth;
   FNSTRCMPN fnCompareN;
-  FNSTRCMP fnCompare;
 } SORTSETTINGS, *LPSORTSETTINGS;
 
 int CmpGeneral(const LPSORTSETTINGS pSettings, const SORTLINE *line1, const SORTLINE *line2)
 {
-  int cmp = pSettings->bUseColumnSort
-    ? pSettings->fnCompareN(line1->pwszSortEntry, line2->pwszSortEntry, pSettings->iSortColumnWidth)
-    : pSettings->fnCompare(line1->pwszSortEntry, line2->pwszSortEntry);
+  int cmp = pSettings->fnCompareN(line1->pwszSortEntry, line2->pwszSortEntry, pSettings->iSortColumnWidth);
   if (pSettings->bReversedOrder)
     cmp *= -1;
 
@@ -4297,11 +4294,24 @@ int CmpGeneral(const LPSORTSETTINGS pSettings, const SORTLINE *line1, const SORT
     ? (line1->iIndex > line2->iIndex)
       ? 1
       : -1
-    : pSettings->fnCompare(line1->pwszLine, line2->pwszLine);
+    : pSettings->fnCompareN(line1->pwszLine, line2->pwszLine, -1);
   if (pSettings->bReversedOrder)
     cmp *= -1;
 
   return cmp;
+}
+
+LPWSTR lpCmpLogicalNBuffer1 = NULL;
+LPWSTR lpCmpLogicalNBuffer2 = NULL;
+
+int __stdcall StrCmpLogicalNW(LPCWSTR lpStr1, LPCWSTR lpStr2, int nChar)
+{
+  if ((nChar == -1) || !lpCmpLogicalNBuffer1 || !lpCmpLogicalNBuffer1)
+    return pfnStrCmpLogicalW(lpStr1, lpStr2);
+
+  wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
+  wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
+  return pfnStrCmpLogicalW(lpCmpLogicalNBuffer1, lpCmpLogicalNBuffer2);
 }
 
 void EditSortLines(HWND hwnd, int iSortFlags)
@@ -4335,29 +4345,32 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   UINT iTabWidth;
 
   BOOL bLastDup = FALSE;
-  FNSTRCMP pfnStrCmp;
 
-  pfnStrCmpLogicalW = GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW");
-  pfnStrCmp = (iSortFlags & SORT_NOCASE) ? StrCmpIW : StrCmpW;
+  if (!pfnStrCmpLogicalW)
+  {
+    pfnStrCmpLogicalW = GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW");
+  }
+  FNSTRCMPN pfnStrCmpN = (iSortFlags & SORT_NOCASE) ? StrCmpNIW : StrCmpNW;
 
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
 
   SORTSETTINGS sortSettings = {
-    iSortFlags & SORT_DESCENDING,
-    SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0),
+    (iSortFlags & SORT_DESCENDING) == SORT_DESCENDING,
+    (iSortFlags & SORT_COLUMN) == SORT_COLUMN,
     0,
-    0,
-    (iSortFlags & SORT_NOCASE) ? StrCmpNIW : StrCmpNW,
-    (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW) ? pfnStrCmpLogicalW : pfnStrCmp
+    -1,
+    (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW) ? StrCmpLogicalNW : pfnStrCmpN
   };
 
   // [2e]: Alt+O: sort all on no selection #133
   if ((iCurPos != iAnchorPos) && sortSettings.bUseColumnSort)
   {
     sortSettings.iSortColumnWidth = abs(
-      (int)SendMessage(hwnd, SCI_GETSELECTIONNEND, 0, 0) - (int)SendMessage(hwnd, SCI_GETSELECTIONNSTART, 0, 0)
+      (int)SendMessage(hwnd, SCI_GETCOLUMN, (int)SendMessage(hwnd, SCI_GETRECTANGULARSELECTIONANCHOR, 0, 0), 0)
+      - (int)SendMessage(hwnd, SCI_GETCOLUMN, (int)SendMessage(hwnd, SCI_GETRECTANGULARSELECTIONCARET, 0, 0), 0)
     );
+    sortSettings.iSortColumnWidth = abs((int)SendMessage(hwnd, SCI_GETSELECTIONNEND, 0, 0) - (int)SendMessage(hwnd, SCI_GETSELECTIONNSTART, 0, 0));
 
     iRcCurLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
     iRcAnchorLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iAnchorPos, 0);
@@ -4423,6 +4436,11 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   if (bIsRectangular)
     EditPadWithSpaces(hwnd, !(iSortFlags & SORT_SHUFFLE), TRUE);
 
+  if (sortSettings.iSortColumnWidth > 0)
+  {
+    lpCmpLogicalNBuffer1 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+    lpCmpLogicalNBuffer2 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+  }
   pLines = LocalAlloc(LPTR, sizeof(SORTLINE) * iLineCount);
   i = 0;
 
@@ -4483,12 +4501,11 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     LocalFree(pmsz);
     i++;
   }
-  if (iSortFlags & SORT_DESCENDING)
+  if ((iSortFlags & SORT_SHUFFLE) == 0)
   {
-    sortSettings.bReversedOrder = TRUE;
     qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
-  else if (iSortFlags & SORT_SHUFFLE)
+  else
   {
     srand((UINT)GetTickCount());
     for (i = iLineCount - 1; i > 0; i--)
@@ -4501,10 +4518,6 @@ void EditSortLines(HWND hwnd, int iSortFlags)
       pLines[j].pwszLine = sLine.pwszLine;
       pLines[j].pwszSortEntry = sLine.pwszSortEntry;
     }
-  }
-  else
-  {
-    qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
 
   pmszResult = LocalAlloc(LPTR, cchTotal + 2 * iLineCount + 1);
@@ -4522,8 +4535,10 @@ void EditSortLines(HWND hwnd, int iSortFlags)
         {
           if (i < iLineCount - 1)
           {
-            if ((sortSettings.bUseColumnSort && (sortSettings.fnCompareN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0))
-              || (!sortSettings.bUseColumnSort && (sortSettings.fnCompare(pLines[i].pwszLine, pLines[i + 1].pwszLine) == 0)))
+            if (pfnStrCmpN(
+                  sortSettings.bUseColumnSort ? pLines[i].pwszSortEntry : pLines[i].pwszLine,
+                  sortSettings.bUseColumnSort ? pLines[i + 1].pwszSortEntry : pLines[i + 1].pwszLine,
+                  sortSettings.bUseColumnSort ? sortSettings.iSortColumnWidth : -1) == 0)
             {
               if (!bDropLine)
                 bDropLine = (iSortFlags & SORT_UNIQDUP);
@@ -4565,6 +4580,10 @@ void EditSortLines(HWND hwnd, int iSortFlags)
       LocalFree(pLines[i].pwszLine);
   }
   LocalFree(pLines);
+  LocalFree(lpCmpLogicalNBuffer1);
+  LocalFree(lpCmpLogicalNBuffer2);
+  lpCmpLogicalNBuffer1 = NULL;
+  lpCmpLogicalNBuffer2 = NULL;
 
   if (!bIsRectangular)
   {
