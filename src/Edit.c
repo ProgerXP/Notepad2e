@@ -4275,8 +4275,6 @@ typedef int(__stdcall *FNSTRCMPN) (LPCWSTR, LPCWSTR, int);
 typedef struct _SORTSETTINGS
 {
   BOOL bReversedOrder;
-  BOOL bUseColumnSort;
-  UINT iSortColumn;
   int iSortColumnWidth;
   FNSTRCMPN fnCompareN;
 } SORTSETTINGS, *LPSORTSETTINGS;
@@ -4284,20 +4282,10 @@ typedef struct _SORTSETTINGS
 int CmpGeneral(const LPSORTSETTINGS pSettings, const SORTLINE *line1, const SORTLINE *line2)
 {
   int cmp = pSettings->fnCompareN(line1->pwszSortEntry, line2->pwszSortEntry, pSettings->iSortColumnWidth);
+  if (cmp == 0)
+    cmp = line1->iIndex - line2->iIndex;
   if (pSettings->bReversedOrder)
     cmp *= -1;
-
-  if (!pSettings->bUseColumnSort || (cmp != 0))
-    return cmp;
-
-  cmp = (pSettings->bUseColumnSort && (cmp == 0))
-    ? (line1->iIndex > line2->iIndex)
-      ? 1
-      : -1
-    : pSettings->fnCompareN(line1->pwszLine, line2->pwszLine, -1);
-  if (pSettings->bReversedOrder)
-    cmp *= -1;
-
   return cmp;
 }
 
@@ -4343,6 +4331,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   char mszEOL[] = "\r\n";
 
   UINT iTabWidth;
+  UINT iSortColumn;
+  BOOL bUseColumnSort = (iSortFlags & SORT_COLUMN) == SORT_COLUMN;
 
   BOOL bLastDup = FALSE;
 
@@ -4357,14 +4347,12 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
   SORTSETTINGS sortSettings = {
     (iSortFlags & SORT_DESCENDING) == SORT_DESCENDING,
-    (iSortFlags & SORT_COLUMN) == SORT_COLUMN,
-    0,
     -1,
     (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW) ? StrCmpLogicalNW : pfnStrCmpN
   };
 
   // [2e]: Alt+O: sort all on no selection #133
-  if ((iCurPos != iAnchorPos) && sortSettings.bUseColumnSort)
+  if ((iCurPos != iAnchorPos) && bUseColumnSort)
   {
     sortSettings.iSortColumnWidth = abs(
       (int)SendMessage(hwnd, SCI_GETCOLUMN, (int)SendMessage(hwnd, SCI_GETRECTANGULARSELECTIONANCHOR, 0, 0), 0)
@@ -4383,7 +4371,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     iLineStart = min(iRcCurLine, iRcAnchorLine);
     iLineEnd = max(iRcCurLine, iRcAnchorLine);
 
-    sortSettings.iSortColumn = min(iRcCurCol, iRcAnchorCol);
+    iSortColumn = min(iRcCurCol, iRcAnchorCol);
   }
 
   else
@@ -4409,7 +4397,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     if (iSelEnd <= SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLineEnd, 0))
       iLineEnd--;
 
-    sortSettings.iSortColumn = (UINT)SendMessage(hwnd, SCI_GETCOLUMN,
+    iSortColumn = (UINT)SendMessage(hwnd, SCI_GETCOLUMN,
                                     (WPARAM)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0), 0);
   }
 
@@ -4466,13 +4454,13 @@ void EditSortLines(HWND hwnd, int iSortFlags)
       pLines[i].pwszLine = LocalAlloc(LPTR, sizeof(WCHAR) * (cchw + 1));
       MultiByteToWideChar(uCodePage, 0, pmsz, -1, pLines[i].pwszLine, (int)LocalSize(pLines[i].pwszLine) / sizeof(WCHAR));
       pLines[i].pwszSortEntry = pLines[i].pwszLine;
-      if (sortSettings.bUseColumnSort)
+      if (bUseColumnSort)
       {
         while (*(pLines[i].pwszSortEntry))
         {
           if (*(pLines[i].pwszSortEntry) == L'\t')
           {
-            if (col + tabs <= sortSettings.iSortColumn)
+            if (col + tabs <= iSortColumn)
             {
               col += tabs;
               tabs = iTabWidth;
@@ -4481,7 +4469,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
             else
               break;
           }
-          else if (col < sortSettings.iSortColumn)
+          else if (col < iSortColumn)
           {
             col++;
             if (--tabs == 0)
@@ -4536,9 +4524,9 @@ void EditSortLines(HWND hwnd, int iSortFlags)
           if (i < iLineCount - 1)
           {
             if (pfnStrCmpN(
-                  sortSettings.bUseColumnSort ? pLines[i].pwszSortEntry : pLines[i].pwszLine,
-                  sortSettings.bUseColumnSort ? pLines[i + 1].pwszSortEntry : pLines[i + 1].pwszLine,
-                  sortSettings.bUseColumnSort ? sortSettings.iSortColumnWidth : -1) == 0)
+                  bUseColumnSort ? pLines[i].pwszSortEntry : pLines[i].pwszLine,
+                  bUseColumnSort ? pLines[i + 1].pwszSortEntry : pLines[i + 1].pwszLine,
+                  bUseColumnSort ? sortSettings.iSortColumnWidth : -1) == 0)
             {
               if (!bDropLine)
                 bDropLine = (iSortFlags & SORT_UNIQDUP);
