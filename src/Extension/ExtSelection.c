@@ -769,6 +769,19 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
   return FALSE;
 }
 
+BOOL n2e_SelectionEditIsVisibleOnScreen()
+{
+  const int nFirstVisiblePosition = SciCall_PositionFromLine(SciCall_GetFirstVisibleLine());
+  const int nLastVisiblePosition = SciCall_LineEndPosition(SciCall_GetFirstVisibleLine() + SciCall_GetLinesOnScreen());
+  for (int i = 0; i < n2e_GetEditSelectionCount(); ++i)
+  {
+    LPSE_DATA se = n2e_GetEditSelection(i);
+    if ((se->pos >= nFirstVisiblePosition) && (se->pos < nLastVisiblePosition))
+      return TRUE;
+  }
+  return FALSE;
+}
+
 void n2e_SelectionEditHideToolTip()
 {
   n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);

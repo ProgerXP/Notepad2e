@@ -23,5 +23,6 @@ BOOL n2e_IsHighlightSelectionEnabled();
 BOOL n2e_IsSelectionEditModeOn();
 void n2e_SelectionEditStart(const BOOL highlightAll);
 BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode);
+BOOL n2e_SelectionEditIsVisibleOnScreen();
 void n2e_SelectionEditHideToolTip();
 void n2e_OnMouseVanishEvent(const BOOL showCursor);
