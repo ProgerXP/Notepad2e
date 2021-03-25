@@ -4441,7 +4441,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
     pmsz = LocalAlloc(LPTR, cchm + 1);
     SendMessage(hwnd, SCI_GETLINE, (WPARAM)iLine, (LPARAM)pmsz);
-    // Sorting adds line breaks under Japanese locale #269
+    // [2e]: Sorting adds line breaks under Japanese locale #269
     n2e_StrTrimA(pmsz, "\r\n");
     cchTotal += cchm;
     ichlMax = max(ichlMax, cchm);
@@ -4498,13 +4498,12 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     srand((UINT)GetTickCount());
     for (i = iLineCount - 1; i > 0; i--)
     {
-      int j = rand() % i;
-      SORTLINE sLine;
-      sLine.pwszLine = pLines[i].pwszLine;
-      sLine.pwszSortEntry = pLines[i].pwszSortEntry;
+      const int j = rand() % i;
+      const SORTLINE sLine = pLines[i];
       pLines[i] = pLines[j];
-      pLines[j].pwszLine = sLine.pwszLine;
-      pLines[j].pwszSortEntry = sLine.pwszSortEntry;
+      pLines[i].iIndex = i;
+      pLines[j] = sLine;
+      pLines[j].iIndex = j;
     }
   }
 
@@ -4523,10 +4522,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
         {
           if (i < iLineCount - 1)
           {
-            if (pfnStrCmpN(
-                  bUseColumnSort ? pLines[i].pwszSortEntry : pLines[i].pwszLine,
-                  bUseColumnSort ? pLines[i + 1].pwszSortEntry : pLines[i + 1].pwszLine,
-                  bUseColumnSort ? sortSettings.iSortColumnWidth : -1) == 0)
+            if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
             {
               if (!bDropLine)
                 bDropLine = (iSortFlags & SORT_UNIQDUP);
