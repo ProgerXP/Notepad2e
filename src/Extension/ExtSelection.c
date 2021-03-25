@@ -748,7 +748,7 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
   bHighlightAll = TRUE;
   if (n2e_IsSelectionEditModeOn())
   {
-    n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+    n2e_SelectionEditHideToolTip();
 
     if (mode & SES_REJECT)
     {
@@ -767,6 +767,11 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
     return TRUE;
   }
   return FALSE;
+}
+
+void n2e_SelectionEditHideToolTip()
+{
+  n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
 }
 
 void n2e_SelectionUpdate(const ESelectionUpdateMode place)
@@ -808,7 +813,7 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
         {
           if (bNeedUpdateInEditMode)
           {
-            n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+            n2e_SelectionEditHideToolTip();
           }
           n2e_SelectionUpdate(SUM_UPDATE);
         }
@@ -821,7 +826,7 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
           && n2e_IsSelectionEditModeOn()
           && (iEditSelectionFirstVisibleLine != SciCall_DocLineFromVisible(SciCall_GetFirstVisibleLine())))
         {
-          n2e_ToolTipTrackActivate(hwndToolTipEdit, FALSE, &tiEditSelection);
+          n2e_SelectionEditHideToolTip();
         }
       }
       break;

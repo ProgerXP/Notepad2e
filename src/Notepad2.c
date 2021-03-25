@@ -1315,7 +1315,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SYSCOMMAND:
-      switch (wParam)
+      switch (wParam & 0xFFF0)
       {
         case SC_MINIMIZE:
           ShowOwnedPopups(hwnd, FALSE);
@@ -1334,6 +1334,16 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             ShowOwnedPopups(hwnd, TRUE);
             return (lrv);
           }
+
+        // [2e]: Edit Mode hint not hidden on window resize/move #349
+        case SC_MOVE:
+        case SC_SIZE:
+          if (n2e_IsSelectionEditModeOn())
+          {
+            n2e_SelectionEditHideToolTip();
+          }
+          break;
+        // [/2e]
       }
       return DefWindowProc(hwnd, umsg, wParam, lParam);
 
