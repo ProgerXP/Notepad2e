@@ -4510,41 +4510,42 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   pmszResult = LocalAlloc(LPTR, cchTotal + 2 * iLineCount + 1);
   pmszBuf = LocalAlloc(LPTR, ichlMax + 1);
 
+  const BOOL bShuffle = (iSortFlags & SORT_SHUFFLE) == SORT_SHUFFLE;
+  const BOOL bMergeDuplicate = (iSortFlags & SORT_MERGEDUP) == SORT_MERGEDUP;
+  const BOOL bRemoveDuplicate = (iSortFlags & SORT_UNIQDUP) == SORT_UNIQDUP;
+  const BOOL bRemoveUnique = (iSortFlags & SORT_UNIQUNIQ) == SORT_UNIQUNIQ;
   BOOL bDropNextLine = FALSE;
   for (i = 0; i < iLineCount; i++)
   {
     BOOL bDropLine = bDropNextLine;
-    if (pLines[i].pwszLine && ((iSortFlags & SORT_SHUFFLE) || lstrlen(pLines[i].pwszLine)))
+    if (!bShuffle)
     {
-      if (!(iSortFlags & SORT_SHUFFLE))
+      if (bMergeDuplicate || bRemoveDuplicate || bRemoveUnique)
       {
-        if (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP || iSortFlags & SORT_UNIQUNIQ)
+        if (i < iLineCount - 1)
         {
-          if (i < iLineCount - 1)
+          if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
           {
-            if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
-            {
-              if (!bDropLine)
-                bDropLine = (iSortFlags & SORT_UNIQDUP);
-              bDropNextLine = (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP);
-              bLastDup = TRUE;
-            }
-            else
-            {
-              bDropNextLine = (iSortFlags & SORT_UNIQUNIQ);
-              if (!bLastDup)
-              {
-                bDropLine = bDropNextLine;
-              }
-              bLastDup = FALSE;
-            }
+            if (!bDropLine || !bLastDup)
+              bDropLine = bRemoveDuplicate;
+            bDropNextLine = bMergeDuplicate  || bRemoveDuplicate;
+            bLastDup = TRUE;
           }
           else
           {
-            if (!bDropLine)
-              bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
+            bDropNextLine = bRemoveUnique;
+            if (!bLastDup)
+            {
+              bDropLine = bDropNextLine;
+            }
             bLastDup = FALSE;
           }
+        }
+        else
+        {
+          if (!bDropLine)
+            bDropLine = (!bLastDup && bRemoveUnique) || (bLastDup && bRemoveDuplicate);
+          bLastDup = FALSE;
         }
       }
       if (!bDropLine)
