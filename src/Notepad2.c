@@ -4562,7 +4562,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iIndentPos = (int)SendMessage(hwndEdit, SCI_GETLINEINDENTPOSITION, (WPARAM)iLine, 0);
 
         if (iPos != iAnchor)
-          SendMessage(hwndEdit, SCI_SETSEL, (WPARAM)iPos, (LPARAM)iPos);
+          SendMessage(hwndEdit, SCI_REPLACESEL, 0, (LPARAM)"");
         else
         {
           if (iPos == iStartPos)
@@ -4583,7 +4583,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iStartPos = (int)SendMessage(hwndEdit, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
         int iEndPos = (int)SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
         if (iPos != iAnchor)
-          SendMessage(hwndEdit, SCI_SETSEL, (WPARAM)iPos, (LPARAM)iPos);
+        {
+          SendMessage(hwndEdit, SCI_REPLACESEL, 0, (LPARAM)"");
+        }
         else
         {
           if (iStartPos != iEndPos)
