@@ -4548,12 +4548,12 @@ void EditSortLines(HWND hwnd, int iSortFlags)
           bLastDup = FALSE;
         }
       }
-      if (!bDropLine)
-      {
-        WideCharToMultiByte(uCodePage, 0, pLines[i].pwszLine, -1, pmszBuf, (int)LocalSize(pmszBuf), NULL, NULL);
-        StrCatBuffA(pmszResult, pmszBuf, (int)LocalSize(pmszResult));
-        StrCatBuffA(pmszResult, mszEOL, (int)LocalSize(pmszResult));
-      }
+    }
+    if (!bDropLine)
+    {
+      WideCharToMultiByte(uCodePage, 0, pLines[i].pwszLine, -1, pmszBuf, (int)LocalSize(pmszBuf), NULL, NULL);
+      StrCatBuffA(pmszResult, pmszBuf, (int)LocalSize(pmszResult));
+      StrCatBuffA(pmszResult, mszEOL, (int)LocalSize(pmszResult));
     }
   }
 
