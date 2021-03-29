@@ -4518,35 +4518,32 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   for (i = 0; i < iLineCount; i++)
   {
     BOOL bDropLine = bDropNextLine;
-    if (!bShuffle)
+    if (!bShuffle && (bMergeDuplicate || bRemoveDuplicate || bRemoveUnique))
     {
-      if (bMergeDuplicate || bRemoveDuplicate || bRemoveUnique)
+      if (i < iLineCount - 1)
       {
-        if (i < iLineCount - 1)
+        if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
         {
-          if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
-          {
-            if (!bDropLine || !bLastDup)
-              bDropLine = bRemoveDuplicate;
-            bDropNextLine = bMergeDuplicate  || bRemoveDuplicate;
-            bLastDup = TRUE;
-          }
-          else
-          {
-            bDropNextLine = bRemoveUnique;
-            if (!bLastDup)
-            {
-              bDropLine = bDropNextLine;
-            }
-            bLastDup = FALSE;
-          }
+          if (!bDropLine || !bLastDup)
+            bDropLine = bRemoveDuplicate;
+          bDropNextLine = bMergeDuplicate  || bRemoveDuplicate;
+          bLastDup = TRUE;
         }
         else
         {
-          if (!bDropLine)
-            bDropLine = (!bLastDup && bRemoveUnique) || (bLastDup && bRemoveDuplicate);
+          bDropNextLine = bRemoveUnique;
+          if (!bLastDup)
+          {
+            bDropLine = bDropNextLine;
+          }
           bLastDup = FALSE;
         }
+      }
+      else
+      {
+        if (!bDropLine)
+          bDropLine = (!bLastDup && bRemoveUnique) || (bLastDup && bRemoveDuplicate);
+        bLastDup = FALSE;
       }
     }
     if (!bDropLine)
