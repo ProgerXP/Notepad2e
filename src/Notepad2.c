@@ -1685,6 +1685,8 @@ LRESULT MsgCreate(HWND hwnd, WPARAM wParam, LPARAM lParam)
     return (-1);
 
   n2e_UpdateViews();
+  // [2e]: DPI awareness #154
+  n2e_UpdateViewsDPI(GetDPIFromWindow(hwnd));
   return (0);
 }
 
