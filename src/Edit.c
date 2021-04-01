@@ -4297,9 +4297,20 @@ int __stdcall StrCmpLogicalNW(LPCWSTR lpStr1, LPCWSTR lpStr2, int nChar)
   if ((nChar == -1) || !lpCmpLogicalNBuffer1 || !lpCmpLogicalNBuffer1)
     return pfnStrCmpLogicalW(lpStr1, lpStr2);
 
-  wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
-  wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
-  return pfnStrCmpLogicalW(lpCmpLogicalNBuffer1, lpCmpLogicalNBuffer2);
+  const BOOL bUseBuffer1 = (wcslen(lpStr1) > nChar);
+  const BOOL bUseBuffer2 = (wcslen(lpStr2) > nChar);
+  if (bUseBuffer1)
+  {
+    wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
+  }
+  if (bUseBuffer2)
+  {
+    wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
+  }
+  return pfnStrCmpLogicalW(
+          bUseBuffer1 ? lpCmpLogicalNBuffer1 : lpStr1,
+          bUseBuffer2 ? lpCmpLogicalNBuffer2 : lpStr2
+        );
 }
 
 void EditSortLines(HWND hwnd, int iSortFlags)
