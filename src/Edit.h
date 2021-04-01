@@ -64,12 +64,14 @@ typedef struct _gotoparams
 #define SORT_ASCENDING  0
 #define SORT_DESCENDING 1
 #define SORT_SHUFFLE    2
-#define SORT_MERGEDUP   4
-#define SORT_UNIQDUP    8
-#define SORT_UNIQUNIQ  16
-#define SORT_NOCASE    32
-#define SORT_LOGICAL   64
-#define SORT_COLUMN   128
+#define SORT_KEEP_ORDER 4
+#define SORT_REVERSE_ORDER 8
+#define SORT_MERGEDUP   16
+#define SORT_UNIQDUP    32
+#define SORT_UNIQUNIQ   64
+#define SORT_NOCASE     128
+#define SORT_LOGICAL    256
+#define SORT_COLUMN     512
 
 
 HWND  EditCreate(HWND);

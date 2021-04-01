@@ -4487,7 +4487,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     i++;
   }
 
-  if ((iSortFlags & SORT_SHUFFLE) == 0)
+  if ((iSortFlags & (SORT_SHUFFLE | SORT_KEEP_ORDER | SORT_REVERSE_ORDER)) == 0)
   {
     if (bUseColumnSort && bSkipSortColumnWidth)
     {
@@ -4500,12 +4500,24 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     }
     qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
-  else
+  else if ((iSortFlags & SORT_SHUFFLE) == SORT_SHUFFLE)
   {
     srand((UINT)GetTickCount());
     for (i = iLineCount - 1; i > 0; i--)
     {
       const int j = rand() % i;
+      const SORTLINE sLine = pLines[i];
+      pLines[i] = pLines[j];
+      pLines[i].iIndex = i;
+      pLines[j] = sLine;
+      pLines[j].iIndex = j;
+    }
+  }
+  else if ((iSortFlags & SORT_REVERSE_ORDER) == SORT_REVERSE_ORDER)
+  {
+    for (i = 0; i < iLineCount / 2; ++i)
+    {
+      const int j = (iLineCount - 1) - i;
       const SORTLINE sLine = pLines[i];
       pLines[i] = pLines[j];
       pLines[i].iIndex = i;
@@ -6742,9 +6754,6 @@ BOOL EditInsertTagDlg(HWND hwnd, LPWSTR pwszOpen, LPWSTR pwszClose)
 //
 //  EditSortDlgProc()
 //
-//  Controls: 100-102 Radio Button
-//            103-108 Check Box
-//
 INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   static int *piSortFlags;
@@ -6757,49 +6766,53 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
     case WM_INITDIALOG: {
         piSortFlags = (int *)lParam;
         if (*piSortFlags & SORT_DESCENDING)
-          CheckRadioButton(hwnd, 100, 102, 101);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SORT_DESCENDING);
         else if (*piSortFlags & SORT_SHUFFLE)
         {
-          CheckRadioButton(hwnd, 100, 102, 102);
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SHUFFLE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
         }
+        else if (*piSortFlags & SORT_KEEP_ORDER)
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_KEEP_ORDER);
+        else if (*piSortFlags & SORT_REVERSE_ORDER)
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_REVERSE_ORDER);
         else
-          CheckRadioButton(hwnd, 100, 102, 100);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SORT_ASCENDING);
         if (*piSortFlags & SORT_MERGEDUP)
-          CheckDlgButton(hwnd, 103, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_MERGE_DUPLICATE, BST_CHECKED);
         if (*piSortFlags & SORT_UNIQDUP)
         {
-          CheckDlgButton(hwnd, 104, BST_CHECKED);
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
+          CheckDlgButton(hwnd, IDC_CHECK_REMOVE_DUPLICATE, BST_CHECKED);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
         }
         if (*piSortFlags & SORT_UNIQUNIQ)
-          CheckDlgButton(hwnd, 105, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_REMOVE_UNIQUE, BST_CHECKED);
         if (*piSortFlags & SORT_NOCASE)
-          CheckDlgButton(hwnd, 106, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_CASE_INSENSITIVE, BST_CHECKED);
         if (GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW"))
         {
           if (*piSortFlags & SORT_LOGICAL)
-            CheckDlgButton(hwnd, 107, BST_CHECKED);
+            CheckDlgButton(hwnd, IDC_CHECK_LOGICAL_COMPARISON, BST_CHECKED);
           bEnableLogicalSort = TRUE;
         }
         else
         {
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
           bEnableLogicalSort = FALSE;
         }
         if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0))
         {
           *piSortFlags &= ~SORT_COLUMN;
-          EnableWindow(GetDlgItem(hwnd, 108), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_SORT_AND_MERGE), FALSE);
         }
         else
         {
           *piSortFlags |= SORT_COLUMN;
-          CheckDlgButton(hwnd, 108, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_SORT_AND_MERGE, BST_CHECKED);
         }
         DPI_INIT();
         CenterDlgInParent(hwnd);
@@ -6810,21 +6823,25 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       {
         case IDOK: {
             *piSortFlags = 0;
-            if (IsDlgButtonChecked(hwnd, 101) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_SORT_DESCENDING) == BST_CHECKED)
               *piSortFlags |= SORT_DESCENDING;
-            if (IsDlgButtonChecked(hwnd, 102) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_SHUFFLE) == BST_CHECKED)
               *piSortFlags |= SORT_SHUFFLE;
-            if (IsDlgButtonChecked(hwnd, 103) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_KEEP_ORDER) == BST_CHECKED)
+              *piSortFlags |= SORT_KEEP_ORDER;
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_REVERSE_ORDER) == BST_CHECKED)
+              *piSortFlags |= SORT_REVERSE_ORDER;
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_MERGE_DUPLICATE) == BST_CHECKED)
               *piSortFlags |= SORT_MERGEDUP;
-            if (IsDlgButtonChecked(hwnd, 104) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_DUPLICATE) == BST_CHECKED)
               *piSortFlags |= SORT_UNIQDUP;
-            if (IsDlgButtonChecked(hwnd, 105) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_UNIQUE) == BST_CHECKED)
               *piSortFlags |= SORT_UNIQUNIQ;
-            if (IsDlgButtonChecked(hwnd, 106) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_CASE_INSENSITIVE) == BST_CHECKED)
               *piSortFlags |= SORT_NOCASE;
-            if (IsDlgButtonChecked(hwnd, 107) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_LOGICAL_COMPARISON) == BST_CHECKED)
               *piSortFlags |= SORT_LOGICAL;
-            if (IsDlgButtonChecked(hwnd, 108) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_SORT_AND_MERGE) == BST_CHECKED)
               *piSortFlags |= SORT_COLUMN;
             EndDialog(hwnd, IDOK);
           }
@@ -6832,23 +6849,25 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
-        case 100:
-        case 101:
-          EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 105) != BST_CHECKED);
-          EnableWindow(GetDlgItem(hwnd, 104), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 105), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 106), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 107), bEnableLogicalSort);
+        case IDC_RADIO_SORT_ASCENDING:
+        case IDC_RADIO_SORT_DESCENDING:
+        case IDC_RADIO_KEEP_ORDER:
+        case IDC_RADIO_REVERSE_ORDER:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_UNIQUE) != BST_CHECKED);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), bEnableLogicalSort);
           break;
-        case 102:
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+        case IDC_RADIO_SHUFFLE:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
           break;
-        case 104:
-          EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 104) != BST_CHECKED);
+        case IDC_CHECK_REMOVE_DUPLICATE:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_DUPLICATE) != BST_CHECKED);
           break;
       }
       return TRUE;
