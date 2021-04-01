@@ -4297,20 +4297,9 @@ int __stdcall StrCmpLogicalNW(LPCWSTR lpStr1, LPCWSTR lpStr2, int nChar)
   if ((nChar == -1) || !lpCmpLogicalNBuffer1 || !lpCmpLogicalNBuffer1)
     return pfnStrCmpLogicalW(lpStr1, lpStr2);
 
-  const BOOL bUseBuffer1 = (wcslen(lpStr1) > nChar);
-  const BOOL bUseBuffer2 = (wcslen(lpStr2) > nChar);
-  if (bUseBuffer1)
-  {
-    wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
-  }
-  if (bUseBuffer2)
-  {
-    wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
-  }
-  return pfnStrCmpLogicalW(
-          bUseBuffer1 ? lpCmpLogicalNBuffer1 : lpStr1,
-          bUseBuffer2 ? lpCmpLogicalNBuffer2 : lpStr2
-        );
+  wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
+  wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
+  return pfnStrCmpLogicalW(lpCmpLogicalNBuffer1, lpCmpLogicalNBuffer2);
 }
 
 void EditSortLines(HWND hwnd, int iSortFlags)
@@ -4435,14 +4424,10 @@ void EditSortLines(HWND hwnd, int iSortFlags)
   if (bIsRectangular)
     EditPadWithSpaces(hwnd, !(iSortFlags & SORT_SHUFFLE), TRUE);
 
-  if (sortSettings.iSortColumnWidth > 0)
-  {
-    lpCmpLogicalNBuffer1 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
-    lpCmpLogicalNBuffer2 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
-  }
   pLines = LocalAlloc(LPTR, sizeof(SORTLINE) * iLineCount);
   i = 0;
 
+  BOOL bSkipSortColumnWidth = TRUE;
   for (iLine = iLineStart; iLine <= iLineEnd; iLine++)
   {
 
@@ -4490,6 +4475,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
           else
             break;
         }
+        bSkipSortColumnWidth &= wcslen(pLines[i].pwszSortEntry) <= sortSettings.iSortColumnWidth;
       }
     }
     else
@@ -4500,8 +4486,18 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     LocalFree(pmsz);
     i++;
   }
+
   if ((iSortFlags & SORT_SHUFFLE) == 0)
   {
+    if (bUseColumnSort && bSkipSortColumnWidth)
+    {
+      sortSettings.iSortColumnWidth = -1;
+    }
+    if (sortSettings.iSortColumnWidth > 0)
+    {
+      lpCmpLogicalNBuffer1 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+      lpCmpLogicalNBuffer2 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+    }
     qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
   else
