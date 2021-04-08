@@ -1710,16 +1710,16 @@ BOOL n2e_FindMRUAdd(LPCSTR pszNew)
   return res;
 }
 
-void n2e_StrTrimA(LPSTR psz, LPCSTR pszTrimChars)
+void n2e_StrTrimA(LPSTR* psz, LPCSTR pszTrimChars)
 {
-  while (*psz && strchr(pszTrimChars, (unsigned char)*psz))
-    ++psz;
+  while (**psz && strchr(pszTrimChars, (unsigned char)**psz))
+    ++*psz;
 
-  if (*psz == 0)
+  if (**psz == 0)
     return;
 
-  LPSTR end = psz + strlen(psz) - 1;
-  while (end > psz && strchr(pszTrimChars, (unsigned char)*end))
+  LPSTR end = *psz + strlen(*psz) - 1;
+  while (end > *psz && strchr(pszTrimChars, (unsigned char)*end))
     --end;
 
   end[1] = '\0';
