@@ -19,7 +19,7 @@
 *
 ******************************************************************************/
 
-
+#include "Extension/Utils.h"
 
 // extern "C" declarations of Scintilla functions
 BOOL Scintilla_RegisterClasses(void*);
@@ -38,6 +38,7 @@ typedef struct _editfindreplace
   BOOL bFindClose;
   BOOL bReplaceClose;
   BOOL bNoFindWrap;
+  ELookupInComments iLookupInComments;
   HWND hwnd;
 
 } EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;

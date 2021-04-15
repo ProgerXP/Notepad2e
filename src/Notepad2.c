@@ -269,7 +269,7 @@ UINT      msgTaskbarCreated = 0;
 HMODULE   hModUxTheme = NULL;
 HMODULE   hModRichEdit = NULL;  // [2e]: Attribution menu command #181
 
-EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, NULL };
+EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, LIC_ALWAYS, NULL };
 UINT cpLastFind = 0;
 BOOL bReplaceInitialized = FALSE;
 
@@ -4713,7 +4713,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         struct tm sst;
 
         UINT cp;
-        EDITFINDREPLACE efrTS = { "", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, hwndEdit };
+        EDITFINDREPLACE efrTS = { "", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, LIC_ALWAYS, hwndEdit };
         IniGetString(L"Settings2", L"TimeStamp", L"\\$Date:[^\\$]+\\$ | $Date: %Y/%m/%d %H:%M:%S $", wchFind, COUNTOF(wchFind));
         if (pwchSep = StrChr(wchFind, L'|'))
         {

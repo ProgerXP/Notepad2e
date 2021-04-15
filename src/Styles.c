@@ -303,7 +303,7 @@ KEYWORDLIST KeyWords_CPP = {
 
 EDITLEXER lexCPP = { SCLEX_CPP, 63004, L"C/C++", L"c; cpp; cxx; cc; h; hpp; hxx; hh; m; mm; idl; inl; odl", L"", &KeyWords_CPP, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
+        { MULTI_STYLE(SCE_C_COMMENT, SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, 0), 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#0A246A", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { MULTI_STYLE(SCE_C_STRING, SCE_C_CHARACTER, SCE_C_STRINGEOL, SCE_C_VERBATIM), 63131, L"String", L"fore:#008000", L"" },
@@ -330,7 +330,7 @@ KEYWORDLIST KeyWords_CS = {
 
 EDITLEXER lexCS = { SCLEX_CPP, 63005, L"C#", L"cs", L"", &KeyWords_CS, {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        { SCE_C_COMMENT, 63127, L"Comment", L"fore:#008000", L"" },
+        { MULTI_STYLE(SCE_C_COMMENT, SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, 0), 63127, L"Comment", L"fore:#008000", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#804000", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { MULTI_STYLE(SCE_C_STRING, SCE_C_CHARACTER, SCE_C_STRINGEOL, 0), 63131, L"String", L"fore:#008000", L"" },

@@ -34,9 +34,9 @@ extern HWND hwndToolbar;
 extern HWND hwndMain;
 extern HWND hDlgFindReplace;
 extern int iOpenSaveFilterIndex;
-extern EDITFINDREPLACE efrData;
 extern BOOL bAlwaysOnTop;
 extern int flagAlwaysOnTop;
+extern PEDITLEXER pLexCurrent;
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -265,24 +265,106 @@ void n2e_JumpToOffset(const HWND hwnd, const int iNewPos)
   EditSelectEx(hwnd, iNewPos, iNewPos);
 }
 
-int n2e_FindTextImpl(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf)
+BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
 {
-  return (int)SendMessage(hwnd, SCI_FINDTEXT, searchFlags, (LPARAM)pttf);
+  return pStyle && (StrStrI(pStyle->pszName, L"comment") != NULL);
 }
 
-int FindTextTest(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int cpMin)
+PEDITSTYLE n2e_GetStyleById(const int iStyle)
+{
+#define MULTI_STYLE_STYLE1(s) (s & 0xFF)
+#define MULTI_STYLE_STYLE2(s) ((s >> 8) & 0xFF)
+#define MULTI_STYLE_STYLE3(s) ((s >> 16) & 0xFF)
+#define MULTI_STYLE_STYLE4(s) ((s >> 24) & 0xFF)
+
+  PEDITSTYLE pStyle = pLexCurrent->Styles;
+  int i = 0;
+  while (pStyle && (pStyle->iStyle >= 0))
+  {
+    if (((iStyle == 0) && pStyle->iStyle == iStyle)
+      || (MULTI_STYLE_STYLE1(pStyle->iStyle) == iStyle)
+      || (MULTI_STYLE_STYLE2(pStyle->iStyle) == iStyle)
+      || (MULTI_STYLE_STYLE3(pStyle->iStyle) == iStyle)
+      || (MULTI_STYLE_STYLE4(pStyle->iStyle) == iStyle))
+      break;
+
+    pStyle = &pLexCurrent->Styles[++i];
+  }
+  return pStyle;
+}
+
+
+BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
+{
+  return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
+}
+
+BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
+{
+  PEDITSTYLE pStyle = pLexCurrent->Styles;
+  int i = 0;
+  while (pStyle && (pStyle->iStyle >= 0))
+  {
+    if (n2e_IsCommentStyle(pStyle))
+      return TRUE;
+
+    pStyle = &pLexCurrent->Styles[++i];
+  }
+  return FALSE;
+}
+
+int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf)
+{
+  int iPos = -1;
+  BOOL bContinueSearch = TRUE;
+  while (bContinueSearch)
+  {
+    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)pttf);
+    bContinueSearch = (iPos >= 0);
+
+    if (bContinueSearch)
+    {
+      switch (lpefr->iLookupInComments)
+      {
+      case LIC_ALWAYS:
+        bContinueSearch = FALSE;
+        break;
+      case LIC_ONLY:
+        bContinueSearch = !n2e_IsCommentStyleAtPos(hwnd, iPos);
+        break;
+      case LIC_NEVER:
+        bContinueSearch = n2e_IsCommentStyleAtPos(hwnd, iPos);
+        break;
+      }
+    }
+    if (bContinueSearch)
+    {
+      if (pttf->chrg.cpMin <= pttf->chrg.cpMax)
+      {
+        pttf->chrg.cpMin = iPos + 1;
+      }
+      else
+      {
+        pttf->chrg.cpMin = iPos;
+      }
+    }
+  }
+  return iPos;
+}
+
+int FindTextTest(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int cpMin)
 {
   struct TextToFind ttf = *pttf;
   ttf.chrg.cpMin = cpMin;
-  return n2e_FindTextImpl(hwnd, searchFlags, &ttf);
+  return n2e_FindTextImpl(hwnd, lpefr, &ttf);
 }
 
-BOOL n2e_CheckTextExists(const HWND hwnd, const int searchFlags, const struct TextToFind* pttf, const int iPos)
+BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos)
 {
-  return (FindTextTest(hwnd, searchFlags, pttf, iPos) >= 0);
+  return (FindTextTest(hwnd, lpefr, pttf, iPos) >= 0);
 }
 
-void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next)
+void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next)
 {
   struct Sci_TextRange tr;
   struct Sci_TextToFind ttf;
@@ -376,8 +458,8 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
     n2e_FindMRUAdd(ttf.lpstrText);
-    lstrcpyA(efrData.szFind, ttf.lpstrText);
-    lstrcpyA(efrData.szFindUTF8, ttf.lpstrText);
+    lstrcpyA(lpefr->szFind, ttf.lpstrText);
+    lstrcpyA(lpefr->szFindUTF8, ttf.lpstrText);
     if (next)
     {
       ttf.chrg.cpMin = tr.chrg.cpMax;
@@ -393,9 +475,9 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
       searchflags |= SCFIND_MATCHCASE;
     }
 
-    res = n2e_FindTextImpl(hwnd, searchflags, &ttf);
+    res = n2e_FindTextImpl(hwnd, lpefr, &ttf);
     const BOOL bTextFound = (res >= 0);
-    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, searchflags, &ttf, res + 1) >= 0));
+    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, lpefr, &ttf, res + 1) >= 0));
 
     if ((-1 == res) && (bFindWordWrapAround != 0))
     {
@@ -409,7 +491,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpref, const BOOL next
         ttf.chrg.cpMin = doclen;
         ttf.chrg.cpMax = tr.chrg.cpMax;
       }
-      res = n2e_FindTextImpl(hwnd, searchflags, &ttf);
+      res = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       n2e_UpdateFindIcon(res >= 0);
     }
     if (res >= 0)

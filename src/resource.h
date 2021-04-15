@@ -132,7 +132,6 @@
 #define IDC_TOGGLEREPLACE               116
 #define IDC_RICHEDIT                    116
 #define IDD_LINENUM                     117
-#define IDC_TOGGLEGOTO                  117
 #define IDC_RADIO1                      117
 #define IDD_FIND                        118
 #define IDC_RADIO2                      118
@@ -141,6 +140,7 @@
 #define IDD_STYLESELECT                 120
 #define IDC_RADIO4                      120
 #define IDD_STYLECONFIG                 121
+#define IDC_TOGGLEGOTO                  121
 #define IDC_RADIO5                      121
 #define IDD_WORDWRAP                    122
 #define IDC_RADIO6                      122

@@ -2076,7 +2076,7 @@ void EditEscapeCChars(HWND hwnd)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, hwnd };
+      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
       SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
       lstrcpyA(efr.szFind, "\\");
       lstrcpyA(efr.szReplace, "\\\\");
@@ -2103,7 +2103,7 @@ void EditUnescapeCChars(HWND hwnd)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, hwnd };
+      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
 
       SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
 
@@ -3726,7 +3726,7 @@ void EditStripTrailingBlanks(HWND hwnd, BOOL bIgnoreSelection)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, hwnd };
+      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
       EditReplaceAllInSelection(hwnd, &efrTrim, FALSE);
     }
   }
@@ -4919,6 +4919,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         if (lpefr->bNoFindWrap)
           CheckDlgButton(hwnd, IDC_NOWRAP, BST_CHECKED);
 
+        // [2e]: Find/Replace - Skip comments mode #303
+        const BOOL bCommentStyleDefined = n2e_CommentStyleIsDefined(hwndEdit);
+        if (!bCommentStyleDefined)
+        {
+          lpefr->iLookupInComments = LIC_ALWAYS;
+        }
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO1), bCommentStyleDefined);
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO2), bCommentStyleDefined);
+        EnableWindow(GetDlgItem(hwnd, IDC_RADIO3), bCommentStyleDefined);
+        n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3, (int)lpefr->iLookupInComments);
+        // [/2e]
+
         if (GetDlgItem(hwnd, IDC_REPLACE))
         {
           if (bSwitchedFindReplace)
@@ -5031,10 +5043,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             }
             // [/2e]
 
+            lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+
             EnableWindow(GetDlgItem(hwnd, IDOK), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_FINDPREV), bEnable);
-            EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable);
-            EnableWindow(GetDlgItem(hwnd, ID_UNGREP), bEnable);
+            EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable && (lpefr->iLookupInComments == LIC_ALWAYS));
+            EnableWindow(GetDlgItem(hwnd, ID_UNGREP), bEnable && (lpefr->iLookupInComments == LIC_ALWAYS));
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACE), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACEALL), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACEINSEL), bEnable);
@@ -5126,6 +5140,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             (IsDlgButtonChecked(hwnd, IDC_FINDTRANSFORMBS) == BST_CHECKED) ? TRUE : FALSE;
 
           lpefr->bNoFindWrap = (IsDlgButtonChecked(hwnd, IDC_NOWRAP) == BST_CHECKED) ? TRUE : FALSE;
+          // [2e]: Find/Replace - Skip comments mode #303
+          lpefr->iLookupInComments = (ELookupInComments)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3);
 
           if (bIsFindDlg)
           {
@@ -5318,6 +5334,27 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
           break;
+
+        // [2e]: Find/Replace - Skip comments mode #303
+        case IDC_RADIO1:
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          lpefr->iLookupInComments = LIC_ALWAYS;
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
+          break;
+
+        case IDC_RADIO2:
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          lpefr->iLookupInComments = LIC_NEVER;
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
+          break;
+
+        case IDC_RADIO3:
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          lpefr->iLookupInComments = LIC_ONLY;
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
+          break;
+        // [/2e]
+
       }
 
       return TRUE;
@@ -5436,19 +5473,21 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
-  iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+  // [2e]: Find/Replace - Skip comments mode #303
+  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
   // [2e]: Match indicator
-  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
+  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
     {
       ttf.chrg.cpMin = 0;
-      iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Find/Replace - Skip comments mode #303
+      iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos + 1));
+      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
     }
     else
     {
@@ -5521,20 +5560,22 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   ttf.chrg.cpMax = 0;
   ttf.lpstrText = szFind2;
 
-  iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+  // [2e]: Find/Replace - Skip comments mode #303
+  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
   // [2e]: Match indicator
-  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
+  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap2", IDS_FIND_WRAPRE))
     {
       ttf.chrg.cpMin = iLength;
-      iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Find/Replace - Skip comments mode #303
+      iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr->fuFlags, &ttf, iPos - 1));
+      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
     }
     else
     {
@@ -5625,14 +5666,16 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
-  iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+  // [2e]: Find/Replace - Skip comments mode #303
+  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
     {
       ttf.chrg.cpMin = 0;
-      iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Find/Replace - Skip comments mode #303
+      iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
     }
     else
       bSuppressNotFound = TRUE;
@@ -5661,7 +5704,8 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
 
-  iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+  // [2e]: Find/Replace - Skip comments mode #303
+  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   bSuppressNotFound = FALSE;
   if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap)
@@ -5669,7 +5713,8 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
     {
       ttf.chrg.cpMin = 0;
-      iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf);
+      // [2e]: Find/Replace - Skip comments mode #303
+      iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
     }
     else
       bSuppressNotFound = TRUE;
@@ -5777,7 +5822,8 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   }
   // [/2e]
 
-  while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf)) != -1)
+  // [2e]: Find/Replace - Skip comments mode #303
+  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
   {
     int iReplacedLen;
 
@@ -5919,7 +5965,8 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
-  while ((iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)&ttf)) != -1 && !fCancel)
+  // [2e]: Find/Replace - Skip comments mode #303
+  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
   {
     if (ttf.chrgText.cpMin >= SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0) &&
         ttf.chrgText.cpMax <= SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0))

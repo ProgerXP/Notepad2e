@@ -113,6 +113,13 @@ typedef struct TAddToFavoritesParams
   EFavoritesCursorPosition cursorPosition;
 } TADDFAVPARAMS, *PTADDFAVPARAMS;
 
+typedef enum
+{
+  LIC_ALWAYS,
+  LIC_NEVER,
+  LIC_ONLY
+} ELookupInComments;
+
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
