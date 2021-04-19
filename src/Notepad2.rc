@@ -668,7 +668,7 @@ BEGIN
     CONTROL         "&Transform backslashes",IDC_FINDTRANSFORMBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,89,10
     CONTROL         "&Don't wrap around",IDC_NOWRAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,37,75,10
     CONTROL         "C&lose after find",IDC_FINDCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,49,65,10
-    LTEXT           "Lookup in comments:",IDC_STATIC,7,101,75,8
+    LTEXT           "Search in comments:",IDC_STATIC,7,101,75,8
     CONTROL         "alwa&ys",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,84,100,41,10
     CONTROL         "ne&ver",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,129,100,41,10
     CONTROL         "&only",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,174,100,29,10
@@ -698,7 +698,7 @@ BEGIN
     CONTROL         "&Transform backslashes",IDC_FINDTRANSFORMBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,114,89,10
     CONTROL         "&Don't wrap around",IDC_NOWRAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,66,75,10
     CONTROL         "C&lose after replace",IDC_FINDCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,78,77,10
-    LTEXT           "Lookup in comments:",IDC_STATIC,7,130,75,8
+    LTEXT           "Search in comments:",IDC_STATIC,7,130,75,8
     CONTROL         "alwa&ys",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,84,129,41,10
     CONTROL         "ne&ver",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,129,129,41,10
     CONTROL         "&only",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,174,129,29,10
