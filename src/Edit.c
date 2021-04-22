@@ -2076,7 +2076,7 @@ void EditEscapeCChars(HWND hwnd)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
+      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, SIC_ALWAYS, hwnd };
       SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
       lstrcpyA(efr.szFind, "\\");
       lstrcpyA(efr.szReplace, "\\\\");
@@ -2103,7 +2103,7 @@ void EditUnescapeCChars(HWND hwnd)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
+      EDITFINDREPLACE efr = { "", "", "", "", 0, 0, 0, 0, 0, 0, SIC_ALWAYS, hwnd };
 
       SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
 
@@ -3726,7 +3726,7 @@ void EditStripTrailingBlanks(HWND hwnd, BOOL bIgnoreSelection)
   {
     if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
     {
-      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, LIC_ALWAYS, hwnd };
+      EDITFINDREPLACE efrTrim = { "[ \t]+$", "", "", "", SCFIND_REGEXP, 0, 0, 0, 0, 0, SIC_ALWAYS, hwnd };
       EditReplaceAllInSelection(hwnd, &efrTrim, FALSE);
     }
   }
@@ -4923,12 +4923,12 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         const BOOL bCommentStyleDefined = n2e_CommentStyleIsDefined(hwndEdit);
         if (!bCommentStyleDefined)
         {
-          lpefr->iLookupInComments = LIC_ALWAYS;
+          lpefr->iSearchInComments = SIC_ALWAYS;
         }
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO1), bCommentStyleDefined);
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO2), bCommentStyleDefined);
         EnableWindow(GetDlgItem(hwnd, IDC_RADIO3), bCommentStyleDefined);
-        n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3, (int)lpefr->iLookupInComments);
+        n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3, (int)lpefr->iSearchInComments);
         // [/2e]
 
         if (GetDlgItem(hwnd, IDC_REPLACE))
@@ -5047,8 +5047,8 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
             EnableWindow(GetDlgItem(hwnd, IDOK), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_FINDPREV), bEnable);
-            EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable && (lpefr->iLookupInComments == LIC_ALWAYS));
-            EnableWindow(GetDlgItem(hwnd, ID_UNGREP), bEnable && (lpefr->iLookupInComments == LIC_ALWAYS));
+            EnableWindow(GetDlgItem(hwnd, ID_GREP), bEnable);
+            EnableWindow(GetDlgItem(hwnd, ID_UNGREP), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACE), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACEALL), bEnable);
             EnableWindow(GetDlgItem(hwnd, IDC_REPLACEINSEL), bEnable);
@@ -5141,7 +5141,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           lpefr->bNoFindWrap = (IsDlgButtonChecked(hwnd, IDC_NOWRAP) == BST_CHECKED) ? TRUE : FALSE;
           // [2e]: Find/Replace - Skip comments mode #303
-          lpefr->iLookupInComments = (ELookupInComments)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3);
+          lpefr->iSearchInComments = (ESearchInComments)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3);
 
           if (bIsFindDlg)
           {
@@ -5334,27 +5334,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
           PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_FINDTEXT)), 1);
           break;
-
-        // [2e]: Find/Replace - Skip comments mode #303
-        case IDC_RADIO1:
-          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-          lpefr->iLookupInComments = LIC_ALWAYS;
-          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
-          break;
-
-        case IDC_RADIO2:
-          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-          lpefr->iLookupInComments = LIC_NEVER;
-          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
-          break;
-
-        case IDC_RADIO3:
-          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-          lpefr->iLookupInComments = LIC_ONLY;
-          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
-          break;
-        // [/2e]
-
       }
 
       return TRUE;

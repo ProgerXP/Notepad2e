@@ -38,7 +38,7 @@ typedef struct _editfindreplace
   BOOL bFindClose;
   BOOL bReplaceClose;
   BOOL bNoFindWrap;
-  ELookupInComments iLookupInComments;
+  ESearchInComments iSearchInComments;
   HWND hwnd;
 
 } EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;

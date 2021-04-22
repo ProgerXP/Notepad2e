@@ -1036,6 +1036,11 @@ LPCWSTR n2e_GetExePath()
   return tchExePath;
 }
 
+inline BOOL IsEOLChar(const char ch)
+{
+  return (ch == '\r') || (ch == '\n');
+}
+
 BOOL n2e_Grep(void* _lpf, const BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
@@ -1055,16 +1060,6 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
     return FALSE;
   }
 
-  const int selStart = SciCall_GetSelStart();
-  const int selEnd = SciCall_GetSelEnd();
-  line_first = SciCall_LineFromPosition(selStart);
-  line_last = SciCall_LineFromPosition(selEnd);
-  if (line_last - line_first + 1 <= 2)
-  {
-    line_first = 0;
-    line_last = SciCall_GetLineCount() - 1;
-  }
-
   lstrcpynA(szFind2, lpf->szFind, COUNTOF(szFind2));
   ZeroMemory(&ttf, sizeof(ttf));
   if (lpf->bTransformBS)
@@ -1079,10 +1074,87 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
 
   BeginWaitCursor();
   SendMessage(lpf->hwnd, SCI_BEGINUNDOACTION, 0, 0);
+
+  line_first = SciCall_LineFromPosition(SciCall_GetSelStart());
+  line_last = SciCall_LineFromPosition(SciCall_GetSelEnd());
+  if (line_last - line_first + 1 <= 2)
+  {
+    line_first = 0;
+    line_last = SciCall_GetLineCount() - 1;
+  }
+
+  if (lpf->iSearchInComments != SIC_ALWAYS)
+  {
+    #define FILTER_BUFFER_SIZE 1024 * 10
+    char szFilter[FILTER_BUFFER_SIZE + 1][2];
+
+    const int minPos = SciCall_PositionFromLine(line_first);
+    const int maxPos = SciCall_LineEndPosition(line_last);
+    struct Sci_TextToFind ttfFilter;
+    ttfFilter.chrg.cpMin = max(minPos, maxPos - FILTER_BUFFER_SIZE);
+    ttfFilter.chrg.cpMax = maxPos;
+    ttfFilter.lpstrText = (char*)szFilter;
+
+    while (ttfFilter.chrg.cpMax - ttfFilter.chrg.cpMin > 0)
+    {
+      SciCall_GetStyledText(0, &ttfFilter);
+      int i = ttfFilter.chrg.cpMax - ttfFilter.chrg.cpMin - 1;
+      while (i >= 0)
+      {
+        int j = i;
+        int iStyledBlockLength = 1;
+        while ((j > 0) && (szFilter[j][1] == szFilter[j - 1][1]))
+        {
+          ++iStyledBlockLength;
+          --j;
+        }
+
+        const BOOL bIsComment = n2e_IsCommentStyleById(szFilter[i][1]);
+        int iCharsToSkip = 0;
+        int iExtraCharsInStyledBlock = 0;
+        if (grep == (((lpf->iSearchInComments == SIC_NEVER) && bIsComment) || (lpf->iSearchInComments == SIC_ONLY) && !bIsComment))
+        {
+          if (!bIsComment && (j > 0))
+          {
+            // skip trailing EOL for comment
+            if (n2e_IsCommentStyleById(szFilter[j - 1][1]) && IsEOLChar(szFilter[j][0]))
+            {
+              ++iCharsToSkip;
+            }
+          }
+          else if (bIsComment && IsEOLChar(szFilter[j + iStyledBlockLength][0]))
+          {
+            // remove trailing EOL for comment
+            ++iExtraCharsInStyledBlock;
+            if (IsEOLChar(szFilter[j + iStyledBlockLength + 1][0]))
+            {
+              ++iExtraCharsInStyledBlock;
+            }
+          }
+          SciCall_DeleteRange(ttfFilter.chrg.cpMin + j + iCharsToSkip, iStyledBlockLength - iCharsToSkip + iExtraCharsInStyledBlock);
+        }
+        i -= iStyledBlockLength;
+      }
+      ttfFilter.chrg.cpMax -= FILTER_BUFFER_SIZE;
+      ttfFilter.chrg.cpMin = max(minPos, ttfFilter.chrg.cpMin - FILTER_BUFFER_SIZE);
+    }
+  }
+
+  const int selStart = SciCall_GetSelStart();
+  const int selEnd = SciCall_GetSelEnd();
+  line_first = SciCall_LineFromPosition(selStart);
+  line_last = SciCall_LineFromPosition(selEnd);
+  if (line_last - line_first + 1 <= 2)
+  {
+    line_first = 0;
+    line_last = SciCall_GetLineCount() - 1;
+  }
+
   ttf.lpstrText = szFind2;
   ttf.chrg.cpMin = SciCall_LineEndPosition(line_last);
   ttf.chrg.cpMax = SciCall_PositionFromLine(line_first);
   const int maxPos = ttf.chrg.cpMin;
+  line_last = SciCall_LineFromPosition(SciCall_GetSelEnd());
   n2e_ShowProgressBarInStatusBar(grep ? L"Applying Grep..." : L"Applying Ungrep...", 1, maxPos);
 
   res = SciCall_FindText(lpf->fuFlags, &ttf);

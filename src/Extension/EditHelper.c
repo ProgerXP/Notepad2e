@@ -293,6 +293,10 @@ PEDITSTYLE n2e_GetStyleById(const int iStyle)
   return pStyle;
 }
 
+BOOL n2e_IsCommentStyleById(const int iStyle)
+{
+  return n2e_IsCommentStyle(n2e_GetStyleById(iStyle));
+}
 
 BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
 {
@@ -324,15 +328,15 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
 
     if (bContinueSearch)
     {
-      switch (lpefr->iLookupInComments)
+      switch (lpefr->iSearchInComments)
       {
-      case LIC_ALWAYS:
+      case SIC_ALWAYS:
         bContinueSearch = FALSE;
         break;
-      case LIC_ONLY:
+      case SIC_ONLY:
         bContinueSearch = !n2e_IsCommentStyleAtPos(hwnd, iPos);
         break;
-      case LIC_NEVER:
+      case SIC_NEVER:
         bContinueSearch = n2e_IsCommentStyleAtPos(hwnd, iPos);
         break;
       }

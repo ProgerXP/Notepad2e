@@ -115,10 +115,10 @@ typedef struct TAddToFavoritesParams
 
 typedef enum
 {
-  LIC_ALWAYS,
-  LIC_NEVER,
-  LIC_ONLY
-} ELookupInComments;
+  SIC_ALWAYS,
+  SIC_NEVER,
+  SIC_ONLY
+} ESearchInComments;
 
 #define N2E_INI_SECTION L"Notepad2e"
 
