@@ -1038,6 +1038,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SETFOCUS:
+      n2e_RestoreActiveEdit();
       UpdateToolbar();
       UpdateStatusbar();
 

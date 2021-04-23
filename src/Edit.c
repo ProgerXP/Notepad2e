@@ -4263,55 +4263,43 @@ void EditJoinLinesEx(HWND hwnd)
 //
 typedef struct _SORTLINE
 {
+  int iIndex;
   WCHAR *pwszLine;
   WCHAR *pwszSortEntry;
 } SORTLINE;
 
-static FARPROC pfnStrCmpLogicalW;
-typedef int(__stdcall *FNSTRCMP) (LPCWSTR, LPCWSTR);
+static FARPROC pfnStrCmpLogicalW = NULL;
 
-int CmpStd(const void *s1, const void *s2)
-{
-  int cmp = StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  return (cmp) ? cmp : StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-}
+typedef int(__stdcall *FNSTRCMPN) (LPCWSTR, LPCWSTR, int);
 
-int CmpStdRev(const void *s1, const void *s2)
+typedef struct _SORTSETTINGS
 {
-  int cmp = -1 * StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  return (cmp) ? cmp : -1 * StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-}
+  BOOL bReversedOrder;
+  int iSortColumnWidth;
+  FNSTRCMPN fnCompareN;
+} SORTSETTINGS, *LPSORTSETTINGS;
 
-int CmpLogical(const void *s1, const void *s2)
+int CmpGeneral(const LPSORTSETTINGS pSettings, const SORTLINE *line1, const SORTLINE *line2)
 {
-  int cmp = (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
+  int cmp = pSettings->fnCompareN(line1->pwszSortEntry, line2->pwszSortEntry, pSettings->iSortColumnWidth);
   if (cmp == 0)
-  {
-    cmp = (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
-  if (cmp)
-    return cmp;
-  else
-  {
-    cmp = StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-    return (cmp) ? cmp : StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
+    cmp = line1->iIndex - line2->iIndex;
+  if (pSettings->bReversedOrder)
+    cmp *= -1;
+  return cmp;
 }
 
-int CmpLogicalRev(const void *s1, const void *s2)
+LPWSTR lpCmpLogicalNBuffer1 = NULL;
+LPWSTR lpCmpLogicalNBuffer2 = NULL;
+
+int __stdcall StrCmpLogicalNW(LPCWSTR lpStr1, LPCWSTR lpStr2, int nChar)
 {
-  int cmp = -1 * (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-  if (cmp == 0)
-  {
-    cmp = -1 * (int)pfnStrCmpLogicalW(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
-  if (cmp)
-    return cmp;
-  else
-  {
-    cmp = -1 * StrCmp(((SORTLINE *)s1)->pwszSortEntry, ((SORTLINE *)s2)->pwszSortEntry);
-    return (cmp) ? cmp : -1 * StrCmp(((SORTLINE *)s1)->pwszLine, ((SORTLINE *)s2)->pwszLine);
-  }
+  if ((nChar == -1) || !lpCmpLogicalNBuffer1 || !lpCmpLogicalNBuffer1)
+    return pfnStrCmpLogicalW(lpStr1, lpStr2);
+
+  wcsncpy_s(lpCmpLogicalNBuffer1, nChar + 1, lpStr1, nChar);
+  wcsncpy_s(lpCmpLogicalNBuffer2, nChar + 1, lpStr2, nChar);
+  return pfnStrCmpLogicalW(lpCmpLogicalNBuffer1, lpCmpLogicalNBuffer2);
 }
 
 void EditSortLines(HWND hwnd, int iSortFlags)
@@ -4344,19 +4332,33 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
   UINT iTabWidth;
   UINT iSortColumn;
+  BOOL bUseColumnSort = (iSortFlags & SORT_COLUMN) == SORT_COLUMN;
 
   BOOL bLastDup = FALSE;
-  FNSTRCMP pfnStrCmp;
 
-  pfnStrCmpLogicalW = GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW");
-  pfnStrCmp = (iSortFlags & SORT_NOCASE) ? StrCmpIW : StrCmpW;
+  if (!pfnStrCmpLogicalW)
+  {
+    pfnStrCmpLogicalW = GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW");
+  }
+  FNSTRCMPN pfnStrCmpN = (iSortFlags & SORT_NOCASE) ? StrCmpNIW : StrCmpNW;
 
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
 
+  SORTSETTINGS sortSettings = {
+    (iSortFlags & SORT_DESCENDING) == SORT_DESCENDING,
+    -1,
+    (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW) ? StrCmpLogicalNW : pfnStrCmpN
+  };
+
   // [2e]: Alt+O: sort all on no selection #133
-  if ((iCurPos != iAnchorPos) && (SC_SEL_RECTANGLE == SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0)))
+  if ((iCurPos != iAnchorPos) && bUseColumnSort)
   {
+    sortSettings.iSortColumnWidth = abs(
+      (int)SendMessage(hwnd, SCI_GETCOLUMN, (int)SendMessage(hwnd, SCI_GETRECTANGULARSELECTIONANCHOR, 0, 0), 0)
+      - (int)SendMessage(hwnd, SCI_GETCOLUMN, (int)SendMessage(hwnd, SCI_GETRECTANGULARSELECTIONCARET, 0, 0), 0)
+    );
+    sortSettings.iSortColumnWidth = abs((int)SendMessage(hwnd, SCI_GETSELECTIONNEND, 0, 0) - (int)SendMessage(hwnd, SCI_GETSELECTIONNSTART, 0, 0));
 
     iRcCurLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iCurPos, 0);
     iRcAnchorLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iAnchorPos, 0);
@@ -4424,6 +4426,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
   pLines = LocalAlloc(LPTR, sizeof(SORTLINE) * iLineCount);
   i = 0;
+
+  BOOL bSkipSortColumnWidth = TRUE;
   for (iLine = iLineStart; iLine <= iLineEnd; iLine++)
   {
 
@@ -4433,8 +4437,8 @@ void EditSortLines(HWND hwnd, int iSortFlags)
 
     pmsz = LocalAlloc(LPTR, cchm + 1);
     SendMessage(hwnd, SCI_GETLINE, (WPARAM)iLine, (LPARAM)pmsz);
-    // Sorting adds line breaks under Japanese locale #269
-    n2e_StrTrimA(pmsz, "\r\n");
+    // [2e]: Sorting adds line breaks under Japanese locale #269
+    n2e_StrTrimA(&pmsz, "\r\n");
     cchTotal += cchm;
     ichlMax = max(ichlMax, cchm);
 
@@ -4442,10 +4446,11 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     if (cchw > 0)
     {
       UINT col = 0, tabs = iTabWidth;
+      pLines[i].iIndex = i;
       pLines[i].pwszLine = LocalAlloc(LPTR, sizeof(WCHAR) * (cchw + 1));
       MultiByteToWideChar(uCodePage, 0, pmsz, -1, pLines[i].pwszLine, (int)LocalSize(pLines[i].pwszLine) / sizeof(WCHAR));
       pLines[i].pwszSortEntry = pLines[i].pwszLine;
-      if (iSortFlags & SORT_COLUMN)
+      if (bUseColumnSort)
       {
         while (*(pLines[i].pwszSortEntry))
         {
@@ -4470,6 +4475,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
           else
             break;
         }
+        bSkipSortColumnWidth &= wcslen(pLines[i].pwszSortEntry) <= sortSettings.iSortColumnWidth;
       }
     }
     else
@@ -4480,73 +4486,90 @@ void EditSortLines(HWND hwnd, int iSortFlags)
     LocalFree(pmsz);
     i++;
   }
-  if (iSortFlags & SORT_DESCENDING)
+
+  if ((iSortFlags & (SORT_SHUFFLE | SORT_KEEP_ORDER | SORT_REVERSE_ORDER)) == 0)
   {
-    if (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW)
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpLogicalRev);
-    else
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpStdRev);
+    if (bUseColumnSort && bSkipSortColumnWidth)
+    {
+      sortSettings.iSortColumnWidth = -1;
+    }
+    if (sortSettings.iSortColumnWidth > 0)
+    {
+      lpCmpLogicalNBuffer1 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+      lpCmpLogicalNBuffer2 = LocalAlloc(LPTR, sizeof(WCHAR) * (sortSettings.iSortColumnWidth + 1));
+    }
+    qsort_s(pLines, iLineCount, sizeof(SORTLINE), CmpGeneral, &sortSettings);
   }
-  else if (iSortFlags & SORT_SHUFFLE)
+  else if ((iSortFlags & SORT_SHUFFLE) == SORT_SHUFFLE)
   {
     srand((UINT)GetTickCount());
     for (i = iLineCount - 1; i > 0; i--)
     {
-      int j = rand() % i;
-      SORTLINE sLine;
-      sLine.pwszLine = pLines[i].pwszLine;
-      sLine.pwszSortEntry = pLines[i].pwszSortEntry;
+      const int j = rand() % i;
+      const SORTLINE sLine = pLines[i];
       pLines[i] = pLines[j];
-      pLines[j].pwszLine = sLine.pwszLine;
-      pLines[j].pwszSortEntry = sLine.pwszSortEntry;
+      pLines[i].iIndex = i;
+      pLines[j] = sLine;
+      pLines[j].iIndex = j;
     }
   }
-  else
+  else if ((iSortFlags & SORT_REVERSE_ORDER) == SORT_REVERSE_ORDER)
   {
-    if (iSortFlags & SORT_LOGICAL && pfnStrCmpLogicalW)
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpLogical);
-    else
-      qsort(pLines, iLineCount, sizeof(SORTLINE), CmpStd);
+    for (i = 0; i < iLineCount / 2; ++i)
+    {
+      const int j = (iLineCount - 1) - i;
+      const SORTLINE sLine = pLines[i];
+      pLines[i] = pLines[j];
+      pLines[i].iIndex = i;
+      pLines[j] = sLine;
+      pLines[j].iIndex = j;
+    }
   }
 
   pmszResult = LocalAlloc(LPTR, cchTotal + 2 * iLineCount + 1);
   pmszBuf = LocalAlloc(LPTR, ichlMax + 1);
 
+  const BOOL bShuffle = (iSortFlags & SORT_SHUFFLE) == SORT_SHUFFLE;
+  const BOOL bMergeDuplicate = (iSortFlags & SORT_MERGEDUP) == SORT_MERGEDUP;
+  const BOOL bRemoveDuplicate = (iSortFlags & SORT_UNIQDUP) == SORT_UNIQDUP;
+  const BOOL bRemoveUnique = (iSortFlags & SORT_UNIQUNIQ) == SORT_UNIQUNIQ;
+  BOOL bDropNextLine = FALSE;
   for (i = 0; i < iLineCount; i++)
   {
-    BOOL bDropLine = FALSE;
-    if (pLines[i].pwszLine && ((iSortFlags & SORT_SHUFFLE) || lstrlen(pLines[i].pwszLine)))
+    BOOL bDropLine = bDropNextLine;
+    if (!bShuffle && (bMergeDuplicate || bRemoveDuplicate || bRemoveUnique))
     {
-      if (!(iSortFlags & SORT_SHUFFLE))
+      if (i < iLineCount - 1)
       {
-        if (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP || iSortFlags & SORT_UNIQUNIQ)
+        if (pfnStrCmpN(pLines[i].pwszSortEntry, pLines[i + 1].pwszSortEntry, sortSettings.iSortColumnWidth) == 0)
         {
-          if (i < iLineCount - 1)
+          if (!bDropLine || !bLastDup)
+            bDropLine = bRemoveDuplicate;
+          bDropNextLine = bMergeDuplicate  || bRemoveDuplicate;
+          bLastDup = TRUE;
+        }
+        else
+        {
+          bDropNextLine = bRemoveUnique;
+          if (!bLastDup)
           {
-            if (pfnStrCmp(pLines[i].pwszLine, pLines[i + 1].pwszLine) == 0)
-            {
-              bLastDup = TRUE;
-              bDropLine = (iSortFlags & SORT_MERGEDUP || iSortFlags & SORT_UNIQDUP);
-            }
-            else
-            {
-              bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
-              bLastDup = FALSE;
-            }
+            bDropLine = bDropNextLine;
           }
-          else
-          {
-            bDropLine = (!bLastDup && (iSortFlags & SORT_UNIQUNIQ)) || (bLastDup && (iSortFlags & SORT_UNIQDUP));
-            bLastDup = FALSE;
-          }
+          bLastDup = FALSE;
         }
       }
-      if (!bDropLine)
+      else
       {
-        WideCharToMultiByte(uCodePage, 0, pLines[i].pwszLine, -1, pmszBuf, (int)LocalSize(pmszBuf), NULL, NULL);
-        StrCatBuffA(pmszResult, pmszBuf, (int)LocalSize(pmszResult));
-        StrCatBuffA(pmszResult, mszEOL, (int)LocalSize(pmszResult));
+        if (!bDropLine)
+          bDropLine = (!bLastDup && bRemoveUnique) || (bLastDup && bRemoveDuplicate);
+        bLastDup = FALSE;
       }
+    }
+    if (!bDropLine)
+    {
+      WideCharToMultiByte(uCodePage, 0, pLines[i].pwszLine, -1, pmszBuf, (int)LocalSize(pmszBuf), NULL, NULL);
+      StrCatBuffA(pmszResult, pmszBuf, (int)LocalSize(pmszResult));
+      StrCatBuffA(pmszResult, mszEOL, (int)LocalSize(pmszResult));
     }
   }
 
@@ -4558,6 +4581,10 @@ void EditSortLines(HWND hwnd, int iSortFlags)
       LocalFree(pLines[i].pwszLine);
   }
   LocalFree(pLines);
+  LocalFree(lpCmpLogicalNBuffer1);
+  LocalFree(lpCmpLogicalNBuffer2);
+  lpCmpLogicalNBuffer1 = NULL;
+  lpCmpLogicalNBuffer2 = NULL;
 
   if (!bIsRectangular)
   {
@@ -6757,9 +6784,6 @@ BOOL EditInsertTagDlg(HWND hwnd, LPWSTR pwszOpen, LPWSTR pwszClose)
 //
 //  EditSortDlgProc()
 //
-//  Controls: 100-102 Radio Button
-//            103-108 Check Box
-//
 INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   static int *piSortFlags;
@@ -6772,49 +6796,53 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
     case WM_INITDIALOG: {
         piSortFlags = (int *)lParam;
         if (*piSortFlags & SORT_DESCENDING)
-          CheckRadioButton(hwnd, 100, 102, 101);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SORT_DESCENDING);
         else if (*piSortFlags & SORT_SHUFFLE)
         {
-          CheckRadioButton(hwnd, 100, 102, 102);
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SHUFFLE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
         }
+        else if (*piSortFlags & SORT_KEEP_ORDER)
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_KEEP_ORDER);
+        else if (*piSortFlags & SORT_REVERSE_ORDER)
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_REVERSE_ORDER);
         else
-          CheckRadioButton(hwnd, 100, 102, 100);
+          CheckRadioButton(hwnd, IDC_RADIO_SORT_ASCENDING, IDC_RADIO_REVERSE_ORDER, IDC_RADIO_SORT_ASCENDING);
         if (*piSortFlags & SORT_MERGEDUP)
-          CheckDlgButton(hwnd, 103, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_MERGE_DUPLICATE, BST_CHECKED);
         if (*piSortFlags & SORT_UNIQDUP)
         {
-          CheckDlgButton(hwnd, 104, BST_CHECKED);
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
+          CheckDlgButton(hwnd, IDC_CHECK_REMOVE_DUPLICATE, BST_CHECKED);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
         }
         if (*piSortFlags & SORT_UNIQUNIQ)
-          CheckDlgButton(hwnd, 105, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_REMOVE_UNIQUE, BST_CHECKED);
         if (*piSortFlags & SORT_NOCASE)
-          CheckDlgButton(hwnd, 106, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_CASE_INSENSITIVE, BST_CHECKED);
         if (GetProcAddress(GetModuleHandle(L"shlwapi"), "StrCmpLogicalW"))
         {
           if (*piSortFlags & SORT_LOGICAL)
-            CheckDlgButton(hwnd, 107, BST_CHECKED);
+            CheckDlgButton(hwnd, IDC_CHECK_LOGICAL_COMPARISON, BST_CHECKED);
           bEnableLogicalSort = TRUE;
         }
         else
         {
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
           bEnableLogicalSort = FALSE;
         }
         if (SC_SEL_RECTANGLE != SendMessage(hwndEdit, SCI_GETSELECTIONMODE, 0, 0))
         {
           *piSortFlags &= ~SORT_COLUMN;
-          EnableWindow(GetDlgItem(hwnd, 108), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_SORT_AND_MERGE), FALSE);
         }
         else
         {
           *piSortFlags |= SORT_COLUMN;
-          CheckDlgButton(hwnd, 108, BST_CHECKED);
+          CheckDlgButton(hwnd, IDC_CHECK_SORT_AND_MERGE, BST_CHECKED);
         }
         DPI_INIT();
         CenterDlgInParent(hwnd);
@@ -6825,21 +6853,25 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
       {
         case IDOK: {
             *piSortFlags = 0;
-            if (IsDlgButtonChecked(hwnd, 101) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_SORT_DESCENDING) == BST_CHECKED)
               *piSortFlags |= SORT_DESCENDING;
-            if (IsDlgButtonChecked(hwnd, 102) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_SHUFFLE) == BST_CHECKED)
               *piSortFlags |= SORT_SHUFFLE;
-            if (IsDlgButtonChecked(hwnd, 103) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_KEEP_ORDER) == BST_CHECKED)
+              *piSortFlags |= SORT_KEEP_ORDER;
+            if (IsDlgButtonChecked(hwnd, IDC_RADIO_REVERSE_ORDER) == BST_CHECKED)
+              *piSortFlags |= SORT_REVERSE_ORDER;
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_MERGE_DUPLICATE) == BST_CHECKED)
               *piSortFlags |= SORT_MERGEDUP;
-            if (IsDlgButtonChecked(hwnd, 104) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_DUPLICATE) == BST_CHECKED)
               *piSortFlags |= SORT_UNIQDUP;
-            if (IsDlgButtonChecked(hwnd, 105) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_UNIQUE) == BST_CHECKED)
               *piSortFlags |= SORT_UNIQUNIQ;
-            if (IsDlgButtonChecked(hwnd, 106) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_CASE_INSENSITIVE) == BST_CHECKED)
               *piSortFlags |= SORT_NOCASE;
-            if (IsDlgButtonChecked(hwnd, 107) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_LOGICAL_COMPARISON) == BST_CHECKED)
               *piSortFlags |= SORT_LOGICAL;
-            if (IsDlgButtonChecked(hwnd, 108) == BST_CHECKED)
+            if (IsDlgButtonChecked(hwnd, IDC_CHECK_SORT_AND_MERGE) == BST_CHECKED)
               *piSortFlags |= SORT_COLUMN;
             EndDialog(hwnd, IDOK);
           }
@@ -6847,23 +6879,25 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
         case IDCANCEL:
           EndDialog(hwnd, IDCANCEL);
           break;
-        case 100:
-        case 101:
-          EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 105) != BST_CHECKED);
-          EnableWindow(GetDlgItem(hwnd, 104), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 105), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 106), TRUE);
-          EnableWindow(GetDlgItem(hwnd, 107), bEnableLogicalSort);
+        case IDC_RADIO_SORT_ASCENDING:
+        case IDC_RADIO_SORT_DESCENDING:
+        case IDC_RADIO_KEEP_ORDER:
+        case IDC_RADIO_REVERSE_ORDER:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_UNIQUE) != BST_CHECKED);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), TRUE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), bEnableLogicalSort);
           break;
-        case 102:
-          EnableWindow(GetDlgItem(hwnd, 103), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 104), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 105), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 106), FALSE);
-          EnableWindow(GetDlgItem(hwnd, 107), FALSE);
+        case IDC_RADIO_SHUFFLE:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_DUPLICATE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_REMOVE_UNIQUE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_CASE_INSENSITIVE), FALSE);
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_LOGICAL_COMPARISON), FALSE);
           break;
-        case 104:
-          EnableWindow(GetDlgItem(hwnd, 103), IsDlgButtonChecked(hwnd, 104) != BST_CHECKED);
+        case IDC_CHECK_REMOVE_DUPLICATE:
+          EnableWindow(GetDlgItem(hwnd, IDC_CHECK_MERGE_DUPLICATE), IsDlgButtonChecked(hwnd, IDC_CHECK_REMOVE_DUPLICATE) != BST_CHECKED);
           break;
       }
       return TRUE;
