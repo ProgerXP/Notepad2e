@@ -81,10 +81,10 @@ BOOL URL_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
-LPCSTR EncodeStringToURL(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR EncodeStringToURL(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE, additionalData);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -92,10 +92,10 @@ LPCSTR EncodeStringToURL(LPCSTR text, const int textLength, const int encoding, 
   return ss.result;
 }
 
-LPCSTR DecodeURLToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR DecodeURLToString(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE, additionalData);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -105,7 +105,7 @@ LPCSTR DecodeURLToString(LPCSTR text, const int textLength, const int encoding, 
 
 void EncodeStrToURL(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, TRUE, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
@@ -113,7 +113,7 @@ void EncodeStrToURL(const HWND hwnd)
 
 void DecodeURLToStr(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_URL, FALSE, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

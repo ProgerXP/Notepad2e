@@ -1,6 +1,7 @@
 #include "EditHelper.h"
 #include <cassert>
 #include "CommonUtils.h"
+#include "CommentAwareLineWrapping.h"
 #include "Dialogs.h"
 #include "EditHelperEx.h"
 #include "Helpers.h"
@@ -37,6 +38,15 @@ extern int iOpenSaveFilterIndex;
 extern BOOL bAlwaysOnTop;
 extern int flagAlwaysOnTop;
 extern PEDITLEXER pLexCurrent;
+
+void n2e_SplitLines(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  EncodeStrWithCALW(hwnd);
+}
 
 BOOL n2e_JoinLines_InitSelection()
 {

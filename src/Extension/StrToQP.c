@@ -157,10 +157,10 @@ BOOL QP_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
-LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, additionalData);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -168,10 +168,10 @@ LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, c
   return ss.result;
 }
 
-LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, additionalData);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -181,7 +181,7 @@ LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, c
 
 void EncodeStrToQP(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
@@ -189,7 +189,7 @@ void EncodeStrToQP(const HWND hwnd)
 
 void DecodeQPToStr(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

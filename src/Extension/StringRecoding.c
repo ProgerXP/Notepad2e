@@ -8,6 +8,7 @@
 #include "StrToHex.h"
 #include "StrToQP.h"
 #include "StrToURL.h"
+#include "CommentAwareLineWrapping.h"
 
 #define MIN_RECODING_BUFFER_SIZE 8
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
@@ -362,10 +363,11 @@ BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, str
   return FALSE;
 }
 
-BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding)
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding, const int iAdditionalData)
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
+  pRA->iAdditionalData = iAdditionalData;
   switch (pRA->recodingType)
   {
   case ERT_HEX:
@@ -414,6 +416,17 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     pRA->pDecodeTailMethod = URL_Decode;
     pRA->data = NULL;
     return TRUE;
+  case ERT_CALW:
+    lstrcpy(pRA->statusText, L"Comment-aware line wrapping...");
+    pRA->iRequiredCharsForEncode = 1;
+    pRA->iRequiredCharsForDecode = 3;
+    pRA->pIsValidStrSequence = CALW_IsValidSequence;
+    pRA->pEncodeMethod = CALW_Encode;
+    pRA->pEncodeTailMethod = NULL;
+    pRA->pDecodeMethod = CALW_Decode;
+    pRA->pDecodeTailMethod = NULL;
+    pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData);
+    return TRUE;
   default:
     assert(FALSE);
     return FALSE;
@@ -433,6 +446,9 @@ BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA)
     QP_ReleaseAlgorithmData(pRA->data);
     return TRUE;
   case ERT_URL:
+    return TRUE;
+  case ERT_CALW:
+    CALW_ReleaseAlgorithmData(pRA->data);
     return TRUE;
   default:
     assert(FALSE);

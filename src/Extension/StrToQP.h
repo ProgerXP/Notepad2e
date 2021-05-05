@@ -15,8 +15,8 @@ BOOL QP_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed
 extern "C" { // C-Declarations
 #endif //__cplusplus
 
-  LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength);
-  LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength);
+  LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength);
+  LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength);
   void EncodeStrToQP(const HWND hwnd);
   void DecodeQPToStr(const HWND hwnd);
 

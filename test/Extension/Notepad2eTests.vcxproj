@@ -93,6 +93,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\src\Extension\CommonUtils.h" />
+    <ClInclude Include="..\..\src\Extension\CommentAwareLineWrapping.h" />
     <ClInclude Include="..\..\src\Extension\Externals.h" />
     <ClInclude Include="..\..\src\Extension\StringRecoding.h" />
     <ClInclude Include="..\..\src\Extension\StrToBase64.h" />
@@ -105,6 +106,10 @@
     <ClInclude Include="TextEncodingTestCaseData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Extension\CommentAwareLineWrapping.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="..\..\src\Extension\CommonUtils.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>

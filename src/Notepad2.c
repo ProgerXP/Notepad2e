@@ -2091,7 +2091,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CloseClipboard();
 
   EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
-  EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i);
+  EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i || bExtendedSplitLines);
   EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
   EnableCmd(hmenu, IDM_EDIT_SENTENCECASE, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS, i);
@@ -3275,8 +3275,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_SPLITLINES:
       BeginWaitCursor();
-      SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
-      SendMessage(hwndEdit, SCI_LINESSPLIT, 0, 0);
+      // [2e]: Change Ctrl+I to perform comment-aware line wrapping #320
+      if (bExtendedSplitLines)
+      {
+        n2e_SplitLines(hwndEdit);
+      }
+      else
+      {
+        SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
+        SendMessage(hwndEdit, SCI_LINESSPLIT, 0, 0);
+      }
       EndWaitCursor();
       break;
 

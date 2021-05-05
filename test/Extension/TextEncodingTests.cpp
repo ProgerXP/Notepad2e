@@ -8,12 +8,13 @@
 #include "../src/Extension/StrToBase64.h"
 #include "../src/Extension/StrToQP.h"
 #include "../src/Extension/StrToURL.h"
+#include "../src/Extension/CommentAwareLineWrapping.h"
 #include "CppUnitTest.h"
 #include "TextEncodingTestCaseData.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, int*);
+typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, const int, int*);
 
 #define MIN_BUFFER_SIZE 8
 #define MAX_BUFFER_SIZE 65536
@@ -111,6 +112,7 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         LPCSTR result = proc((LPCSTR)srcData.data(),
                                 srcData.size(),
                                 info.GetEncoding(),
+                                info.GetAdditionalData(),
                                 bufferSize,
                                 &resultLength);
         if (info.GetExpectedResultText() != VectorFromString(result, resultLength))
@@ -128,6 +130,7 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         LPCSTR result = proc((LPCSTR)srcData.data(),
                              srcData.size(),
                              info.GetEncoding(),
+                             info.GetAdditionalData(),
                              bufferSize,
                              &resultLength);
         if (info.GetSourceText() != VectorFromString(result, resultLength))
@@ -275,6 +278,30 @@ namespace Notepad2eTests
       };
       DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
       DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
+    }
+  };
+
+  TEST_CLASS(CCommentAwareLineWrapping)
+  {
+  public:
+    TEST_METHOD(TestCALW_StringSamples)
+    {
+      // initial test: remove EOLs/front spaces, no actual wrapping
+      const CTestCaseData data[] = {
+        CTestCaseData(false, "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
+                             "  et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "    Lorem ipsum dolor sit amet, consectetur adipiscing "
+                             "elit, sed do eiusmod tempor incididunt ut labore et "
+                             "dolore magna aliqua. Ut enim ad minim veniam,",
+
+/*                             "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"
+                             "    dolore magna aliqua. Ut enim ad minim veniam,",*/
+                false/*decodeOnly*/, 0/*decodeOnlyMinBufferSize*/, 55/*additionalData = long line limit*/)
+      };
+      DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
     }
   };
 }

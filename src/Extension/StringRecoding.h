@@ -58,6 +58,7 @@ struct TRecodingAlgorithm
   BOOL isEncoding;
   int iRequiredCharsForEncode;
   int iRequiredCharsForDecode;
+  int iAdditionalData;
   IsValidStrSequence pIsValidStrSequence;
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;
@@ -98,10 +99,11 @@ typedef enum
   ERT_HEX,
   ERT_BASE64,
   ERT_QP,
-  ERT_URL
+  ERT_URL,
+  ERT_CALW
 } ERecodingType;
 
-BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding);
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding, const int iAdditionalData);
 BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);
 
 void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength);

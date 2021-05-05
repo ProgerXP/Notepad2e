@@ -167,3 +167,8 @@ std::wstring CTestCaseData::GetEncodingName() const
   }
   return res;
 }
+
+int CTestCaseData::GetAdditionalData() const
+{
+  return iAdditionalData;
+}

@@ -39,27 +39,28 @@ private:
   bool isDecodeOnly;              // result sample is impure, data is for decoding test only
                                   // sufficient buffer size for decoder is required
   int iDecodeOnlyMinBufferSize;
+  int iAdditionalData;
 public:
   CTestCaseData(const bool file, const std::string& src, const int encoding, const std::string& res, 
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const int additionalData = 0)
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), iAdditionalData(additionalData)
   {
     vectorSource = VectorFromString(src.c_str());
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::vector<unsigned char> src, const int encoding, const std::string res,
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const int additionalData = 0)
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), iAdditionalData(additionalData)
   {
     vectorSource = src;
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res,
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const int additionalData = 0)
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), iAdditionalData(additionalData)
   {
     vectorSource = VectorFromString(UCS2toUTF8(src).c_str());
     vectorExpectedResult = VectorFromString(res.c_str());
@@ -74,4 +75,5 @@ public:
   const std::vector<unsigned char>& GetPlainResult() const;
   std::vector<unsigned char> GetExpectedResultText() const;
   std::wstring GetEncodingName() const;
+  int GetAdditionalData() const;
 };

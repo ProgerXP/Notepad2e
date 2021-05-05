@@ -13,8 +13,8 @@ BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
 extern "C" { // C-Declarations
 #endif //__cplusplus
 
-  LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultSize);
-  LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultSize);
+  LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultSize);
+  LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultSize);
   void EncodeStrToHex(const HWND hwnd);
   void DecodeHexToStr(const HWND hwnd);
 
