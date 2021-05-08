@@ -286,15 +286,14 @@ namespace Notepad2eTests
   public:
     TEST_METHOD(TestCALW_StringSamples)
     {
-      // initial test: remove EOLs/front spaces, no actual wrapping
       const CTestCaseData data[] = {
         CTestCaseData(false, "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
                              "  et dolore magna aliqua. Ut enim ad minim veniam,",
                 CPI_DEFAULT,
-                             "    Lorem ipsum dolor sit amet, consectetur adipiscing "
-                             "elit, sed do eiusmod tempor incididunt ut labore et "
-                             "dolore magna aliqua. Ut enim ad minim veniam,",
+                             "    Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
+                             "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"
+                             "    dolore magna aliqua. Ut enim ad minim veniam,",
 
 /*                             "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"

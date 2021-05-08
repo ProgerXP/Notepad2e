@@ -43,7 +43,8 @@ inline BOOL IsEOLChar(const char ch)
   return (ch == '\r') || (ch == '\n');
 }
 
-BOOL CALW_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
+// remove EOLs/front spaces
+BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
   int iCharsProcessed = 0;
@@ -81,6 +82,69 @@ BOOL CALW_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcess
   return TRUE;
 }
 
+BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
+{
+  if ((pED->m_tb.m_iPos != 0) && (calwdata.iLineOffset == 0))
+  {
+    for (int i = 0; i < calwdata.firstLineOffset; ++i)
+    {
+      TextBuffer_PushChar(&pED->m_tbRes, ' ');
+      ++calwdata.iLineOffset;
+    }
+  }
+
+  int iCharsProcessed = 0;
+  int iWordLength = max(1, TextBuffer_GetWordLength(&pED->m_tb));
+  if (calwdata.iLineOffset + iWordLength <= calwdata.longLineLimit)
+  {
+    for (int i = 0; i < iWordLength; ++i)
+    {
+      const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
+      TextBuffer_PushChar(&pED->m_tbRes, ch);
+      ++iCharsProcessed;
+      ++calwdata.iLineOffset;
+    }
+  }
+  else
+  {
+    calwdata.iLineOffset = calwdata.longLineLimit;
+  }
+
+  if (calwdata.iLineOffset >= calwdata.longLineLimit)
+  {
+    calwdata.iLineOffset = 0;
+    TextBuffer_PushChar(&pED->m_tbRes, '\r');
+    TextBuffer_PushChar(&pED->m_tbRes, '\n');
+    iCharsProcessed += 2;
+
+    // skip trailing space
+    if (TextBuffer_GetChar(&pED->m_tb) == ' ')
+    {
+      TextBuffer_PopChar(&pED->m_tb);
+      ++iCharsProcessed;
+    }
+  }
+
+  if (piCharsProcessed)
+  {
+    (*piCharsProcessed) += iCharsProcessed;
+  }
+  return TRUE;
+}
+
+BOOL CALW_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
+{
+  switch (pRA->iPassIndex)
+  {
+  case 0:
+    return CALW_Encode_Pass1(pRA, pED, piCharsProcessed);
+  case 1:
+    return CALW_Encode_Pass2(pRA, pED, piCharsProcessed);
+  }
+
+  return TRUE;
+}
+
 BOOL CALW_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   return FALSE;
@@ -102,7 +166,7 @@ LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encodin
 
 void EncodeStrWithCALW(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, 0);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

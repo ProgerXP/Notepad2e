@@ -124,9 +124,16 @@ BOOL TextBuffer_Update(TextBuffer* pTB, LPSTR ptr, const int iSize)
   return TRUE;
 }
 
-BOOL TextBuffer_GetTailLength(TextBuffer* pTB)
+int TextBuffer_GetTailLength(TextBuffer* pTB)
 {
   return pTB->m_iMaxPos - pTB->m_iPos;
+}
+
+int TextBuffer_GetWordLength(TextBuffer* pTB)
+{
+  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " ");
+  return (pSpace && pSpace != pTB->m_ptr + pTB->m_iPos)
+        ? (pSpace - (pTB->m_ptr + pTB->m_iPos)) : 0;
 }
 
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars)
@@ -367,6 +374,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
+  pRA->iPassCount = 1;
   pRA->iAdditionalData = iAdditionalData;
   switch (pRA->recodingType)
   {
@@ -418,6 +426,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     return TRUE;
   case ERT_CALW:
     lstrcpy(pRA->statusText, L"Comment-aware line wrapping...");
+    pRA->iPassCount = 2;
     pRA->iRequiredCharsForEncode = 1;
     pRA->iRequiredCharsForDecode = 3;
     pRA->pIsValidStrSequence = CALW_IsValidSequence;
@@ -583,26 +592,45 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     SciCall_SetSkipUIUpdate(1);
     SciCall_BeginUndoAction();
   }
-  n2e_ShowProgressBarInStatusBar(pRA->statusText, 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
-  BOOL bProcessFailed = FALSE;
-  while (StringSource_IsDataPortionAvailable(pSS, &ed))
+
+  for (int i = 0; i < pRA->iPassCount; ++i)
   {
-    if (ed.m_tb.m_iSize < iRecodingBufferSize)
+    pRA->iPassIndex = i;
+    if (i != 0)
     {
-      TextBuffer_Init(&ed.m_tb, iRecodingBufferSize);
-    }
-    if (TextRange_GetNextDataPortion(pSS, &ed.m_tr, &ed.m_tb))
-    {
-      if (!Recode_ProcessDataPortion(pRA, pSS, &ed))
+      if (!pSS->hwnd)
       {
-        bProcessFailed = TRUE;
-        break;
+        memcpy(pSS->text, pSS->result, pSS->iResultLength + 1);
+        pSS->iTextLength = pSS->iResultLength;
+        memset(pSS->result, 0, pSS->iResultLength + 1);
+        pSS->iResultLength = 0;
+        ed.m_tr.m_iSelEnd = pSS->iTextLength;
+      }
+      pSS->iProcessedChars = 0;
+      ed.m_tr.m_iPositionCurrent = 0;
+    }
+    n2e_ShowProgressBarInStatusBar(pRA->statusText, 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
+    BOOL bProcessFailed = FALSE;
+    while (StringSource_IsDataPortionAvailable(pSS, &ed))
+    {
+      if (ed.m_tb.m_iSize < iRecodingBufferSize)
+      {
+        TextBuffer_Init(&ed.m_tb, iRecodingBufferSize);
+      }
+      if (TextRange_GetNextDataPortion(pSS, &ed.m_tr, &ed.m_tb))
+      {
+        if (!Recode_ProcessDataPortion(pRA, pSS, &ed))
+        {
+          bProcessFailed = TRUE;
+          break;
+        }
       }
     }
-  }
-  if (bProcessFailed)
-  {
-    ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
+    if (bProcessFailed)
+    {
+      ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
+      break;
+    }
   }
   const int iSelStart = ed.m_tr.m_iSelStart;
   const int iSelEnd = ed.m_tr.m_iSelEnd;

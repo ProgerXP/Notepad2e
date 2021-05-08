@@ -56,6 +56,8 @@ struct TRecodingAlgorithm
 {
   enum ERecodingType recodingType;
   BOOL isEncoding;
+  int iPassCount;
+  int iPassIndex;
   int iRequiredCharsForEncode;
   int iRequiredCharsForDecode;
   int iAdditionalData;
@@ -82,7 +84,8 @@ void TextBuffer_Clear(TextBuffer* pTB);
 BOOL TextBuffer_Init(TextBuffer* pTB, const int iSize);
 BOOL TextBuffer_Free(TextBuffer* pTB);
 BOOL TextBuffer_Update(TextBuffer* pTB, LPSTR ptr, const int iSize);
-BOOL TextBuffer_GetTailLength(TextBuffer* pTB);
+int TextBuffer_GetTailLength(TextBuffer* pTB);
+int TextBuffer_GetWordLength(TextBuffer* pTB);
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars);
 BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA);
 void TextBuffer_IncPos(TextBuffer* pTB);

@@ -4,6 +4,7 @@
 #ifdef N2E_TESTING
 
 int iEncoding = CPI_DEFAULT;
+int iLongLinesLimit = 80;
 
 // Code duplication for mEncoding:
 // https://github.com/ProgerXP/Notepad2e/issues/118#issuecomment-353869333
