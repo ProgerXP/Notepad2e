@@ -47,12 +47,12 @@ inline BOOL IsEOLChar(const char ch)
 BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
+  const int iCharCount = 1 + TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0);
   int iCharsProcessed = 0;
   if ((calwdata.relativeLineIndex == 0) && !calwdata.firstLineOffsetCalcDone)
   {
-    calwdata.firstLineOffsetCalcDone = (ch != ' ');
-    if (!calwdata.firstLineOffsetCalcDone)
-      ++calwdata.firstLineOffset;
+    calwdata.firstLineOffset = iCharCount;
+    calwdata.firstLineOffsetCalcDone = TRUE;
   }
   
   if (IsEOLChar(ch))
@@ -60,21 +60,30 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     if (!calwdata.initLine)
     {
       ++calwdata.relativeLineIndex;
-      calwdata.initLine = TRUE;
-      TextBuffer_PushChar(&pED->m_tbRes, ' ');
+      calwdata.initLine = (calwdata.firstLineOffset == 0)
+        || (IsEOLChar(TextBuffer_GetChar(&pED->m_tb)) && (TextBuffer_GetCharSequenceLength(&pED->m_tb, ' ', 1) != calwdata.firstLineOffset));
+      if (calwdata.initLine)
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, ' ');
+      }
     }
     // else: ignore
   }
   else if (calwdata.initLine)
   {
-    calwdata.initLine &= (ch == '\t') || (ch == ' ');
+    calwdata.initLine &= (ch == ' ') && (iCharCount != calwdata.firstLineOffset);
   }
   
-  if (!calwdata.initLine)
+  for (int i = 0; i < iCharCount; ++i)
   {
-    TextBuffer_PushChar(&pED->m_tbRes, ch);
+    if (!calwdata.initLine)
+    {
+      TextBuffer_PushChar(&pED->m_tbRes, ch);
+    }
   }
-  ++iCharsProcessed;
+  iCharsProcessed += iCharCount;
+  TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+
   if (piCharsProcessed)
   {
     (*piCharsProcessed) += iCharsProcessed;
@@ -110,7 +119,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     calwdata.iLineOffset = calwdata.longLineLimit;
   }
 
-  if (calwdata.iLineOffset >= calwdata.longLineLimit)
+  if ((calwdata.iLineOffset >= calwdata.longLineLimit) && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
   {
     calwdata.iLineOffset = 0;
     TextBuffer_PushChar(&pED->m_tbRes, '\r');

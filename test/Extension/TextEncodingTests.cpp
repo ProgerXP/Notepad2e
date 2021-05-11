@@ -294,11 +294,34 @@ namespace Notepad2eTests
                              "    Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
                              "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"
                              "    dolore magna aliqua. Ut enim ad minim veniam,",
+                false, 0, 55),
 
-/*                             "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
-                             "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"
-                             "    dolore magna aliqua. Ut enim ad minim veniam,",*/
-                false/*decodeOnly*/, 0/*decodeOnlyMinBufferSize*/, 55/*additionalData = long line limit*/)
+        CTestCaseData(false, "   Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
+                             "  et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "   Lorem ipsum dolor sit amet, consectetur adipiscing elit, \r\n"
+                             "   sed do eiusmod tempor incididunt ut labore et dolore \r\n"
+                             "   magna aliqua. Ut enim ad minim veniam,",
+                false, 0, 60),
+
+        CTestCaseData(false, "  Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
+                             "   et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \r\n"
+                             "  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \r\n"
+                             "  veniam,",
+                false, 0, 75),
+        
+        CTestCaseData(false, "    Lorem\r\n"
+                             "    \r\n"
+                             "    Ipsum",
+                CPI_DEFAULT,
+                             "    Lorem\r\n"
+                             "    \r\n"
+                             "    Ipsum",
+                false, 0, 50)
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
     }
