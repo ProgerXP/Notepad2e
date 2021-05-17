@@ -313,7 +313,35 @@ namespace Notepad2eTests
                              "  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \r\n"
                              "  veniam,",
                 false, 0, 75),
+
+        CTestCaseData(false, "    // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "   //   elit, sed do eiusmod tempor incididunt ut labore\r\n"
+                             "//  et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "    // Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
+                             "    // elit, sed do eiusmod tempor incididunt ut labore et \r\n"
+                             "    // dolore magna aliqua. Ut enim ad minim veniam,",
+                false, 0, 55),
         
+        CTestCaseData(false, "  // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "      //  elit, sed do eiusmod tempor incididunt ut labore et \r\n"
+                             "//dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "  // Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \r\n"
+                             "  // tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \r\n"
+                             "  // veniam,",
+                false, 0, 75),
+
+        CTestCaseData(false, "  // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
+                             "      //  elit, sed do eiusmod tempor incididunt ut labore et \r\n"
+                             "//dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "  // Lorem ipsum dolor sit amet, consectetur \r\n"
+                             "  // adipiscing elit, sed do eiusmod tempor \r\n"
+                             "  // incididunt ut labore et dolore magna aliqua. \r\n"
+                             "  // Ut enim ad minim veniam,",
+                false, 0, 45),
+
         CTestCaseData(false, "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",

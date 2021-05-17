@@ -1,5 +1,6 @@
 #include "StringRecoding.h"
 #include <assert.h>
+#include <Shlwapi.h>
 #include "CommonUtils.h"
 #include "Externals.h"
 #include "Scintilla.h"
@@ -154,6 +155,13 @@ int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int i
   return res;
 }
 
+int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
+{
+  LPCSTR pSrc = pTB->m_ptr + pTB->m_iPos + iOffsetFrom;
+  LPCSTR pRes = StrStrA(pSrc, lpstr);
+  return pRes ? pRes - pSrc : -1;
+}
+
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars)
 {
   return pTB->m_iPos <= pTB->m_iSize - 1 - requiredChars;
@@ -181,7 +189,12 @@ void TextBuffer_OffsetPos(TextBuffer* pTB, const int iOffset)
 
 char TextBuffer_GetChar(TextBuffer* pTB)
 {
-  return pTB->m_ptr[pTB->m_iPos];
+  return TextBuffer_GetCharAt(pTB, 0);
+}
+
+char TextBuffer_GetCharAt(TextBuffer* pTB, const int iOffset)
+{
+  return pTB->m_ptr[pTB->m_iPos + iOffset];
 }
 
 char TextBuffer_PopChar(TextBuffer* pTB)
@@ -802,6 +815,8 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
                 MAX_TEST_STRING_LENGTH - pED->m_tr.m_iPositionStart,
                 pED->m_tbRes.m_ptr, length);
       pSS->iResultLength += length;
+      pSS->iTextLength = pSS->iResultLength;
+      pSS->iProcessedChars = pSS->iResultLength;
     }
     if (pED->m_bIsEncoding && n2e_IsUnicodeEncodingMode())
     {
