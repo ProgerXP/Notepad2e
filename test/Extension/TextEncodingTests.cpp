@@ -349,6 +349,51 @@ namespace Notepad2eTests
                              "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",
+                false, 0, 50),
+
+        CTestCaseData(false, "    Lorem\r\n"
+                             "\r\n"
+                             "    Ipsum",
+                CPI_DEFAULT,
+                             "    Lorem\r\n"
+                             "    \r\n"
+                             "    Ipsum",
+                false, 0, 50),
+        
+        CTestCaseData(false, "  * Lorem\r\n"
+                             "* Ipsum",
+                CPI_DEFAULT,
+                             "  * Lorem\r\n"
+                             "  * Ipsum",
+                false, 0, 50),
+
+        CTestCaseData(false, "    * Lorem\r\n"
+                             "         * Ipsum\r\n"
+                             "      *  Dolor",
+                CPI_DEFAULT,
+                             "    * Lorem\r\n"
+                             "    * Ipsum\r\n"
+                             "    *  Dolor",
+                false, 0, 50),
+
+        CTestCaseData(false, "    // Lorem\r\n"
+                             "      //*Ipsum",
+                CPI_DEFAULT,
+                             "    // Lorem\r\n"
+                             "    // *Ipsum",
+                false, 0, 50),
+
+        CTestCaseData(false, "aa\r\n"
+                             "bb\r\n"
+                             "* cc\r\n"
+                             "dd\r\n"
+                             "\r\n"
+                             "ee",
+                CPI_DEFAULT,
+                             "aa bb\r\n"
+                             "* cc dd\r\n"
+                             "\r\n"
+                             "ee",
                 false, 0, 50)
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);

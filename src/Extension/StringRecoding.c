@@ -132,7 +132,7 @@ int TextBuffer_GetTailLength(TextBuffer* pTB)
 
 int TextBuffer_GetWordLength(TextBuffer* pTB)
 {
-  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " ");
+  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n");
   if (pSpace)
   {
     return (pSpace != pTB->m_ptr + pTB->m_iPos)
@@ -160,6 +160,59 @@ int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
   LPCSTR pSrc = pTB->m_ptr + pTB->m_iPos + iOffsetFrom;
   LPCSTR pRes = StrStrA(pSrc, lpstr);
   return pRes ? pRes - pSrc : -1;
+}
+
+BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, const LPCSTR lpstrIgnored, const int iOffsetFrom)
+{
+  int res = 0;
+  while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
+    if (_ch == ch)
+    {
+      return TRUE;
+    }
+    else if (!strchr(lpstrIgnored, _ch))
+    {
+      return FALSE;
+    }
+    ++res;
+  }
+  return res;
+}
+
+BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength)
+{
+  int res = 0;
+  while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
+    if (IsEOLChar(_ch))
+    {
+      if (piLineLength)
+      {
+        *piLineLength = res;
+      }
+      return TRUE;
+    }
+    ++res;
+    if (strchr(" \t", _ch))
+    {
+      continue;
+    }
+    return FALSE;
+  }
+  if (piLineLength)
+  {
+    *piLineLength = res;
+  }
+  return TRUE;
+}
+
+BOOL TextBuffer_IsTextAtPos(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
+{
+  LPCSTR pSrc = pTB->m_ptr + pTB->m_iPos + iOffsetFrom;
+  return StrCmpNA(pSrc, lpstr, strlen(lpstr)) == 0;
 }
 
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars)
@@ -644,7 +697,7 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
       }
       pSS->iProcessedChars = 0;
       pSS->iResultLength = 0;
-      ed.m_tr.m_iPositionCurrent = 0;
+      ed.m_tr.m_iPositionCurrent = ed.m_tr.m_iSelStart;
     }
     n2e_ShowProgressBarInStatusBar(pRA->statusText, 0, ed.m_tr.m_iSelEnd - ed.m_tr.m_iSelStart);
     BOOL bProcessFailed = FALSE;
@@ -667,10 +720,6 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     {
       ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
       break;
-    }
-    else
-    {
-      ed.m_tr.m_iSelEnd = pSS->iResultLength;
     }
   }
   const int iSelStart = ed.m_tr.m_iSelStart;

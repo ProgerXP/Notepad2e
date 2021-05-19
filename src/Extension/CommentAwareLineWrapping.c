@@ -20,6 +20,7 @@ struct TCALWData
   char firstLinePrefix[MAX_PATH];
   char commentLinePrefix[MAX_PATH];
   BOOL initLine;
+  BOOL skipNextEOL;
   int iLineOffset;
 };
 
@@ -52,36 +53,51 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   int iCharsProcessed = 0;
   if ((calwdata.relativeLineIndex == 0) && !calwdata.firstLineOffsetCalcDone)
   {
-    const int res = TextBuffer_Find(&pED->m_tb, "//", 0);
-    if (res >= 0)
+    if (ch == ' ')
     {
-      StrCpyA(calwdata.commentLinePrefix, "//");
-      calwdata.firstLineOffset = 1 + 2 + res + 1/*additional spacing*/;
-      calwdata.firstLinePrefix[0] = ch;
-      for (int i = 1; i < calwdata.firstLineOffset; ++i)
+      const int res = TextBuffer_Find(&pED->m_tb, "//", 0);
+      if (res >= 0)
       {
-        calwdata.firstLinePrefix[i] = TextBuffer_PopChar(&pED->m_tb);
+        StrCpyA(calwdata.commentLinePrefix, "//");
+        calwdata.firstLineOffset = 1 + 2 + res + 1/*additional spacing*/;
+        calwdata.firstLinePrefix[0] = ch;
+        for (int i = 1; i < calwdata.firstLineOffset; ++i)
+        {
+          calwdata.firstLinePrefix[i] = TextBuffer_PopChar(&pED->m_tb);
+        }
+        iCharCount = calwdata.firstLineOffset;
+        bSkipChars = TRUE;
       }
-      iCharCount = calwdata.firstLineOffset;
-      bSkipChars = TRUE;
-    }
-    else
-    {
-      calwdata.firstLineOffset = iCharCount;
+      else
+      {
+        if (iCharCount > 1)
+        {
+          TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+        }
+        calwdata.firstLineOffset = (ch == ' ') ? iCharCount : 0;
+        bSkipChars = TRUE;
+      }
     }
     calwdata.firstLineOffsetCalcDone = TRUE;
   }
   else if ((calwdata.relativeLineIndex > 0) 
-    && (calwdata.relativeLineIndex > calwdata.relativeLineIndexPrefixProcessed)
-    && strlen(calwdata.commentLinePrefix) > 0)
+    && (calwdata.relativeLineIndex > calwdata.relativeLineIndexPrefixProcessed))
   {
-    const int res = TextBuffer_Find(&pED->m_tb, "//", -1);
-    if (res >= 0)
+    if (strlen(calwdata.commentLinePrefix) > 0)
     {
-      iCharCount = res + 2;
+      const int res = TextBuffer_Find(&pED->m_tb, "//", -1);
+      if (res >= 0)
+      {
+        iCharCount = res + 2;
+        TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+        bSkipChars = TRUE;
+        calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
+      }
+    }
+    else if ((calwdata.firstLineOffset > 0) && (ch == ' ') && (iCharCount >= calwdata.firstLineOffset))
+    {
       TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
       bSkipChars = TRUE;
-      calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
     }
   }
 
@@ -90,11 +106,49 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     if (!calwdata.initLine)
     {
       ++calwdata.relativeLineIndex;
-      calwdata.initLine = (calwdata.firstLineOffset == 0)
-        || (IsEOLChar(TextBuffer_GetChar(&pED->m_tb)) && (TextBuffer_GetCharSequenceLength(&pED->m_tb, ' ', 1) != calwdata.firstLineOffset));
-      if (calwdata.initLine && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != ' '))
+
+      const BOOL isEOLAtPosition = IsEOLChar(TextBuffer_GetChar(&pED->m_tb));
+      const int spacesAfterPosition = TextBuffer_GetCharSequenceLength(&pED->m_tb, ' ', 1);
+      int iLineLength = 0;
+      const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 1, &iLineLength);
+
+      calwdata.initLine = !calwdata.skipNextEOL &&
+        (((calwdata.firstLineOffset == 0)&& !isWhiteSpaceLine)
+            || (isEOLAtPosition && (spacesAfterPosition != calwdata.firstLineOffset)));
+
+      if (isWhiteSpaceLine)
       {
-        TextBuffer_PushChar(&pED->m_tbRes, ' ');
+        TextBuffer_PushChar(&pED->m_tbRes, ch);
+        TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
+        iCharCount += 1 + iLineLength;
+        TextBuffer_OffsetPos(&pED->m_tb, 1 + iLineLength);
+        calwdata.initLine = FALSE;
+        calwdata.skipNextEOL = TRUE;
+        bSkipChars = TRUE;
+      }
+      else
+      if (calwdata.initLine)
+      {
+        const BOOL commentAtPosition = TextBuffer_IsTextAtPos(&pED->m_tb, "//", 1 + spacesAfterPosition);
+        const int bulletOffset = 1 + spacesAfterPosition + (commentAtPosition ? 2 : 0);
+        if (isEOLAtPosition
+          && TextBuffer_IsCharAtPos_IgnoreSpecial(&pED->m_tb, '*', " \t", bulletOffset))
+        {
+          TextBuffer_PushChar(&pED->m_tbRes, ch);
+          TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
+          iCharCount += bulletOffset;
+          TextBuffer_OffsetPos(&pED->m_tb, bulletOffset);
+          bSkipChars = TRUE;
+        }
+        else if ((pED->m_tbRes.m_iPos > 0)
+          && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != ' '))
+        {
+          TextBuffer_PushChar(&pED->m_tbRes, ' ');
+        }
+      }
+      if (!isWhiteSpaceLine && (ch == '\n'))
+      {
+        calwdata.skipNextEOL = FALSE;
       }
     }
     // else: ignore
@@ -126,12 +180,23 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
 BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   const auto prefixLength = strlen(calwdata.firstLinePrefix);
-  if ((calwdata.iLineOffset == 0) && prefixLength)
+  if ((calwdata.iLineOffset == 0) && ((prefixLength > 0) || (calwdata.firstLineOffset > 0)))
   {
-    for (int i = 0; i < prefixLength; ++i)
+    if (prefixLength > 0)
     {
-      TextBuffer_PushChar(&pED->m_tbRes, calwdata.firstLinePrefix[i]);
-      ++calwdata.iLineOffset;
+      for (int i = 0; i < prefixLength; ++i)
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, calwdata.firstLinePrefix[i]);
+        ++calwdata.iLineOffset;
+      }
+    }
+    else
+    {
+      for (int i = 0; i < calwdata.firstLineOffset; ++i)
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, ' ');
+        ++calwdata.iLineOffset;
+      }
     }
   }
   else if ((pED->m_tb.m_iPos != 0) && (calwdata.iLineOffset == 0))
@@ -153,6 +218,10 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       TextBuffer_PushChar(&pED->m_tbRes, ch);
       ++iCharsProcessed;
       ++calwdata.iLineOffset;
+      if (ch == '\n')
+      {
+        calwdata.iLineOffset = 0;
+      }
     }
   }
   else
