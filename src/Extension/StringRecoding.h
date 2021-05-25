@@ -90,7 +90,8 @@ int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int i
 int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
 BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength);
 BOOL TextBuffer_IsTextAtPos(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
-BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, const LPCSTR lpstrIgnored, const int iOffsetFrom);
+BOOL TextBuffer_IsAnyCharAtPos_IgnoreSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrIgnored, const int iOffsetFrom);
+BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, LPCSTR lpstrIgnored, const int iOffsetFrom);
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars);
 BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA);
 void TextBuffer_IncPos(TextBuffer* pTB);

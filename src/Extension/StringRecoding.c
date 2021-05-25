@@ -147,7 +147,7 @@ int TextBuffer_GetWordLength(TextBuffer* pTB)
 int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int iOffsetFrom)
 {
   int res = 0;
-  while ((pTB->m_iPos + iOffsetFrom + res< pTB->m_iMaxPos)
+  while ((pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
     && (pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res] == ch))
   {
     ++res;
@@ -162,13 +162,13 @@ int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
   return pRes ? pRes - pSrc : -1;
 }
 
-BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, const LPCSTR lpstrIgnored, const int iOffsetFrom)
+BOOL TextBuffer_IsAnyCharAtPos_IgnoreSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrIgnored, const int iOffsetFrom)
 {
   int res = 0;
   while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
   {
     const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
-    if (_ch == ch)
+    if (strchr(lpChars, _ch))
     {
       return TRUE;
     }
@@ -179,6 +179,12 @@ BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, const 
     ++res;
   }
   return res;
+}
+
+BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, LPCSTR lpstrIgnored, const int iOffsetFrom)
+{
+  const CHAR chars[2] = { ch, 0 };
+  return TextBuffer_IsAnyCharAtPos_IgnoreSpecial(pTB, &chars[0], lpstrIgnored, iOffsetFrom);
 }
 
 BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength)
@@ -864,8 +870,6 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
                 MAX_TEST_STRING_LENGTH - pED->m_tr.m_iPositionStart,
                 pED->m_tbRes.m_ptr, length);
       pSS->iResultLength += length;
-      pSS->iTextLength = pSS->iResultLength;
-      pSS->iProcessedChars = pSS->iResultLength;
     }
     if (pED->m_bIsEncoding && n2e_IsUnicodeEncodingMode())
     {

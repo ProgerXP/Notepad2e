@@ -394,7 +394,25 @@ namespace Notepad2eTests
                              "* cc dd\r\n"
                              "\r\n"
                              "ee",
-                false, 0, 50)
+                false, 0, 50),
+
+        CTestCaseData(false, "*  Lorem ipsum",
+                CPI_DEFAULT,
+                             "*  Lorem\r\n"
+                             "   ipsum",
+                false, 0, 5),
+  
+        CTestCaseData(false, "*\t\tLorem ipsum",
+                CPI_DEFAULT,
+                             "*\t\tLorem\r\n"
+                             " \t\tipsum",
+                false, 0, 5),
+
+        CTestCaseData(false, "*Lorem ipsum",
+                CPI_DEFAULT,
+                             "*Lorem\r\n"
+                             " ipsum",
+                false, 0, 5),
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
     }
