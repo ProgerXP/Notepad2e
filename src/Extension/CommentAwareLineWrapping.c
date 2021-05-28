@@ -73,7 +73,7 @@ struct TCALWData
   int relativeLineIndexPrefixProcessed;
   
   PrefixData prefixFirstLine;
-  PrefixData prefixBulletLine;
+  PrefixData prefixMarkerLine;
 
   BOOL initLine;
   BOOL skipNextEOL;
@@ -101,7 +101,7 @@ inline BOOL IsEOLChar(const char ch)
 }
 
 static LPCSTR lpstrWhiteSpaces = " \t";
-static LPCSTR lpstrBulletChars = "#>=?*";
+static LPCSTR lpstrMarkerChars = "#>=?*";
 
 // remove EOLs/front spaces
 BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
@@ -190,14 +190,14 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       if (calwdata.initLine)
       {
         const BOOL commentAtPosition = TextBuffer_IsTextAtPos(&pED->m_tb, "//", 1 + spacesAfterPosition);
-        const int bulletOffset = 1 + spacesAfterPosition + (commentAtPosition ? 2 : 0);
+        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? 2 : 0);
         if (isEOLAtPosition
-          && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrBulletChars, lpstrWhiteSpaces, bulletOffset))
+          && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
           TextBuffer_PushChar(&pED->m_tbRes, ch);
           TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
-          iCharCount += bulletOffset;
-          TextBuffer_OffsetPos(&pED->m_tb, bulletOffset);
+          iCharCount += markerOffset;
+          TextBuffer_OffsetPos(&pED->m_tb, markerOffset);
           bSkipChars = TRUE;
         }
         else if ((pED->m_tbRes.m_iPos > 0)
@@ -239,6 +239,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
 
 BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
+  BOOL bPrefixInitialized = FALSE;
   auto prefixLength = PrefixData_GetLength(&calwdata.prefixFirstLine);
   if ((calwdata.iLineOffset == 0) && (prefixLength > 0))
   {
@@ -249,52 +250,52 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     }
   }
   prefixLength = PrefixData_IsComment(&calwdata.prefixFirstLine) ? prefixLength : 0;
-  prefixLength = PrefixData_IsInitialized(&calwdata.prefixBulletLine) ? PrefixData_GetLength(&calwdata.prefixBulletLine) : prefixLength;
+  prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : prefixLength;
 
   int iCharsProcessed = 0;
   int iWordLength = max(1, TextBuffer_GetWordLength(&pED->m_tb));
-  if ((iWordLength > prefixLength + calwdata.longLineLimit)
+  if ((iWordLength > calwdata.longLineLimit)
     || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
   {
-    if (PrefixData_IsInitialized(&calwdata.prefixBulletLine)
+    if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
       && ((pED->m_tbRes.m_iPos > 0) && TextBuffer_GetCharAt(&pED->m_tbRes, -1) == '\n'))
     {
-      const int bulletPrefixLength = PrefixData_GetLength(&calwdata.prefixBulletLine);
-      if (bulletPrefixLength > 0)
+      const int markerPrefixLength = PrefixData_GetLength(&calwdata.prefixMarkerLine);
+      if (markerPrefixLength > 0)
       {
-        for (int i = 0; i < bulletPrefixLength; ++i)
+        for (int i = 0; i < markerPrefixLength; ++i)
         {
-          TextBuffer_PushChar(&pED->m_tbRes, PrefixData_GetChar(&calwdata.prefixBulletLine, i));
+          TextBuffer_PushChar(&pED->m_tbRes, PrefixData_GetChar(&calwdata.prefixMarkerLine, i));
           ++calwdata.iLineOffset;
         }
       }
     }
-    int i = 0;
-    while (++i <= iWordLength)
+    for (int i = 1; i <= iWordLength; ++i)
     {
       const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-      if ((iWordLength >= 1) && strchr(lpstrBulletChars, ch) && (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine)))
+      if ((iWordLength >= 1) && strchr(lpstrMarkerChars, ch) && (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine)))
       {
         TextBuffer_PushChar(&pED->m_tbRes, ch);
         ++iCharsProcessed;
         ++calwdata.iLineOffset;
 
         const auto chNext = TextBuffer_GetChar(&pED->m_tb);
-        PrefixData_SetEmpty(&calwdata.prefixBulletLine);
-        PrefixData_PushChar(&calwdata.prefixBulletLine, ' '); // space char under *
+        PrefixData_SetEmpty(&calwdata.prefixMarkerLine);
+        PrefixData_PushChar(&calwdata.prefixMarkerLine, ' '); // space char under *
         if (strchr(lpstrWhiteSpaces, chNext) != 0)
         {
-          const int bulletPostfixLength = TextBuffer_GetCharSequenceLength(&pED->m_tb, chNext, 0);
-          for (int i = 0; i < bulletPostfixLength; ++i)
+          const int markerPostfixLength = TextBuffer_GetCharSequenceLength(&pED->m_tb, chNext, 0);
+          for (int i = 0; i < markerPostfixLength; ++i)
           {
-            PrefixData_PushChar(&calwdata.prefixBulletLine, chNext);
+            PrefixData_PushChar(&calwdata.prefixMarkerLine, chNext);
             TextBuffer_PushChar(&pED->m_tbRes, chNext);
             ++iCharsProcessed;
             ++calwdata.iLineOffset;
           }
-          TextBuffer_OffsetPos(&pED->m_tb, bulletPostfixLength);
+          TextBuffer_OffsetPos(&pED->m_tb, markerPostfixLength);
         }
-        PrefixData_SetInitialized(&calwdata.prefixBulletLine, TRUE);
+        PrefixData_SetInitialized(&calwdata.prefixMarkerLine, TRUE);
+        bPrefixInitialized = TRUE;
         break;
       }
       TextBuffer_PushChar(&pED->m_tbRes, ch);
@@ -303,7 +304,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       if (ch == '\n')
       {
         calwdata.iLineOffset = 0;
-        PrefixData_SetInitialized(&calwdata.prefixBulletLine, FALSE);
+        PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
       }
     }
   }
@@ -312,7 +313,9 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     calwdata.iLineOffset = prefixLength + calwdata.longLineLimit;
   }
 
-  if ((calwdata.iLineOffset >= prefixLength + calwdata.longLineLimit) && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
+  if (!bPrefixInitialized
+      && (calwdata.iLineOffset >= prefixLength + calwdata.longLineLimit)
+      && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
   {
     calwdata.iLineOffset = 0;
     TextBuffer_PushChar(&pED->m_tbRes, '\r');
