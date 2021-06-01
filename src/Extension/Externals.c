@@ -1,4 +1,5 @@
 #include "Externals.h"
+#include "SciLexer.h"
 #include  <assert.h>
 
 #ifdef N2E_TESTING
@@ -104,6 +105,15 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 {
 }
 
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer)
+{
+  return (iLexer != SCLEX_NULL)
+    && TextBuffer_IsTextAtPos(pTextBuffer, n2e_GetSingleLineCommentPrefix(iLexer), iPos);
+}
+
 WCHAR szIniFile[MAX_PATH];
+
+EDITLEXER lexDefault = { 0 };
+PEDITLEXER pLexCurrent = &lexDefault;
 
 #endif // #ifdef N2E_TESTING

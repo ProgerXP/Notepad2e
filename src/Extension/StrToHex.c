@@ -85,10 +85,11 @@ BOOL Hex_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcesse
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
-LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
+LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding,
+  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_HEX, TRUE, additionalData);
+  RecodingAlgorithm_Init(&ra, ERT_HEX, TRUE, additionalData1, additionalData2);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -96,10 +97,11 @@ LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding, 
   return ss.result;
 }
 
-LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
+LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding,
+  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_HEX, FALSE, additionalData);
+  RecodingAlgorithm_Init(&ra, ERT_HEX, FALSE, additionalData1, additionalData2);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -109,7 +111,7 @@ LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding, 
 
 void EncodeStrToHex(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_HEX, TRUE, 0);
+  RecodingAlgorithm_Init(&ra, ERT_HEX, TRUE, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
@@ -117,7 +119,7 @@ void EncodeStrToHex(const HWND hwnd)
 
 void DecodeHexToStr(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_HEX, FALSE, 0);
+  RecodingAlgorithm_Init(&ra, ERT_HEX, FALSE, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

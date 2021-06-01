@@ -187,6 +187,25 @@ BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, LPCSTR
   return TextBuffer_IsAnyCharAtPos_IgnoreSpecial(pTB, &chars[0], lpstrIgnored, iOffsetFrom);
 }
 
+int TextBuffer_CountWhiteSpaces(TextBuffer* pTB, const int iOffsetFrom)
+{
+  int res = 0;
+  while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
+    if (strchr(" \t", _ch))
+    {
+      ++res;
+      continue;
+    }
+    else
+    {
+      break;
+    }
+  }
+  return res;
+}
+
 BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength)
 {
   int res = 0;
@@ -465,12 +484,14 @@ BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, str
   return FALSE;
 }
 
-BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding, const int iAdditionalData)
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding,
+  const int iAdditionalData1, const int iAdditionalData2)
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
   pRA->iPassCount = 1;
-  pRA->iAdditionalData = iAdditionalData;
+  pRA->iAdditionalData1 = iAdditionalData1;
+  pRA->iAdditionalData2 = iAdditionalData2;
   switch (pRA->recodingType)
   {
   case ERT_HEX:
@@ -529,7 +550,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = CALW_Decode;
     pRA->pDecodeTailMethod = NULL;
-    pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData);
+    pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData1, pRA->iAdditionalData2);
     return TRUE;
   default:
     assert(FALSE);

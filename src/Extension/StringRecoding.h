@@ -60,7 +60,8 @@ struct TRecodingAlgorithm
   int iPassIndex;
   int iRequiredCharsForEncode;
   int iRequiredCharsForDecode;
-  int iAdditionalData;
+  int iAdditionalData1;
+  int iAdditionalData2;
   IsValidStrSequence pIsValidStrSequence;
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;
@@ -88,6 +89,7 @@ int TextBuffer_GetTailLength(TextBuffer* pTB);
 int TextBuffer_GetWordLength(TextBuffer* pTB);
 int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int iOffsetFrom);
 int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
+int TextBuffer_CountWhiteSpaces(TextBuffer* pTB, const int iOffsetFrom);
 BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength);
 BOOL TextBuffer_IsTextAtPos(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
 BOOL TextBuffer_IsAnyCharAtPos_IgnoreSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrIgnored, const int iOffsetFrom);
@@ -114,7 +116,8 @@ typedef enum
   ERT_CALW
 } ERecodingType;
 
-BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding, const int iAdditionalData);
+BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt,
+  const BOOL isEncoding, const int iAdditionalData1, const int iAdditionalData2);
 BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);
 
 void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength);

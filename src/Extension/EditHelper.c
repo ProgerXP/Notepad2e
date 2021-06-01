@@ -313,6 +313,19 @@ BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
   return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
 }
 
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer)
+{
+  extern EDITLEXER lexCPP;
+
+  TextBuffer* pTB = (TextBuffer*)pTextBuffer;
+  const HWND _hwnd = hwnd ? hwnd : hwndEdit;
+  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, pTB->m_iPos + iPos + 1 + n2e_GetSingleLineCommentPrefixLength(pLexCurrent->iLexer), 0);
+  const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
+  return pStyle
+    && (StrStrI(pStyle->pszName, L"comment") != NULL)
+    && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle);
+}
+
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
 {
   PEDITSTYLE pStyle = pLexCurrent->Styles;

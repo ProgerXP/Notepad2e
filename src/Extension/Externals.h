@@ -1,6 +1,7 @@
 #pragma once
 #include <wtypes.h>
 #include "Scintilla.h"
+#include "Styles.h"
 
 extern HWND hwndEdit;
 extern int iEncoding;
@@ -15,10 +16,13 @@ BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 #include "Utils.h"
 extern NP2ENCODING mEncoding[];
 extern HANDLE g_hScintilla;
+extern PEDITLEXER pLexCurrent;
 
 #else // ifndef N2E_TESTING
 
 #include <wtypes.h>
+
+extern PEDITLEXER pLexCurrent;
 
 #define NCP_DEFAULT            1
 #define NCP_UTF8               2

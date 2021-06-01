@@ -2,6 +2,7 @@
 #include <Shlwapi.h>
 #include "Externals.h"
 #include "CommentAwareLineWrapping.h"
+#include "SciLexer.h"
 #include "StringRecoding.h"
 
 
@@ -66,9 +67,48 @@ const unsigned char PrefixData_GetChar(PrefixData *pd, const int pos)
   return pd->data[pos];
 }
 
+LPCSTR n2e_GetSingleLineCommentPrefix(const int iLexer)
+{
+  switch (iLexer)
+  {
+  case SCLEX_CPP:
+    return "//";
+  case SCLEX_PERL:
+    return "#";
+  case SCLEX_AHK:
+  case SCLEX_PROPERTIES:
+    return ";";
+  default:
+    return "";
+  }
+}
+
+int n2e_GetSingleLineCommentPrefixLength(const int iLexer)
+{
+  return strlen(n2e_GetSingleLineCommentPrefix(iLexer));
+}
+
+BOOL n2e_IsSingleLineCommentStyle(const int iLexer, const int iStyle)
+{
+  switch (iLexer)
+  {
+  case SCLEX_CPP:
+    return iStyle == SCE_C_COMMENTLINE;
+  case SCLEX_PERL:
+    return iStyle == SCE_PL_COMMENTLINE;
+  case SCLEX_AHK:
+    return iStyle == SCE_AHK_COMMENTLINE;
+  case SCLEX_PROPERTIES:
+    return iStyle == SCE_PROPS_COMMENT;
+  default:
+    return FALSE;
+  }
+}
+
 struct TCALWData
 {
   int longLineLimit;
+  int lexerId;
   int relativeLineIndex;
   int relativeLineIndexPrefixProcessed;
   
@@ -84,10 +124,11 @@ typedef struct TCALWData CALWData;
 
 static CALWData calwdata = { 0 };
 
-LPVOID CALW_InitAlgorithmData(const int iAdditionalData)
+LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalData2)
 {
   ZeroMemory(&calwdata, sizeof(calwdata));
-  calwdata.longLineLimit = iAdditionalData;
+  calwdata.longLineLimit = iAdditionalData1;
+  calwdata.lexerId = iAdditionalData2;
   return (LPVOID)&calwdata;
 }
 
@@ -114,13 +155,15 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   {
     if (strchr(lpstrWhiteSpaces, ch))
     {
-      const int res = TextBuffer_Find(&pED->m_tb, "//", 0);
-      PrefixData_SetComment(&calwdata.prefixFirstLine, res >= 0);
-      if (res >= 0)
+      const BOOL isSingleLineComment = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iCharCount - 1, &pED->m_tb);
+      PrefixData_SetComment(&calwdata.prefixFirstLine, isSingleLineComment);
+      if (isSingleLineComment)
       {
+        const int iCommentOffset = iCharCount;
+        const int iCommentLength = n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
         PrefixData_SetEmpty(&calwdata.prefixFirstLine);
         PrefixData_PushChar(&calwdata.prefixFirstLine, ch);
-        for (int i = 1; i < 1 + 2 + res + 1; ++i)
+        for (int i = 1; i < 1 + iCommentLength + iCommentOffset; ++i)
         {
           PrefixData_PushChar(&calwdata.prefixFirstLine, TextBuffer_PopChar(&pED->m_tb));
         }
@@ -144,10 +187,12 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   {
     if (PrefixData_IsComment(&calwdata.prefixFirstLine))
     {
-      const int res = TextBuffer_Find(&pED->m_tb, "//", -1);
-      if (res >= 0)
+      const int iWhiteSpaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
+      const BOOL isSingleLineComment = 
+        n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iWhiteSpaces, &pED->m_tb);
+      if (isSingleLineComment)
       {
-        iCharCount = res + 2;
+        iCharCount = iWhiteSpaces + 1 + n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
         TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
         bSkipChars = TRUE;
         calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
@@ -173,8 +218,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 1, &iLineLength);
 
       calwdata.initLine = !calwdata.skipNextEOL &&
-        (((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0)&& !isWhiteSpaceLine)
-            || (isEOLAtPosition && (spacesAfterPosition != PrefixData_GetLength(&calwdata.prefixFirstLine))));
+        (((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0) && !isWhiteSpaceLine) || isEOLAtPosition);
 
       if (isWhiteSpaceLine)
       {
@@ -189,8 +233,8 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       else
       if (calwdata.initLine)
       {
-        const BOOL commentAtPosition = TextBuffer_IsTextAtPos(&pED->m_tb, "//", 1 + spacesAfterPosition);
-        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? 2 : 0);
+        const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, 1 + spacesAfterPosition, &pED->m_tb);
+        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId) : 0);
         if (isEOLAtPosition
           && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
@@ -357,10 +401,11 @@ BOOL CALW_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcess
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
-LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encoding, const int additionalData, const int bufferSize, int* pResultLength)
+LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encoding,
+  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, additionalData);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, additionalData1, additionalData2);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -370,7 +415,7 @@ LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encodin
 
 void EncodeStrWithCALW(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
