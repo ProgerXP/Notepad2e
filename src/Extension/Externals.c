@@ -1,6 +1,8 @@
 #include "Externals.h"
 #include "SciLexer.h"
 #include  <assert.h>
+#include  "LexerUtils.h"
+#include  "StringRecoding.h"
 
 #ifdef N2E_TESTING
 
@@ -112,8 +114,5 @@ BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const 
 }
 
 WCHAR szIniFile[MAX_PATH];
-
-EDITLEXER lexDefault = { 0 };
-PEDITLEXER pLexCurrent = &lexDefault;
 
 #endif // #ifdef N2E_TESTING

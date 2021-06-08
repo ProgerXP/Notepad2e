@@ -19,49 +19,7 @@
 *
 ******************************************************************************/
 
-
-typedef struct _editstyle
-{
-  union
-  {
-    INT32 iStyle;
-    UINT8 iStyle8[4];
-  };
-  int rid;
-  WCHAR* pszName;
-  WCHAR* pszDefault;
-  WCHAR  szValue[128];
-
-} EDITSTYLE, *PEDITSTYLE;
-
-
-typedef struct _keywordlist
-{
-  char *pszKeyWords[9];
-
-} KEYWORDLIST, *PKEYWORDLIST;
-
-
-typedef struct _editlexer
-{
-  int iLexer;
-  int rid;
-  WCHAR* pszName;
-  WCHAR* pszDefExt;
-  WCHAR  szExtensions[128];
-  PKEYWORDLIST pKeyWords;
-  EDITSTYLE    Styles[];
-
-} EDITLEXER, *PEDITLEXER;
-
-
-// Number of Lexers in pLexArray
-#ifdef LPEG_LEXER
-#define NUMLEXERS 38
-#else
-#define NUMLEXERS 37
-#endif
-
+#include "Extension/Lexers.h"
 
 void   Style_Load();
 void   Style_Save();

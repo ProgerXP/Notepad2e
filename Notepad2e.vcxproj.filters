@@ -441,6 +441,12 @@
     <ClInclude Include="src\Extension\CommentAwareLineWrapping.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\LexerUtils.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\Lexers.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -1104,6 +1110,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Extension\CommentAwareLineWrapping.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\LexerUtils.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\Lexers.c">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>

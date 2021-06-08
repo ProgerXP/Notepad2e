@@ -2,6 +2,7 @@
 #include <Shlwapi.h>
 #include "Externals.h"
 #include "CommentAwareLineWrapping.h"
+#include "LexerUtils.h"
 #include "SciLexer.h"
 #include "StringRecoding.h"
 
@@ -65,44 +66,6 @@ void PrefixData_PushChar(PrefixData *pd, const unsigned char ch)
 const unsigned char PrefixData_GetChar(PrefixData *pd, const int pos)
 {
   return pd->data[pos];
-}
-
-LPCSTR n2e_GetSingleLineCommentPrefix(const int iLexer)
-{
-  switch (iLexer)
-  {
-  case SCLEX_CPP:
-    return "//";
-  case SCLEX_PERL:
-    return "#";
-  case SCLEX_AHK:
-  case SCLEX_PROPERTIES:
-    return ";";
-  default:
-    return "";
-  }
-}
-
-int n2e_GetSingleLineCommentPrefixLength(const int iLexer)
-{
-  return strlen(n2e_GetSingleLineCommentPrefix(iLexer));
-}
-
-BOOL n2e_IsSingleLineCommentStyle(const int iLexer, const int iStyle)
-{
-  switch (iLexer)
-  {
-  case SCLEX_CPP:
-    return iStyle == SCE_C_COMMENTLINE;
-  case SCLEX_PERL:
-    return iStyle == SCE_PL_COMMENTLINE;
-  case SCLEX_AHK:
-    return iStyle == SCE_AHK_COMMENTLINE;
-  case SCLEX_PROPERTIES:
-    return iStyle == SCE_PROPS_COMMENT;
-  default:
-    return FALSE;
-  }
 }
 
 struct TCALWData

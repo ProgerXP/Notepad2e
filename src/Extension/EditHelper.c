@@ -7,6 +7,7 @@
 #include "Helpers.h"
 #include "Edit.h"
 #include "ExtSelection.h"
+#include "LexerUtils.h"
 #include "Notepad2.h"
 #include "resource.h"
 #include "SciCall.h"
@@ -315,8 +316,6 @@ BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
 
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer)
 {
-  extern EDITLEXER lexCPP;
-
   TextBuffer* pTB = (TextBuffer*)pTextBuffer;
   const HWND _hwnd = hwnd ? hwnd : hwndEdit;
   const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, pTB->m_iPos + iPos + 1 + n2e_GetSingleLineCommentPrefixLength(pLexCurrent->iLexer), 0);
