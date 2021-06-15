@@ -132,7 +132,6 @@ int TextBuffer_GetTailLength(TextBuffer* pTB)
 
 int TextLengthInChars(LPCSTR lpStr1, LPCSTR lpStr2, const int _iEncoding, int *piByteCount)
 {
-  assert((_iEncoding == CPI_UTF8) || (_iEncoding == CPI_DEFAULT));
   *piByteCount = lpStr2 - lpStr1;
   if (lpStr1 == lpStr2)
   {
