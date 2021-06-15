@@ -81,6 +81,7 @@ struct TCALWData
   BOOL initLine;
   BOOL skipNextEOL;
   int iLineOffset;
+  int iSingleLineCommentPrefixLength;
 };
 
 typedef struct TCALWData CALWData;
@@ -92,6 +93,7 @@ LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalD
   ZeroMemory(&calwdata, sizeof(calwdata));
   calwdata.longLineLimit = iAdditionalData1;
   calwdata.lexerId = iAdditionalData2;
+  calwdata.iSingleLineCommentPrefixLength = n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
   return (LPVOID)&calwdata;
 }
 
@@ -116,32 +118,30 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   int iCharsProcessed = 0;
   if ((calwdata.relativeLineIndex == 0) && !PrefixData_IsInitialized(&calwdata.prefixFirstLine))
   {
-    if (strchr(lpstrWhiteSpaces, ch))
+    const BOOL isWhiteSpace = (strchr(lpstrWhiteSpaces, ch) != NULL);
+    const int iCommentOffset = iCharCount - 1 + (isWhiteSpace ? calwdata.iSingleLineCommentPrefixLength : 0);
+    const BOOL isSingleLineComment = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iCommentOffset, pED);
+    PrefixData_SetComment(&calwdata.prefixFirstLine, isSingleLineComment);
+    if (isSingleLineComment)
     {
-      const BOOL isSingleLineComment = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iCharCount - 1, &pED->m_tb);
-      PrefixData_SetComment(&calwdata.prefixFirstLine, isSingleLineComment);
-      if (isSingleLineComment)
+      const int iWhiteSpacesAfterComment = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCommentOffset);
+      PrefixData_SetEmpty(&calwdata.prefixFirstLine);
+      PrefixData_PushChar(&calwdata.prefixFirstLine, ch);
+      for (int i = 0; i < iCommentOffset + iWhiteSpacesAfterComment; ++i)
       {
-        const int iCommentOffset = iCharCount;
-        const int iCommentLength = n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
-        PrefixData_SetEmpty(&calwdata.prefixFirstLine);
+        PrefixData_PushChar(&calwdata.prefixFirstLine, TextBuffer_PopChar(&pED->m_tb));
+      }
+      iCharCount = PrefixData_GetLength(&calwdata.prefixFirstLine);
+      bSkipChars = TRUE;
+    }
+    else if (isWhiteSpace)
+    {
+      for (int i = 0; i < iCharCount; ++i)
+      {
         PrefixData_PushChar(&calwdata.prefixFirstLine, ch);
-        for (int i = 1; i < 1 + iCommentLength + iCommentOffset; ++i)
-        {
-          PrefixData_PushChar(&calwdata.prefixFirstLine, TextBuffer_PopChar(&pED->m_tb));
-        }
-        iCharCount = PrefixData_GetLength(&calwdata.prefixFirstLine);
-        bSkipChars = TRUE;
       }
-      else
-      {
-        for (int i = 0; i < iCharCount; ++i)
-        {
-          PrefixData_PushChar(&calwdata.prefixFirstLine, ch);
-        }
-        TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
-        bSkipChars = TRUE;
-      }
+      TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+      bSkipChars = TRUE;
     }
     PrefixData_SetInitialized(&calwdata.prefixFirstLine, TRUE);
   }
@@ -152,10 +152,10 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     {
       const int iWhiteSpaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
       const BOOL isSingleLineComment = 
-        n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iWhiteSpaces, &pED->m_tb);
+        n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iWhiteSpaces + calwdata.iSingleLineCommentPrefixLength, pED);
       if (isSingleLineComment)
       {
-        iCharCount = iWhiteSpaces + 1 + n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
+        iCharCount = iWhiteSpaces + 1 + calwdata.iSingleLineCommentPrefixLength;
         TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
         bSkipChars = TRUE;
         calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
@@ -196,8 +196,8 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       else
       if (calwdata.initLine)
       {
-        const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, 1 + spacesAfterPosition, &pED->m_tb);
-        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId) : 0);
+        const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, 1 + spacesAfterPosition + calwdata.iSingleLineCommentPrefixLength, pED);
+        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? calwdata.iSingleLineCommentPrefixLength : 0);
         if (isEOLAtPosition
           && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
@@ -205,6 +205,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
           TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
           iCharCount += markerOffset;
           TextBuffer_OffsetPos(&pED->m_tb, markerOffset);
+          calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
           bSkipChars = TRUE;
         }
         else if ((pED->m_tbRes.m_iPos > 0)
@@ -222,7 +223,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   }
   else if (calwdata.initLine)
   {
-    calwdata.initLine &= (ch == ' ') && (iCharCount != PrefixData_GetLength(&calwdata.prefixFirstLine));
+    calwdata.initLine &= (ch == ' ');
   }
   
   if (!bSkipChars)
@@ -260,8 +261,9 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : prefixLength;
 
   int iCharsProcessed = 0;
-  int iWordLength = max(1, TextBuffer_GetWordLength(&pED->m_tb));
-  if ((iWordLength > calwdata.longLineLimit)
+  int iWordByteCount = 0;
+  int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
+  if ((iWordLength >= calwdata.longLineLimit)
     || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
   {
     if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
@@ -277,7 +279,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         }
       }
     }
-    for (int i = 1; i <= iWordLength; ++i)
+    for (int i = 1; i <= iWordByteCount; ++i)
     {
       const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
       if ((iWordLength >= 1) && strchr(lpstrMarkerChars, ch) && (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine)))
@@ -313,6 +315,10 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         calwdata.iLineOffset = 0;
         PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
       }
+    }
+    if (!bPrefixInitialized && (iWordByteCount != iWordLength))
+    {
+      calwdata.iLineOffset -= iWordByteCount - iWordLength;
     }
   }
   else

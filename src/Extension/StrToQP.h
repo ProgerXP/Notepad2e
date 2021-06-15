@@ -1,9 +1,5 @@
 #pragma once
-
-struct TEncodingData;
-typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorithm;
-typedef struct TRecodingAlgorithm RecodingAlgorithm;
+#include "StringRecoding-fwd.h"
 
 BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID QP_InitAlgorithmData(const BOOL isEncoding);

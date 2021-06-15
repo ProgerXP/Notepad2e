@@ -107,10 +107,10 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 {
 }
 
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer)
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
 {
   return (iLexer != SCLEX_NULL)
-    && TextBuffer_IsTextAtPos(pTextBuffer, n2e_GetSingleLineCommentPrefix(iLexer), iPos);
+    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer));
 }
 
 WCHAR szIniFile[MAX_PATH];

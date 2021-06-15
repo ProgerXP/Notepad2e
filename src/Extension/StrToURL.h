@@ -1,9 +1,5 @@
 #pragma once
-
-struct TEncodingData;
-typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorithm;
-typedef struct TRecodingAlgorithm RecodingAlgorithm;
+#include "StringRecoding-fwd.h"
 
 BOOL URL_IsValidSequence(EncodingData* pED, const int requiredChars);
 BOOL URL_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);

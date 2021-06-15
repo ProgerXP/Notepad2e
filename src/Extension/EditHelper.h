@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Scintilla.h"
+#include "StringRecoding-fwd.h"
 #include "Edit.h"
 #include "Utils.h"
 
@@ -30,7 +31,7 @@ BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd);
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next);
 BOOL n2e_IsCommentStyleById(const int iStyle);
 int n2e_GetSingleLineCommentPrefixLength(const int iLexer);
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer);
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
 int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf);
 BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos);
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd);

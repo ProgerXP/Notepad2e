@@ -1,4 +1,5 @@
 #pragma once
+#include "StringRecoding-fwd.h"
 
 struct TBase64Data
 {
@@ -6,11 +7,6 @@ struct TBase64Data
   unsigned char dtable[256];
 };
 typedef struct TBase64Data Base64Data;
-
-struct TEncodingData;
-typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorithm;
-typedef struct TRecodingAlgorithm RecodingAlgorithm;
 
 BOOL Base64_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID Base64_InitAlgorithmData(const BOOL isEncoding);

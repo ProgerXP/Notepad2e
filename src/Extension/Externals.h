@@ -1,6 +1,7 @@
 #pragma once
 #include <wtypes.h>
 #include "Extension/Lexers.h"
+#include "Extension/StringRecoding-fwd.h"
 #include "Scintilla.h"
 #include "Styles.h"
 
@@ -63,6 +64,6 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 
 extern WCHAR szIniFile[MAX_PATH];
 
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, LPVOID pTextBuffer);
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
 
 #endif

@@ -130,17 +130,41 @@ int TextBuffer_GetTailLength(TextBuffer* pTB)
   return pTB->m_iMaxPos - pTB->m_iPos;
 }
 
-int TextBuffer_GetWordLength(TextBuffer* pTB)
+int TextLengthInChars(LPCSTR lpStr1, LPCSTR lpStr2, const int _iEncoding, int *piByteCount)
+{
+  assert((_iEncoding == CPI_UTF8) || (_iEncoding == CPI_DEFAULT));
+  *piByteCount = lpStr2 - lpStr1;
+  if (lpStr1 == lpStr2)
+  {
+    *piByteCount = 1;
+    return 1;
+  }
+  if (_iEncoding == CPI_UTF8)
+  {
+    int len = 0;
+    LPCSTR ptr = lpStr1;
+    while (ptr != lpStr2)
+    {
+      len += (*ptr++ & 0xc0) != 0x80;
+    }
+    return len;
+  }
+  else
+  {
+    return lpStr2 - lpStr1;
+  }
+}
+
+int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount)
 {
   const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n");
   if (pSpace)
   {
-    return (pSpace != pTB->m_ptr + pTB->m_iPos)
-              ? (pSpace - (pTB->m_ptr + pTB->m_iPos)) : 0;
+    return TextLengthInChars(pTB->m_ptr + pTB->m_iPos, pSpace, _iEncoding, piByteCount);
   }
   else
   {
-    return pTB->m_iMaxPos - pTB->m_iPos;
+    return TextLengthInChars(pTB->m_ptr + pTB->m_iPos, pTB->m_ptr + pTB->m_iMaxPos, _iEncoding, piByteCount);
   }
 }
 

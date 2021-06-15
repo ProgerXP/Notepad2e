@@ -1,9 +1,5 @@
 #pragma once
-
-struct TEncodingData;
-typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorithm;
-typedef struct TRecodingAlgorithm RecodingAlgorithm;
+#include "StringRecoding-fwd.h"
 
 BOOL CALW_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalData2);
