@@ -290,7 +290,7 @@ namespace Notepad2eTests
     TEST_METHOD(TestCALW_StringSamples)
     {
       const CTestCaseData data[] = {
-
+        /**/
         CTestCaseData(false, UCS2toCP(L"   𝕷𝖔𝖗𝖊𝖒 𝖎𝖕𝖘𝖚𝖒 𝖉𝖔𝖑𝖔𝖗 𝖘𝖎𝖙 𝖆𝖒𝖊𝖙, 𝖈𝖔𝖓𝖘𝖊𝖈𝖙𝖊𝖙𝖚𝖗 𝖆𝖉𝖎𝖕𝖎𝖘𝖈𝖎𝖓𝖌\r\n"
                                       L"    𝖊𝖑𝖎𝖙, 𝖘𝖊𝖉 𝖉𝖔 𝖊𝖎𝖚𝖘𝖒𝖔𝖉 𝖙𝖊𝖒𝖕𝖔𝖗 𝖎𝖓𝖈𝖎𝖉𝖎𝖉𝖚𝖓𝖙 𝖚𝖙 𝖑𝖆𝖇𝖔𝖗𝖊\r\n"
                                       L" 𝖊𝖙 𝖉𝖔𝖑𝖔𝖗𝖊 𝖒𝖆𝖌𝖓𝖆 𝖆𝖑𝖎𝖖𝖚𝖆. 𝖀𝖙 𝖊𝖓𝖎𝖒 𝖆𝖉 𝖒𝖎𝖓𝖎𝖒 𝖛𝖊𝖓𝖎𝖆𝖒,", CP_UTF8),
@@ -481,7 +481,36 @@ namespace Notepad2eTests
                                " \t\tdolor sit amet,\r\n"
                                " \t\tconsectetur",
                 false, 0, { 15, SCLEX_NULL }),
-           /**/
+          /**/
+
+          CTestCaseData(false, "12.  Lorem ipsum",
+                CPI_DEFAULT,
+                             "12.  Lorem\r\n"
+                             "     ipsum",
+                false, 0, { 5, SCLEX_NULL }),
+
+          CTestCaseData(false, "123)   Lorem ipsum, dolor sit amet, consectetur",
+                CPI_DEFAULT,
+                               "123)   Lorem ipsum, \r\n"
+                               "       dolor sit amet,\r\n"
+                               "       consectetur",
+                false, 0, { 15, SCLEX_NULL }),
+
+          CTestCaseData(false, "   1234: Lorem ipsum",
+                CPI_DEFAULT,
+                               "   1234: Lorem\r\n"
+                               "         ipsum",
+                false, 0, { 5, SCLEX_NULL }),
+
+          CTestCaseData(false, "  123)   Lorem ipsum, dolor sit amet, consectetur",
+                CPI_DEFAULT,
+                               "  123)   Lorem\r\n"
+                               "         ipsum,\r\n"
+                               "         dolor\r\n"
+                               "         sit amet,\r\n"                          
+                               "         consectetur",
+                false, 0, { 5, SCLEX_NULL }),
+          /**/
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
     }

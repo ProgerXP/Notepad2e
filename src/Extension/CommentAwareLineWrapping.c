@@ -81,6 +81,7 @@ struct TCALWData
   BOOL initLine;
   BOOL skipNextEOL;
   int iLineOffset;
+  int iWordCount;
   int iSingleLineCommentPrefixLength;
 };
 
@@ -101,13 +102,18 @@ void CALW_ReleaseAlgorithmData(LPVOID pData)
 {
 }
 
-inline BOOL IsEOLChar(const char ch)
-{
-  return (ch == '\r') || (ch == '\n');
-}
-
+static unsigned char CHAR_SPACE = ' ';
+static unsigned char CHAR_EOL_R = '\r';
+static unsigned char CHAR_EOL_N = '\n';
 static LPCSTR lpstrWhiteSpaces = " \t";
-static LPCSTR lpstrMarkerChars = "#>=?*";
+static LPCSTR lpstrStaticMarkerChars = "#>=?*";
+static LPCSTR lpstrDynamicMarkerChars = ":).";
+static LPCSTR lpstrDigits = "0123456789";
+
+inline BOOL IsEOLChar(const unsigned char ch)
+{
+  return (ch == CHAR_EOL_R) || (ch == CHAR_EOL_N);
+}
 
 // remove EOLs/front spaces
 BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
@@ -162,7 +168,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       }
     }
     else if ((PrefixData_GetLength(&calwdata.prefixFirstLine) > 0)
-      && (ch == ' ') && (iCharCount >= PrefixData_GetLength(&calwdata.prefixFirstLine)))
+      && (ch == CHAR_SPACE) && (iCharCount >= PrefixData_GetLength(&calwdata.prefixFirstLine)))
     {
       TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
       bSkipChars = TRUE;
@@ -176,7 +182,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       ++calwdata.relativeLineIndex;
 
       const BOOL isEOLAtPosition = IsEOLChar(TextBuffer_GetChar(&pED->m_tb));
-      const int spacesAfterPosition = TextBuffer_GetCharSequenceLength(&pED->m_tb, ' ', 1);
+      const int spacesAfterPosition = TextBuffer_GetCharSequenceLength(&pED->m_tb, CHAR_SPACE, 1);
       int iLineLength = 0;
       const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 1, &iLineLength);
 
@@ -193,13 +199,12 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         calwdata.skipNextEOL = TRUE;
         bSkipChars = TRUE;
       }
-      else
-      if (calwdata.initLine)
+      else if (calwdata.initLine)
       {
         const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, 1 + spacesAfterPosition + calwdata.iSingleLineCommentPrefixLength, pED);
         const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? calwdata.iSingleLineCommentPrefixLength : 0);
         if (isEOLAtPosition
-          && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrMarkerChars, lpstrWhiteSpaces, markerOffset))
+          && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrStaticMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
           TextBuffer_PushChar(&pED->m_tbRes, ch);
           TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
@@ -209,21 +214,20 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
           bSkipChars = TRUE;
         }
         else if ((pED->m_tbRes.m_iPos > 0)
-          && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != ' '))
+          && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE))
         {
-          TextBuffer_PushChar(&pED->m_tbRes, ' ');
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
         }
       }
-      if (!isWhiteSpaceLine && (ch == '\n'))
+      if (!isWhiteSpaceLine && (ch == CHAR_EOL_N))
       {
         calwdata.skipNextEOL = FALSE;
       }
     }
-    // else: ignore
   }
   else if (calwdata.initLine)
   {
-    calwdata.initLine &= (ch == ' ');
+    calwdata.initLine &= (ch == CHAR_SPACE);
   }
   
   if (!bSkipChars)
@@ -249,7 +253,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
 {
   BOOL bPrefixInitialized = FALSE;
   auto prefixLength = PrefixData_GetLength(&calwdata.prefixFirstLine);
-  if ((calwdata.iLineOffset == 0) && (prefixLength > 0))
+  if ((calwdata.iLineOffset == 0) && (prefixLength > 0) && !PrefixData_IsInitialized(&calwdata.prefixMarkerLine))
   {
     for (int i = 0; i < prefixLength; ++i)
     {
@@ -264,10 +268,11 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   int iWordByteCount = 0;
   int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
   if ((iWordLength >= calwdata.longLineLimit)
-    || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
+      || (calwdata.iWordCount == 0)
+      || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
   {
     if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
-      && ((pED->m_tbRes.m_iPos > 0) && TextBuffer_GetCharAt(&pED->m_tbRes, -1) == '\n'))
+      && ((pED->m_tbRes.m_iPos > 0) && TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_EOL_N))
     {
       const int markerPrefixLength = PrefixData_GetLength(&calwdata.prefixMarkerLine);
       if (markerPrefixLength > 0)
@@ -282,15 +287,37 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     for (int i = 1; i <= iWordByteCount; ++i)
     {
       const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-      if ((iWordLength >= 1) && strchr(lpstrMarkerChars, ch) && (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine)))
+      const BOOL isStaticMarker = strchr(lpstrStaticMarkerChars, ch);
+      const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
+      if ((iWordLength >= 1)
+        && (isStaticMarker || isDynamicMarker)
+        && (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine)))
       {
         TextBuffer_PushChar(&pED->m_tbRes, ch);
         ++iCharsProcessed;
         ++calwdata.iLineOffset;
 
-        const auto chNext = TextBuffer_GetChar(&pED->m_tb);
         PrefixData_SetEmpty(&calwdata.prefixMarkerLine);
-        PrefixData_PushChar(&calwdata.prefixMarkerLine, ' '); // space char under *
+        for (int i = 0; i < PrefixData_GetLength(&calwdata.prefixFirstLine); ++i)
+        {
+          PrefixData_PushChar(&calwdata.prefixMarkerLine, PrefixData_GetChar(&calwdata.prefixFirstLine, i));
+        }
+        PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE);
+
+        if (isDynamicMarker)
+        {
+          while (strchr(lpstrDigits, TextBuffer_GetChar(&pED->m_tb))
+                || strchr(lpstrDynamicMarkerChars, TextBuffer_GetChar(&pED->m_tb)))
+          {
+            const unsigned char ch1 = TextBuffer_PopChar(&pED->m_tb);
+            TextBuffer_PushChar(&pED->m_tbRes, ch1);
+            PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE); // space chars under NNN)
+            ++iCharsProcessed;
+            ++calwdata.iLineOffset;
+          }
+        }
+
+        const unsigned char chNext = TextBuffer_GetChar(&pED->m_tb);
         if (strchr(lpstrWhiteSpaces, chNext) != 0)
         {
           const int markerPostfixLength = TextBuffer_GetCharSequenceLength(&pED->m_tb, chNext, 0);
@@ -310,12 +337,14 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       TextBuffer_PushChar(&pED->m_tbRes, ch);
       ++iCharsProcessed;
       ++calwdata.iLineOffset;
-      if (ch == '\n')
+      if (ch == CHAR_EOL_N)
       {
         calwdata.iLineOffset = 0;
+        calwdata.iWordCount = 0;
         PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
       }
     }
+    calwdata.iWordCount = (calwdata.iLineOffset == 0) ? 0 : calwdata.iWordCount + 1;
     if (!bPrefixInitialized && (iWordByteCount != iWordLength))
     {
       calwdata.iLineOffset -= iWordByteCount - iWordLength;
@@ -331,11 +360,12 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
   {
     calwdata.iLineOffset = 0;
-    TextBuffer_PushChar(&pED->m_tbRes, '\r');
-    TextBuffer_PushChar(&pED->m_tbRes, '\n');
+    calwdata.iWordCount = 0;
+    TextBuffer_PushChar(&pED->m_tbRes, CHAR_EOL_R);
+    TextBuffer_PushChar(&pED->m_tbRes, CHAR_EOL_N);
 
     // skip trailing space
-    if (TextBuffer_GetChar(&pED->m_tb) == ' ')
+    if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
     {
       TextBuffer_PopChar(&pED->m_tb);
       ++iCharsProcessed;
