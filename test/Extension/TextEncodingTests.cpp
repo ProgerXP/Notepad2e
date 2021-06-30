@@ -100,6 +100,7 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
       }
 
       std::wstringstream ss;
+      ss << std::endl << "Data sample index: " << i << std::endl;
       ss << (isEncoding ? L"Encoding" : L"Decoding") << L"/";
       ss << bufferSize << L"/";
       ss << L"Target encoding: " << info.GetEncodingName() << L"/";
@@ -284,13 +285,25 @@ namespace Notepad2eTests
     }
   };
 
+#define ENABLE_ALL_TESTS
+
+#ifdef ENABLE_ALL_TESTS
+#define ENABLE_UNICODE_TEST
+#define ENABLE_LONG_TESTS
+#define ENABLE_SHORT_TESTS
+#define ENABLE_COMPOSITE_TESTS
+#endif
+
+#define ENABLE_NEW_TEST
+
   TEST_CLASS(CCommentAwareLineWrapping)
   {
   public:
     TEST_METHOD(TestCALW_StringSamples)
     {
       const CTestCaseData data[] = {
-        /**/
+
+#ifdef ENABLE_UNICODE_TEST
         CTestCaseData(false, UCS2toCP(L"   𝕷𝖔𝖗𝖊𝖒 𝖎𝖕𝖘𝖚𝖒 𝖉𝖔𝖑𝖔𝖗 𝖘𝖎𝖙 𝖆𝖒𝖊𝖙, 𝖈𝖔𝖓𝖘𝖊𝖈𝖙𝖊𝖙𝖚𝖗 𝖆𝖉𝖎𝖕𝖎𝖘𝖈𝖎𝖓𝖌\r\n"
                                       L"    𝖊𝖑𝖎𝖙, 𝖘𝖊𝖉 𝖉𝖔 𝖊𝖎𝖚𝖘𝖒𝖔𝖉 𝖙𝖊𝖒𝖕𝖔𝖗 𝖎𝖓𝖈𝖎𝖉𝖎𝖉𝖚𝖓𝖙 𝖚𝖙 𝖑𝖆𝖇𝖔𝖗𝖊\r\n"
                                       L" 𝖊𝖙 𝖉𝖔𝖑𝖔𝖗𝖊 𝖒𝖆𝖌𝖓𝖆 𝖆𝖑𝖎𝖖𝖚𝖆. 𝖀𝖙 𝖊𝖓𝖎𝖒 𝖆𝖉 𝖒𝖎𝖓𝖎𝖒 𝖛𝖊𝖓𝖎𝖆𝖒,", CP_UTF8),
@@ -301,8 +314,9 @@ namespace Notepad2eTests
                                       L"   𝖊𝖙 𝖉𝖔𝖑𝖔𝖗𝖊 𝖒𝖆𝖌𝖓𝖆 𝖆𝖑𝖎𝖖𝖚𝖆. 𝖀𝖙 𝖊𝖓𝖎𝖒 𝖆𝖉 \r\n"
                                       L"   𝖒𝖎𝖓𝖎𝖒 𝖛𝖊𝖓𝖎𝖆𝖒,", CP_UTF8),
 				false, 0, { 40, SCLEX_NULL }),
+#endif
 
-        /**/
+#ifdef ENABLE_LONG_TESTS
         CTestCaseData(false, "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
                              "  et dolore magna aliqua. Ut enim ad minim veniam,",
@@ -376,7 +390,9 @@ namespace Notepad2eTests
                              "  // incididunt ut labore et dolore magna aliqua. \r\n"
                              "  // Ut enim ad minim veniam,",
                 false, 0, { 45, SCLEX_CPP }),
+#endif
 
+#ifdef ENABLE_SHORT_TESTS
         CTestCaseData(false, "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",
@@ -481,7 +497,6 @@ namespace Notepad2eTests
                                " \t\tdolor sit amet,\r\n"
                                " \t\tconsectetur",
                 false, 0, { 15, SCLEX_NULL }),
-          /**/
 
           CTestCaseData(false, "12.  Lorem ipsum",
                 CPI_DEFAULT,
@@ -510,7 +525,93 @@ namespace Notepad2eTests
                                "         sit amet,\r\n"                          
                                "         consectetur",
                 false, 0, { 5, SCLEX_NULL }),
-          /**/
+
+          CTestCaseData(false, "  * aa aa\r\n",
+                CPI_DEFAULT,
+                               "  * aa \r\n"
+                               "    aa\r\n",
+                false, 0, { 3, SCLEX_NULL }),
+            
+          CTestCaseData(false, "aaa aa\r\n"
+                               "aaa\r\n",
+                CPI_DEFAULT,
+                               "aaa\r\n"
+                               "aa \r\n"
+                               "aaa\r\n",
+                false, 0, { 3, SCLEX_NULL }),
+#endif
+
+#ifdef ENABLE_COMPOSITE_TESTS
+          CTestCaseData(false, "aaa\r\n"
+                               "  * aa aa\r\n",
+                CPI_DEFAULT,
+                               "aaa\r\n"
+                               "  * aa \r\n"
+                               "    aa\r\n",
+                false, 0, { 3, SCLEX_NULL }),
+
+          CTestCaseData(false, "aaa\r\n"
+                               "  * aa aa\r\n"
+                               "\r\n"
+                               " bbb",
+                CPI_DEFAULT,
+                               "aaa\r\n"
+                               "  * aa \r\n"
+                               "    aa\r\n"
+                               "\r\n"
+                               " bbb",
+                false, 0, { 3, SCLEX_NULL }),
+
+          CTestCaseData(false, "  * aa aa\r\n"
+                               "      * aa aa\r\n",
+                CPI_DEFAULT,
+                               "  * aa \r\n"
+                               "    aa\r\n"
+                               "  * aa \r\n"
+                               "    aa\r\n",
+                false, 0, { 3, SCLEX_NULL }),
+
+          CTestCaseData(false, "* aa aa\r\n"
+                               "\r\n"
+                               "  * bb bb",
+                CPI_DEFAULT,
+                               "* aa \r\n"
+                               "  aa\r\n"
+                               "\r\n"
+                               "  * bb \r\n"
+                               "    bb",
+                false, 0, { 3, SCLEX_NULL }),
+
+          CTestCaseData(false, "aaa aa\r\n"
+                               "\r\n"
+                               "aaa\r\n"
+                               "* aa aa\r\n"
+                               "* aa aa\r\n"
+                               "\r\n"
+                               "aaaaa",
+                CPI_DEFAULT,
+                               "aaa\r\n"
+                               "aa\r\n"
+                               "\r\n"
+                               "aaa\r\n"
+                               "* aa \r\n"
+                               "  aa\r\n"
+                               "* aa \r\n"
+                               "  aa\r\n"
+                               "\r\n"
+                               "aaaaa",
+                false, 0, { 3, SCLEX_NULL }),
+#endif
+
+#ifdef ENABLE_NEW_TEST
+          CTestCaseData(false, "aaa aa\r\n"
+                               "aaaaa",
+                CPI_DEFAULT,
+                               "aaa\r\n"
+                               "aa \r\n"
+                               "aaaaa",
+                false, 0, { 3, SCLEX_NULL }),
+#endif 
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
     }
