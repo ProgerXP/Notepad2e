@@ -8,6 +8,7 @@
 
 int iEncoding = CPI_DEFAULT;
 int iLongLinesLimit = 80;
+int iEOLMode = SC_EOL_CRLF;
 
 // Code duplication for mEncoding:
 // https://github.com/ProgerXP/Notepad2e/issues/118#issuecomment-353869333

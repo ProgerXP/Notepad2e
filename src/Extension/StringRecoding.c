@@ -354,6 +354,24 @@ BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcesse
   return res;
 }
 
+void TextBuffer_AddEOL(TextBuffer* pTB, const int iEOLMode)
+{
+  switch (iEOLMode)
+  {
+  case SC_EOL_CRLF:
+    TextBuffer_PushChar(pTB, '\r');
+    TextBuffer_PushChar(pTB, '\n');
+    return;
+  case SC_EOL_LF:
+    TextBuffer_PushChar(pTB, '\n');
+    return;
+  case SC_EOL_CR:
+    TextBuffer_PushChar(pTB, '\r');
+    return;
+  }
+  assert(0);
+}
+
 BOOL TextBuffer_IsDataPortionAvailable(TextBuffer* pTB, const long iRequiredChars)
 {
   const long iRemainingChars = (pTB->m_iPos < pTB->m_iMaxPos) ? (pTB->m_iMaxPos - pTB->m_iPos) : 0;
@@ -508,13 +526,14 @@ BOOL TextRange_GetNextDataPortion(StringSource* pSS, struct TTextRange* pTR, str
 }
 
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding,
-  const int iAdditionalData1, const int iAdditionalData2)
+  const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3)
 {
   pRA->recodingType = rt;
   pRA->isEncoding = isEncoding;
   pRA->iPassCount = 1;
   pRA->iAdditionalData1 = iAdditionalData1;
   pRA->iAdditionalData2 = iAdditionalData2;
+  pRA->iAdditionalData3 = iAdditionalData3;
   switch (pRA->recodingType)
   {
   case ERT_HEX:
@@ -573,7 +592,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = CALW_Decode;
     pRA->pDecodeTailMethod = NULL;
-    pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData1, pRA->iAdditionalData2);
+    pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData1, pRA->iAdditionalData2, pRA->iAdditionalData3);
     return TRUE;
   default:
     assert(FALSE);

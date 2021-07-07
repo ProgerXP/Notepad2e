@@ -15,7 +15,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, const int, const int, int*);
+typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, const int, const int, const int, int*);
 
 #define MIN_BUFFER_SIZE 8
 #define MAX_BUFFER_SIZE 65536
@@ -114,8 +114,9 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         LPCSTR result = proc((LPCSTR)srcData.data(),
                                 srcData.size(),
                                 info.GetEncoding(),
-                                info.GetAdditionalData().first,
-                                info.GetAdditionalData().second,
+                                std::get<0>(info.GetAdditionalData()),
+                                std::get<1>(info.GetAdditionalData()),
+                                std::get<2>(info.GetAdditionalData()),
                                 bufferSize,
                                 &resultLength);
         if (info.GetExpectedResultText() != VectorFromString(result, resultLength))
@@ -133,8 +134,9 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
         LPCSTR result = proc((LPCSTR)srcData.data(),
                              srcData.size(),
                              info.GetEncoding(),
-                             info.GetAdditionalData().first,
-                             info.GetAdditionalData().second,
+                             std::get<0>(info.GetAdditionalData()),
+                             std::get<1>(info.GetAdditionalData()),
+                             std::get<2>(info.GetAdditionalData()),
                              bufferSize,
                              &resultLength);
         if (info.GetSourceText() != VectorFromString(result, resultLength))
@@ -313,7 +315,7 @@ namespace Notepad2eTests
                                       L"   𝖊𝖎𝖚𝖘𝖒𝖔𝖉 𝖙𝖊𝖒𝖕𝖔𝖗 𝖎𝖓𝖈𝖎𝖉𝖎𝖉𝖚𝖓𝖙 𝖚𝖙 𝖑𝖆𝖇𝖔𝖗𝖊 \r\n"
                                       L"   𝖊𝖙 𝖉𝖔𝖑𝖔𝖗𝖊 𝖒𝖆𝖌𝖓𝖆 𝖆𝖑𝖎𝖖𝖚𝖆. 𝖀𝖙 𝖊𝖓𝖎𝖒 𝖆𝖉 \r\n"
                                       L"   𝖒𝖎𝖓𝖎𝖒 𝖛𝖊𝖓𝖎𝖆𝖒,", CP_UTF8),
-				false, 0, { 40, SCLEX_NULL }),
+				false, 0, { 40, SCLEX_NULL, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_LONG_TESTS
@@ -324,7 +326,16 @@ namespace Notepad2eTests
                              "    Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
                              "    elit, sed do eiusmod tempor incididunt ut labore et\r\n"
                              "    dolore magna aliqua. Ut enim ad minim veniam,",
-				false, 0, { 55, SCLEX_NULL }),
+                false, 0, { 55, SCLEX_NULL, SC_EOL_CRLF }),
+
+        CTestCaseData(false, "    Lorem ipsum dolor sit amet, consectetur adipiscing\r"
+                             "      elit, sed do eiusmod tempor incididunt ut labore\r"
+                             "  et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "    Lorem ipsum dolor sit amet, consectetur adipiscing \r"
+                             "    elit, sed do eiusmod tempor incididunt ut labore et\r"
+                             "    dolore magna aliqua. Ut enim ad minim veniam,",
+                false, 0, { 55, SCLEX_NULL, SC_EOL_CR }),
 
         CTestCaseData(false, "   Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
@@ -333,7 +344,7 @@ namespace Notepad2eTests
                              "   Lorem ipsum dolor sit amet, consectetur adipiscing elit, \r\n"
                              "   sed do eiusmod tempor incididunt ut labore et dolore \r\n"
                              "   magna aliqua. Ut enim ad minim veniam,",
-                false, 0, { 60, SCLEX_NULL }),
+                false, 0, { 60, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
@@ -342,7 +353,7 @@ namespace Notepad2eTests
                              "  Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \r\n"
                              "  tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \r\n"
                              "  veniam,",
-                false, 0, { 75, SCLEX_NULL }),
+                false, 0, { 75, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "   //   elit, sed do eiusmod tempor incididunt ut labore\r\n"
@@ -351,8 +362,8 @@ namespace Notepad2eTests
                              "    // Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
                              "    // elit, sed do eiusmod tempor incididunt ut labore et \r\n"
                              "    // dolore magna aliqua. Ut enim ad minim veniam,",
-                false, 0, { 55, SCLEX_CPP }),
-
+                false, 0, { 55, SCLEX_CPP, SC_EOL_CRLF }),
+                
         CTestCaseData(false, "//Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "   //   elit, sed do eiusmod tempor incididunt ut labore\r\n"
                              "//  et dolore magna aliqua. Ut enim ad minim veniam,",
@@ -361,7 +372,17 @@ namespace Notepad2eTests
                              "//adipiscing elit, sed do eiusmod tempor \r\n"
                              "//incididunt ut labore et dolore magna \r\n"
                              "//aliqua. Ut enim ad minim veniam,",
-                false, 0, { 40, SCLEX_CPP }),
+                false, 0, { 40, SCLEX_CPP, SC_EOL_CRLF }),
+
+        CTestCaseData(false, "//Lorem ipsum dolor sit amet, consectetur adipiscing\n"
+                             "   //   elit, sed do eiusmod tempor incididunt ut labore\n"
+                             "//  et dolore magna aliqua. Ut enim ad minim veniam,",
+                CPI_DEFAULT,
+                             "//Lorem ipsum dolor sit amet, consectetur \n"
+                             "//adipiscing elit, sed do eiusmod tempor \n"
+                             "//incididunt ut labore et dolore magna \n"
+                             "//aliqua. Ut enim ad minim veniam,",
+                false, 0, { 40, SCLEX_CPP, SC_EOL_LF }),
 
         CTestCaseData(false, "    # Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "   #   elit, sed do eiusmod tempor incididunt ut labore\r\n"
@@ -370,7 +391,7 @@ namespace Notepad2eTests
                              "    # Lorem ipsum dolor sit amet, consectetur adipiscing \r\n"
                              "    # elit, sed do eiusmod tempor incididunt ut labore et \r\n"
                              "    # dolore magna aliqua. Ut enim ad minim veniam,",
-                false, 0, { 55, SCLEX_PERL }),
+                false, 0, { 55, SCLEX_PERL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      //  elit, sed do eiusmod tempor incididunt ut labore et \r\n"
@@ -379,7 +400,7 @@ namespace Notepad2eTests
                              "  // Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod \r\n"
                              "  // tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim \r\n"
                              "  // veniam,",
-                false, 0, { 75, SCLEX_CPP }),
+                false, 0, { 75, SCLEX_CPP, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      //  elit, sed do eiusmod tempor incididunt ut labore et \r\n"
@@ -389,10 +410,19 @@ namespace Notepad2eTests
                              "  // adipiscing elit, sed do eiusmod tempor \r\n"
                              "  // incididunt ut labore et dolore magna aliqua. \r\n"
                              "  // Ut enim ad minim veniam,",
-                false, 0, { 45, SCLEX_CPP }),
+                false, 0, { 45, SCLEX_CPP, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_SHORT_TESTS
+        CTestCaseData(false, "    Lorem\r"
+                             "    \r"
+                             "    Ipsum",
+                CPI_DEFAULT,
+                             "    Lorem\r"
+                             "    \r"
+                             "    Ipsum",
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CR }),
+
         CTestCaseData(false, "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",
@@ -400,7 +430,7 @@ namespace Notepad2eTests
                              "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",
-                false, 0, { 50, SCLEX_NULL }),
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    Lorem\r\n"
                              "\r\n"
@@ -409,14 +439,14 @@ namespace Notepad2eTests
                              "    Lorem\r\n"
                              "    \r\n"
                              "    Ipsum",
-                false, 0, { 50, SCLEX_NULL }),
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  * Lorem\r\n"
                              "* Ipsum",
                 CPI_DEFAULT,
                              "  * Lorem\r\n"
                              "  * Ipsum",
-                false, 0, { 50, SCLEX_NULL }),
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    * Lorem\r\n"
                              "         * Ipsum\r\n"
@@ -425,28 +455,35 @@ namespace Notepad2eTests
                              "    * Lorem\r\n"
                              "    * Ipsum\r\n"
                              "    *  Dolor",
-                false, 0, { 50, SCLEX_NULL }),
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    // Lorem\r\n"
                              "      //*Ipsum",
                 CPI_DEFAULT,
                              "    // Lorem\r\n"
                              "    // *Ipsum",
-                false, 0, { 50, SCLEX_CPP }),
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
+        CTestCaseData(false, "    // Lorem\n"
+                             "      //*Ipsum",
+                CPI_DEFAULT,
+                             "    // Lorem\n"
+                             "    // *Ipsum",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
 
         CTestCaseData(false, "    // Lorem\r\n"
                              "      //*Ipsum\r\n",
                 CPI_DEFAULT,
                              "    // Lorem\r\n"
                              "    // *Ipsum\r\n",
-                false, 0, { 50, SCLEX_CPP }),
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
 		    CTestCaseData(false, "    ; Lorem\r\n"
                              "      ;*Ipsum",
                 CPI_DEFAULT,
                              "    ; Lorem\r\n"
                              "    ; *Ipsum",
-    				    false, 0, { 50, SCLEX_PROPERTIES }),
+    				    false, 0, { 50, SCLEX_PROPERTIES, SC_EOL_CRLF }),
 
         CTestCaseData(false, "aa\r\n"
                              "bb\r\n"
@@ -459,63 +496,76 @@ namespace Notepad2eTests
                              "* cc dd\r\n"
                              "\r\n"
                              "ee",
-                false, 0, { 50, SCLEX_NULL }),
+                false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "*  Lorem ipsum",
                 CPI_DEFAULT,
                              "*  Lorem\r\n"
                              "   ipsum",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
   
         CTestCaseData(false, "*\t\tLorem ipsum",
                 CPI_DEFAULT,
                              "*\t\tLorem\r\n"
                              " \t\tipsum",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "*Lorem ipsum",
                 CPI_DEFAULT,
                              "*Lorem\r\n"
                              " ipsum",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
                 
           CTestCaseData(false, "#Lorem ipsum",
                 CPI_DEFAULT,
                                "#Lorem\r\n"
                                " ipsum",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "#   Lorem ipsum",
                 CPI_DEFAULT,
                                "#   Lorem\r\n"
                                "    ipsum",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, ">\t\tLorem ipsum dolor sit amet, consectetur",
                 CPI_DEFAULT,
                                ">\t\tLorem ipsum \r\n"
                                " \t\tdolor sit amet,\r\n"
                                " \t\tconsectetur",
-                false, 0, { 15, SCLEX_NULL }),
+                false, 0, { 15, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "12.  Lorem ipsum",
                 CPI_DEFAULT,
                              "12.  Lorem\r\n"
                              "     ipsum",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "123)   Lorem ipsum, dolor sit amet, consectetur",
                 CPI_DEFAULT,
                                "123)   Lorem ipsum, \r\n"
                                "       dolor sit amet,\r\n"
                                "       consectetur",
-                false, 0, { 15, SCLEX_NULL }),
+                false, 0, { 15, SCLEX_NULL, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "123)   Lorem ipsum, dolor sit amet, consectetur",
+                CPI_DEFAULT,
+                               "123)   Lorem ipsum, \n"
+                               "       dolor sit amet,\n"
+                               "       consectetur",
+                false, 0, { 15, SCLEX_NULL, SC_EOL_LF }),
 
           CTestCaseData(false, "   1234: Lorem ipsum",
                 CPI_DEFAULT,
                                "   1234: Lorem\r\n"
                                "         ipsum",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "   1234: Lorem ipsum",
+                CPI_DEFAULT,
+                               "   1234: Lorem\r"
+                               "         ipsum",
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CR }),
 
           CTestCaseData(false, "  123)   Lorem ipsum, dolor sit amet, consectetur",
                 CPI_DEFAULT,
@@ -524,13 +574,13 @@ namespace Notepad2eTests
                                "         dolor\r\n"
                                "         sit amet,\r\n"                          
                                "         consectetur",
-                false, 0, { 5, SCLEX_NULL }),
+                false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "  * aa aa\r\n",
                 CPI_DEFAULT,
                                "  * aa \r\n"
                                "    aa\r\n",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
             
           CTestCaseData(false, "aaa aa\r\n"
                                "aaa\r\n",
@@ -538,7 +588,7 @@ namespace Notepad2eTests
                                "aaa\r\n"
                                "aa \r\n"
                                "aaa\r\n",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
@@ -548,7 +598,7 @@ namespace Notepad2eTests
                                "aaa\r\n"
                                "  * aa \r\n"
                                "    aa\r\n",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "aaa\r\n"
                                "  * aa aa\r\n"
@@ -560,7 +610,7 @@ namespace Notepad2eTests
                                "    aa\r\n"
                                "\r\n"
                                " bbb",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "  * aa aa\r\n"
                                "      * aa aa\r\n",
@@ -569,7 +619,7 @@ namespace Notepad2eTests
                                "    aa\r\n"
                                "  * aa \r\n"
                                "    aa\r\n",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "* aa aa\r\n"
                                "\r\n"
@@ -580,7 +630,7 @@ namespace Notepad2eTests
                                "\r\n"
                                "  * bb \r\n"
                                "    bb",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "aaa aa\r\n"
                                "\r\n"
@@ -600,7 +650,7 @@ namespace Notepad2eTests
                                "  aa\r\n"
                                "\r\n"
                                "aaaaa",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST
@@ -610,7 +660,7 @@ namespace Notepad2eTests
                                "aaa\r\n"
                                "aa \r\n"
                                "aaaaa",
-                false, 0, { 3, SCLEX_NULL }),
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 #endif 
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);

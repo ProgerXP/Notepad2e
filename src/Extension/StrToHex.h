@@ -10,9 +10,9 @@ extern "C" { // C-Declarations
 #endif //__cplusplus
 
   LPCSTR EncodeStringToHex(LPCSTR text, const int textLength, const int encoding,
-    const int additionalData1, const int additionalData2, const int bufferSize, int* pResultSize);
+    const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultSize);
   LPCSTR DecodeHexToString(LPCSTR text, const int textLength, const int encoding,
-    const int additionalData1, const int additionalData2, const int bufferSize, int* pResultSize);
+    const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultSize);
   void EncodeStrToHex(const HWND hwnd);
   void DecodeHexToStr(const HWND hwnd);
 

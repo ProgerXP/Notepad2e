@@ -62,6 +62,7 @@ struct TRecodingAlgorithm
   int iRequiredCharsForDecode;
   int iAdditionalData1;
   int iAdditionalData2;
+  int iAdditionalData3;
   IsValidStrSequence pIsValidStrSequence;
   RecodeMethod pEncodeMethod;
   RecodeMethod pEncodeTailMethod;
@@ -106,6 +107,7 @@ BOOL TextBuffer_PushChar(TextBuffer* pTB, const char ch);
 BOOL TextBuffer_PushHexChar(EncodingData* pED, const unsigned char ch);
 BOOL TextBuffer_PushNonZeroChar(TextBuffer* pTB, const char ch);
 BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcessed);
+void TextBuffer_AddEOL(TextBuffer* pTB, const int iEOLMode);
 
 typedef enum
 {
@@ -117,7 +119,7 @@ typedef enum
 } ERecodingType;
 
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt,
-  const BOOL isEncoding, const int iAdditionalData1, const int iAdditionalData2);
+  const BOOL isEncoding, const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3);
 BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);
 
 void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textLength);

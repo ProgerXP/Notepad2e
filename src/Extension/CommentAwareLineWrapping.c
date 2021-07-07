@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <wtypes.h>
 #include <Shlwapi.h>
 #include "Externals.h"
@@ -84,18 +85,36 @@ struct TCALWData
   int iLineOffset;
   int iWordCount;
   int iSingleLineCommentPrefixLength;
+  int iEOLMode;
+  int iTrailingEOLLength;
 };
 
 typedef struct TCALWData CALWData;
 
 static CALWData calwdata = { 0 };
 
-LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalData2)
+inline BOOL GetTrailingEOLLength()
+{
+  switch (calwdata.iEOLMode)
+  {
+  case SC_EOL_CRLF:
+    return 1;
+  case SC_EOL_LF:
+  case SC_EOL_CR:
+    return 0;
+  }
+  assert(0);
+  return 0;
+}
+
+LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3)
 {
   ZeroMemory(&calwdata, sizeof(calwdata));
   calwdata.longLineLimit = iAdditionalData1;
   calwdata.lexerId = iAdditionalData2;
   calwdata.iSingleLineCommentPrefixLength = n2e_GetSingleLineCommentPrefixLength(calwdata.lexerId);
+  calwdata.iEOLMode = iAdditionalData3;
+  calwdata.iTrailingEOLLength = GetTrailingEOLLength();
   return (LPVOID)&calwdata;
 }
 
@@ -116,9 +135,39 @@ inline BOOL IsEOLChar(const unsigned char ch)
   return (ch == CHAR_EOL_R) || (ch == CHAR_EOL_N);
 }
 
+inline BOOL IsEOL(const unsigned char ch)
+{
+  switch (calwdata.iEOLMode)
+  {
+  case SC_EOL_CRLF:
+    return ch == CHAR_EOL_N;
+  case SC_EOL_LF:
+    return ch == CHAR_EOL_N;
+  case SC_EOL_CR:
+    return ch == CHAR_EOL_R;
+  }
+  assert(0);
+  return FALSE;
+}
+
+inline BOOL IsTrailingEOL(const unsigned char ch, TextBuffer* pTB)
+{
+  switch (calwdata.iEOLMode)
+  {
+  case SC_EOL_CRLF:
+    return (ch == CHAR_EOL_R) && IsEOL(TextBuffer_GetChar(pTB));
+  case SC_EOL_LF:
+    return ch == CHAR_EOL_N;
+  case SC_EOL_CR:
+    return ch == CHAR_EOL_R;
+  }
+  assert(0);
+  return FALSE;
+}
+
 inline BOOL isMarker(const unsigned char ch, EncodingData* pED)
 {
-  const BOOL isStaticMarker = strchr(lpstrStaticMarkerChars, ch);
+  const BOOL isStaticMarker = strchr(lpstrStaticMarkerChars, ch) != NULL;
   const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
   return isStaticMarker || isDynamicMarker;
 }
@@ -127,8 +176,9 @@ inline BOOL isMarker(const unsigned char ch, EncodingData* pED)
 BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   BOOL bSkipChars = FALSE;
+  BOOL bSkipInitLineCheck = FALSE;
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-  int iCharCount = 1 + TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0);
+  int iCharCount = 1 + (!IsTrailingEOL(ch, &pED->m_tb) ? TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0) : 0);
   int iCharsProcessed = 0;
   if ((calwdata.relativeLineIndex == 0) && !PrefixData_IsInitialized(&calwdata.prefixFirstLine))
   {
@@ -164,6 +214,11 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   {
     if (PrefixData_IsComment(&calwdata.prefixFirstLine))
     {
+      if (calwdata.iTrailingEOLLength == 0)
+      {
+        TextBuffer_OffsetPos(&pED->m_tb, -1);
+        --(*piCharsProcessed);
+      }
       const int iWhiteSpaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
       const BOOL isSingleLineComment = 
         n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iWhiteSpaces + calwdata.iSingleLineCommentPrefixLength, pED);
@@ -172,6 +227,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         iCharCount = iWhiteSpaces + 1 + calwdata.iSingleLineCommentPrefixLength;
         TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
         bSkipChars = TRUE;
+        bSkipInitLineCheck = TRUE;
         calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
       }
     }
@@ -183,46 +239,55 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     }
   }
 
-  if (IsEOLChar(ch))
+  if (IsEOLChar(ch) || bSkipInitLineCheck)
   {
     if (!calwdata.initLine)
     {
       ++calwdata.relativeLineIndex;
 
-      const BOOL isEOLAtPosition = IsEOLChar(TextBuffer_GetChar(&pED->m_tb));
-      const int spacesAfterPosition = TextBuffer_GetCharSequenceLength(&pED->m_tb, CHAR_SPACE, 1);
+      const BOOL isEOLAtPosition = (calwdata.iTrailingEOLLength == 0) ? TRUE : IsEOLChar(TextBuffer_GetChar(&pED->m_tb));
+      const int spacesAfterPosition = TextBuffer_GetCharSequenceLength(&pED->m_tb, CHAR_SPACE, calwdata.iTrailingEOLLength);
       int iLineLength = 0;
-      const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 1, &iLineLength);
+      const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, calwdata.iTrailingEOLLength, &iLineLength);
 
       calwdata.initLine = !calwdata.skipNextEOL &&
         (((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0) && !isWhiteSpaceLine) || isEOLAtPosition);
 
       if (isWhiteSpaceLine)
       {
-        TextBuffer_PushChar(&pED->m_tbRes, ch);
-        TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
-        iCharCount += 1 + iLineLength;
-        TextBuffer_OffsetPos(&pED->m_tb, 1 + iLineLength);
+        TextBuffer_PushChar(&pED->m_tbRes, ch); 
+        int count = 0;
+        if (calwdata.iEOLMode == SC_EOL_CRLF)
+        {
+          TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
+          count += 1;
+        }
+        count += iLineLength;
+        TextBuffer_OffsetPos(&pED->m_tb, count);
+        iCharCount += count;
         calwdata.initLine = FALSE;
         calwdata.skipNextEOL = TRUE;
         bSkipChars = TRUE;
       }
       else if (calwdata.initLine)
       {
-        const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, 1 + spacesAfterPosition + calwdata.iSingleLineCommentPrefixLength, pED);
-        const int markerOffset = 1 + spacesAfterPosition + (commentAtPosition ? calwdata.iSingleLineCommentPrefixLength : 0);
+        const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, calwdata.iTrailingEOLLength + spacesAfterPosition + calwdata.iSingleLineCommentPrefixLength, pED);
+        const int markerOffset = calwdata.iTrailingEOLLength + spacesAfterPosition + (commentAtPosition ? calwdata.iSingleLineCommentPrefixLength : 0);
         if (isEOLAtPosition
           && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrStaticMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
           TextBuffer_PushChar(&pED->m_tbRes, ch);
-          TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
+          if (calwdata.iEOLMode == SC_EOL_CRLF)
+          {
+            TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_GetChar(&pED->m_tb));
+          }
           calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
           calwdata.initLine = FALSE;
           if (!calwdata.previosLineUseMarker && !commentAtPosition)
           {
             calwdata.previosLineUseMarker = TRUE;
-            iCharCount += 1;
-            TextBuffer_OffsetPos(&pED->m_tb, 1);
+            iCharCount += calwdata.iTrailingEOLLength;
+            TextBuffer_OffsetPos(&pED->m_tb, calwdata.iTrailingEOLLength);
           }
           else
           {
@@ -232,12 +297,12 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
           bSkipChars = TRUE;
         }
         else if ((pED->m_tbRes.m_iPos > 0)
-          && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE))
+          && (TextBuffer_GetCharAt(&pED->m_tbRes, -calwdata.iTrailingEOLLength) != CHAR_SPACE))
         {
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
         }
       }
-      if (!isWhiteSpaceLine && (ch == CHAR_EOL_N))
+      if (!isWhiteSpaceLine && IsEOL(ch))
       {
         calwdata.skipNextEOL = FALSE;
         calwdata.previosLineUseMarker = FALSE;
@@ -295,7 +360,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
   {
     if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
-      && ((pED->m_tbRes.m_iPos > 0) && TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_EOL_N))
+      && ((pED->m_tbRes.m_iPos > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))
     {
       const int markerPrefixLength = PrefixData_GetLength(&calwdata.prefixMarkerLine);
       if (markerPrefixLength > 0)
@@ -310,7 +375,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     for (int i = 1; i <= iWordByteCount; ++i)
     {
       const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-      const BOOL isStaticMarker = strchr(lpstrStaticMarkerChars, ch);
+      const BOOL isStaticMarker = strchr(lpstrStaticMarkerChars, ch) != NULL;
       const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
       if ((iWordLength >= 1)
         && (isStaticMarker || isDynamicMarker)
@@ -373,10 +438,13 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       ++calwdata.iLineOffset;
       if (IsEOLChar(ch))
       {
-        if ((ch == CHAR_EOL_R) && (TextBuffer_GetChar(&pED->m_tb) == CHAR_EOL_N))
+        if (IsTrailingEOL(ch, &pED->m_tb))
         {
-          TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_PopChar(&pED->m_tb));
-          ++iCharsProcessed;
+          if (calwdata.iEOLMode == SC_EOL_CRLF)
+          {
+            TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_PopChar(&pED->m_tb));
+            ++iCharsProcessed;
+          }
         }
 
         calwdata.iLineOffset = 0;
@@ -403,8 +471,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     calwdata.iWordCount = 0;
     if (!IsEOLChar(TextBuffer_GetChar(&pED->m_tb)))
     {
-      TextBuffer_PushChar(&pED->m_tbRes, CHAR_EOL_R);
-      TextBuffer_PushChar(&pED->m_tbRes, CHAR_EOL_N);
+      TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
       // skip trailing space
       if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
       {
@@ -443,10 +510,10 @@ static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
 LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encoding,
-  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
+  const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, additionalData1, additionalData2);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, additionalData1, additionalData2, additionalData3);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -456,7 +523,7 @@ LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encodin
 
 void EncodeStrWithCALW(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer, iEOLMode);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

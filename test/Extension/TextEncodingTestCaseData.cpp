@@ -170,5 +170,5 @@ std::wstring CTestCaseData::GetEncodingName() const
 
 TData CTestCaseData::GetAdditionalData() const
 {
-  return pairAdditionalData;
+  return tupleAdditionalData;
 }

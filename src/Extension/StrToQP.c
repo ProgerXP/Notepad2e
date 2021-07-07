@@ -158,10 +158,10 @@ static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 
 LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding,
-  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
+  const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, additionalData1, additionalData2);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, additionalData1, additionalData2, additionalData3);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -170,10 +170,10 @@ LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding,
 }
 
 LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding,
-  const int additionalData1, const int additionalData2, const int bufferSize, int* pResultLength)
+  const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, additionalData1, additionalData2);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, additionalData1, additionalData2, additionalData3);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -183,7 +183,7 @@ LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding,
 
 void EncodeStrToQP(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, 0, 0);
+  RecodingAlgorithm_Init(&ra, ERT_QP, TRUE, 0, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
@@ -191,7 +191,7 @@ void EncodeStrToQP(const HWND hwnd)
 
 void DecodeQPToStr(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, 0, 0);
+  RecodingAlgorithm_Init(&ra, ERT_QP, FALSE, 0, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
