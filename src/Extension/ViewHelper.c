@@ -109,6 +109,7 @@ void n2e_SplitView(const BOOL bHorizontally)
 {
   const HWND hwndEditActive = n2e_GetActiveEditCheckFocus();
   hwndEditParent = GetParent(hwndEditActive);
+  const auto activePosition = SciCall_PositionFromLine(SciCall_LineFromPosition(SciCall_GetCurrentPos()));
   const HWND hwndEditNew = n2e_EditCreateImpl(hwndEditActive, hwndEditParent, bHorizontally, &hwndEditParent);
   if (PrivateIsAppThemed())
   {
@@ -119,6 +120,7 @@ void n2e_SplitView(const BOOL bHorizontally)
   n2e_UpdateMainWindow();
   n2e_UpdateView(hwndEditNew, SendMessage(hwndEdit, SCI_GETDOCPOINTER, 0, 0));
   n2e_SetActiveEdit(hwndEditNew);
+  EditSelectEx(hwndEditNew, activePosition, activePosition);
   SetFocus(hwndEditNew);
 }
 
