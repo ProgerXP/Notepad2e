@@ -815,6 +815,10 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
       break;
 
     case SCN_FOCUSOUT:
+      if (n2e_IsSelectionEditModeOn())
+      {
+        n2e_SelectionEditStop(hwnd, SES_APPLY);
+      }
       Style_SetCurrentLineBackground(hwnd);
       break;
 
