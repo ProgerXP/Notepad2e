@@ -126,7 +126,10 @@ void StringSource_InitFromString(StringSource* pSS, LPCSTR text, const int textL
 void StringSource_InitFromHWND(StringSource* pSS, const HWND hwnd);
 long StringSource_GetSelectionStart(const StringSource* pSS);
 long StringSource_GetSelectionEnd(const StringSource* pSS);
+long StringSource_GetLineStart(const StringSource* pSS, const int iPos);
+long StringSource_GetLineEnd(const StringSource* pSS, const int iPos);
 long StringSource_GetLength(const StringSource* pSS);
+char StringSource_GetCharAt(const StringSource* pSS, const int iPos);
 long StringSource_IsDataPortionAvailable(const StringSource* pSS, EncodingData* pED);
 BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long iEnd);
 

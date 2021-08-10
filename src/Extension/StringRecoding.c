@@ -496,16 +496,31 @@ void TextBuffer_NormalizeAfterDecode(RecodingAlgorithm* pRA, TextBuffer* pTB)
   }
 }
 
-BOOL TextRange_Init(const StringSource* pSS, struct TTextRange* pTR)
+BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struct TTextRange* pTR)
 {
   pTR->m_hwnd = pSS->hwnd;
   pTR->m_iSelStart = StringSource_GetSelectionStart(pSS);
   pTR->m_iSelEnd = StringSource_GetSelectionEnd(pSS);
   if (pTR->m_iSelStart == pTR->m_iSelEnd)
   {
-    pTR->m_iSelStart = 0;
-    pTR->m_iSelEnd = StringSource_GetLength(pSS);
+    if (pRA->recodingType == ERT_CALW)
+    {
+      pTR->m_iSelStart = StringSource_GetLineStart(pSS, pTR->m_iSelStart);
+      pTR->m_iSelEnd = StringSource_GetLineEnd(pSS, pTR->m_iSelStart);
+    }
+    else
+    {
+      pTR->m_iSelStart = 0;
+      pTR->m_iSelEnd = StringSource_GetLength(pSS);
+    }
   };
+  if (pRA->recodingType == ERT_CALW)
+  {
+    while ((pTR->m_iSelStart < pTR->m_iSelEnd) && strchr("\r\n\t ", StringSource_GetCharAt(pSS, pTR->m_iSelEnd - 1)))
+    {
+      --pTR->m_iSelEnd;
+    }
+  }
   pTR->m_iPositionCurrent = pTR->m_iSelStart;
   pTR->m_iExpectedProcessedChars = 0;
 
@@ -654,11 +669,32 @@ long StringSource_GetSelectionEnd(const StringSource* pSS)
     : pSS->iTextLength;
 }
 
+long StringSource_GetLineStart(const StringSource* pSS, const int iPos)
+{
+  return pSS->hwnd
+    ? SciCall_PositionFromLine(SciCall_LineFromPosition(iPos))
+    : 0;
+}
+
+long StringSource_GetLineEnd(const StringSource* pSS, const int iPos)
+{
+  return pSS->hwnd
+    ? SciCall_LineEndPosition(SciCall_LineFromPosition(iPos))
+    : pSS->iTextLength;
+}
+
 long StringSource_GetLength(const StringSource* pSS)
 {
   return pSS->hwnd
     ? SciCall_GetLength()
     : pSS->iTextLength;
+}
+
+char StringSource_GetCharAt(const StringSource* pSS, const int iPos)
+{
+  return pSS->hwnd
+    ? SciCall_GetCharAt(iPos)
+    : pSS->text[iPos];
 }
 
 long StringSource_IsDataPortionAvailable(const StringSource* pSS, EncodingData* pED)
@@ -696,13 +732,13 @@ BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, con
   return FALSE;
 }
 
-BOOL EncodingSettings_Init(const StringSource* pSS, EncodingData* pED, const BOOL isEncoding)
+BOOL EncodingSettings_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, EncodingData* pED)
 {
-  if (!TextRange_Init(pSS, &pED->m_tr))
+  if (!TextRange_Init(pSS, pRA, &pED->m_tr))
   {
     return FALSE;
   }
-  pED->m_bIsEncoding = isEncoding;
+  pED->m_bIsEncoding = pRA->isEncoding;
   int iBufferSize = iRecodingBufferSize;
   if (pED->m_tr.m_iSelEnd > iRecodingBufferSizeMax)
   {
@@ -741,7 +777,7 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
   }
   struct TEncodingData ed;
-  if (!EncodingSettings_Init(pSS, &ed, pRA->isEncoding))
+  if (!EncodingSettings_Init(pSS, pRA, &ed))
   {
     return;
   }

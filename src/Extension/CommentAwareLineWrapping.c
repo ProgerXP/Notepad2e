@@ -479,6 +479,10 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     calwdata.iWordCount = 0;
     if (!IsEOLChar(TextBuffer_GetChar(&pED->m_tb)))
     {
+      if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_SPACE)
+      {
+        TextBuffer_DecPos(&pED->m_tbRes);
+      }
       TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
       // skip trailing space
       if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
