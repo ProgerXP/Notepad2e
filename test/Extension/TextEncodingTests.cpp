@@ -319,6 +319,13 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_LONG_TESTS
+        CTestCaseData(false, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
+                             "sed do eiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmod",
+                CPI_DEFAULT,
+                             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do\r\n"
+                             "eiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmod",
+                false, 0, { 80, SCLEX_NULL, SC_EOL_CRLF }),
+
         CTestCaseData(false, "    Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
                              "      elit, sed do eiusmod tempor incididunt ut labore\r\n"
                              "  et dolore magna aliqua. Ut enim ad minim veniam,",
@@ -572,7 +579,8 @@ namespace Notepad2eTests
                                "  123)   Lorem\r\n"
                                "         ipsum,\r\n"
                                "         dolor\r\n"
-                               "         sit amet,\r\n"                          
+                               "         sit\r\n"                          
+                               "         amet,\r\n"
                                "         consectetur",
                 false, 0, { 5, SCLEX_NULL, SC_EOL_CRLF }),
 

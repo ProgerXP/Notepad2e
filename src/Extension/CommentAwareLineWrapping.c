@@ -362,9 +362,8 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
 
   int iCharsProcessed = 0;
   int iWordByteCount = 0;
-  int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
-  if ((iWordLength >= calwdata.longLineLimit)
-      || (calwdata.iWordCount == 0)
+  const int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
+  if ((calwdata.iWordCount == 0)
       || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
   {
     if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
@@ -380,13 +379,16 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         }
       }
     }
+    BOOL isMarker = FALSE;
+    BOOL isWhiteSpace = FALSE;
     for (int i = 1; i <= iWordByteCount; ++i)
     {
       const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
       const BOOL isStaticMarker = isCharFromString(lpstrStaticMarkerChars, ch);
       const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
+      isMarker = isStaticMarker || isDynamicMarker;
       if ((iWordLength >= 1)
-        && (isStaticMarker || isDynamicMarker)
+        && isMarker
         && ((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0)
           || (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine))))
       {
@@ -441,6 +443,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         isPrefixInitialized = TRUE;
         break;
       }
+      isWhiteSpace = isCharFromString(lpstrWhiteSpaces, ch);
       TextBuffer_PushChar(&pED->m_tbRes, ch);
       ++iCharsProcessed;
       ++calwdata.iLineOffset;
@@ -460,7 +463,10 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
       }
     }
-    calwdata.iWordCount = (calwdata.iLineOffset == 0) ? 0 : calwdata.iWordCount + 1;
+    if (!isMarker && !isWhiteSpace)
+    {
+      calwdata.iWordCount = (calwdata.iLineOffset == 0) ? 0 : calwdata.iWordCount + 1;
+    }
     if (!isPrefixInitialized && (iWordByteCount != iWordLength))
     {
       calwdata.iLineOffset -= iWordByteCount - iWordLength;
