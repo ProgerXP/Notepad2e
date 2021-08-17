@@ -317,7 +317,7 @@ BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
 {
   const HWND _hwnd = hwnd ? hwnd : hwndEdit;
-  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, pED->m_tr.m_iSelStart + pED->m_tb.m_iPos + iPos + 1 + n2e_GetSingleLineCommentPrefixLength(pLexCurrent->iLexer), 0);
+  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, pED->m_tr.m_iSelStart + pED->m_tb.m_iPos + iPos + 1, 0);
   const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
   return pStyle
     && (StrStrI(pStyle->pszName, L"comment") != NULL)
