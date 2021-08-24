@@ -128,7 +128,10 @@ void CALW_ReleaseAlgorithmData(LPVOID pData)
 static unsigned char CHAR_SPACE = ' ';
 static unsigned char CHAR_EOL_R = '\r';
 static unsigned char CHAR_EOL_N = '\n';
+static unsigned char CHAR_FORCE_EOL = '\a';
+static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
 static LPCSTR lpstrWhiteSpaces = " \t";
+static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
 static LPCSTR lpstrStaticMarkerChars = "#>=?*";
 static LPCSTR lpstrDynamicMarkerChars = ":).";
 static LPCSTR lpstrDigits = "0123456789";
@@ -158,7 +161,7 @@ BOOL IsTrailingEOL(const unsigned char ch, TextBuffer* pTB)
   switch (calwdata.iEOLMode)
   {
   case SC_EOL_CRLF:
-    return (ch == CHAR_EOL_R) && IsEOL(TextBuffer_GetChar(pTB));
+    return (ch == CHAR_EOL_R) && (TextBuffer_GetChar(pTB) == CHAR_EOL_N);
   case SC_EOL_LF:
     return ch == CHAR_EOL_N;
   case SC_EOL_CR:
@@ -222,21 +225,43 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   {
     if (PrefixData_IsComment(&calwdata.prefixFirstLine))
     {
-      if (calwdata.iTrailingEOLLength == 0)
-      {
-        TextBuffer_OffsetPos(&pED->m_tb, -1);
-        --(*piCharsProcessed);
-      }
       const int iWhiteSpaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
       const BOOL isSingleLineComment = 
-        n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iWhiteSpaces + calwdata.iSingleLineCommentPrefixLength, pED);
+        n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId,
+          (isCharFromString(lpstrWhiteSpacesAndEOLs, ch) ? 0 : -1) + iWhiteSpaces + calwdata.iSingleLineCommentPrefixLength,
+          pED);
       if (isSingleLineComment)
       {
+        if ((calwdata.iLineOffset == 0) && (iWhiteSpaces == 0) && !IsEOLChar(TextBuffer_GetCharAt(&pED->m_tb, -1)))
+        {
+          TextBuffer_DecPos(&pED->m_tb);
+          --(*piCharsProcessed);
+        }
         iCharCount = iWhiteSpaces + 1 + calwdata.iSingleLineCommentPrefixLength;
         TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+
         skipChars = TRUE;
         skipInitLineCheck = TRUE;
         calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
+
+        int iLineLength = 0;
+        const BOOL isWhiteSpaceLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 0, &iLineLength);
+        if (isWhiteSpaceLine)
+        {
+          if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_SPACE)
+          {
+            TextBuffer_OffsetPos(&pED->m_tbRes, -1);
+          }
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
+          if (TextBuffer_GetTailLength(&pED->m_tb) > 0)
+          {
+            const int offset = 1 + min(GetTrailingEOLLength(), TextBuffer_GetTailLength(&pED->m_tb));
+            TextBuffer_OffsetPos(&pED->m_tb, offset);
+            iCharsProcessed += offset;
+          }
+          calwdata.initLine = TRUE;
+          ++calwdata.relativeLineIndex;
+        }
       }
     }
     else if ((PrefixData_GetLength(&calwdata.prefixFirstLine) > 0)
@@ -381,86 +406,114 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     }
     BOOL isMarker = FALSE;
     BOOL isWhiteSpace = FALSE;
-    for (int i = 1; i <= iWordByteCount; ++i)
+
+    if ((iWordByteCount == 1)
+      && ((TextBuffer_GetChar(&pED->m_tb) == CHAR_FORCE_EOL)
+          || (TextBuffer_GetChar(&pED->m_tb) == CHAR_FORCE_EOL_PROCESSED)))
     {
-      const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-      const BOOL isStaticMarker = isCharFromString(lpstrStaticMarkerChars, ch);
-      const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
-      isMarker = isStaticMarker || isDynamicMarker;
-      if ((iWordLength >= 1)
-        && isMarker
-        && ((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0)
-          || (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine))))
+      calwdata.iLineOffset = 0;
+      calwdata.iWordCount = 0;
+      if (IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -(PrefixData_GetLength(&calwdata.prefixFirstLine) + 1))))
       {
+        TextBuffer_PushChar(&pED->m_tb, CHAR_FORCE_EOL_PROCESSED);
+        TextBuffer_DecPos(&pED->m_tb);
+      }
+      if (TextBuffer_GetChar(&pED->m_tb) != CHAR_FORCE_EOL_PROCESSED)
+      {
+        TextBuffer_PushChar(&pED->m_tb, CHAR_FORCE_EOL_PROCESSED);
+        TextBuffer_DecPos(&pED->m_tb);
+        TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+      }
+      else 
+      {
+        TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+        TextBuffer_IncPos(&pED->m_tb);
+        iCharsProcessed += 1;
+      }
+    }
+    else
+    {
+      for (int i = 1; i <= iWordByteCount; ++i)
+      {
+        const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
+        const BOOL isStaticMarker = isCharFromString(lpstrStaticMarkerChars, ch);
+        const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
+        isMarker = isStaticMarker || isDynamicMarker;
+        if ((iWordLength >= 1)
+          && isMarker
+          && ((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0)
+            || (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine))))
+        {
+          TextBuffer_PushChar(&pED->m_tbRes, ch);
+          ++iCharsProcessed;
+          ++calwdata.iLineOffset;
+
+          PrefixData_SetEmpty(&calwdata.prefixMarkerLine);
+          if (PrefixData_GetLength(&calwdata.prefixFirstLine) > 0)
+          {
+            for (int j = 0; j < PrefixData_GetLength(&calwdata.prefixFirstLine); ++j)
+            {
+              PrefixData_PushChar(&calwdata.prefixMarkerLine, PrefixData_GetChar(&calwdata.prefixFirstLine, j));
+            }
+          }
+          else
+          {
+            for (int j = 0; j < calwdata.iLineOffset - 1; ++j)
+            {
+              PrefixData_PushChar(&calwdata.prefixMarkerLine, TextBuffer_GetCharAt(&pED->m_tb, j - calwdata.iLineOffset));
+            }
+          }
+          PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE);
+
+          if (isDynamicMarker)
+          {
+            while (isCharFromString(lpstrDigits, TextBuffer_GetChar(&pED->m_tb))
+                  || isCharFromString(lpstrDynamicMarkerChars, TextBuffer_GetChar(&pED->m_tb)))
+            {
+              const unsigned char ch1 = TextBuffer_PopChar(&pED->m_tb);
+              TextBuffer_PushChar(&pED->m_tbRes, ch1);
+              PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE); // space chars under NNN)
+              ++iCharsProcessed;
+              ++calwdata.iLineOffset;
+            }
+          }
+
+          const unsigned char chNext = TextBuffer_GetChar(&pED->m_tb);
+          if (isCharFromString(lpstrWhiteSpaces, chNext))
+          {
+            const int markerPostfixLength = TextBuffer_GetCharSequenceLength(&pED->m_tb, chNext, 0);
+            for (int i = 0; i < markerPostfixLength; ++i)
+            {
+              PrefixData_PushChar(&calwdata.prefixMarkerLine, chNext);
+              TextBuffer_PushChar(&pED->m_tbRes, chNext);
+              ++iCharsProcessed;
+              ++calwdata.iLineOffset;
+            }
+            TextBuffer_OffsetPos(&pED->m_tb, markerPostfixLength);
+          }
+          PrefixData_SetInitialized(&calwdata.prefixMarkerLine, TRUE);
+          isPrefixInitialized = TRUE;
+          break;
+        }
+        isWhiteSpace = isCharFromString(lpstrWhiteSpaces, ch);
         TextBuffer_PushChar(&pED->m_tbRes, ch);
         ++iCharsProcessed;
         ++calwdata.iLineOffset;
+        if (IsEOLChar(ch))
+        {
+          if (IsTrailingEOL(ch, &pED->m_tb))
+          {
+            if (calwdata.iEOLMode == SC_EOL_CRLF)
+            {
+              TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_PopChar(&pED->m_tb));
+              ++iCharsProcessed;
+            }
+          }
 
-        PrefixData_SetEmpty(&calwdata.prefixMarkerLine);
-        if (PrefixData_GetLength(&calwdata.prefixFirstLine) > 0)
-        {
-          for (int j = 0; j < PrefixData_GetLength(&calwdata.prefixFirstLine); ++j)
-          {
-            PrefixData_PushChar(&calwdata.prefixMarkerLine, PrefixData_GetChar(&calwdata.prefixFirstLine, j));
-          }
+          calwdata.iLineOffset = 0;
+          calwdata.iWordCount = 0;
+          PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
         }
-        else
-        {
-          for (int j = 0; j < calwdata.iLineOffset - 1; ++j)
-          {
-            PrefixData_PushChar(&calwdata.prefixMarkerLine, TextBuffer_GetCharAt(&pED->m_tb, j - calwdata.iLineOffset));
-          }
-        }
-        PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE);
-
-        if (isDynamicMarker)
-        {
-          while (isCharFromString(lpstrDigits, TextBuffer_GetChar(&pED->m_tb))
-                || isCharFromString(lpstrDynamicMarkerChars, TextBuffer_GetChar(&pED->m_tb)))
-          {
-            const unsigned char ch1 = TextBuffer_PopChar(&pED->m_tb);
-            TextBuffer_PushChar(&pED->m_tbRes, ch1);
-            PrefixData_PushChar(&calwdata.prefixMarkerLine, CHAR_SPACE); // space chars under NNN)
-            ++iCharsProcessed;
-            ++calwdata.iLineOffset;
-          }
-        }
-
-        const unsigned char chNext = TextBuffer_GetChar(&pED->m_tb);
-        if (isCharFromString(lpstrWhiteSpaces, chNext))
-        {
-          const int markerPostfixLength = TextBuffer_GetCharSequenceLength(&pED->m_tb, chNext, 0);
-          for (int i = 0; i < markerPostfixLength; ++i)
-          {
-            PrefixData_PushChar(&calwdata.prefixMarkerLine, chNext);
-            TextBuffer_PushChar(&pED->m_tbRes, chNext);
-            ++iCharsProcessed;
-            ++calwdata.iLineOffset;
-          }
-          TextBuffer_OffsetPos(&pED->m_tb, markerPostfixLength);
-        }
-        PrefixData_SetInitialized(&calwdata.prefixMarkerLine, TRUE);
-        isPrefixInitialized = TRUE;
-        break;
-      }
-      isWhiteSpace = isCharFromString(lpstrWhiteSpaces, ch);
-      TextBuffer_PushChar(&pED->m_tbRes, ch);
-      ++iCharsProcessed;
-      ++calwdata.iLineOffset;
-      if (IsEOLChar(ch))
-      {
-        if (IsTrailingEOL(ch, &pED->m_tb))
-        {
-          if (calwdata.iEOLMode == SC_EOL_CRLF)
-          {
-            TextBuffer_PushChar(&pED->m_tbRes, TextBuffer_PopChar(&pED->m_tb));
-            ++iCharsProcessed;
-          }
-        }
-
-        calwdata.iLineOffset = 0;
-        calwdata.iWordCount = 0;
-        PrefixData_SetInitialized(&calwdata.prefixMarkerLine, FALSE);
       }
     }
     if (!isMarker && !isWhiteSpace)
@@ -483,15 +536,21 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   {
     calwdata.iLineOffset = 0;
     calwdata.iWordCount = 0;
-    if (!IsEOLChar(TextBuffer_GetChar(&pED->m_tb)))
+    if (!IsEOLChar(TextBuffer_GetChar(&pED->m_tb))
+      || PrefixData_IsComment(&calwdata.prefixFirstLine))
     {
       if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_SPACE)
       {
         TextBuffer_DecPos(&pED->m_tbRes);
       }
       TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+      if (TextBuffer_IsEOL(&pED->m_tb, calwdata.iEOLMode))
+      {
+        TextBuffer_OffsetPos(&pED->m_tb, 1 + GetTrailingEOLLength());
+        iCharsProcessed += 1 + GetTrailingEOLLength();
+      }
       // skip trailing space
-      if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
+      else if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
       {
         TextBuffer_PopChar(&pED->m_tb);
         ++iCharsProcessed;

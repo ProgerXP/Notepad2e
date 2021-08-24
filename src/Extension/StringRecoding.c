@@ -156,7 +156,7 @@ int TextLengthInChars(LPCSTR lpStr1, LPCSTR lpStr2, const int _iEncoding, int *p
 
 int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount)
 {
-  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n");
+  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n\a\b");
   if (pSpace)
   {
     return TextLengthInChars(pTB->m_ptr + pTB->m_iPos, pSpace, _iEncoding, piByteCount);
@@ -354,6 +354,22 @@ BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcesse
   return res;
 }
 
+BOOL TextBuffer_IsEOL(TextBuffer* pTB, const int iEOLMode)
+{
+  switch (iEOLMode)
+  {
+  case SC_EOL_CRLF:
+    return (TextBuffer_GetChar(pTB) == '\r')
+      && (TextBuffer_GetCharAt(pTB, 1) == '\n');
+  case SC_EOL_LF:
+    return TextBuffer_GetChar(pTB) == '\n';
+  case SC_EOL_CR:
+    return TextBuffer_GetChar(pTB) == '\r';
+  }
+  assert(0);
+  return FALSE;
+}
+
 void TextBuffer_AddEOL(TextBuffer* pTB, const int iEOLMode)
 {
   switch (iEOLMode)
@@ -518,6 +534,8 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
   {
     while ((pTR->m_iSelStart < pTR->m_iSelEnd) && strchr("\r\n\t ", StringSource_GetCharAt(pSS, pTR->m_iSelEnd - 1)))
     {
+      if (!pSS->hwnd)
+        break;
       --pTR->m_iSelEnd;
     }
   }

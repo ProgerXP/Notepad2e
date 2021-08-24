@@ -107,6 +107,7 @@ BOOL TextBuffer_PushChar(TextBuffer* pTB, const char ch);
 BOOL TextBuffer_PushHexChar(EncodingData* pED, const unsigned char ch);
 BOOL TextBuffer_PushNonZeroChar(TextBuffer* pTB, const char ch);
 BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcessed);
+BOOL TextBuffer_IsEOL(TextBuffer* pTB, const int iEOLMode);
 void TextBuffer_AddEOL(TextBuffer* pTB, const int iEOLMode);
 
 typedef enum

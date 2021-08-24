@@ -319,6 +319,34 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_LONG_TESTS
+        CTestCaseData(false, "    // aa aa\r\n"
+                             "    // aa aa\r\n"
+                             "    //\r\n"
+                             "    //\r\n"
+                             "    //       \r\n"
+                             "    // aa aa",
+                CPI_DEFAULT,
+                             "    // aa aa aa\r\n"
+                             "    // aa\r\n"
+                             "    // \r\n"
+                             "    // \r\n"
+                             "    // \r\n"
+                             "    // aa aa",
+                false, 0, { 9, SCLEX_CPP, SC_EOL_CRLF }),
+
+        CTestCaseData(false, "  // aa aa aa\r\n"
+                             "  // aa aa aa\r\n"
+                             "  //      \r\n"
+                             "  // aa aa aa",
+                CPI_DEFAULT,
+                             "  // aa aa\r\n"
+                             "  // aa aa\r\n"
+                             "  // aa aa\r\n"
+                             "  // \r\n"
+                             "  // aa aa\r\n"
+                             "  // aa",
+                false, 0, { 5, SCLEX_CPP, SC_EOL_CRLF }),
+       
         CTestCaseData(false, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, "
                              "sed do eiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmodeiusmod",
                 CPI_DEFAULT,
@@ -421,6 +449,28 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_SHORT_TESTS
+
+        CTestCaseData(false, "  // aa\r\n"
+                             "  //\r\n"
+                             "//s",
+                CPI_DEFAULT,
+                             "  // aa\r\n"
+                             "  // \r\n"
+                             "  // s",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
+        CTestCaseData(false, "  // aa\r"
+                             "  // aa\r"
+                             "  //\r"
+                             "  //\r"
+                             "  //\r",
+                CPI_DEFAULT,
+                             "  // aa aa\r"
+                             "  // \r"
+                             "  // \r"
+                             "  // \r",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CR }),
+
         CTestCaseData(false, "    Lorem\r"
                              "    \r"
                              "    Ipsum",
