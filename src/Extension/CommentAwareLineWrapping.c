@@ -330,7 +330,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
           skipChars = TRUE;
         }
         else if ((pED->m_tbRes.m_iPos > 0)
-          && (TextBuffer_GetCharAt(&pED->m_tbRes, -calwdata.iTrailingEOLLength) != CHAR_SPACE))
+          && (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE))
         {
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
         }
@@ -382,8 +382,7 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       ++calwdata.iLineOffset;
     }
   }
-  prefixLength = PrefixData_IsComment(&calwdata.prefixFirstLine) ? prefixLength : 0;
-  prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : prefixLength;
+  prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : 0;
 
   int iCharsProcessed = 0;
   int iWordByteCount = 0;
@@ -426,18 +425,21 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       }
       else 
       {
-        TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
         TextBuffer_IncPos(&pED->m_tb);
         iCharsProcessed += 1;
+        if (TextBuffer_GetTailLength(&pED->m_tb) > 0)
+        {
+          TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+        }
       }
     }
     else
     {
       for (int i = 1; i <= iWordByteCount; ++i)
       {
+        const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
         const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
         const BOOL isStaticMarker = isCharFromString(lpstrStaticMarkerChars, ch);
-        const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
         isMarker = isStaticMarker || isDynamicMarker;
         if ((iWordLength >= 1)
           && isMarker
