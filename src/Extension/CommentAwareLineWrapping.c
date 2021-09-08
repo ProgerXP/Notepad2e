@@ -12,6 +12,7 @@ struct TPrefixData
   char data[MAX_PATH];
   BOOL isInitialized;
   BOOL isComment;
+  BOOL isEmptyLineComment;
 };
 
 typedef struct TPrefixData PrefixData;
@@ -51,7 +52,7 @@ BOOL PrefixData_IsInitialized(PrefixData* pd)
   return pd->isInitialized;
 }
 
-void PrefixData_SetInitialized(PrefixData* pd, BOOL isInitialized)
+void PrefixData_SetInitialized(PrefixData* pd, const BOOL isInitialized)
 {
   pd->isInitialized = isInitialized;
 }
@@ -61,9 +62,15 @@ BOOL PrefixData_IsComment(PrefixData* pd)
   return pd->isComment;
 }
 
-void PrefixData_SetComment(PrefixData* pd, BOOL isComment)
+BOOL PrefixData_IsEmptyLineComment(PrefixData* pd)
+{
+  return pd->isEmptyLineComment;
+}
+
+void PrefixData_SetComment(PrefixData* pd, const BOOL isComment, const BOOL isEmptyLineComment)
 {
   pd->isComment = isComment;
+  pd->isEmptyLineComment = isEmptyLineComment;
 }
 
 int PrefixData_GetLength(PrefixData* pd)
@@ -191,12 +198,21 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
   int iCharCount = 1 + (!IsTrailingEOL(ch, &pED->m_tb) ? TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0) : 0);
   int iCharsProcessed = 0;
-  if ((calwdata.relativeLineIndex == 0) && !PrefixData_IsInitialized(&calwdata.prefixFirstLine))
+  if (((calwdata.relativeLineIndex == 0) && !PrefixData_IsInitialized(&calwdata.prefixFirstLine))
+     || ((calwdata.relativeLineIndex > 0) && PrefixData_IsEmptyLineComment(&calwdata.prefixFirstLine)))
   {
+    if ((calwdata.relativeLineIndex > 0) && IsEOLChar(ch))
+    {
+      ++(*piCharsProcessed);
+      return TRUE;
+    }
     const BOOL isWhiteSpace = isCharFromString(lpstrWhiteSpaces, ch);
     const int iCommentOffset = iCharCount - 1 + (isWhiteSpace ? calwdata.iSingleLineCommentPrefixLength : 0);
     const BOOL isSingleLineComment = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, iCommentOffset, pED);
-    PrefixData_SetComment(&calwdata.prefixFirstLine, isSingleLineComment);
+    const BOOL isEmptyLine = isSingleLineComment
+      ? TextBuffer_IsWhiteSpaceLine(&pED->m_tb, iCommentOffset, NULL)
+      : FALSE;
+    PrefixData_SetComment(&calwdata.prefixFirstLine, isSingleLineComment, isEmptyLine);
     if (isSingleLineComment)
     {
       const int iWhiteSpacesAfterComment = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCommentOffset);
@@ -219,6 +235,7 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       skipChars = TRUE;
     }
     PrefixData_SetInitialized(&calwdata.prefixFirstLine, TRUE);
+    calwdata.relativeLineIndexPrefixProcessed = calwdata.relativeLineIndex;
   }
   else if ((calwdata.relativeLineIndex > 0) 
     && (calwdata.relativeLineIndex > calwdata.relativeLineIndexPrefixProcessed))

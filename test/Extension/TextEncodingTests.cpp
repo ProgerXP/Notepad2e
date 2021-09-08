@@ -741,10 +741,10 @@ namespace Notepad2eTests
 
 #ifdef ENABLE_NEW_TEST
           CTestCaseData(false, " //\r\n"
-                               "  // aa bb",
+                               "  // aa bb\r\n"
+                               " //cc dd",
                 CPI_DEFAULT,
-                               "  //\r\n"
-                               "  // aa bb",
+                               "  // aa bb cc dd",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 #endif 
       };
