@@ -7,6 +7,17 @@
 #include "SciLexer.h"
 #include "StringRecoding.h"
 
+static unsigned char CHAR_SPACE = ' ';
+static unsigned char CHAR_EOL_R = '\r';
+static unsigned char CHAR_EOL_N = '\n';
+static unsigned char CHAR_FORCE_EOL = '\a';
+static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
+static LPCSTR lpstrWhiteSpaces = " \t";
+static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
+static LPCSTR lpstrStaticMarkerChars = "#>=?*";
+static LPCSTR lpstrDynamicMarkerChars = ":).";
+static LPCSTR lpstrDigits = "0123456789";
+
 struct TPrefixData
 {
   char data[MAX_PATH];
@@ -98,6 +109,22 @@ const unsigned char PrefixData_GetChar(PrefixData* pd, const int pos)
   return pd->data[pos];
 }
 
+const int PrefixData_CountTrailingWhiteSpaces(PrefixData* pd)
+{
+  int res = 0;
+  int pos = PrefixData_GetLength(pd) - 1;
+  while (pos > 0)
+  {
+    if (!isCharFromString(lpstrWhiteSpaces, pd->data[pos]))
+    {
+      break;
+    }
+    --pos;
+    ++res;
+  }
+  return res;
+}
+
 BOOL CALW_IsValidSequence(EncodingData* pED, const int requiredChars)
 {
   return TRUE;
@@ -131,17 +158,6 @@ LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalD
 void CALW_ReleaseAlgorithmData(LPVOID pData)
 {
 }
-
-static unsigned char CHAR_SPACE = ' ';
-static unsigned char CHAR_EOL_R = '\r';
-static unsigned char CHAR_EOL_N = '\n';
-static unsigned char CHAR_FORCE_EOL = '\a';
-static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
-static LPCSTR lpstrWhiteSpaces = " \t";
-static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
-static LPCSTR lpstrStaticMarkerChars = "#>=?*";
-static LPCSTR lpstrDynamicMarkerChars = ":).";
-static LPCSTR lpstrDigits = "0123456789";
 
 inline BOOL IsEOLChar(const unsigned char ch)
 {
@@ -204,6 +220,11 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     if ((calwdata.relativeLineIndex > 0) && IsEOLChar(ch))
     {
       ++(*piCharsProcessed);
+
+      if ((TextBuffer_GetTailLength(&pED->m_tb) == 0) && (TextBuffer_GetHeadLength(&pED->m_tbRes) == 0))
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
+      }
       return TRUE;
     }
     const BOOL isWhiteSpace = isCharFromString(lpstrWhiteSpaces, ch);
@@ -224,6 +245,11 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       }
       iCharCount = PrefixData_GetLength(&calwdata.prefixFirstLine);
       skipChars = TRUE;
+
+      if ((TextBuffer_GetTailLength(&pED->m_tb) == 0) && (TextBuffer_GetHeadLength(&pED->m_tbRes) == 0))
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
+      }
     }
     else if (isWhiteSpace)
     {
@@ -389,16 +415,23 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
 
 BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
+  const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
+
   BOOL isPrefixInitialized = FALSE;
   auto prefixLength = PrefixData_GetLength(&calwdata.prefixFirstLine);
   if ((calwdata.iLineOffset == 0) && (prefixLength > 0) && !PrefixData_IsInitialized(&calwdata.prefixMarkerLine))
   {
+    if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED))
+    {
+      prefixLength -= PrefixData_CountTrailingWhiteSpaces(&calwdata.prefixFirstLine);
+    }
     for (int i = 0; i < prefixLength; ++i)
     {
       TextBuffer_PushChar(&pED->m_tbRes, PrefixData_GetChar(&calwdata.prefixFirstLine, i));
       ++calwdata.iLineOffset;
     }
   }
+  const auto prefixFirstLineLength = prefixLength;
   prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : 0;
 
   int iCharsProcessed = 0;
@@ -424,12 +457,12 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
     BOOL isWhiteSpace = FALSE;
 
     if ((iWordByteCount == 1)
-      && ((TextBuffer_GetChar(&pED->m_tb) == CHAR_FORCE_EOL)
-          || (TextBuffer_GetChar(&pED->m_tb) == CHAR_FORCE_EOL_PROCESSED)))
+      && ((ch == CHAR_FORCE_EOL)
+          || (ch == CHAR_FORCE_EOL_PROCESSED)))
     {
       calwdata.iLineOffset = 0;
       calwdata.iWordCount = 0;
-      if (IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -(PrefixData_GetLength(&calwdata.prefixFirstLine) + 1))))
+      if (IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -(prefixFirstLineLength + 1))))
       {
         TextBuffer_PushChar(&pED->m_tb, CHAR_FORCE_EOL_PROCESSED);
         TextBuffer_DecPos(&pED->m_tb);
@@ -460,17 +493,17 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
         isMarker = isStaticMarker || isDynamicMarker;
         if ((iWordLength >= 1)
           && isMarker
-          && ((PrefixData_GetLength(&calwdata.prefixFirstLine) == 0)
-            || (calwdata.iLineOffset == PrefixData_GetLength(&calwdata.prefixFirstLine))))
+          && ((prefixFirstLineLength == 0)
+            || (calwdata.iLineOffset == prefixFirstLineLength)))
         {
           TextBuffer_PushChar(&pED->m_tbRes, ch);
           ++iCharsProcessed;
           ++calwdata.iLineOffset;
 
           PrefixData_SetEmpty(&calwdata.prefixMarkerLine);
-          if (PrefixData_GetLength(&calwdata.prefixFirstLine) > 0)
+          if (prefixFirstLineLength > 0)
           {
-            for (int j = 0; j < PrefixData_GetLength(&calwdata.prefixFirstLine); ++j)
+            for (int j = 0; j < prefixFirstLineLength; ++j)
             {
               PrefixData_PushChar(&calwdata.prefixMarkerLine, PrefixData_GetChar(&calwdata.prefixFirstLine, j));
             }

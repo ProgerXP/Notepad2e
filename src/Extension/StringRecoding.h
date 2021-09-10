@@ -86,6 +86,7 @@ void TextBuffer_Clear(TextBuffer* pTB);
 BOOL TextBuffer_Init(TextBuffer* pTB, const int iSize);
 BOOL TextBuffer_Free(TextBuffer* pTB);
 BOOL TextBuffer_Update(TextBuffer* pTB, LPSTR ptr, const int iSize);
+int TextBuffer_GetHeadLength(TextBuffer* pTB);
 int TextBuffer_GetTailLength(TextBuffer* pTB);
 int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount);
 int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int iOffsetFrom);

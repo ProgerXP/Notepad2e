@@ -296,7 +296,7 @@ namespace Notepad2eTests
 #define ENABLE_COMPOSITE_TESTS
 #endif
 
-//#define ENABLE_NEW_TEST
+#define ENABLE_NEW_TEST
 
   TEST_CLASS(CCommentAwareLineWrapping)
   {
@@ -329,12 +329,12 @@ namespace Notepad2eTests
                 CPI_DEFAULT,
                              "    // aa aa aa\r\n"
                              "    // aa\r\n"
-                             "    // \r\n"
-                             "    // \r\n"
-                             "    // \r\n"
+                             "    //\r\n"
+                             "    //\r\n"
+                             "    //\r\n"
                              "    // aa aa",
                 false, 0, { 15, SCLEX_CPP, SC_EOL_CRLF }),
-
+        
         CTestCaseData(false, "  // aa aa aa\r\n"
                              "  // aa aa aa\r\n"
                              "  //      \r\n"
@@ -343,7 +343,7 @@ namespace Notepad2eTests
                              "  // aa aa\r\n"
                              "  // aa aa\r\n"
                              "  // aa aa\r\n"
-                             "  // \r\n"
+                             "  //\r\n"
                              "  // aa aa\r\n"
                              "  // aa",
                 false, 0, { 10, SCLEX_CPP, SC_EOL_CRLF }),
@@ -451,6 +451,36 @@ namespace Notepad2eTests
 
 #ifdef ENABLE_SHORT_TESTS
 
+          CTestCaseData(false, "  //\n"
+                               "  //       \n"
+                               "// \t\t\n",
+                CPI_DEFAULT,
+                               "//",
+                false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " //\r"
+                               "  //\t\t\r"
+                               "//",
+                CPI_DEFAULT,
+                               "//",
+                false, 0, { 20, SCLEX_CPP, SC_EOL_CR }),
+
+          CTestCaseData(false, "  // aa bb\n"
+                               "  //\n"
+                               "//cc dd",
+                CPI_DEFAULT,
+                               "  // aa bb\n"
+                               "  //\n"
+                               "  // cc dd",
+                false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " //\r\n"
+                               "  // aa bb\r\n"
+                               " //cc dd",
+                CPI_DEFAULT,
+                               "  // aa bb cc dd",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
           CTestCaseData(false, "// e.g. foo bar",
                 CPI_DEFAULT,
                                "// e.g.\r\n"
@@ -469,7 +499,7 @@ namespace Notepad2eTests
                              "//s",
                 CPI_DEFAULT,
                              "  // aa\r\n"
-                             "  // \r\n"
+                             "  //\r\n"
                              "  // s",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
@@ -480,9 +510,9 @@ namespace Notepad2eTests
                              "  //\r",
                 CPI_DEFAULT,
                              "  // aa aa\r"
-                             "  // \r"
-                             "  // \r"
-                             "  // ",
+                             "  //\r"
+                             "  //\r"
+                             "  //",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CR }),
 
         CTestCaseData(false, "    Lorem\r"
@@ -740,12 +770,12 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_NEW_TEST
-          CTestCaseData(false, " //\r\n"
-                               "  // aa bb\r\n"
-                               " //cc dd",
+          CTestCaseData(false, "  //\n"
+                               "  //       \n"
+                               "//",
                 CPI_DEFAULT,
-                               "  // aa bb cc dd",
-                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+                               "//",
+                false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),
 #endif 
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);

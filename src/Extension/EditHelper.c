@@ -322,7 +322,8 @@ BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const 
   const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
   return (pStyle
             && (StrStrI(pStyle->pszName, L"comment") != NULL)
-            && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle));
+            && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle))
+    || (SciCall_GetLength() == iTestPos);
 }
 
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd)

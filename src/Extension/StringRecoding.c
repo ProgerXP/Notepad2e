@@ -125,6 +125,11 @@ BOOL TextBuffer_Update(TextBuffer* pTB, LPSTR ptr, const int iSize)
   return TRUE;
 }
 
+int TextBuffer_GetHeadLength(TextBuffer* pTB)
+{
+  return pTB->m_iPos;
+}
+
 int TextBuffer_GetTailLength(TextBuffer* pTB)
 {
   return pTB->m_iMaxPos - pTB->m_iPos;
