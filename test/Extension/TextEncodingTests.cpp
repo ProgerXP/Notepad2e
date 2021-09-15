@@ -451,6 +451,26 @@ namespace Notepad2eTests
 
 #ifdef ENABLE_SHORT_TESTS
 
+          CTestCaseData(false, "  // > aaa\n"
+                                "  //   \t\t\n"
+                                "  //  ",
+              CPI_DEFAULT,
+                              "  // > aaa\n"
+                              "  //\n"
+                              "  //",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  // > aaa\n"
+                                "  //\t\n"
+                                " //   \n"
+                                "  //",
+              CPI_DEFAULT,
+                              "  // > aaa\n"
+                              "  //\n"
+                              "  //\n"
+                              "  //",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+
           CTestCaseData(false, "  //\n"
                                "  //       \n"
                                "// \t\t\n",
@@ -628,13 +648,13 @@ namespace Notepad2eTests
                                "#   Lorem\r\n"
                                "    ipsum",
                 false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
-
+                
           CTestCaseData(false, "  >\t\tLorem ipsum dolor sit amet, consectetur",
                 CPI_DEFAULT,
                                "  >\t\tLorem ipsum\r\n"
                                "   \t\tdolor sit amet,\r\n"
                                "   \t\tconsectetur",
-                false, 0, { 15, SCLEX_NULL, SC_EOL_CRLF }),
+                false, 0, { 20, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "12.  Lorem ipsum",
                 CPI_DEFAULT,
@@ -647,14 +667,14 @@ namespace Notepad2eTests
                                "123.   Lorem ipsum,\r\n"
                                "       dolor sit amet,\r\n"
                                "       consectetur",
-                false, 0, { 15, SCLEX_NULL, SC_EOL_CRLF }),
+                false, 0, { 23, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "123)   Lorem ipsum, dolor sit amet, consectetur",
                 CPI_DEFAULT,
                                "123)   Lorem ipsum,\n"
                                "       dolor sit amet,\n"
                                "       consectetur",
-                false, 0, { 15, SCLEX_NULL, SC_EOL_LF }),
+                false, 0, { 22, SCLEX_NULL, SC_EOL_LF }),
 
           CTestCaseData(false, "   1234: Lorem ipsum",
                 CPI_DEFAULT,

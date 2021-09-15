@@ -537,7 +537,7 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
   };
   if (pRA->recodingType == ERT_CALW)
   {
-    while ((pTR->m_iSelStart < pTR->m_iSelEnd) && strchr("\r\n\t ", StringSource_GetCharAt(pSS, pTR->m_iSelEnd - 1)))
+    while ((pTR->m_iSelStart < pTR->m_iSelEnd) && strchr("\r\n", StringSource_GetCharAt(pSS, pTR->m_iSelEnd - 1)))
     {
       if (!pSS->hwnd)
         break;

@@ -296,12 +296,9 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
             TextBuffer_OffsetPos(&pED->m_tbRes, -1);
           }
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
-          if (TextBuffer_GetTailLength(&pED->m_tb) > 0)
-          {
-            const int offset = 1 + min(GetTrailingEOLLength(), TextBuffer_GetTailLength(&pED->m_tb));
-            TextBuffer_OffsetPos(&pED->m_tb, offset);
-            iCharsProcessed += offset;
-          }
+          const int offset = ((TextBuffer_GetTailLength(&pED->m_tb) > 0) ? 1 : 0) + min(GetTrailingEOLLength(), TextBuffer_GetTailLength(&pED->m_tb));
+          TextBuffer_OffsetPos(&pED->m_tb, offset);
+          iCharsProcessed += offset;
           calwdata.initLine = TRUE;
           ++calwdata.relativeLineIndex;
         }
@@ -349,7 +346,15 @@ BOOL CALW_Encode_Pass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       {
         const BOOL commentAtPosition = n2e_IsSingleLineCommentStyleAtPos(NULL, calwdata.lexerId, calwdata.iTrailingEOLLength + spacesAfterPosition + calwdata.iSingleLineCommentPrefixLength, pED);
         const int markerOffset = calwdata.iTrailingEOLLength + spacesAfterPosition + (commentAtPosition ? calwdata.iSingleLineCommentPrefixLength : 0);
-        if (isEOLAtPosition
+        int iLineLength = 0;
+        if (isEOLAtPosition && TextBuffer_IsWhiteSpaceLine(&pED->m_tb, markerOffset, &iLineLength))
+        {
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
+          iCharCount += markerOffset + calwdata.iTrailingEOLLength + iLineLength;
+          TextBuffer_OffsetPos(&pED->m_tb, markerOffset + calwdata.iTrailingEOLLength + iLineLength);
+          skipChars = TRUE;
+        }
+        else if (isEOLAtPosition
           && TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrStaticMarkerChars, lpstrWhiteSpaces, markerOffset))
         {
           TextBuffer_PushChar(&pED->m_tbRes, ch);
@@ -431,27 +436,32 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       ++calwdata.iLineOffset;
     }
   }
-  const auto prefixFirstLineLength = prefixLength;
+  auto prefixFirstLineLength = prefixLength;
   prefixLength = PrefixData_IsInitialized(&calwdata.prefixMarkerLine) ? PrefixData_GetLength(&calwdata.prefixMarkerLine) : 0;
 
   int iCharsProcessed = 0;
   int iWordByteCount = 0;
   const int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
   if ((calwdata.iWordCount == 0)
-      || (calwdata.iLineOffset + iWordLength <= prefixLength + calwdata.longLineLimit))
+      || (calwdata.iLineOffset + iWordLength <= calwdata.longLineLimit))
   {
     if (PrefixData_IsInitialized(&calwdata.prefixMarkerLine)
       && ((pED->m_tbRes.m_iPos > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))
     {
-      const int markerPrefixLength = PrefixData_GetLength(&calwdata.prefixMarkerLine);
+      int markerPrefixLength = PrefixData_GetLength(&calwdata.prefixMarkerLine);
       if (markerPrefixLength > 0)
       {
+        if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED))
+        {
+          markerPrefixLength -= PrefixData_CountTrailingWhiteSpaces(&calwdata.prefixMarkerLine);
+        }
         for (int i = 0; i < markerPrefixLength; ++i)
         {
           TextBuffer_PushChar(&pED->m_tbRes, PrefixData_GetChar(&calwdata.prefixMarkerLine, i));
           ++calwdata.iLineOffset;
         }
       }
+      prefixFirstLineLength = markerPrefixLength;
     }
     BOOL isMarker = FALSE;
     BOOL isWhiteSpace = FALSE;
@@ -470,8 +480,16 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
       if (TextBuffer_GetChar(&pED->m_tb) != CHAR_FORCE_EOL_PROCESSED)
       {
         TextBuffer_PushChar(&pED->m_tb, CHAR_FORCE_EOL_PROCESSED);
-        TextBuffer_DecPos(&pED->m_tb);
-        TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+        if ((TextBuffer_GetTailLength(&pED->m_tb) > 0)
+          || ((TextBuffer_GetTailLength(&pED->m_tb) > 1) && !IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))
+        {
+          TextBuffer_DecPos(&pED->m_tb);
+          TextBuffer_AddEOL(&pED->m_tbRes, calwdata.iEOLMode);
+        }
+        else
+        {
+          iCharsProcessed += 1;
+        }
       }
       else 
       {
@@ -579,11 +597,11 @@ BOOL CALW_Encode_Pass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsP
   }
   else
   {
-    calwdata.iLineOffset = prefixLength + calwdata.longLineLimit;
+    calwdata.iLineOffset = calwdata.longLineLimit;
   }
 
   if (!isPrefixInitialized
-      && (calwdata.iLineOffset >= prefixLength + calwdata.longLineLimit)
+      && (calwdata.iLineOffset >= calwdata.longLineLimit)
       && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
   {
     calwdata.iLineOffset = 0;
