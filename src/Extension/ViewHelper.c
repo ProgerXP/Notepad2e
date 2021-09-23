@@ -185,11 +185,11 @@ BOOL n2e_IsScintillaWindow(const HWND hwnd)
 HWND n2e_GetActiveEditCheckFocus()
 {
   const HWND hwndFocus = GetFocus();
-  return n2e_IsScintillaWindow(hwndFocus)
+  DWORD dwProcessID = 0;
+  GetWindowThreadProcessId(hwndFocus, &dwProcessID);
+  return (hwndFocus && (dwProcessID == GetCurrentProcessId()) && n2e_IsScintillaWindow(hwndFocus))
     ? hwndFocus
-    : hwndActiveEdit
-    ? hwndActiveEdit
-    : _hwndEdit;
+    : n2e_GetActiveEdit();
 }
 
 HWND n2e_GetActiveEdit()
