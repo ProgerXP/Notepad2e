@@ -238,6 +238,12 @@ BOOL n2e_IsModalDialog(const HWND hwnd)
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam)
 {
   bIsModalDialogOnTop = (wParam == WA_INACTIVE) ? n2e_IsModalDialog((HWND)lParam) : FALSE;
+  if (wParam != WA_INACTIVE)
+  {
+    n2e_RestoreActiveEdit();
+    UpdateToolbar();
+    UpdateStatusbar();
+  }
 }
 
 HBITMAP ConvertIconToBitmap(const HICON hIcon, const int cx, const int cy)
