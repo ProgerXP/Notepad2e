@@ -7586,11 +7586,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
 
   else if (!bCancelDataLoss)
   {
-    if (lstrlen(szCurFile) != 0)
-      lstrcpy(tchFile, szCurFile);
-
     n2e_UpdateWindowTitle(hwndMain);
-
     MsgBox(MBWARN, IDS_ERR_SAVEFILE, tchFile);
   }
 
