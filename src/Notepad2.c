@@ -3741,7 +3741,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             && ((iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT)
              || (iFindSelectToMatchingBraceMode == FSM_IMPROVED_SELECT)))
           {
-            if (iBrace2 > iPos)
+            // [2e]: Select To Matching Brace to include brackets #367
+            const int iSelEnd = SciCall_GetSelEnd();
+            if (iBrace2 == iSelEnd)
+            {
+              iBrace2 == iSelEnd + 1;
+            }
+            else if (iBrace2 > iPos)
             {
               iBrace2 = SendMessage(hwndEdit, SCI_POSITIONBEFORE, iBrace2, 0);
               iPos = SendMessage(hwndEdit, SCI_POSITIONAFTER, iPos, 0);
