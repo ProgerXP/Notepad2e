@@ -3510,6 +3510,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           EditToggleLineComments(hwndEdit, L"#", TRUE);
           EndWaitCursor();
           break;
+        case SCLEX_AHK:
         case SCLEX_ASM:
         case SCLEX_PROPERTIES:
           BeginWaitCursor();
