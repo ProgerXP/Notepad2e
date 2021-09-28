@@ -172,19 +172,6 @@ void n2e_SelectionRelease()
   hwndToolTipEdit = NULL;
 }
 
-int n2e_SelectionGetWraps(const int beg, const int end)
-{
-  int k = 0;
-  int out = 0;
-  int len = SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0);
-  for (k = beg; k < end && k + beg < len; ++k)
-  {
-    out += SendMessage(hwndEdit, SCI_WRAPCOUNT, beg + k, 0) - 1;
-  }
-  return out;
-}
-
-
 int n2e_GetWordPosImpl(const BOOL bReturnStart, LPCSTR word, const int wlen, const int cpMin, const int cpMax, const int searchDistance, const int len, const int search_opt)
 {
   static struct Sci_TextToFind ttf = { 0 };
@@ -193,7 +180,7 @@ int n2e_GetWordPosImpl(const BOOL bReturnStart, LPCSTR word, const int wlen, con
   ttf.chrg.cpMax = min(len, cpMax + searchDistance);
   ttf.lpstrText = (LPSTR)word;
   int pos = SciCall_FindText(search_opt, &ttf);
-  if ((pos >= 0) && (ttf.chrg.cpMax <= cpMax))
+  if (pos >= 0)
   {
     res = bReturnStart ? pos : pos + wlen;
   }
@@ -229,7 +216,7 @@ int n2e_HighlightWord(LPCSTR word)
 {
   int res = 0;
   int cnt = 0;
-  int lstart, lwrap, lrange, len, curr;
+  int lstart, lrange, len, curr;
   int old;
   struct Sci_TextToFind ttf;
   len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
@@ -347,11 +334,6 @@ int n2e_HighlightWord(LPCSTR word)
     {
       bEditSelectionInit = FALSE;
     }
-    lwrap = 0;
-    if (bEditSelectionInit)
-    {
-      lwrap = n2e_SelectionGetWraps(lstart, lstart + lrange);
-    }
     ttf.lpstrText = (LPSTR)word;
     while (1)
     {
@@ -367,7 +349,7 @@ int n2e_HighlightWord(LPCSTR word)
             ttf.chrg.cpMin = ttf.chrgText.cpMax;
             continue;
           }
-          N2E_TRACE("[%d] line__ %d (%d , %d , %d) ", ttf.chrgText.cpMin, line, lwrap, lstart, lrange);
+          N2E_TRACE("[%d] line__ %d (%d , %d) ", ttf.chrgText.cpMin, line, lstart, lrange);
           if (line <= lrange + lstart)
           {
             SE_DATA dt = { ttf.chrgText.cpMin, wlen, n2e_Alloc(wlen + 1) };

@@ -16,7 +16,6 @@ typedef enum
 void n2e_EditInit(const HWND hwnd);
 void n2e_SelectionRelease();
 UINT n2e_SelectionGetSciEventMask(const BOOL range_not);
-int n2e_SelectionGetWraps(const int beg, const int end);
 void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const struct SCNotification *scn);
 void n2e_SelectionUpdate(const ESelectionUpdateMode place);
 BOOL n2e_IsHighlightSelectionEnabled();
