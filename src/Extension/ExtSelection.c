@@ -109,7 +109,7 @@ void n2e_EditInit(const HWND hwnd)
 
   tiEditSelection.cbSize = sizeof(tiEditSelection);
   tiEditSelection.hwnd = hwnd;
-  tiEditSelection.uFlags = TTF_TRACK;
+  tiEditSelection.uFlags = TTF_TRACK | TTF_TRANSPARENT;
   n2e_ToolTipAddToolInfo(hwndToolTipEdit, &tiEditSelection);
 
   SendMessage(hwnd, SCI_SETTECHNOLOGY, bUseDirectWrite ? SC_TECHNOLOGY_DIRECTWRITE : SC_TECHNOLOGY_DEFAULT, 0);
