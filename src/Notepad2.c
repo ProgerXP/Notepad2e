@@ -2432,6 +2432,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         if (bSaveBeforeRunningTools
             && (LOWORD(wParam) != IDM_FILE_NEWWINDOW2)      // [2e]: Disable save prompt for some Launch commands #176
+            && !bSkipFileSavePromptOnNewWindowCommand
             && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 

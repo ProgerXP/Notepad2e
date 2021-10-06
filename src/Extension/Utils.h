@@ -129,6 +129,7 @@ extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
 extern BOOL bTreatQuotesAsBraces;
+extern BOOL bSkipFileSavePromptOnNewWindowCommand;
 
 void n2e_InitInstance();
 void n2e_ExitInstance();

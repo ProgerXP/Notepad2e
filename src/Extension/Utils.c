@@ -45,6 +45,7 @@
 #define INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE L"FindSelectToMatchingBraceMode"
 #define INI_SETTING_TREAT_QUOTES_AS_BRACES L"TreatQuotesAsBraces"
 #define INI_SETTING_USE_DIRECTWRITE L"UseDirectWrite"
+#define INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND L"SkipFileSavePromptOnNewWindowCommand"
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
 #endif
@@ -82,6 +83,7 @@ BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 BOOL bUseDirectWrite = TRUE;
+BOOL bSkipFileSavePromptOnNewWindowCommand = FALSE;
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
 BOOL bLPegEnabled = FALSE;
@@ -431,6 +433,7 @@ void n2e_LoadINI()
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
+  bSkipFileSavePromptOnNewWindowCommand = IniGetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -521,6 +524,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 #endif
