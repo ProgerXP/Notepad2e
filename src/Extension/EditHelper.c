@@ -176,7 +176,7 @@ void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInse
   {
     SendMessage(hwnd, SCI_CHARLEFT, 0, 0);
   }
-  if (pszPrefix && (strlen(pszPrefix) > 0))
+  if (pszPrefix && (pszPrefix[0] != '\0'))
   {
     const int iCurrentPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
     SendMessage(hwnd, SCI_INSERTTEXT, iCurrentPos, (LPARAM)pszPrefix);

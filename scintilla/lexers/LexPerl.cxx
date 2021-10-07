@@ -648,8 +648,7 @@ void SCI_METHOD LexerPerl::Lex(Sci_PositionU startPos, Sci_Position length, int 
 			Delimiter[DelimiterLength++] = static_cast<char>(ch);
 			Delimiter[DelimiterLength] = '\0';
 		}
-		~HereDocCls() {
-		}
+		~HereDocCls() = default;
 	};
 	HereDocCls HereDoc;		// TODO: FIFO for stacked here-docs
 

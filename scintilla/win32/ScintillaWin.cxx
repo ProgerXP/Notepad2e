@@ -555,8 +555,6 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 		RECT rc;
 		GetClientRect(hw, &rc);
 
-		const D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
-
 		// Create a Direct2D render target.
 #if 1
 		D2D1_RENDER_TARGET_PROPERTIES drtp;
@@ -583,6 +581,8 @@ void ScintillaWin::EnsureRenderTarget(HDC hdc) {
 			}
 
 		} else {
+			const D2D1_SIZE_U size = D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top);
+
 			D2D1_HWND_RENDER_TARGET_PROPERTIES dhrtp;
 			dhrtp.hwnd = hw;
 			dhrtp.pixelSize = size;
@@ -2251,8 +2251,7 @@ class GlobalMemory {
 	HGLOBAL hand {};
 public:
 	void *ptr {};
-	GlobalMemory() noexcept {
-	}
+	GlobalMemory() noexcept = default;
 	explicit GlobalMemory(HGLOBAL hand_) noexcept : hand(hand_) {
 		if (hand) {
 			ptr = ::GlobalLock(hand);

@@ -99,8 +99,7 @@ Style::Style(const Style &source) : FontSpecification(), FontMeasurements() {
 	hotspot = source.hotspot;
 }
 
-Style::~Style() {
-}
+Style::~Style() = default;
 
 Style &Style::operator=(const Style &source) {
 	if (this == &source)

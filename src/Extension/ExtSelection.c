@@ -255,7 +255,7 @@ int n2e_HighlightWord(LPCSTR word)
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, N2E_SELECT_INDICATOR_SINGLE, 0);
   SendMessage(hwndEdit, SCI_INDICATORCLEARRANGE, 0, len);
-  if (word && (strlen(word) > 0))
+  if (word && (word[0] != '\0'))
   {
     int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     int wlen = strlen(word);

@@ -81,13 +81,13 @@ struct OptionsAsm {
 	bool foldExplicitAnywhere;
 	bool foldCompact;
 	OptionsAsm() {
-		delimiter = "";
+		delimiter.clear();
 		fold = false;
 		foldSyntaxBased = true;
 		foldCommentMultiline = false;
 		foldCommentExplicit = false;
-		foldExplicitStart = "";
-		foldExplicitEnd   = "";
+		foldExplicitStart.clear();
+		foldExplicitEnd.clear();
 		foldExplicitAnywhere = false;
 		foldCompact = true;
 	}

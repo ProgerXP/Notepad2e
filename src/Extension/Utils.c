@@ -378,7 +378,7 @@ void n2e_InitScintilla(const HWND hwnd)
 LPCWSTR n2e_GetLastRun(LPCWSTR lpstrDefault)
 {
   LPCWSTR def = wchLastRun;
-  if (lstrlen(def) == 0)
+  if (def[0] == '\0')
   {
     def = lpstrDefault;
   }
@@ -1027,7 +1027,7 @@ void n2e_GetLastDir(LPTSTR out)
 LPCWSTR n2e_GetExePath()
 {
   static WCHAR tchExePath[N2E_MAX_PATH_N_CMD_LINE] = { 0 };
-  if (lstrlen(tchExePath) == 0)
+  if (tchExePath[0] == '\0')
   {
     int nArgs = 0;
     LPWSTR* szArglist = CommandLineToArgvW(GetCommandLine(), &nArgs);
@@ -1071,7 +1071,7 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
     TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP),
       (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
   }
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     return FALSE;
   }

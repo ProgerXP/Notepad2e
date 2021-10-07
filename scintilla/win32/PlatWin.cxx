@@ -1508,7 +1508,6 @@ void SurfaceD2D::DrawTextCommon(PRectangle rc, const Font &font_, XYPOSITION yba
 	SetFont(font_);
 
 	// Use Unicode calls
-	const TextWide tbuf(s, len, unicodeMode, codePageText);
 	if (pRenderTarget && pTextFormat && pBrush) {
 		if (fuOptions & ETO_CLIPPED) {
 			D2D1_RECT_F rcClip = {rc.left, rc.top, rc.right, rc.bottom};
@@ -1517,6 +1516,7 @@ void SurfaceD2D::DrawTextCommon(PRectangle rc, const Font &font_, XYPOSITION yba
 
 		// Explicitly creating a text layout appears a little faster
 		IDWriteTextLayout *pTextLayout;
+		const TextWide tbuf(s, len, unicodeMode, codePageText);
 		const HRESULT hr = pIDWriteFactory->CreateTextLayout(tbuf.buffer, tbuf.tlen, pTextFormat,
 				rc.Width(), rc.Height(), &pTextLayout);
 		if (SUCCEEDED(hr)) {
@@ -1566,10 +1566,10 @@ void SurfaceD2D::DrawTextTransparent(PRectangle rc, Font &font_, XYPOSITION ybas
 XYPOSITION SurfaceD2D::WidthText(Font &font_, const char *s, int len) {
 	FLOAT width = 1.0;
 	SetFont(font_);
-	const TextWide tbuf(s, len, unicodeMode, codePageText);
 	if (pIDWriteFactory && pTextFormat) {
 		// Create a layout
 		IDWriteTextLayout *pTextLayout = nullptr;
+		const TextWide tbuf(s, len, unicodeMode, codePageText);
 		const HRESULT hr = pIDWriteFactory->CreateTextLayout(tbuf.buffer, tbuf.tlen, pTextFormat, 1000.0, 1000.0, &pTextLayout);
 		if (SUCCEEDED(hr)) {
 			DWRITE_TEXT_METRICS textMetrics;
@@ -2717,7 +2717,7 @@ LRESULT ListBoxX::WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam
 
 	case WM_DESTROY:
 		lb = 0;
-		::SetWindowLong(hWnd, 0, 0);
+		::SetWindowLongPtr(hWnd, 0, 0);
 		return ::DefWindowProc(hWnd, iMessage, wParam, lParam);
 
 	case WM_ERASEBKGND:

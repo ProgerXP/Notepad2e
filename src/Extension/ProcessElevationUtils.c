@@ -78,7 +78,7 @@ HANDLE n2e_RunElevatedInstance()
 {
   WCHAR wchCmdLine[MAX_PATH] = { 0 };
   if (GetModuleFileName(NULL, wchCmdLine, COUNTOF(wchCmdLine))
-      && (lstrlen(wchCmdLine) > 0))
+      && (wchCmdLine[0] != '\0'))
   {
     WCHAR wchParams[MAX_PATH] = { 0 };
     lstrcat(wchParams, L"/" IPCID_PARAM);

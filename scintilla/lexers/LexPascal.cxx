@@ -436,7 +436,6 @@ static void ClassifyPascalWordFoldPoint(int &levelCurrent, int &lineFoldStateCur
 		Sci_PositionU j = SkipWhiteSpace(currentPos, endPos, styler);
 		if (j < endPos) {
 			CharacterSet setWordStart(CharacterSet::setAlpha, "_");
-			CharacterSet setWord(CharacterSet::setAlphaNum, "_");
 
 			if (styler.SafeGetCharAt(j) == ';') {
 				// Handle forward class declarations ("type TMyClass = class;")
@@ -455,6 +454,7 @@ static void ClassifyPascalWordFoldPoint(int &levelCurrent, int &lineFoldStateCur
 					}
 				} else if (setWordStart.Contains(styler.SafeGetCharAt(j))) {
 					char s2[11];	// Size of the longest possible keyword + one additional character + null
+					CharacterSet setWord(CharacterSet::setAlphaNum, "_");
 					GetForwardRangeLowered(j, setWord, styler, s2, sizeof(s2));
 
 					if (strcmp(s2, "procedure") == 0 ||

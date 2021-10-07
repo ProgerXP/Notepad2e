@@ -2771,7 +2771,7 @@ void Style_SetLexerFromFile(HWND hwnd, LPCWSTR lpszFile)
   lpszExt = PathFindExtension(lpszFile);
 
   if (!bFound && bAutoSelect &&
-    (lpszFile && lstrlen(lpszFile) > 0 && *lpszExt))
+    (lpszFile && lpszFile[0] != '\0' && *lpszExt))
   {
     if (*lpszExt == L'.')
       lpszExt++;
@@ -2961,7 +2961,7 @@ extern WCHAR tchFileDlgFilters[5 * 1024];
 
 BOOL Style_GetOpenDlgFilterStr(LPWSTR lpszFilter, int cchFilter)
 {
-  if (lstrlen(tchFileDlgFilters) == 0)
+  if (tchFileDlgFilters[0] == '\0')
     GetString(IDS_FILTER_ALL, lpszFilter, cchFilter);
   else
   {
@@ -4134,7 +4134,7 @@ void Style_ConfigDlg(HWND hwnd)
   else
   {
     fStylesModified = TRUE;
-    if (lstrlen(szIniFile) == 0 && !fWarnedNoIniFile)
+    if (szIniFile[0] == '\0' && !fWarnedNoIniFile)
     {
       MsgBox(MBWARN, IDS_SETTINGSNOTSAVED);
       fWarnedNoIniFile = TRUE;

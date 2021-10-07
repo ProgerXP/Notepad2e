@@ -333,8 +333,7 @@ void SCI_METHOD LexerBash::Lex(Sci_PositionU startPos, Sci_Position length, int 
 			Delimiter[DelimiterLength++] = static_cast<char>(ch);
 			Delimiter[DelimiterLength] = '\0';
 		}
-		~HereDocCls() {
-		}
+		~HereDocCls() = default;
 	};
 	HereDocCls HereDoc;
 
@@ -402,8 +401,7 @@ void SCI_METHOD LexerBash::Lex(Sci_PositionU startPos, Sci_Position length, int 
 			Style = StyleStack[Depth];
 			Down  = opposite(Up);
 		}
-		~QuoteStackCls() {
-		}
+		~QuoteStackCls() = default;
 	};
 	QuoteStackCls QuoteStack;
 

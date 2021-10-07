@@ -30,7 +30,7 @@ void FileMapping_SaveError(FileMapping *pFileMapping)
 BOOL FileMapping_IsOK(const FileMapping *pFileMapping)
 {
   return pFileMapping
-    && (lstrlen(pFileMapping->name) > 0)
+    && (pFileMapping->name[0] != '\0')
     && Event_IsOK(&pFileMapping->eventTryCreate)
     && Event_IsOK(&pFileMapping->eventCreated)
     && Event_IsOK(&pFileMapping->eventTryClose)

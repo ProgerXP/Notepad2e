@@ -151,7 +151,7 @@ HRESULT PrivateSetCurrentProcessExplicitAppUserModelID(PCWSTR AppID)
 {
   FARPROC pfnSetCurrentProcessExplicitAppUserModelID;
 
-  if (lstrlen(AppID) == 0)
+  if (AppID[0] == '\0')
     return (S_OK);
 
   if (lstrcmpi(AppID, L"(default)") == 0)
@@ -1133,7 +1133,7 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
       if (SUCCEEDED(ppf->lpVtbl->Load(ppf, wsz, STGM_READ)))
       {
         // [2e]: Add to Favorites - selection mode #249
-        if ((NOERROR == psl->lpVtbl->GetArguments(psl, pszResPath, cchResPath)) && (wcslen(pszResPath) > 0))
+        if ((NOERROR == psl->lpVtbl->GetArguments(psl, pszResPath, cchResPath)) && (pszResPath[0] != '\0'))
         {
           int i = 0;
           LPWSTR* szArglist = CommandLineToArgvW(pszResPath, &i);
@@ -1142,7 +1142,7 @@ BOOL PathGetLnkPath(LPCWSTR pszLnkFile, LPWSTR pszResPath, int cchResPath)
             --i;
             while (i >= 0)
             {
-              if (wcslen(szArglist[i]) > 0)
+              if (szArglist[i][0] != '\0')
               {
                 wcscpy_s(pszResPath, cchResPath, szArglist[i]);
                 bSucceeded = TRUE;
@@ -1240,7 +1240,7 @@ BOOL PathCreateDeskLnk(LPCWSTR pszDocument)
   BOOL bSucceeded = FALSE;
   BOOL fMustCopy;
 
-  if (!pszDocument || lstrlen(pszDocument) == 0)
+  if (!pszDocument || pszDocument[0] == '\0')
     return TRUE;
 
   // init strings
@@ -1306,7 +1306,7 @@ BOOL PathCreateFavLnk(LPCWSTR pszName, LPCWSTR pszTarget, LPCWSTR pszArguments, 
   IShellLink *psl;
   BOOL bSucceeded = FALSE;
 
-  if (!pszName || lstrlen(pszName) == 0)
+  if (!pszName || pszName[0] == '\0')
     return TRUE;
 
   lstrcpy(tchLnkFileName, pszDir);

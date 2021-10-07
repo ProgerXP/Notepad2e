@@ -67,7 +67,7 @@ void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
   }
   else
   {
-    if (wcslen(arrwchExpressionValue) > 0)
+    if (arrwchExpressionValue[0] != '\0')
     {
       n2e_SetClipboardText(hwnd, arrwchExpressionValue);
     }
@@ -133,7 +133,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
       }
     }
 
-    bValidExpression = (strlen(arrchPrevExpressionText) > 0) && pszText && (strcmp(pszText, arrchPrevExpressionText) == 0);
+    bValidExpression = (arrchPrevExpressionText[0] != '\0') && pszText && (strcmp(pszText, arrchPrevExpressionText) == 0);
     if ((iCount > 0) && (iCount <= MAX_EXPRESSION_LENGTH) && 
       ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
     {

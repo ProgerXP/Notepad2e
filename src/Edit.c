@@ -5464,7 +5464,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
                          (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
 
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
     return FALSE;
@@ -5551,7 +5551,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
                          (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
 
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
     return FALSE;
@@ -5641,7 +5641,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
                          (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
 
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
     return FALSE;
@@ -5777,7 +5777,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
                          (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
 
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
     return FALSE;
@@ -5937,7 +5937,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   if (lpefr->bTransformBS)
     TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
                          (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-  if (lstrlenA(szFind2) == 0)
+  if (szFind2[0] == '\0')
   {
     InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
     return FALSE;

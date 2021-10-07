@@ -4378,7 +4378,6 @@ void Editor::DropAt(SelectionPosition position, const char *value, size_t length
 	        (positionOnEdgeOfSelection && !moving)) {
 
 		const SelectionPosition selStart = SelectionStart();
-		const SelectionPosition selEnd = SelectionEnd();
 
 		UndoGroup ug(pdoc);
 
@@ -4397,6 +4396,7 @@ void Editor::DropAt(SelectionPosition position, const char *value, size_t length
 				}
 			} else {
 				if (position > selStart) {
+					const SelectionPosition selEnd = SelectionEnd();
 					positionAfterDeletion.Add(-SelectionRange(selEnd, selStart).Length());
 				}
 			}

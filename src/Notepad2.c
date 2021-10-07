@@ -2208,7 +2208,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, CMD_OPENINIFILE, i);
   // [/2e]
 
-  i = (lstrlen(szIniFile) > 0 || lstrlen(szIniFile2) > 0);
+  i = (szIniFile[0] != '\0' || szIniFile2[0] != '\0');
   EnableCmd(hmenu, IDM_VIEW_SAVESETTINGSNOW, i);
   // [2e]: Ctrl+Wheel scroll feature
   CheckCmd(hmenu, ID_SETTINGS_CTRL_WHEEL_SCROLL, bCtrlWheelScroll);
@@ -2578,7 +2578,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: File context menu #12
     case ID_FILE_INVOKESHELLMENU: {
-        if (lstrlen(szCurFile) > 0 &&
+        if (szCurFile[0] != '\0' &&
             PathFileExists(szCurFile)
             )
         {
@@ -2627,7 +2627,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_FILE_PROPERTIES: {
         SHELLEXECUTEINFO sei;
 
-        if (lstrlen(szCurFile) == 0)
+        if (szCurFile[0] == '\0')
           break;
 
         ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
@@ -2799,7 +2799,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         if (EditSetNewEncoding(hwndEdit,
                                iEncoding, iNewEncoding,
-                               (flagSetEncoding), lstrlen(szCurFile) == 0))
+                               (flagSetEncoding), szCurFile[0] == '\0'))
         {
           if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) == 0)
           {
@@ -4390,9 +4390,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_SAVESETTINGSNOW: {
         BOOL bCreateFailure = FALSE;
-        if (lstrlen(szIniFile) == 0)
+        if (szIniFile[0] == '\0')
         {
-          if (lstrlen(szIniFile2) > 0)
+          if (szIniFile2[0] != '\0')
           {
             if (CreateIniFileEx(szIniFile2))
             {
@@ -4733,7 +4733,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         StrTrim(wchFind, L" ");
         StrTrim(wchTemplate, L" ");
 
-        if (lstrlen(wchFind) == 0 || lstrlen(wchTemplate) == 0)
+        if (wchFind[0] == '\0' || wchTemplate[0] == '\0')
           break;
 
         GetLocalTime(&st);
@@ -6026,7 +6026,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
   WCHAR *pIniSection = NULL;
   int   cchIniSection = 0;
   WCHAR wchTmp[MAX_PATH];
-  if (lstrlen(szIniFile) == 0)
+  if (szIniFile[0] == '\0')
     return;
 
   CreateIniFile();
@@ -6208,7 +6208,7 @@ BOOL ParseCommandLine()
 
   LPWSTR lpCmdLine = GetCommandLine();
 
-  if (lstrlen(lpCmdLine) == 0)
+  if (lpCmdLine[0] == '\0')
     return TRUE;
 
   // Good old console can also send args separated by Tabs
@@ -6269,7 +6269,7 @@ BOOL ParseCommandLine()
       {
         StrCpyN(g_wchAppUserModelID, lp1 + CSTRLEN(L"appid="), COUNTOF(g_wchAppUserModelID));
         StrTrim(g_wchAppUserModelID, L" ");
-        if (lstrlen(g_wchAppUserModelID) == 0)
+        if (g_wchAppUserModelID[0] == '\0')
           lstrcpy(g_wchAppUserModelID, L"(default)");
       }
       else if (StrCmpNI(lp1, L"sysmru=", CSTRLEN(L"sysmru=")) == 0)
@@ -6699,7 +6699,7 @@ void LoadFlags()
   if (IniSectionGetInt(pIniSection, L"NoFileVariables", 0))
     fNoFileVariables = 1;
 
-  if (lstrlen(g_wchAppUserModelID) == 0)
+  if (g_wchAppUserModelID[0] == '\0')
   {
     IniSectionGetString(pIniSection, L"ShellAppUserModelID", L"(default)",
                         g_wchAppUserModelID, COUNTOF(g_wchAppUserModelID));
@@ -7299,7 +7299,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
     return TRUE;
   }
-  if (!lpszFile || lstrlen(lpszFile) == 0)
+  if (!lpszFile || lpszFile[0] == '\0')
   {
     if (!OpenFileDlg(hwndMain, tch, COUNTOF(tch), NULL))
       return FALSE;
@@ -7457,7 +7457,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   BOOL bCancelDataLoss = FALSE;
 
   BOOL bIsEmptyNewFile = FALSE;
-  if (lstrlen(szCurFile) == 0)
+  if (szCurFile[0] == '\0')
   {
     int cchText = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
     if (cchText == 0)
@@ -7467,7 +7467,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
       char tchText[2048];
       SendMessage(hwndEdit, SCI_GETTEXT, (WPARAM)2047, (LPARAM)tchText);
       StrTrimA(tchText, " \t\n\r");
-      if (lstrlenA(tchText) == 0)
+      if (tchText[0] == '\0')
         bIsEmptyNewFile = TRUE;
     }
   }
@@ -7510,7 +7510,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   // Save As...
-  if (bSaveAs || bSaveCopy || lstrlen(szCurFile) == 0)
+  if (bSaveAs || bSaveCopy || szCurFile[0] == '\0')
   {
     WCHAR tchInitialDir[MAX_PATH] = L"";
     if (bSaveCopy && lstrlen(tchLastSaveCopyDir))
@@ -7743,7 +7743,7 @@ BOOL SaveFileDlg(HWND hwnd, LPWSTR lpstrFile, int cchFile, LPCWSTR lpstrInitialD
   // [2e]: Save/Save To - file extension #17
   LPWSTR oext = PathFindExtensionW(szCurFile);
   LPWSTR oname = PathFindFileNameW(szCurFile);
-  if (0 == lstrlen(szCurFile))
+  if (szCurFile[0] == '\0')
   {
     ofn.lpstrDefExt = (lstrlen(tchDefaultExtension)) ? tchDefaultExtension : NULL;
   }
@@ -8280,7 +8280,7 @@ void InstallFileWatching(LPCWSTR lpszFile)
   HANDLE hFind;
 
   // Terminate
-  if (!iFileWatchingMode || !lpszFile || lstrlen(lpszFile) == 0)
+  if (!iFileWatchingMode || !lpszFile || lpszFile[0] == '\0')
   {
     if (bRunningWatch)
     {

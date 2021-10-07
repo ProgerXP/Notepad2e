@@ -121,7 +121,7 @@ static int ExpandAllInPlace(const PropSetSimple &props, std::string &withVars, i
 		std::string val = props.Get(var.c_str());
 
 		if (blankVars.contains(var.c_str())) {
-			val = ""; // treat blankVar as an empty string (e.g. to block self-reference)
+			val.clear(); // treat blankVar as an empty string (e.g. to block self-reference)
 		}
 
 		if (--maxExpands >= 0) {

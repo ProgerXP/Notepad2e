@@ -51,9 +51,8 @@ public:
   CTestCaseData(const bool file, const std::vector<unsigned char> src, const int encoding, const std::string res,
                 const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), vectorSource(src)
   {
-    vectorSource = src;
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res,
