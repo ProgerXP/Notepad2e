@@ -434,8 +434,7 @@ namespace Notepad2eTests
                              "//dolore magna aliqua. Ut enim ad minim veniam,",
                 CPI_DEFAULT,
                              "  // Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod\r\n"
-                             "  // tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim\r\n"
-                             "  // veniam,",
+                             "  //tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,",
                 false, 0, { 80, SCLEX_CPP, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  // Lorem ipsum dolor sit amet, consectetur adipiscing\r\n"
@@ -443,15 +442,15 @@ namespace Notepad2eTests
                              "//dolore magna aliqua. Ut enim ad minim veniam,",
                 CPI_DEFAULT,
                              "  // Lorem ipsum dolor sit amet, consectetur\r\n"
-                             "  // adipiscing elit, sed do eiusmod tempor\r\n"
-                             "  // incididunt ut labore et dolore magna aliqua.\r\n"
-                             "  // Ut enim ad minim veniam,",
+                             "  //adipiscing elit, sed do eiusmod tempor\r\n"
+                             "  //incididunt ut labore et dolore magna aliqua.\r\n"
+                             "  //Ut enim ad minim veniam,",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_SHORT_TESTS
 
-          CTestCaseData(false, "  // > aaa\n"
+          CTestCaseData(false,  "  // > aaa\n"
                                 "  //   \t\t\n"
                                 "  //  ",
               CPI_DEFAULT,
@@ -491,14 +490,14 @@ namespace Notepad2eTests
                 CPI_DEFAULT,
                                "  // aa bb\n"
                                "  //\n"
-                               "  // cc dd",
+                               "  //cc dd",
                 false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),
 
           CTestCaseData(false, " //\r\n"
                                "  // aa bb\r\n"
                                " //cc dd",
                 CPI_DEFAULT,
-                               "  // aa bb cc dd",
+                               "  //aa bb cc dd",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
           CTestCaseData(false, "// e.g. foo bar",
@@ -520,7 +519,7 @@ namespace Notepad2eTests
                 CPI_DEFAULT,
                              "  // aa\r\n"
                              "  //\r\n"
-                             "  // s",
+                             "  //s",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
         CTestCaseData(false, "  // aa\r"
@@ -582,28 +581,28 @@ namespace Notepad2eTests
                              "      //*Ipsum",
                 CPI_DEFAULT,
                              "    // Lorem\r\n"
-                             "    // *Ipsum",
+                             "    //*Ipsum",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    // Lorem\n"
                              "      //*Ipsum",
                 CPI_DEFAULT,
                              "    // Lorem\n"
-                             "    // *Ipsum",
+                             "    //*Ipsum",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
 
         CTestCaseData(false, "    // Lorem\r\n"
                              "      //*Ipsum",
                 CPI_DEFAULT,
                              "    // Lorem\r\n"
-                             "    // *Ipsum",
+                             "    //*Ipsum",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 
 		    CTestCaseData(false, "    ; Lorem\r\n"
                              "      ;*Ipsum",
                 CPI_DEFAULT,
                              "    ; Lorem\r\n"
-                             "    ; *Ipsum",
+                             "    ;*Ipsum",
     				    false, 0, { 50, SCLEX_PROPERTIES, SC_EOL_CRLF }),
 
         CTestCaseData(false, "aa\r\n"
@@ -787,6 +786,26 @@ namespace Notepad2eTests
                                "\r\n"
                                "aaaaa",
                 false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "  // List:\n"
+                               "  //* aa\n"
+                               "  //* bb",
+                CPI_DEFAULT,
+                               "  // List:\n"
+                               "  //* aa\n"
+                               "  //* bb",
+                false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  // Test string\n"
+                               "     //     test string\n"
+                               "  //  * aa\n"
+                               "//* bb",
+                CPI_DEFAULT,
+                               "  // Test string\n"
+                               "  //test string\n"
+                               "  //  * aa\n"
+                               "  //* bb",
+                false, 0, { 17, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST

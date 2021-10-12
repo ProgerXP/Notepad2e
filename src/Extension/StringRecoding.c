@@ -622,7 +622,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     return TRUE;
   case ERT_CALW:
     lstrcpy(pRA->statusText, L"Comment-aware line wrapping...");
-    pRA->iPassCount = 2;
+    pRA->iPassCount = 3;
     pRA->iRequiredCharsForEncode = 1;
     pRA->iRequiredCharsForDecode = 3;
     pRA->pIsValidStrSequence = CALW_IsValidSequence;
@@ -977,9 +977,17 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
     pED->m_tbRes.m_ptr[pED->m_tbRes.m_iPos] = 0;
     if (pSS->hwnd)
     {
-      SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
-      SciCall_ReplaceSel(0, "");
-      SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
+      if ((pED->m_tbRes.m_iPos != pED->m_tb.m_iPos) || (strncmp(pED->m_tbRes.m_ptr, pED->m_tb.m_ptr, pED->m_tb.m_iPos) != 0))
+      {
+        SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
+        SciCall_ReplaceSel(0, "");
+        SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
+      }
+      else
+      {
+        const int iPos = pED->m_tr.m_iPositionStart + pED->m_tbRes.m_iPos;
+        SciCall_SetSel(iPos, iPos);
+      }
       pSS->iResultLength += pED->m_tbRes.m_iPos;
       pED->m_tr.m_iSelEnd += iCursorOffset;
       pED->m_tr.m_iPositionCurrent = SciCall_GetCurrentPos();
