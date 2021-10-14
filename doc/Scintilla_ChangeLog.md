@@ -1061,3 +1061,25 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 /**Alt+Arrow to invert accelerated mode for single navigation #323**
 
 ---
+
+**Ctrl+Shift+D - affect selected lines #354**
+
+Replace SCI_LINEDELETE handler:
+
+[scintilla/src/Editor.cxx]
+```
+	case SCI_LINECUT: {
+			const Sci::Line lineStart = pdoc->SciLineFromPosition(SelectionStart().Position());
+			const Sci::Line lineEnd = pdoc->SciLineFromPosition(SelectionEnd().Position());
+			const Sci::Position start = pdoc->LineStart(lineStart);
+			const Sci::Position end = pdoc->LineStart(lineEnd + 1);
+			SetSelection(start, end);
+			Cut();
+			SetLastXChosen();
+		}
+		break;
+```
+
+/**Ctrl+Shift+D - affect selected lines #354**
+
+---
