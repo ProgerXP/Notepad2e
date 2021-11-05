@@ -666,20 +666,17 @@ BEGIN
     CONTROL         "Match &beginning of word only",IDC_FINDSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,61,110,10
     CONTROL         "Regular &expression search",IDC_FINDREGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,73,101,10
     CONTROL         "&Transform backslashes",IDC_FINDTRANSFORMBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,85,89,10
+    CONTROL         "Search c&omments",IDC_SEARCHCOMMENTS,"Button",BS_AUTO3STATE | WS_TABSTOP,7,97,72,10
     CONTROL         "&Don't wrap around",IDC_NOWRAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,37,75,10
     CONTROL         "C&lose after find",IDC_FINDCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,49,65,10
-    LTEXT           "Search in comments:",IDC_STATIC,7,101,75,8
-    CONTROL         "alwa&ys",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,84,100,41,10
-    CONTROL         "ne&ver",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,129,100,41,10
-    CONTROL         "&only",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,174,100,29,10
     DEFPUSHBUTTON   "&Find Next",IDOK,215,7,50,14
     PUSHBUTTON      "Find &Previous",IDC_FINDPREV,215,24,50,14
     PUSHBUTTON      "&Grep",ID_GREP,215,41,50,14
     PUSHBUTTON      "Ung&rep",ID_UNGREP,215,58,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,74,50,14
-    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,73,74,10
+    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,86,74,10
     CONTROL         "<a>Go to Replace (Ctrl+H)</a>",IDC_TOGGLEREPLACE,
-                    "SysLink",0x0,125,85,74,10
+                    "SysLink",0x0,125,98,74,10
 END
 
 IDD_REPLACE DIALOGEX 0, 0, 272, 144
@@ -696,20 +693,17 @@ BEGIN
     CONTROL         "Match &beginning of word only",IDC_FINDSTART,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,90,110,10
     CONTROL         "Regular &expression search",IDC_FINDREGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,102,101,10
     CONTROL         "&Transform backslashes",IDC_FINDTRANSFORMBS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,114,89,10
+    CONTROL         "Search c&omments",IDC_SEARCHCOMMENTS,"Button",BS_AUTO3STATE | WS_TABSTOP,7,126,72,10
     CONTROL         "&Don't wrap around",IDC_NOWRAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,66,75,10
     CONTROL         "C&lose after replace",IDC_FINDCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,125,78,77,10
-    LTEXT           "Search in comments:",IDC_STATIC,7,130,75,8
-    CONTROL         "alwa&ys",IDC_RADIO1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,84,129,41,10
-    CONTROL         "ne&ver",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,129,129,41,10
-    CONTROL         "&only",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,174,129,29,10
     DEFPUSHBUTTON   "&Find Next",IDOK,215,7,50,14
     PUSHBUTTON      "Find &Previous",IDC_FINDPREV,215,24,50,14
     PUSHBUTTON      "&Replace",IDC_REPLACE,215,41,50,14
     PUSHBUTTON      "Replace &All",IDC_REPLACEALL,215,58,50,14
     PUSHBUTTON      "In &Selection",IDC_REPLACEINSEL,215,75,50,14
     PUSHBUTTON      "Close",IDCANCEL,215,92,50,14
-    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,102,74,10
-    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFIND,"SysLink",0x0,125,114,74,10
+    CONTROL         "<a>Go to Go To (Ctrl+G)</a>",IDC_TOGGLEGOTO,"SysLink",0x0,125,115,74,10
+    CONTROL         "<a>Go to Find (Ctrl+F)</a>",IDC_TOGGLEFIND,"SysLink",0x0,125,127,74,10
 END
 
 IDD_RUN DIALOGEX 0, 0, 224, 85

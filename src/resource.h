@@ -8,6 +8,7 @@
 #define ID_GREP                         4
 #define ID_UNGREP                       5
 #define ID_FILE_OPENPREVIOUS            6
+#define IDC_SEARCHCOMMENTS              6
 #define ID_EDIT_UNDO_REDO               8
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
 #define ID_FILE_INVOKESHELLMENU         10

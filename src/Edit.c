@@ -4952,10 +4952,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         {
           lpefr->iSearchInComments = SIC_ALWAYS;
         }
-        EnableWindow(GetDlgItem(hwnd, IDC_RADIO1), bCommentStyleDefined);
-        EnableWindow(GetDlgItem(hwnd, IDC_RADIO2), bCommentStyleDefined);
-        EnableWindow(GetDlgItem(hwnd, IDC_RADIO3), bCommentStyleDefined);
-        n2e_SetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3, (int)lpefr->iSearchInComments);
+        EnableWindow(GetDlgItem(hwnd, IDC_SEARCHCOMMENTS), bCommentStyleDefined);
+        CheckDlgButton(hwnd, IDC_SEARCHCOMMENTS, (lpefr->iSearchInComments == SIC_ALWAYS) ? BST_INDETERMINATE
+                                                : (lpefr->iSearchInComments == SIC_ONLY) ? BST_CHECKED
+                                                : BST_UNCHECKED);
         // [/2e]
 
         if (GetDlgItem(hwnd, IDC_REPLACE))
@@ -5168,8 +5168,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           lpefr->bNoFindWrap = (IsDlgButtonChecked(hwnd, IDC_NOWRAP) == BST_CHECKED) ? TRUE : FALSE;
           // [2e]: Find/Replace - Skip comments mode #303
-          lpefr->iSearchInComments = (ESearchInComments)n2e_GetCheckedRadioButton(hwnd, IDC_RADIO1, IDC_RADIO3);
-
+          const UINT uiSearchCommentsButtonState = IsDlgButtonChecked(hwnd, IDC_SEARCHCOMMENTS);
+          lpefr->iSearchInComments = (uiSearchCommentsButtonState == BST_INDETERMINATE) ? SIC_ALWAYS
+                                    : (uiSearchCommentsButtonState == BST_CHECKED) ? SIC_ONLY
+                                    : SIC_NEVER;
           if (bIsFindDlg)
           {
             lpefr->bFindClose = (IsDlgButtonChecked(hwnd, IDC_FINDCLOSE) == BST_CHECKED) ? TRUE : FALSE;
