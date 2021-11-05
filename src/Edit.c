@@ -5493,7 +5493,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
+      n2e_UpdateFindIconAndFlashWindow((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
     }
     else
     {
@@ -5581,7 +5581,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateFindIcon((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
+      n2e_UpdateFindIconAndFlashWindow((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
     }
     else
     {

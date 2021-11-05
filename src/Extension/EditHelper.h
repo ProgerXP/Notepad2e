@@ -34,6 +34,7 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next);
 void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode);
 void n2e_EscapeHTML(const HWND hwnd);
 void n2e_UpdateFindIcon(const BOOL findOK);
+void n2e_UpdateFindIconAndFlashWindow(const BOOL findOK);
 void n2e_ResetFindIcon();
 void n2e_EditString2Hex(const HWND hwnd);
 void n2e_EditHex2String(const HWND hwnd);

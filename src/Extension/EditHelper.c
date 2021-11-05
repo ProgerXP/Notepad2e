@@ -851,6 +851,22 @@ void n2e_UpdateFindIcon(const BOOL findOK)
   SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
 }
 
+void n2e_UpdateFindIconAndFlashWindow(const BOOL findOK)
+{
+  n2e_UpdateFindIcon(findOK);
+  if (findOK)
+  {
+    FLASHWINFO fwi = {
+      .cbSize = sizeof(FLASHWINFO),
+      .hwnd = hwndMain,
+      .dwFlags = FLASHW_CAPTION,
+      .uCount = 1,
+      .dwTimeout = 0
+    };
+    FlashWindowEx(&fwi);
+  }
+}
+
 void n2e_ResetFindIcon()
 {
   n2e_UpdateFindIcon(TRUE);
