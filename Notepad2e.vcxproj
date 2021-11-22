@@ -439,6 +439,8 @@
     <ClCompile Include="src\Dialogs.c" />
     <ClCompile Include="src\Dlapi.c" />
     <ClCompile Include="src\Edit.c" />
+    <ClCompile Include="src\Extension\CALWImpl.cpp" />
+    <ClCompile Include="src\Extension\CALWInterface.cpp" />
     <ClCompile Include="src\Extension\CommentAwareLineWrapping.c" />
     <ClCompile Include="src\Extension\CommonUtils.c" />
     <ClCompile Include="src\Extension\DPIHelper.cpp" />
@@ -572,6 +574,8 @@
     <ClInclude Include="src\Dialogs.h" />
     <ClInclude Include="src\Dlapi.h" />
     <ClInclude Include="src\Edit.h" />
+    <ClInclude Include="src\Extension\CALWImpl.h" />
+    <ClInclude Include="src\Extension\CALWInterface.h" />
     <ClInclude Include="src\Extension\CommentAwareLineWrapping.h" />
     <ClInclude Include="src\Extension\CommonUtils.h" />
     <ClInclude Include="src\Extension\DPIHelper.h" />

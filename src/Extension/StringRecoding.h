@@ -54,7 +54,7 @@ typedef BOOL(*RecodeMethod)(LPVOID pRA, EncodingData* pED, long* piCharsProcesse
 
 struct TRecodingAlgorithm
 {
-  enum ERecodingType recodingType;
+  enum _ERecodingType recodingType;
   BOOL isEncoding;
   int iPassCount;
   int iPassIndex;
@@ -101,6 +101,7 @@ BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA);
 void TextBuffer_IncPos(TextBuffer* pTB);
 void TextBuffer_DecPos(TextBuffer* pTB);
 void TextBuffer_OffsetPos(TextBuffer* pTB, const int iOffset);
+int TextBuffer_CountTrailingWhiteSpaces(TextBuffer* pTB, const int offset);
 char TextBuffer_GetChar(TextBuffer* pTB);
 char TextBuffer_GetCharAt(TextBuffer* pTB, const int iOffset);
 char TextBuffer_PopChar(TextBuffer* pTB);
@@ -111,7 +112,7 @@ BOOL TextBuffer_GetLiteralChar(TextBuffer* pTB, char* pCh, long* piCharsProcesse
 BOOL TextBuffer_IsEOL(TextBuffer* pTB, const int iEOLMode);
 void TextBuffer_AddEOL(TextBuffer* pTB, const int iEOLMode);
 
-typedef enum
+typedef enum _ERecodingType
 {
   ERT_HEX,
   ERT_BASE64,
@@ -137,3 +138,7 @@ BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, con
 
 void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize);
 BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, EncodingData* pED);
+
+BOOL IsCharFromString(LPCSTR lpstrSample, const unsigned char ch);
+BOOL IsEOLChar(const unsigned char ch);
+BOOL IsTrailingEOL(const int eolMode, const unsigned char ch, TextBuffer* pTB);

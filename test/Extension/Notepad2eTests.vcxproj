@@ -92,6 +92,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Extension\CALWImpl.h" />
+    <ClInclude Include="..\..\src\Extension\CALWInterface.h" />
     <ClInclude Include="..\..\src\Extension\CommonUtils.h" />
     <ClInclude Include="..\..\src\Extension\CommentAwareLineWrapping.h" />
     <ClInclude Include="..\..\src\Extension\Externals.h" />
@@ -106,6 +108,12 @@
     <ClInclude Include="TextEncodingTestCaseData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Extension\CALWImpl.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\CALWInterface.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="..\..\src\Extension\CommentAwareLineWrapping.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>

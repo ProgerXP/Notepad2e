@@ -11,6 +11,7 @@ extern int iEOLMode;
 extern DWORD dwLastIOError;
 extern int iLongLinesLimit;
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
 
 #ifndef N2E_TESTING
 
@@ -63,7 +64,5 @@ void n2e_HideProgressBarInStatusBar();
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 
 extern WCHAR szIniFile[MAX_PATH];
-
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
 
 #endif

@@ -20,6 +20,8 @@ int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 #define HEX_DIGITS_UPPER  "0123456789ABCDEF"
 
+static LPCSTR lpstrWhiteSpaces = " \t";
+
 BOOL bBreakOnError = TRUE;
 
 BOOL n2e_IsUnicodeEncodingMode()
@@ -292,6 +294,48 @@ void TextBuffer_OffsetPos(TextBuffer* pTB, const int iOffset)
 {
   pTB->m_iPos += iOffset;
 }
+
+BOOL IsCharFromString(LPCSTR lpstrSample, const unsigned char ch)
+{
+  return strchr(lpstrSample, ch) != NULL;
+}
+
+BOOL IsEOLChar(const unsigned char ch)
+{
+  return (ch == '\r') || (ch == '\n');
+}
+
+BOOL IsTrailingEOL(const int eolMode, const unsigned char ch, TextBuffer* pTB)
+{
+  switch (eolMode)
+  {
+  case SC_EOL_CRLF:
+    return (ch == '\r') && (TextBuffer_GetChar(pTB) == '\n');
+  case SC_EOL_LF:
+    return ch == '\n';
+  case SC_EOL_CR:
+    return ch == '\r';
+  }
+  assert(0);
+  return FALSE;
+}
+
+int TextBuffer_CountTrailingWhiteSpaces(TextBuffer* pTB, const int offset)
+{
+  int res = abs(offset);
+  int pos = pTB->m_iPos + offset;
+  while (pos > 0)
+  {
+    if (!IsCharFromString(lpstrWhiteSpaces, pTB->m_ptr[pos]))
+    {
+      break;
+    }
+    --pos;
+    ++res;
+  }
+  return res * ((offset > 0) ? 1 : -1);
+}
+
 
 char TextBuffer_GetChar(TextBuffer* pTB)
 {

@@ -447,6 +447,12 @@
     <ClInclude Include="src\Extension\Lexers.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\CALWImpl.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\CALWInterface.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -1116,6 +1122,12 @@
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
     <ClCompile Include="src\Extension\Lexers.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\CALWImpl.cpp">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\CALWInterface.cpp">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>

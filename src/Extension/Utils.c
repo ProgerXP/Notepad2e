@@ -1042,11 +1042,6 @@ LPCWSTR n2e_GetExePath()
   return tchExePath;
 }
 
-inline BOOL IsEOLChar(const char ch)
-{
-  return (ch == '\r') || (ch == '\n');
-}
-
 BOOL n2e_Grep(void* _lpf, const BOOL grep)
 {
   LPEDITFINDREPLACE lpf = (LPEDITFINDREPLACE)_lpf;
