@@ -634,12 +634,17 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
       SendMessage(hwndEdit, SCI_SETTARGETEND, se->pos + iOriginalSelectionLength, 0);
       if (rollback)
       {
-        assert(case_compare(pEditSelectionOriginalWord, se->original, TRUE));
-        SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)se->original);
+        if (!case_compare(pEditSelectionOriginalWord, se->original, TRUE))
+        {
+          SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)se->original);
+        }
       }
       else
       {
-        SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)trEditSelection.lpstrText);
+        if (!case_compare(trEditSelection.lpstrText, se->original, TRUE))
+        {
+          SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)trEditSelection.lpstrText);
+        }
       }
       delta_len += (new_len - iOriginalSelectionLength);
       if (se->pos < trEditSelection.chrg.cpMax)
