@@ -62,11 +62,18 @@ char *pEditSelectionOriginalWord = NULL;
 
 BOOL case_compare(const char* a, const char* b, BOOL ignore_case)
 {
+  const int lengthA = strlen(a);
+  const int lengthB = strlen(b);
+  if (lengthA != lengthB)
+  {
+    return FALSE;
+  }
+  const int minLength = min(lengthA, lengthB);
   if (ignore_case)
   {
-    return 0 == _stricmp(a, b);
+    return 0 == _strnicmp(a, b, minLength);
   }
-  return 0 == strcmp(a, b);
+  return 0 == strncmp(a, b, minLength);
 }
 
 int n2e_SelectionKeyAction(HWND hwnd, int key, int msg)
