@@ -25,3 +25,5 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode);
 BOOL n2e_SelectionEditIsVisibleOnScreen();
 void n2e_SelectionEditHideToolTip();
 void n2e_OnMouseVanishEvent(const BOOL showCursor);
+
+#define SET_CURSOR_HANDLER()  case WM_SETCURSOR: n2e_OnMouseVanishEvent(TRUE); return DefWindowProc(hwnd, WM_SETCURSOR, wParam, lParam);

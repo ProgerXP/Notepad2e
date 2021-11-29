@@ -174,15 +174,14 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
 {
   switch (uMsg)
   {
-  case WM_CHAR:
-    n2e_OnMouseVanishEvent(FALSE);
-    break;
-  case WM_KILLFOCUS:
-  case WM_MOUSEMOVE:
-    n2e_OnMouseVanishEvent(TRUE);
-    break;
-  default:
-    break;
+    SET_CURSOR_HANDLER();
+
+    case WM_KEYDOWN:
+      n2e_OnMouseVanishEvent(FALSE);
+      break;
+
+    default:
+      break;
   }
   return n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
 }

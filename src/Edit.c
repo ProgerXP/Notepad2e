@@ -4857,6 +4857,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Hide pointer while typing #230
+    SET_CURSOR_HANDLER();
+
     case WM_INITDIALOG: {
 
         DPI_INIT();
@@ -6072,6 +6075,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Hide pointer while typing #230
+    SET_CURSOR_HANDLER();
 
     case WM_INITDIALOG: {
         
