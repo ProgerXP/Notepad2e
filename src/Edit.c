@@ -6126,6 +6126,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         // [2e]: Find/Replace - add Go to Go To #259
         case IDACC_FIND:
         case IDACC_REPLACE:
+          bSwitchedFindReplace = TRUE;
           lpgoto = (LPGOTOPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
           GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpgoto->lpefr->szFindUTF8, COUNTOF(lpgoto->lpefr->szFindUTF8));
           PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG((LOWORD(wParam) == IDACC_FIND) ? IDM_EDIT_FIND : IDM_EDIT_REPLACE, 1), 0);
