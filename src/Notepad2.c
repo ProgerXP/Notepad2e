@@ -4844,22 +4844,28 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_SAVEFIND: {
         // [2e]: Save Find Text (Alt+F3) - remove selection #321
         const int iAnchor = SciCall_GetAnchor();
-        const int iSelectionStart = SciCall_GetSelStart();
-        const int iSelectionEnd = SciCall_GetSelEnd();
+        int iSelectionStart = SciCall_GetSelStart();
+        int iSelectionEnd = SciCall_GetSelEnd();
         // [/2e]
         int cchSelection = iSelectionEnd - iSelectionStart;
         if (cchSelection == 0)
         {
-          SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
-          cchSelection = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-                         (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+          const int iPos = SciCall_GetCurrentPos();
+          iSelectionStart = SciCall_GetWordStartPos(iPos, TRUE);
+          iSelectionEnd = SciCall_GetWordEndPos(iPos, TRUE);
+          cchSelection = iSelectionEnd - iSelectionStart;
         }
-        if (cchSelection > 0 && cchSelection <= 500 && SendMessage(hwndEdit, SCI_GETSELTEXT, 0, 0) < 512)
+        if (cchSelection > 0 && cchSelection <= 500)
         {
           char  mszSelection[512];
           char  *lpsz;
 
-          SendMessage(hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)mszSelection);
+          struct Sci_TextRange tr;
+          tr.chrg.cpMin = iSelectionStart;
+          tr.chrg.cpMax = iSelectionEnd;
+          tr.lpstrText = mszSelection;
+
+          SciCall_GetTextRange(0, &tr);
           mszSelection[cchSelection] = 0;
 
           // Check lpszSelection and truncate newlines
@@ -4891,15 +4897,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
           switch (LOWORD(wParam))
           {
-            case IDM_EDIT_SAVEFIND:
-              // [2e]: Save Find Text (Alt+F3) - remove selection #321
-              if (iAnchor == iSelectionStart)
-                SciCall_SetSel(iSelectionStart, iSelectionEnd);
-              else
-                SciCall_SetSel(iSelectionEnd, iSelectionStart);
-              // [/2e]
-              break;
-
             case CMD_FINDNEXTSEL:
               EditFindNext(hwndEdit, &efrData, FALSE);
               break;
