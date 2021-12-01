@@ -3747,7 +3747,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             const int iSelEnd = SciCall_GetSelEnd();
             if (iBrace2 == iSelEnd)
             {
-              iBrace2 == iSelEnd + 1;
+              iBrace2 = iSelEnd + 1;
             }
             else if (iBrace2 > iPos)
             {
