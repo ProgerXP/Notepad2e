@@ -2,6 +2,7 @@
 
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <vector>
 #include "Platform.h"
 #include "SplitVector.h"
