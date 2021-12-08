@@ -73,7 +73,7 @@ BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
 
-#define NUMTOOLBITMAPS  31
+#define NUMTOOLBITMAPS  32
 #define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -92,6 +92,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {10, IDT_EDIT_REPLACE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {11, IDT_VIEW_WORDWRAP, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {32, IDT_VIEW_SELECTEX, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {12, IDT_VIEW_ZOOMIN, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {13, IDT_VIEW_ZOOMOUT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -142,6 +143,9 @@ int       iWordWrapMode;
 int       iWordWrapIndent;
 int       iWordWrapSymbols;
 BOOL      bShowWordWrapSymbols;
+BOOL      fSelectEx = FALSE;
+int       iSelectExMode = 0;
+int       posSelectExStart = 0;
 BOOL      bMatchBraces;
 BOOL      bAutoIndent;
 BOOL      bAutoCloseTags;
@@ -4020,6 +4024,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    case IDM_VIEW_SELECTEX:
+      fSelectEx = (fSelectEx) ? FALSE : TRUE;
+      SetSelectEx(hwndEdit);
+      UpdateToolbar();
+      break;
+
+
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
       VIEW_COMMAND(SetLongLineMarker);
@@ -5176,6 +5187,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDT_VIEW_WORDWRAP:
       if (IsCmdEnabled(hwnd, IDM_VIEW_WORDWRAP))
         SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_WORDWRAP, 1), 0);
+      else
+        MessageBeep(0);
+      break;
+
+    case IDT_VIEW_SELECTEX:
+      if (IsCmdEnabled(hwnd, IDM_VIEW_SELECTEX))
+        SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_SELECTEX, 1), 0);
       else
         MessageBeep(0);
       break;
@@ -6953,6 +6971,8 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
   CheckTool(IDT_VIEW_WORDWRAP, fWordWrap);
+  // [2e]: New toolbar button: selection mode #339
+  CheckTool(IDT_VIEW_SELECTEX, fSelectEx);
   // [2e]: Function requirements #333
   n2e_UpdateAlwaysOnTopButton();
   // [2e]: Save on exit and History #101
@@ -7131,6 +7151,17 @@ void SetWordWrap(HWND hwnd)
   else
     SendMessage(hwnd, SCI_SETWRAPMODE, (iWordWrapMode == 0) ? SC_WRAP_WORD : SC_WRAP_CHAR, 0);
 }
+
+
+void SetSelectEx(HWND hwnd)
+{
+  if (fSelectEx)
+  {
+    iSelectExMode = SendMessage(hwnd, SCI_GETSELECTIONMODE, 0, 0);
+    posSelectExStart = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
+  }
+}
+
 
 void SetLongLineMarker(HWND hwnd)
 {
