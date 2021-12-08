@@ -18,6 +18,7 @@
 #include <map>
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #pragma comment(lib, "Msimg32.lib")
 
