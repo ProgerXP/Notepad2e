@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<!-- NOTE: You can copy this file to User.props to override some standard settings -->
+<!-- NOTE: Don't add the copy User.props to source control!!! -->
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Configuration">
+    <PlatformToolset>v142</PlatformToolset> <!-- VS2019 -->
+  </PropertyGroup>
+</Project>

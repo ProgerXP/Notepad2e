@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <iterator> 
 #include <memory>
+#include <stdexcept>
 #include <vector>
 #include "scintilla.h"
 #include "Platform.h"
