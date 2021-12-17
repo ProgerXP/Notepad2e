@@ -201,7 +201,14 @@ HWND n2e_GetActiveEdit()
 
 void n2e_SetActiveEdit(const HWND hwnd)
 {
+extern BOOL fSelectEx;
+
   assert(n2e_IsScintillaWindow(hwnd));
+  if (fSelectEx && (hwndActiveEdit != hwnd))
+  {
+    SendMessage(hwndActiveEdit, SCI_CANCEL, 0, 0);
+    fSelectEx = FALSE;
+  }
   hwndActiveEdit = hwnd;
 }
 

@@ -1485,6 +1485,7 @@ BEGIN
     IDT_SPLIT_VERTICALLY    "Split Vertically"
     IDT_SPLIT_HORIZONTALLY  "Split Horizontally"
     IDT_CLOSE_SPLIT         "Close Split"
+    IDT_VIEW_SELECTEX       "Extended Selection"
 END
 
 STRINGTABLE

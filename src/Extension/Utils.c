@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include <assert.h>
 #include <time.h>
+#include <Windowsx.h>
 #include "Utils.h"
 #include "CommonUtils.h"
 #include "Dialogs.h"
@@ -172,12 +173,61 @@ void CALLBACK n2e_ClockTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 
 LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
+  extern BOOL fSelectEx;
+  extern int iSelectExMode;
+  extern int posSelectExStart;
+
   switch (uMsg)
   {
     SET_CURSOR_HANDLER();
 
     case WM_KEYDOWN:
       n2e_OnMouseVanishEvent(FALSE);
+      if (fSelectEx)
+      {
+        if ((wParam == VK_LEFT) || (wParam == VK_RIGHT)
+          || (wParam == VK_UP) || (wParam == VK_DOWN)
+          || (wParam == VK_HOME) || (wParam == VK_END)
+          || (wParam == VK_PRIOR) || (wParam == VK_NEXT))
+        {
+          n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+          const auto posEnd = n2e_CallOriginalWindowProc(hwnd, SCI_GETCURRENTPOS, 0, 0);
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETSELECTIONMODE, iSelectExMode, 0);
+          if (iSelectExMode == SC_SEL_RECTANGLE)
+          {
+            n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONANCHOR, posSelectExStart, 0);
+            n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONCARET, posEnd, 0);
+          }
+          else
+          {
+            n2e_CallOriginalWindowProc(hwnd, SCI_SETANCHOR, posSelectExStart, 0);
+            n2e_CallOriginalWindowProc(hwnd, SCI_SETCURRENTPOS, posEnd, 0);
+          }
+          return 0;
+        }
+        else
+        {
+          fSelectEx = FALSE;
+        }
+      }
+      break;
+
+    case WM_LBUTTONDOWN:
+      if (fSelectEx && (hwnd == hwndEdit))
+      {
+        const auto posEnd = n2e_CallOriginalWindowProc(hwnd, SCI_CHARPOSITIONFROMPOINT, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        if (iSelectExMode == SC_SEL_RECTANGLE)
+        {
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONANCHOR, posSelectExStart, 0);
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONCARET, posEnd, 0);
+        }
+        else
+        {
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETANCHOR, posSelectExStart, 0);
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETCURRENTPOS, posEnd, 0);
+        }
+        return 0;
+      }
       break;
 
     default:

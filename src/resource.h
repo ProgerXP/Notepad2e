@@ -366,6 +366,7 @@
 #define IDM_VIEW_SHOWEOLS               40408
 #define IDM_VIEW_WORDWRAPSYMBOLS        40409
 #define IDM_VIEW_MATCHBRACES            40410
+#define IDM_VIEW_SELECTEX               40411
 #define IDM_VIEW_LINENUMBERS            40412
 #define IDM_VIEW_MARGIN                 40413
 #define IDM_VIEW_ZOOMIN                 40414
@@ -445,6 +446,7 @@
 #define IDT_SPLIT_VERTICALLY            40727
 #define IDT_SPLIT_HORIZONTALLY          40728
 #define IDT_CLOSE_SPLIT                 40729
+#define IDT_VIEW_SELECTEX               40730
 #define SC_SAVEPOS                      40800
 #define SC_RESETPOS                     40801
 #define IDS_ERR_LOADFILE                50000

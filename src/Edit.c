@@ -526,10 +526,9 @@ BOOL EditCopyAppend(HWND hwnd)
   cchTextW = MultiByteToWideChar(uCodePage, 0, pszText, -1, NULL, 0);
   if (cchTextW > 0)
   {
-    pszTextW = LocalAlloc(LPTR, sizeof(WCHAR) * (lstrlen(pszSep) + cchTextW + 1));
+    pszTextW = LocalAlloc(LPTR, sizeof(WCHAR) * (cchTextW + 1));
     // [2e]: Copy Add (Ctrl+E) to insert line break after, not before #344
     MultiByteToWideChar(uCodePage, 0, pszText, -1, StrEnd(pszTextW), (int)LocalSize(pszTextW) / sizeof(WCHAR));
-    lstrcatW(pszTextW, pszSep);
     // [/2e]
   }
   else
@@ -551,10 +550,16 @@ BOOL EditCopyAppend(HWND hwnd)
   }
 
   hNew = GlobalAlloc(GMEM_MOVEABLE | GMEM_ZEROINIT,
-                     sizeof(WCHAR) * (lstrlen(pszOld) + lstrlen(pszTextW) + 1));
+                     sizeof(WCHAR) * (lstrlen(pszOld) + lstrlen(pszSep) + lstrlen(pszTextW) + 1));
   pszNew = GlobalLock(hNew);
 
   lstrcpy(pszNew, pszOld);
+  // [2e]: Copy Add (Ctrl+E) to insert line break after, not before #344
+  if ((lstrlen(pszOld) == 0) || !IsEOLChar(pszOld[lstrlen(pszOld)-1]))
+  {
+    lstrcatW(pszNew, pszSep);
+  }
+  // [/2e]
   lstrcat(pszNew, pszTextW);
 
   GlobalUnlock(hNew);
