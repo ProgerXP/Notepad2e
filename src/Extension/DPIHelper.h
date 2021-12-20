@@ -67,6 +67,7 @@ void DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC);
 void DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam);
 
 DWORD GetDPIFromMonitor(const HMONITOR hMonitor, const HWND hwnd);
+DWORD GetDPIFromWindow(const HWND hwnd);
 
 LRESULT DPIChanged_WindowProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
 LRESULT DPIChanged_DlgProcHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
