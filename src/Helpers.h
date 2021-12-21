@@ -88,6 +88,9 @@ BOOL BitmapGrayScale(HBITMAP);
 BOOL VerifyContrast(COLORREF, COLORREF);
 BOOL IsFontAvailable(LPCWSTR);
 
+// Creates copy of given bitmap with rescaling to requested dimensions.
+// Returns new bitmap object, or NULL if the operation failed.
+HBITMAP BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY);
 
 BOOL SetWindowTitle(HWND, UINT, BOOL, BOOL, UINT, LPCWSTR, enum EPathNameFormat, BOOL, UINT, BOOL, LPCWSTR);
 void SetWindowTransparentMode(HWND, BOOL);

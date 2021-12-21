@@ -21,6 +21,7 @@
 ******************************************************************************/
 #define _WIN32_WINNT 0x501
 #include <windows.h>
+#include <windowsx.h>               // DeleteBitmap(), SelectBitmap(), etc.
 #include <shlobj.h>
 #include <shlwapi.h>
 #include <commctrl.h>
@@ -336,6 +337,35 @@ BOOL IsFontAvailable(LPCWSTR lpszFontName)
   return (fFound);
 }
 
+HBITMAP BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY)
+{
+  HBITMAP hbmpScaled = NULL;
+  const HDC hdcSource = CreateCompatibleDC(GetDC(NULL));
+  if (hdcSource)
+  {
+    SelectBitmap(hdcSource, hbmp);
+    const HDC hdcScaled = CreateCompatibleDC(GetDC(NULL));
+    if (hdcScaled)
+    {
+      hbmpScaled = CreateCompatibleBitmap(GetDC(NULL), newSizeX, newSizeY);
+      if (hbmpScaled)
+      {
+        SelectBitmap(hdcScaled, hbmpScaled);
+        BITMAP bmp;
+        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
+          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
+        {
+          // IF final operations failed, the scaled bitmap isn't valid
+          DeleteBitmap(hbmpScaled);
+          hbmpScaled = NULL;
+        }
+      }
+      DeleteDC(hdcScaled);
+    }
+    DeleteDC(hdcSource);
+  }
+  return hbmpScaled;
+}
 
 //=============================================================================
 //

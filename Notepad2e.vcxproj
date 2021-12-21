@@ -674,6 +674,11 @@
   <ItemGroup>
     <ResourceCompile Include="src\Notepad2.rc" />
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Toolbar125.bmp" />
+    <Image Include="res\Toolbar150.bmp" />
+    <Image Include="res\Toolbar175.bmp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
