@@ -1,8 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?> 
-<!-- NOTE: You can copy this file to User.props to override some standard settings -->
-<!-- NOTE: Don't add the copy User.props to source control!!! -->
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <PropertyGroup Label="Configuration">
-    <PlatformToolset>v142</PlatformToolset> <!-- VS2019 -->
+  <PropertyGroup Label="UserMacros">
+    <BOOST_ROOT>C:\boost\boost_1_73_0</BOOST_ROOT>
   </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup />
+  <ItemGroup>
+    <BuildMacro Include="BOOST_ROOT">
+      <Value>$(BOOST_ROOT)</Value>
+    </BuildMacro>
+  </ItemGroup>
 </Project>
