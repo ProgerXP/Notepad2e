@@ -134,6 +134,10 @@ extern BOOL bSkipFileSavePromptOnNewWindowCommand;
 void n2e_InitInstance();
 void n2e_ExitInstance();
 
+// Creates copy of given bitmap with rescaling to requested dimensions.
+// Returns new bitmap object, or NULL if the operation failed.
+HBITMAP n2e_BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY);
+
 BOOL n2e_InitLPegHomeDir();
 #ifdef LPEG_LEXER
 BOOL n2e_UseLuaLexer(LPCWSTR lpszExt, LPBOOL pbLexerFileExists);

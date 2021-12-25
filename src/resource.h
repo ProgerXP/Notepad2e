@@ -179,6 +179,9 @@
 #define IDACC_SELTOPREV                 209
 #define IDACC_BACK                      210
 #define IDACC_GOTO                      211
+#define IDB_TOOLBAR_125                 212
+#define IDB_TOOLBAR_150                 213
+#define IDB_TOOLBAR_175                 214
 #define IDS_APPTITLE                    10000
 #define IDS_APPTITLE_ELEVATED           10001
 #define IDS_APPTITLE_PASTEBOARD         10002
@@ -505,7 +508,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        0
+#define _APS_NEXT_RESOURCE_VALUE        215
 #define _APS_NEXT_COMMAND_VALUE         61
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
