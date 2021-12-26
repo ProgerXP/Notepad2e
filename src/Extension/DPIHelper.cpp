@@ -1,4 +1,5 @@
 #include "DPIHelper.h"
+#include "VersionHelper.h"
 
 extern "C"
 {
@@ -22,11 +23,9 @@ GetDpiForMonitorProc pfnGetDpiForMonitor;
 static HMODULE hUser32Module = NULL;
 static HMODULE hSHCOREModule = NULL;
 
-static BOOL isWindowsVistaOrGreater();
-
 BOOL DPIInitialize()
 {
-  if (isWindowsVistaOrGreater())
+  if (IsWindowsVistaOrGreater())
   {
     hUser32Module = GetModuleHandle(USER32DLL);
     if (hUser32Module)
@@ -240,7 +239,7 @@ BOOL CALLBACK EnumChildProc_DPIApply(const HWND hwnd, const LPARAM lParam)
 
 void DialogDPIInit(const HWND hwnd)
 {
-  if (!isWindowsVistaOrGreater())
+  if (!IsWindowsVistaOrGreater())
   {
     return;
   }
@@ -258,7 +257,7 @@ void DialogDPIInit(const HWND hwnd)
 
 void DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC)
 {
-  if (!isWindowsVistaOrGreater() || GetWindowSkipDPIResize(hwnd))
+  if (!IsWindowsVistaOrGreater() || GetWindowSkipDPIResize(hwnd))
   {
     return;
   }
@@ -270,7 +269,7 @@ void DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC)
 void DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam)
 {
   const DWORD dpiInitial = GetWindowDPI(hwnd);
-  if (!dpiInitial || !isWindowsVistaOrGreater())
+  if (!dpiInitial || !IsWindowsVistaOrGreater())
   {
     return;
   }
@@ -317,32 +316,4 @@ LRESULT DPIChanged_DlgProcHandler(const HWND hwnd, const WPARAM wParam, const LP
   return 0;
 }
 
-static BOOL isWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
-{
-  OSVERSIONINFOEXW osvi = { sizeof(osvi), 0, 0, 0, 0,{ 0 }, 0, 0 };
-  DWORDLONG        const dwlConditionMask = VerSetConditionMask(
-    VerSetConditionMask(
-      VerSetConditionMask(
-        0, VER_MAJORVERSION, VER_GREATER_EQUAL),
-      VER_MINORVERSION, VER_GREATER_EQUAL),
-    VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL);
-
-  osvi.dwMajorVersion = wMajorVersion;
-  osvi.dwMinorVersion = wMinorVersion;
-  osvi.wServicePackMajor = wServicePackMajor;
-
-  return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
-}
-
-static BOOL isWindowsVistaOrGreater()
-{
-  static BOOL bInitialized = FALSE;
-  static BOOL bWindowsVistaOrGreater = FALSE;
-  if (!bInitialized)
-  {
-    bWindowsVistaOrGreater = isWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
-    bInitialized = TRUE;
-  }
-  return bWindowsVistaOrGreater;
-}
 }; // extern "C"
