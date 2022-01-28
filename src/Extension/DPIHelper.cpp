@@ -28,41 +28,6 @@ static HMODULE hSHCOREModule = NULL;
 
 static BOOL isWindowsVistaOrGreater();
 
-// Creates copy of given bitmap with rescaling to requested dimensions.
-// Returns new bitmap object, or NULL if the operation failed.
-// @note This function is used only within this file, and it can be moved
-// elsewhere if needed
-HBITMAP BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY)
-{
-  HBITMAP hbmpScaled = NULL;
-  const HDC hdcSource = CreateCompatibleDC(GetDC(NULL));
-  if (hdcSource)
-  {
-    SelectBitmap(hdcSource, hbmp);
-    const HDC hdcScaled = CreateCompatibleDC(GetDC(NULL));
-    if (hdcScaled)
-    {
-      hbmpScaled = CreateCompatibleBitmap(GetDC(NULL), newSizeX, newSizeY);
-      if (hbmpScaled)
-      {
-        SelectBitmap(hdcScaled, hbmpScaled);
-        BITMAP bmp;
-        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
-          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
-        {
-          // IF final operations failed, the scaled bitmap isn't valid
-          DeleteBitmap(hbmpScaled);
-          hbmpScaled = NULL;
-        }
-      }
-      DeleteDC(hdcScaled);
-    }
-    DeleteDC(hdcSource);
-  }
-  return hbmpScaled;
-}
-
-
 BOOL DPIInitialize()
 {
   if (isWindowsVistaOrGreater())
@@ -276,6 +241,40 @@ BOOL CALLBACK EnumChildProc_DPIApply(const HWND hwnd, const LPARAM lParam)
   DPIApply(hwnd, pDPISettings->hwnd, &pDPISettings->hdwp, pDPISettings->dpiX, pDPISettings->dpiY);
   return TRUE;
 };
+
+// Creates copy of given bitmap with rescaling to requested dimensions.
+// Returns new bitmap object, or NULL if the operation failed.
+// @note This function is used only within this file (in DPICreateMainToolbar),
+// and it can be moved elsewhere if needed
+HBITMAP BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY)
+{
+  HBITMAP hbmpScaled = NULL;
+  const HDC hdcSource = CreateCompatibleDC(GetDC(NULL));
+  if (hdcSource)
+  {
+    SelectBitmap(hdcSource, hbmp);
+    const HDC hdcScaled = CreateCompatibleDC(GetDC(NULL));
+    if (hdcScaled)
+    {
+      hbmpScaled = CreateCompatibleBitmap(GetDC(NULL), newSizeX, newSizeY);
+      if (hbmpScaled)
+      {
+        SelectBitmap(hdcScaled, hbmpScaled);
+        BITMAP bmp;
+        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
+          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
+        {
+          // IF final operations failed, the scaled bitmap isn't valid
+          DeleteBitmap(hbmpScaled);
+          hbmpScaled = NULL;
+        }
+      }
+      DeleteDC(hdcScaled);
+    }
+    DeleteDC(hdcSource);
+  }
+  return hbmpScaled;
+}
 
 HBITMAP DPICreateMainToolbar(const HWND hwnd, const HINSTANCE hInstance)
 {
