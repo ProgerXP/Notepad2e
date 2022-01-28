@@ -133,36 +133,6 @@ void n2e_ExitInstance()
   n2e_Release();
 }
 
-HBITMAP n2e_BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY)
-{
-  HBITMAP hbmpScaled = NULL;
-  const HDC hdcSource = CreateCompatibleDC(GetDC(NULL));
-  if (hdcSource)
-  {
-    SelectBitmap(hdcSource, hbmp);
-    const HDC hdcScaled = CreateCompatibleDC(GetDC(NULL));
-    if (hdcScaled)
-    {
-      hbmpScaled = CreateCompatibleBitmap(GetDC(NULL), newSizeX, newSizeY);
-      if (hbmpScaled)
-      {
-        SelectBitmap(hdcScaled, hbmpScaled);
-        BITMAP bmp;
-        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
-          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
-        {
-          // IF final operations failed, the scaled bitmap isn't valid
-          DeleteBitmap(hbmpScaled);
-          hbmpScaled = NULL;
-        }
-      }
-      DeleteDC(hdcScaled);
-    }
-    DeleteDC(hdcSource);
-  }
-  return hbmpScaled;
-}
-
 void CALLBACK n2e_WheelTimerProc(HWND _h, UINT _u, UINT_PTR idEvent, DWORD _t)
 {
   bWheelTimerActive = FALSE;

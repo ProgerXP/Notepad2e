@@ -1,4 +1,8 @@
+#include <windowsx.h>                 // DeleteBitmap()
+
 #include "DPIHelper.h"
+
+#include "resource.h"
 
 extern "C"
 {
@@ -23,6 +27,41 @@ static HMODULE hUser32Module = NULL;
 static HMODULE hSHCOREModule = NULL;
 
 static BOOL isWindowsVistaOrGreater();
+
+// Creates copy of given bitmap with rescaling to requested dimensions.
+// Returns new bitmap object, or NULL if the operation failed.
+// @note This function is used only within this file, and it can be moved
+// elsewhere if needed
+HBITMAP BitmapStretch(HBITMAP hbmp, int newSizeX, int newSizeY)
+{
+  HBITMAP hbmpScaled = NULL;
+  const HDC hdcSource = CreateCompatibleDC(GetDC(NULL));
+  if (hdcSource)
+  {
+    SelectBitmap(hdcSource, hbmp);
+    const HDC hdcScaled = CreateCompatibleDC(GetDC(NULL));
+    if (hdcScaled)
+    {
+      hbmpScaled = CreateCompatibleBitmap(GetDC(NULL), newSizeX, newSizeY);
+      if (hbmpScaled)
+      {
+        SelectBitmap(hdcScaled, hbmpScaled);
+        BITMAP bmp;
+        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
+          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
+        {
+          // IF final operations failed, the scaled bitmap isn't valid
+          DeleteBitmap(hbmpScaled);
+          hbmpScaled = NULL;
+        }
+      }
+      DeleteDC(hdcScaled);
+    }
+    DeleteDC(hdcSource);
+  }
+  return hbmpScaled;
+}
+
 
 BOOL DPIInitialize()
 {
@@ -237,6 +276,61 @@ BOOL CALLBACK EnumChildProc_DPIApply(const HWND hwnd, const LPARAM lParam)
   DPIApply(hwnd, pDPISettings->hwnd, &pDPISettings->hdwp, pDPISettings->dpiX, pDPISettings->dpiY);
   return TRUE;
 };
+
+HBITMAP DPICreateMainToolbar(const HWND hwnd, const HINSTANCE hInstance)
+{
+  static constexpr struct
+  {
+    DWORD dpi;          // the upper limit for DPI when the toolbar is used
+    UINT  toolbar_id;
+  } map[] =
+  {
+    // We provide toolbars for standard DPI only: 96 DPI (100%), 120 DPI (125%), 144 DPI (150%), 168 DPI (175%)
+    // Please, maintain increasing order!
+    { 96,   IDR_MAINWND },      // 96 DPI
+    { 120,  IDB_TOOLBAR_125 },  // 120 DPI
+    { 144,  IDB_TOOLBAR_150 },  // 144 DPI
+    { 168,  IDB_TOOLBAR_175 },  // 168 DPI + 20%
+  };
+  static constexpr auto map_last = map[_countof(map) - 1];
+  const DWORD dpi   = GetDPIFromWindow(hwnd);
+  const DWORD dpiY  = HIWORD(dpi);
+  UINT uToolbarId   = map_last.toolbar_id;  // largest toolbar ...
+  DWORD dpiSelect   = map_last.dpi;         // ... for largest DPI
+  bool  bStretch    = false;                // no stretching by default
+  if (dpiY > map_last.dpi * 120 / 100)      // for DPI higher than 20% of largest supported one we will stretch the bitmap
+  {
+    bStretch    = true;
+  }
+  else
+  {
+    for (size_t i = 0; i < _countof(map) - 1; ++i)
+    {
+      if (dpiY <= map[i].dpi + (map[i + 1].dpi - map[i].dpi) / 2)
+      {
+        dpiSelect   = map[i].dpi;
+        uToolbarId  = map[i].toolbar_id;
+        break;
+      }
+    }
+  }
+  // HBITMAP hbmp = LoadImage(hInstance, MAKEINTRESOURCE(uToolbarId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+  HBITMAP hbmp = LoadBitmap(hInstance, MAKEINTRESOURCE(uToolbarId));
+  if (bStretch)
+  {
+    BITMAP bmp;
+    GetObject(hbmp, sizeof(BITMAP), &bmp);
+    const int newSizeY = (bmp.bmHeight * dpiY) / dpiSelect;
+    const int newSizeX = (bmp.bmWidth * newSizeY) / bmp.bmHeight;
+    const HBITMAP hbmpScaled = BitmapStretch(hbmp, newSizeX, newSizeY);
+    if (hbmpScaled)
+    {
+      DeleteBitmap(hbmp);
+      hbmp = hbmpScaled;
+    }
+  }
+  return hbmp;
+}
 
 void DialogDPIInit(const HWND hwnd)
 {

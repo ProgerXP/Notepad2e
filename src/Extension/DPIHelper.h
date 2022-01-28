@@ -62,6 +62,8 @@ BOOL DPIInitialize();
 BOOL DPIEnableNonClientDpiScaling(const HWND hwnd);
 RECT DPIAdjustRect(RECT rc, const int dpiXInitial, const int dpiYInitial, const int dpiX, const int dpiY);
 
+HBITMAP DPICreateMainToolbar(const HWND hwnd, const HINSTANCE hInstance);
+
 void DialogDPIInit(const HWND hwnd);
 void DialogDPIUpdate(const HWND hwnd, const BOOL bDPIFromHDC);
 void DialogDPIGetMinMaxInfo(const HWND hwnd, LPARAM lParam);

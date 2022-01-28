@@ -19,7 +19,6 @@
 ******************************************************************************/
 #define _WIN32_WINNT 0x501
 #include <windows.h>
-#include <windowsx.h>                 // DeleteBitmap()
 #include <commctrl.h>
 #include <shlobj.h>
 #include <shlwapi.h>
@@ -74,7 +73,7 @@ BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
 
-#define NUMTOOLBITMAPS  32
+#define NUMTOOLBITMAPS  33
 #define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -1748,44 +1747,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
     bExternalBitmap = TRUE;
   else
   {
-    // [2e] Standard toolbar scaling support starts here (#327)
-    const DWORD dpi     = GetDPIFromWindow(hwnd);
-    const DWORD dpiY    = HIWORD(dpi);
-    UINT uToolbarId     = IDR_MAINWND;          // default toolbar ...
-    DWORD dpiSelect     = DEFAULT_SCREEN_DPI;   // ... for default DPI 96 (100% scaling)
-    // We provide toolbars for standard DPI only: 96 DPI (100%), 120 DPI (125%), 144 DPI (150%), 168 DPI (175%)
-    if (dpiY >= 168)
-    {
-      uToolbarId = IDB_TOOLBAR_175;
-      dpiSelect = 168;
-    }
-    else if (dpiY >= 144)
-    {
-      uToolbarId = IDB_TOOLBAR_150;
-      dpiSelect = 144;
-    }
-    else if (dpiY >= 120)
-    {
-      uToolbarId = IDB_TOOLBAR_125;
-      dpiSelect = 120;
-    }
-    hbmp = LoadImage(hInstance, MAKEINTRESOURCE(uToolbarId), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
-    // [2e] Scale up only when current (custom) DPI is 10% larger than the selected (standard) one (#327)
-    if (dpiY > 110 * dpiSelect / 100)
-    {
-      GetObject(hbmp, sizeof(BITMAP), &bmp);
-      const int newSizeY = (bmp.bmHeight * dpiY) / dpiSelect;
-      // const int newSizeX = (bmp.bmWidth * dpiX) / dpiSelect;
-      // We scale up uniformly
-      const int newSizeX = (bmp.bmWidth * newSizeY) / bmp.bmHeight;
-      const HBITMAP hbmpScaled = n2e_BitmapStretch(hbmp, newSizeX, newSizeY);
-      if (hbmpScaled)
-      {
-        DeleteBitmap(hbmp);
-        hbmp = hbmpScaled;
-      }
-    }
-    // [/2e] At this point the toolbar in 'hbmp' already fits current DPI
+    hbmp = DPICreateMainToolbar(hwnd, hInstance);   // [2e] loads/creates main toolbar bitmap based on window's DPI
     hbmpCopy = CopyImage(hbmp, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
   }
   GetObject(hbmp, sizeof(BITMAP), &bmp);
