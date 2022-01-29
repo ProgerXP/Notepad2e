@@ -8,7 +8,7 @@
 =                                       (c) Florian Balmer 2004-2011  =
 =                                        http://www.flos-freeware.ch  =
 =                                                                     =
-=  Extended edition (c) 2013-2019                                     =
+=  Extended edition (c) 2013-2022                                     =
 =                                                                     =
 =                                      by Proger_XP and contributors  =
 =                              https://github.com/ProgerXP/Notepad2e  =
@@ -75,7 +75,7 @@ Copyright
   (c) Florian Balmer 2004-2011
   http://www.flos-freeware.ch
 
-  (c) Proger_XP and co. 2013-2018
+  (c) Proger_XP and co. 2013-2022
   http://proger.me
 
 ###

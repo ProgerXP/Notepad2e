@@ -101,6 +101,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="User.props" Condition="exists('User.props')" />
+    <Import Project="Version.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -645,10 +646,6 @@
     <ClInclude Include="scintilla\src\ViewStyle.h" />
     <ClInclude Include="scintilla\src\XPM.h" />
     <ClInclude Include="tinyexpr\tinyexpr.h" />
-    <CustomBuild Include="src\_version.h">
-      <Command>$(SolutionDir)src\Extension\printtime.bat %(FullPath)</Command>
-      <Outputs>print build time</Outputs>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <None Include="res\About3rdParty.rtf" />
@@ -659,6 +656,7 @@
     <None Include="res\Notepad2.ico" />
     <None Include="res\lexer.lua" />
     <None Include="res\default.lua" />
+    <None Include="src\Extension\PreBuild.cmd" />
     <None Include="src\Notepad2.ver" />
     <None Include="res\Open.bmp" />
     <None Include="res\Pick.bmp" />
@@ -666,7 +664,6 @@
     <None Include="res\Run.ico" />
     <None Include="res\Styles.ico" />
     <None Include="res\Toolbar.bmp" />
-    <None Include="src\Extension\printtime.bat" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Notepad2.exe.manifest" />

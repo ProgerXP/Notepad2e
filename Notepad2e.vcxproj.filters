@@ -1110,11 +1110,6 @@
     <Manifest Include="res\Notepad2.exe.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="src\_version.h">
-      <Filter>Header Files</Filter>
-    </CustomBuild>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="res\Copy.cur">
       <Filter>Resource Files</Filter>
     </None>
@@ -1149,15 +1144,15 @@
     <None Include="res\Toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="src\Extension\printtime.bat">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="res\About3rdParty.rtf" />
     <None Include="res\lexer.lua">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\default.lua">
       <Filter>Resource Files</Filter>
+    </None>
+    <None Include="src\Extension\PreBuild.cmd">
+      <Filter>Source Files\Extension</Filter>
     </None>
   </ItemGroup>
 </Project>
