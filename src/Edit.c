@@ -555,7 +555,7 @@ BOOL EditCopyAppend(HWND hwnd)
 
   lstrcpy(pszNew, pszOld);
   // [2e]: Copy Add (Ctrl+E) to insert line break after, not before #344
-  if ((lstrlen(pszOld) == 0) || !IsEOLChar(pszOld[lstrlen(pszOld)-1]))
+  if ((lstrlen(pszOld) > 0) && !IsEOLChar(pszOld[lstrlen(pszOld)-1]))
   {
     lstrcatW(pszNew, pszSep);
   }
