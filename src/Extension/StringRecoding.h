@@ -51,6 +51,7 @@ typedef struct TStringSource StringSource;
 typedef int(*ExpectedResultLengthMethod)(const BOOL isEncoding, const int originalLength);
 typedef BOOL(*IsValidStrSequence)(EncodingData* pED, const int requiredChars);
 typedef BOOL(*RecodeMethod)(LPVOID pRA, EncodingData* pED, long* piCharsProcessed);
+typedef void(*InitPassMethod)(LPVOID pRA, const int iPassIndex);
 
 struct TRecodingAlgorithm
 {
@@ -68,6 +69,7 @@ struct TRecodingAlgorithm
   RecodeMethod pEncodeTailMethod;
   RecodeMethod pDecodeMethod;
   RecodeMethod pDecodeTailMethod;
+  InitPassMethod pInitPassMethod;
   wchar_t statusText[MAX_PATH];
   LPVOID data;
 };

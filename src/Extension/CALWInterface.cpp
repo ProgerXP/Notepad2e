@@ -16,6 +16,11 @@ void CALW_Free(HCALWData h)
   delete h;
 }
 
+void CALW_InitPassImpl(HCALWData h, RecodingAlgorithm* pRA, const int iPassIndex)
+{
+  h->InitPass(pRA, iPassIndex);
+}
+
 BOOL CALW_Run(HCALWData h, RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   switch (pRA->iPassIndex)

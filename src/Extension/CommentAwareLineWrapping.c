@@ -119,6 +119,11 @@ BOOL CALW_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcess
   return FALSE;
 }
 
+void CALW_InitPass(RecodingAlgorithm* pRA, const int iPassIndex)
+{
+  CALW_InitPassImpl(hcalwdata, pRA, iPassIndex);
+}
+
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 

@@ -163,7 +163,7 @@ int TextLengthInChars(LPCSTR lpStr1, LPCSTR lpStr2, const int _iEncoding, int *p
 
 int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount)
 {
-  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n\a\b");
+  const LPSTR pSpace = strpbrk(pTB->m_ptr + pTB->m_iPos, " \t\r\n\a\b\f");
   if (pSpace)
   {
     return TextLengthInChars(pTB->m_ptr + pTB->m_iPos, pSpace, _iEncoding, piByteCount);
@@ -297,7 +297,7 @@ void TextBuffer_OffsetPos(TextBuffer* pTB, const int iOffset)
 
 BOOL IsCharFromString(LPCSTR lpstrSample, const unsigned char ch)
 {
-  return strchr(lpstrSample, ch) != NULL;
+  return (ch != 0) && (strchr(lpstrSample, ch) != NULL);
 }
 
 BOOL IsEOLChar(const unsigned char ch)
@@ -674,6 +674,7 @@ BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, cons
     pRA->pEncodeTailMethod = NULL;
     pRA->pDecodeMethod = CALW_Decode;
     pRA->pDecodeTailMethod = NULL;
+    pRA->pInitPassMethod = CALW_InitPass;
     pRA->data = CALW_InitAlgorithmData(pRA->iAdditionalData1, pRA->iAdditionalData2, pRA->iAdditionalData3);
     return TRUE;
   default:
@@ -857,6 +858,9 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
   for (int i = 0; i < pRA->iPassCount; ++i)
   {
     pRA->iPassIndex = i;
+    if (pRA->pInitPassMethod)
+      pRA->pInitPassMethod(pRA, i);
+
     if (i != 0)
     {
       if (!pSS->hwnd)
