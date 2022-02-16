@@ -454,6 +454,12 @@ namespace Notepad2eTests
 
 #ifdef ENABLE_SHORT_TESTS
 /**/
+        CTestCaseData(false, "// * Lorem Ipsum",
+                CPI_DEFAULT,
+                             "// * Lorem\n"
+                             "//   Ipsum",
+                false, 0, { 10, SCLEX_CPP, SC_EOL_LF }),
+
           CTestCaseData(false,  "  // \r\n"
                                 "  // abc",
               CPI_DEFAULT,

@@ -153,7 +153,7 @@ extern "C" {
 
   unsigned char Prefix::GetChar(const std::size_t pos, const int iLineIndex)
   {
-    if (IsMarkerStatic())
+    if (IsMarkerStatic() || IsCommentedMarker())
     {
       return (iLineIndex != 0) && m_rangeMarker.check(pos)
             ? CHAR_SPACE
