@@ -322,7 +322,7 @@ extern "C" {
     return res;
   }
 
-  bool CALWData::saveStaticMarkerPrefix(EncodingData* pED)
+  bool CALWData::saveStaticMarkerPrefix(EncodingData* pED, int& iCharsProcessed)
   {
     const int iWhiteSpacesBeforeMarker = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
     const auto res = isStaticMarker(TextBuffer_GetCharAt(&pED->m_tb, iWhiteSpacesBeforeMarker));
@@ -339,11 +339,13 @@ extern "C" {
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
       }
+      m_cp->prefix->SetInitialized();
+      iCharsProcessed = m_cp->prefix->GetLength();
     }
     return res;
   }
 
-  bool CALWData::saveDynamicMarkerPrefix(EncodingData* pED)
+  bool CALWData::saveDynamicMarkerPrefix(EncodingData* pED, int& iCharsProcessed)
   {
     const int iWhiteSpacesBeforeMarker = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
     const auto res = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, iWhiteSpacesBeforeMarker);
@@ -364,11 +366,13 @@ extern "C" {
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
       }
+      m_cp->prefix->SetInitialized();
+      iCharsProcessed = m_cp->prefix->GetLength();
     }
     return res;
   }
 
-  bool CALWData::savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount)
+  bool CALWData::savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed)
   {
     bool res = IsCharFromString(lpstrWhiteSpaces, ch);
     if (res)
@@ -379,6 +383,8 @@ extern "C" {
         m_cp->prefix->PushChar(ch);
       }
       TextBuffer_OffsetPos(&pED->m_tb, iCharCount);
+      m_cp->prefix->SetInitialized();
+      iCharsProcessed = m_cp->prefix->GetLength();
     }
     return res;
   }
@@ -432,14 +438,14 @@ extern "C" {
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
       }
-      saveStaticMarkerPrefix(pED);
+      saveStaticMarkerPrefix(pED, iCharsProcessed);
       m_cp->prefix->SetType(PrefixType::Comment);
-      iCharsProcessed = m_cp->prefix->GetLength();
-      if (!(TextBuffer_GetTailLength(&pED->m_tb) > 0)
-        || TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 0, NULL))
+      if ((TextBuffer_GetTailLength(&pED->m_tb) == 0))
       {
         m_cp->prefix->rtrim();
       }
+      m_cp->prefix->SetInitialized();
+      iCharsProcessed = m_cp->prefix->GetLength();
     }
     return res;
   }
@@ -452,165 +458,149 @@ extern "C" {
     BOOL skipInitLineCheck = FALSE;
     const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
     int iCharCount = (!IsTrailingEOL(iEOLMode, ch, &pED->m_tb) ? TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0) : 0);
-    int iCharsProcessed = 0;
+    int iCharsProcessed = iCharCount;
     if (!m_cp->prefix->IsInitialized())
     {
-      if (saveCommentPrefix(pED, ch, iCharCount, iCharsProcessed))
-      {
-        iCharCount = iCharsProcessed;
-        skipChars = TRUE;
-      }
-      else if (saveStaticMarkerPrefix(pED))
-      {
-        iCharCount = m_cp->prefix->GetLength();
-        skipChars = TRUE;
-      }
-      else if (saveDynamicMarkerPrefix(pED))
-      {
-        iCharCount = m_cp->prefix->GetLength();
-        skipChars = TRUE;
-      }
-      else if (savePlainPrefix(pED, ch, iCharCount))
-      {
-        iCharCount = m_cp->prefix->GetLength();
-        skipChars = TRUE;
-      }
+      skipChars = saveCommentPrefix(pED, ch, iCharCount, iCharsProcessed)
+        || saveStaticMarkerPrefix(pED, iCharsProcessed)
+        || saveDynamicMarkerPrefix(pED, iCharsProcessed)
+        || savePlainPrefix(pED, ch, iCharCount, iCharsProcessed);
+
+      iCharCount = m_cp->prefix->GetLength();
       m_cp->prefix->SetInitialized();
       ps[pRA->iPassIndex].relativeLineIndexPrefixProcessed = ps[pRA->iPassIndex].relativeLineIndex;
     }
     if (!skipChars)
     {
       TextBuffer_OffsetPos(&pED->m_tb, 1);
+      if (iCharCount == 0)
+      {
+        iCharsProcessed = 1;
+        iCharCount = 1;
+      }
     }
 
     if (IsEOLChar(ch) || skipInitLineCheck)
     {
-      if (!initLine)
+      ++ps[pRA->iPassIndex].relativeLineIndex;
+
+      TestLineResult _isCommentStyleOnNextLine;
+      _isCommentStyleOnNextLine.first = isCommentStyleOnNextLine(pED, _isCommentStyleOnNextLine.second);
+      TestLineResult _isStaticMarkerOnNextLine;
+      _isStaticMarkerOnNextLine.first = isStaticMarkerOnNextLine(pED, m_cp->prefix->IsMarker(), _isStaticMarkerOnNextLine.second);
+      TestLineResult _isEmptyNextLine;
+      _isEmptyNextLine.first = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &_isEmptyNextLine.second);
+      if (_isEmptyNextLine.first)
       {
-        ++ps[pRA->iPassIndex].relativeLineIndex;
+        _isEmptyNextLine.second += GetTrailingEOLLength();
+      }
 
-        TestLineResult _isCommentStyleOnNextLine;
-        _isCommentStyleOnNextLine.first = isCommentStyleOnNextLine(pED, _isCommentStyleOnNextLine.second);
-        TestLineResult _isStaticMarkerOnNextLine;
-        _isStaticMarkerOnNextLine.first = isStaticMarkerOnNextLine(pED, m_cp->prefix->IsMarker(), _isStaticMarkerOnNextLine.second);
-        TestLineResult _isEmptyNextLine;
-        _isEmptyNextLine.first = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &_isEmptyNextLine.second);
-        if (_isEmptyNextLine.first)
+      if (_isCommentStyleOnNextLine.first
+        && m_cp->prefix->IsComment()
+        && !m_cp->prefix->IsCommentedMarker())
+      {
+        iCharsProcessed += _isCommentStyleOnNextLine.second;
+        TextBuffer_OffsetPos(&pED->m_tb, _isCommentStyleOnNextLine.second);
+
+        if (TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 0, NULL))
         {
-          _isEmptyNextLine.second += GetTrailingEOLLength();
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
+          if (TextBuffer_GetTailLength(&pED->m_tb) == 0)
+            TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
         }
-
-        if (_isCommentStyleOnNextLine.first
-          && m_cp->prefix->IsComment()
-          && !m_cp->prefix->IsCommentedMarker())
+        else if (isMarker(TextBuffer_GetChar(&pED->m_tb), pED))
         {
-          iCharsProcessed += _isCommentStyleOnNextLine.second;
-          TextBuffer_OffsetPos(&pED->m_tb, _isCommentStyleOnNextLine.second);
-
-          if (TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 0, NULL))
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
+        }
+        else if (TextBuffer_GetHeadLength(&pED->m_tbRes) > 0)
+        {
+          if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE)
           {
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
-            if (TextBuffer_GetTailLength(&pED->m_tb) == 0)
-              TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
-          }
-          else if (isMarker(TextBuffer_GetChar(&pED->m_tb), pED))
-          {
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
-          }
-          else if (TextBuffer_GetHeadLength(&pED->m_tbRes) > 0)
-          {
-            if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE)
-            {
-              TextBuffer_PushChar(&pED->m_tbRes,
-                IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))
-                ? CHAR_FORCE_EOL_PROCESSED
-                : CHAR_SPACE);
-            }
+            TextBuffer_PushChar(&pED->m_tbRes,
+              IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))
+              ? CHAR_FORCE_EOL_PROCESSED
+              : CHAR_SPACE);
           }
         }
-        else if (!_isCommentStyleOnNextLine.first
-          && m_cp->prefix->IsPlain()
-          && TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &_isCommentStyleOnNextLine.second))
+      }
+      else if (!_isCommentStyleOnNextLine.first
+        && m_cp->prefix->IsPlain()
+        && TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &_isCommentStyleOnNextLine.second))
+      {
+        const int iSkippedChars = GetTrailingEOLLength() + _isCommentStyleOnNextLine.second;
+        iCharsProcessed += 1 + iSkippedChars;
+        TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+
+        TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
+      }
+      else if (_isStaticMarkerOnNextLine.first)
+      {
+        if (m_cp->prefix->IsMarker())
         {
-          const int iSkippedChars = GetTrailingEOLLength() + _isCommentStyleOnNextLine.second;
-          iCharsProcessed += 1 + iSkippedChars;
-          TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+          iCharsProcessed += _isStaticMarkerOnNextLine.second;
+          TextBuffer_OffsetPos(&pED->m_tb, _isStaticMarkerOnNextLine.second);
 
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
         }
-        else if (_isStaticMarkerOnNextLine.first)
+        else
         {
-          if (m_cp->prefix->IsMarker())
-          {
-            iCharsProcessed += _isStaticMarkerOnNextLine.second;
-            TextBuffer_OffsetPos(&pED->m_tb, _isStaticMarkerOnNextLine.second);
-
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
-          }
-          else
-          {
-            const int iSkippedChars = IsEOL(TextBuffer_GetChar(&pED->m_tb)) ? GetTrailingEOLLength() : 0;
-            iCharsProcessed += 1 + iSkippedChars;
-            TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
-
-            m_cp = addParagraph();
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
-          }          
-        }
-        else if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_FORCE_EOL)
-        {
-          const int iSkippedChars = GetTrailingEOLLength();
+          const int iSkippedChars = IsEOL(TextBuffer_GetChar(&pED->m_tb)) ? GetTrailingEOLLength() : 0;
           iCharsProcessed += 1 + iSkippedChars;
           TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
 
           m_cp = addParagraph();
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
-        }
-        else if (TextBuffer_GetTailLength(&pED->m_tb) > 0)
+        }          
+      }
+      else if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_FORCE_EOL)
+      {
+        const int iSkippedChars = GetTrailingEOLLength();
+        iCharsProcessed += 1 + iSkippedChars;
+        TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+
+        m_cp = addParagraph();
+        TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
+      }
+      else if (TextBuffer_GetTailLength(&pED->m_tb) > 0)
+      {
+        if (!m_cp->prefix->IsEmpty() && _isEmptyNextLine.first)
         {
-          if (!m_cp->prefix->IsEmpty() && _isEmptyNextLine.first)
-          {
-            const int iSkippedChars = 1 + _isEmptyNextLine.second;
-            iCharsProcessed += iSkippedChars;
-            TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+          const int iSkippedChars = 1 + _isEmptyNextLine.second;
+          iCharsProcessed += iSkippedChars;
+          TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
 
-            m_cp = addParagraph();
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
-          }
-          else if (!_isCommentStyleOnNextLine.first && !_isStaticMarkerOnNextLine.first && !_isEmptyNextLine.first
-            && TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_NEXT_PARAGRAPH)
-          {
-            const int iSkippedChars = GetTrailingEOLLength();
-            iCharsProcessed += 1 + iSkippedChars;
-            TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+          m_cp = addParagraph();
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
+        }
+        else if (!_isCommentStyleOnNextLine.first && !_isStaticMarkerOnNextLine.first && !_isEmptyNextLine.first
+          && TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_NEXT_PARAGRAPH)
+        {
+          const int iSkippedChars = GetTrailingEOLLength();
+          iCharsProcessed += 1 + iSkippedChars;
+          TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
 
-            const int iSkippedWhitespaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
-            iCharsProcessed += iSkippedWhitespaces;
-            TextBuffer_OffsetPos(&pED->m_tb, iSkippedWhitespaces);            
+          const int iSkippedWhitespaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
+          iCharsProcessed += iSkippedWhitespaces;
+          TextBuffer_OffsetPos(&pED->m_tb, iSkippedWhitespaces);            
 
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
-          }
-          else if (!m_cp->prefix->IsEmpty())
-          {
-            m_cp = addParagraph();
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
-          }
-          else
-          {
-            TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
-          }
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
+        }
+        else if (!m_cp->prefix->IsEmpty())
+        {
+          m_cp = addParagraph();
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
         }
         else
         {
-          TextBuffer_PushChar(&pED->m_tbRes, ch);
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL_PROCESSED);
         }
-
-        skipChars = TRUE;
       }
-    }
-    else if (initLine)
-    {
-      initLine &= (ch == CHAR_SPACE);
+      else
+      {
+        TextBuffer_PushChar(&pED->m_tbRes, ch);
+      }
+
+      skipChars = TRUE;
     }
     else if (isMarker(ch, pED))
     {
@@ -621,14 +611,11 @@ extern "C" {
     {
       for (int i = 0; i < iCharCount; ++i)
       {
-        if (!initLine)
-        {
-          TextBuffer_PushChar(&pED->m_tbRes, ch);
-        }
+        TextBuffer_PushChar(&pED->m_tbRes, ch);
       }
       TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
+      iCharsProcessed = iCharCount;
     }
-    iCharsProcessed += iCharCount;
 
     return updateCharsProcessed(piCharsProcessed, iCharsProcessed);
   }
@@ -681,7 +668,8 @@ extern "C" {
     auto prefixLength = m_cp->prefix->GetLength();
     if ((iLineOffset == 0) && (prefixLength > 0))
     {
-      if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED))
+      if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED)
+        || ((ch == CHAR_NEXT_PARAGRAPH) && (TextBuffer_GetTailLength(&pED->m_tb) > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tb, 1))))
       {
         prefixLength -= m_cp->prefix->CountTrailingWhiteSpaces();
       }

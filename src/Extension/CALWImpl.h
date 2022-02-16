@@ -43,8 +43,6 @@ struct Prefix
   std::string m_data;
   unsigned m_charWhitespace = ' ';
   Range m_rangeMarker;
-  //std::size_t m_posWhitespace = 0;
-  //std::size_t m_posMarkerPostfix = 0;
 
   void initWhitespace();
 
@@ -76,15 +74,6 @@ struct Paragraph
   static std::shared_ptr<Prefix> createPrefix();
 
   std::shared_ptr<Prefix> prefix;
-
-// public:
-//   std::shared_ptr<Prefix> mp() { return m_prefixMain; }
-//   std::shared_ptr<Prefix> cp() { return m_prefixes.at(m_iCurrentSubPrefix); }
-// 
-// protected:
-//   std::shared_ptr<Prefix > m_prefixMain;
-//   std::vector<std::shared_ptr<Prefix>> m_prefixes;
-//   int m_iCurrentSubPrefix = 0;
 };
 
 struct CALWData
@@ -99,7 +88,6 @@ public:
 
   BOOL previosLineUseMarker = FALSE;
 
-  BOOL initLine = FALSE;
   BOOL skipNextEOL = FALSE;
   BOOL nativeEOLAdded = FALSE;
   int iLineOffset = 0;
@@ -125,9 +113,9 @@ protected:
 
   bool isCommentStyleOnNextLine(EncodingData* pED, int& iCharsProcessed) const;
   bool isStaticMarkerOnNextLine(EncodingData* pED, const bool isCurrentPrefixMarker, int& iCharsProcessed) const;
-  bool savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount);
-  bool saveStaticMarkerPrefix(EncodingData* pED);
-  bool saveDynamicMarkerPrefix(EncodingData* pED);
+  bool savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed);
+  bool saveStaticMarkerPrefix(EncodingData* pED, int& iCharsProcessed);
+  bool saveDynamicMarkerPrefix(EncodingData* pED, int& iCharsProcessed);
   bool saveCommentPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed);
 
 public:
