@@ -1,4 +1,8 @@
+#include <algorithm>
+#include <map>
+
 #include "DPIHelper.h"
+#include "resource.h"
 #include "VersionHelper.h"
 
 extern "C"
@@ -236,6 +240,70 @@ BOOL CALLBACK EnumChildProc_DPIApply(const HWND hwnd, const LPARAM lParam)
   DPIApply(hwnd, pDPISettings->hwnd, &pDPISettings->hdwp, pDPISettings->dpiX, pDPISettings->dpiY);
   return TRUE;
 };
+
+HBITMAP StretchBitmap(const HBITMAP hbmp, const int newSizeX, const int newSizeY)
+{
+  HBITMAP hbmpScaled = NULL;
+  const HDC hdcScreen = GetDC(NULL);
+  if (const HDC hdcSource = CreateCompatibleDC(hdcScreen))
+  {
+    SelectObject(hdcSource, hbmp);
+    if (const HDC hdcScaled = CreateCompatibleDC(hdcScreen))
+    {
+      hbmpScaled = CreateCompatibleBitmap(hdcScreen, newSizeX, newSizeY);
+      if (hbmpScaled)
+      {
+        SelectObject(hdcScaled, hbmpScaled);
+        BITMAP bmp = { 0 };
+        if (!GetObject(hbmp, sizeof(BITMAP), &bmp)
+          || !StretchBlt(hdcScaled, 0, 0, newSizeX, newSizeY, hdcSource, 0, 0, bmp.bmWidth, bmp.bmHeight, SRCCOPY))
+        {
+          DeleteObject(hbmpScaled);
+          hbmpScaled = NULL;
+        }
+      }
+      DeleteDC(hdcScaled);
+    }
+    DeleteDC(hdcSource);
+  }
+  ReleaseDC(NULL, hdcScreen);
+  return hbmpScaled;
+}
+
+HBITMAP DPICreateToolbarBitmap(const HWND hwnd, const HINSTANCE hInstance)
+{
+  const DWORD DPI_MAP_STEP_SIZE = DWORD(DEFAULT_SCREEN_DPI * 0.25);
+  const std::map<DWORD, UINT> c_mapDPIToToolbarID =
+  {
+    { DWORD(DEFAULT_SCREEN_DPI), IDR_MAINWND },
+    { DWORD(DEFAULT_SCREEN_DPI * 1.25), IDB_TOOLBAR_125 },
+    { DWORD(DEFAULT_SCREEN_DPI * 1.5), IDB_TOOLBAR_150 },
+    { DWORD(DEFAULT_SCREEN_DPI * 1.75), IDB_TOOLBAR_175 },
+    { DWORD(DEFAULT_SCREEN_DPI * 2), IDB_TOOLBAR_200 }
+  };
+
+  const DWORD dpiY = HIWORD(GetDPIFromWindow(hwnd));
+  const auto it = std::find_if(c_mapDPIToToolbarID.cbegin(), c_mapDPIToToolbarID.cend(), [&](const std::pair<DWORD, UINT>& v) {
+      return (dpiY < v.first + DPI_MAP_STEP_SIZE / 2);
+    });
+  const bool stretchBitmap = (it == c_mapDPIToToolbarID.cend());
+  const auto& toolbarParams = !stretchBitmap ? *it : *c_mapDPIToToolbarID.crbegin();
+
+  HBITMAP hbmp = LoadBitmap(hInstance, MAKEINTRESOURCE(toolbarParams.second));
+  if (stretchBitmap)
+  {
+    BITMAP bmp = { 0 };
+    GetObject(hbmp, sizeof(BITMAP), &bmp);
+    const int newSizeY = (bmp.bmHeight * dpiY) / toolbarParams.first;
+    const int newSizeX = (bmp.bmWidth * newSizeY) / bmp.bmHeight;
+    if (const HBITMAP hbmpScaled = StretchBitmap(hbmp, newSizeX, newSizeY))
+    {
+      DeleteObject(hbmp);
+      hbmp = hbmpScaled;
+    }
+  }
+  return hbmp;
+}
 
 void DialogDPIInit(const HWND hwnd)
 {

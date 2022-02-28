@@ -661,6 +661,10 @@
     <None Include="res\Run.ico" />
     <None Include="res\Styles.ico" />
     <None Include="res\Toolbar.bmp" />
+    <None Include="res\Toolbar125.bmp" />
+    <None Include="res\Toolbar150.bmp" />
+    <None Include="res\Toolbar175.bmp" />
+    <None Include="res\Toolbar200.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="res\Notepad2.exe.manifest" />

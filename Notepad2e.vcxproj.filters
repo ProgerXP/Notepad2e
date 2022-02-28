@@ -1144,6 +1144,18 @@
     <None Include="res\Toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\Toolbar125.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Toolbar150.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Toolbar175.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Toolbar200.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
     <None Include="res\About3rdParty.rtf" />
     <None Include="res\lexer.lua">
       <Filter>Resource Files</Filter>

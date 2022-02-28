@@ -73,7 +73,7 @@ BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
 
-#define NUMTOOLBITMAPS  32
+#define NUMTOOLBITMAPS  33
 #define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -1747,7 +1747,8 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
     bExternalBitmap = TRUE;
   else
   {
-    hbmp = LoadImage(hInstance, MAKEINTRESOURCE(IDR_MAINWND), IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
+    // [2e] Enable toolbar scaling (DPI) #327
+    hbmp = DPICreateToolbarBitmap(hwnd, hInstance);
     hbmpCopy = CopyImage(hbmp, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
   }
   GetObject(hbmp, sizeof(BITMAP), &bmp);

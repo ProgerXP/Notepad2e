@@ -59,6 +59,10 @@ IDB_NEXT                BITMAP                  "..\\res\\Next.bmp"
 IDB_PREV                BITMAP                  "..\\res\\Prev.bmp"
 IDB_PICK                BITMAP                  "..\\res\\Pick.bmp"
 IDB_ENCODING            BITMAP                  "..\\res\\Encoding.bmp"
+IDB_TOOLBAR_125         BITMAP                  "..\\res\\Toolbar125.bmp"
+IDB_TOOLBAR_150         BITMAP                  "..\\res\\Toolbar150.bmp"
+IDB_TOOLBAR_175         BITMAP                  "..\\res\\Toolbar175.bmp"
+IDB_TOOLBAR_200         BITMAP                  "..\\res\\Toolbar200.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
