@@ -1176,8 +1176,6 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         bSaveRecentFiles = (IsDlgButtonChecked(hwnd, IDC_SAVEMRU)) ? 1 : 0;
 
         ResizeDlg_Destroy(hwnd, &cxFileMRUDlg, &cyFileMRUDlg);
-        //[2e]: Save on exit and History #101
-        SaveSettings(FALSE);
       }
       return FALSE;
 
