@@ -57,8 +57,11 @@ public:
   bool IsInitialized() const;
 
   void SetInitialized();
+  void Init(const Prefix& p);
+  PrefixType GetType() const;
   void SetType(const PrefixType type);
   int CountTrailingWhiteSpaces() const;
+  std::string GetString() const;
   void SetString(const std::string s);
   void PushChar(const unsigned char ch);
   unsigned char GetChar(const std::size_t pos, const int iLineIndex);
@@ -89,11 +92,10 @@ public:
   BOOL previosLineUseMarker = FALSE;
 
   BOOL skipNextEOL = FALSE;
-  BOOL nativeEOLAdded = FALSE;
   int iLineOffset = 0;
   int iWordCount = 0;
   int iSingleLineCommentPrefixLength = 0;
-  int iLineIndex = 0;
+  int iLineIndex = 0;                       // line index within paragraph
 
 protected:
   std::vector<std::shared_ptr<Paragraph>> m_paragraphs;
@@ -102,10 +104,9 @@ protected:
 
   std::shared_ptr<Paragraph> addParagraph();
   std::shared_ptr<Paragraph> nextParagraph();
+  std::shared_ptr<const Paragraph> prevParagraph() const;
   std::string readLinePrefix(EncodingData* pED, const char ch, const int count, bool& isCommentLine) const;
   BOOL updateCharsProcessed(long* piCharsProcessed, int iCharsProcessed) const;
-  void gotoNextLine(EncodingData* pED, const bool addEOL, const bool isNativeEOL);
-  void addNativeEOL(EncodingData* pED);
   void addEOL(EncodingData* pED);
   
   BOOL IsEOL(const unsigned char ch) const;

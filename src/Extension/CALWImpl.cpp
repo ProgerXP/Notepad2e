@@ -91,6 +91,18 @@ extern "C" {
     m_isInitialized = true;
   }
 
+  void Prefix::Init(const Prefix& p)
+  {
+    SetString(p.GetString());
+    SetType(p.GetType());
+    SetInitialized();
+  }
+
+  PrefixType Prefix::GetType() const
+  {
+    return m_type;
+  }
+
   void Prefix::SetType(const PrefixType type)
   {
     m_type = type;
@@ -137,6 +149,11 @@ extern "C" {
         m_rangeMarker.pos2 = posMarkerEnd + 1;
       }
     }
+  }
+
+  std::string Prefix::GetString() const
+  {
+    return m_data;
   }
 
   void Prefix::SetString(const std::string s)
@@ -229,6 +246,18 @@ extern "C" {
     else
     {
       m_iActiveParagraphIndex = -1;
+      return nullptr;
+    }
+  }
+
+  std::shared_ptr<const Paragraph> CALWData::prevParagraph() const
+  {
+    if (m_iActiveParagraphIndex - 1 >= 0)
+    {
+      return m_paragraphs.at(m_iActiveParagraphIndex - 1);
+    }
+    else
+    {
       return nullptr;
     }
   }
@@ -455,7 +484,6 @@ extern "C" {
   BOOL CALWData::RunPass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
   {
     BOOL skipChars = FALSE;
-    BOOL skipInitLineCheck = FALSE;
     const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
     int iCharCount = (!IsTrailingEOL(iEOLMode, ch, &pED->m_tb) ? TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0) : 0);
     int iCharsProcessed = iCharCount;
@@ -480,7 +508,7 @@ extern "C" {
       }
     }
 
-    if (IsEOLChar(ch) || skipInitLineCheck)
+    if (IsEOLChar(ch))
     {
       ++ps[pRA->iPassIndex].relativeLineIndex;
 
@@ -535,7 +563,7 @@ extern "C" {
       }
       else if (_isStaticMarkerOnNextLine.first)
       {
-        if (m_cp->prefix->IsMarker())
+        if (m_cp->prefix->IsMarker() && (_isStaticMarkerOnNextLine.second == m_cp->prefix->GetLength()))
         {
           iCharsProcessed += _isStaticMarkerOnNextLine.second;
           TextBuffer_OffsetPos(&pED->m_tb, _isStaticMarkerOnNextLine.second);
@@ -544,11 +572,21 @@ extern "C" {
         }
         else
         {
-          const int iSkippedChars = IsEOL(TextBuffer_GetChar(&pED->m_tb)) ? GetTrailingEOLLength() : 0;
-          iCharsProcessed += 1 + iSkippedChars;
-          TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
-
-          m_cp = addParagraph();
+          const auto prevPrefix(prevParagraph() ? prevParagraph()->prefix : nullptr);
+          if (m_cp->prefix->IsMarker() && prevPrefix && prevPrefix->IsMarker() && (_isStaticMarkerOnNextLine.second < m_cp->prefix->GetLength()))
+          {
+            iCharsProcessed += _isStaticMarkerOnNextLine.second - 1;
+            TextBuffer_OffsetPos(&pED->m_tb, _isStaticMarkerOnNextLine.second);
+            m_cp = addParagraph();
+            m_cp->prefix->Init(*prevPrefix);
+          }
+          else
+          {
+            const int iSkippedChars = IsEOL(TextBuffer_GetChar(&pED->m_tb)) ? GetTrailingEOLLength() : 0;
+            iCharsProcessed += 1 + iSkippedChars;
+            TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+            m_cp = addParagraph();
+          }
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
         }          
       }
@@ -587,6 +625,10 @@ extern "C" {
         }
         else if (!m_cp->prefix->IsEmpty())
         {
+          const int iSkippedChars = GetTrailingEOLLength();
+          iCharsProcessed += iSkippedChars;
+          TextBuffer_OffsetPos(&pED->m_tb, iSkippedChars);
+
           m_cp = addParagraph();
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
         }
@@ -619,26 +661,12 @@ extern "C" {
 
     return updateCharsProcessed(piCharsProcessed, iCharsProcessed);
   }
-  
-  void CALWData::gotoNextLine(EncodingData* pED, const bool addEOL, const bool isNativeEOL)
-  {
-    if (addEOL)
-    {
-      TextBuffer_AddEOL(&pED->m_tbRes, iEOLMode);
-    }
-    nativeEOLAdded = isNativeEOL && addEOL;
-    iLineOffset = 0;
-    ++iLineIndex;
-  }
-
-  void CALWData::addNativeEOL(EncodingData* pED)
-  {
-    gotoNextLine(pED, true, true);
-  }
 
   void CALWData::addEOL(EncodingData* pED)
   {
-    gotoNextLine(pED, true, false);
+    TextBuffer_AddEOL(&pED->m_tbRes, iEOLMode);
+    iLineOffset = 0;
+    ++iLineIndex;
   }
 
   BOOL CALWData::RunPass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
@@ -647,12 +675,12 @@ extern "C" {
 
     if (ch == CHAR_NEXT_PARAGRAPH)
     {
-      gotoNextLine(pED, !nativeEOLAdded, false);
+      addEOL(pED);
 
       TextBuffer_PopChar(&pED->m_tb);
       ++*piCharsProcessed;
 
-      iLineIndex = 0;     // line index within paragraph
+      iLineIndex = 0;
       m_cp = nextParagraph();
     }
     else if (ch == CHAR_FORCE_EOL)
@@ -805,8 +833,9 @@ extern "C" {
         {
           TextBuffer_DecPos(&pED->m_tbRes);
         }
-        addNativeEOL(pED);
         const auto chNext = TextBuffer_GetChar(&pED->m_tb);
+        if (chNext != CHAR_NEXT_PARAGRAPH)
+          addEOL(pED);
         if (IsEOL(chNext))
         {
           const int offset = 1 + (((chNext == CHAR_FORCE_EOL) || (chNext == CHAR_FORCE_EOL_PROCESSED)) ? 0 : GetTrailingEOLLength());

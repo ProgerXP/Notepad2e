@@ -296,7 +296,7 @@ namespace Notepad2eTests
 #define ENABLE_COMPOSITE_TESTS
 #endif
 
-#define ENABLE_SHORT_TESTS
+//  #define ENABLE_SHORT_TESTS
 //  #define ENABLE_COMPOSITE_TESTS
 
 //#define ENABLE_NEW_TEST
@@ -591,7 +591,7 @@ namespace Notepad2eTests
                              "* Ipsum",
                 CPI_DEFAULT,
                              "  * Lorem\r\n"
-                             "  * Ipsum",
+                             "* Ipsum",
                 false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
         CTestCaseData(false, "    * Lorem\r\n"
@@ -599,7 +599,7 @@ namespace Notepad2eTests
                              "      *  Dolor",
                 CPI_DEFAULT,
                              "    * Lorem\r\n"
-                             "    * Ipsum\r\n"
+                             "         * Ipsum\r\n"
                              "    * Dolor",
                 false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
 
@@ -750,6 +750,81 @@ namespace Notepad2eTests
                 CPI_DEFAULT,
                                "// aa aa",
                 false, 0, { 10, SCLEX_CPP, SC_EOL_CR }),
+
+          CTestCaseData(false, "* item 1\n"
+                               "  * sub item\n"
+                               "* item 2",
+              CPI_DEFAULT,
+                               "* item 1\n"
+                               "  * sub\n"
+                               "    item\n"
+                               "* item 2",
+              false, 0, { 8, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  * item 1\n"
+                               "    * sub item\n"
+                               " * item 2",
+              CPI_DEFAULT,
+                               "  * item 1\n"
+                               "    * sub item\n"
+                               "  * item 2",
+              false, 0, { 18, SCLEX_NULL, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item 1\n"
+                               "  * sub sub sub sub item\n"
+                               "* item 2",
+              CPI_DEFAULT,
+                               "* item 1\n"
+                               "  * sub sub sub sub item\n"
+                               "* item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item 1\n"
+                               "  * sub sub sub sub sub item\n"
+                               "* item 2",
+              CPI_DEFAULT,
+                               "* item 1\n"
+                               "  * sub sub sub sub sub\n"
+                               "    item\n"
+                               "* item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "// * item 1\n"
+                               "//   * sub sub sub sub sub item\n"
+                               "// * item 2",
+              CPI_DEFAULT,
+                               "// * item 1\n"
+                               "//   * sub sub sub sub\n"
+                               "//     sub item\n"
+                               "// * item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item 1\n"
+                               "  * sub item\n"
+                               "    * sub sub item 2",
+              CPI_DEFAULT,
+                               "* item 1\n"
+                               "  * sub item\n"
+                               "    * sub sub item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "// * item 1\n"
+                               "//   * sub item\n"
+                               "//     * sub sub item 2",
+              CPI_DEFAULT,
+                               "// * item 1\n"
+                               "//   * sub item\n"
+                               "//     * sub sub item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  * item 1\n"
+                               "    * sub item\n"
+                               "   * item 2",
+              CPI_DEFAULT,
+                               "  * item 1\n"
+                               "    * sub item\n"
+                               "  * item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
@@ -778,8 +853,8 @@ namespace Notepad2eTests
                 CPI_DEFAULT,
                                "  * aa\r\n"
                                "    aa\r\n"
-                               "  * aa\r\n"
-                               "    aa",
+                               "      * aa\r\n"
+                               "        aa",
                 false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
           CTestCaseData(false, "* aa aa\r\n"
@@ -835,14 +910,15 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_NEW_TEST
-          CTestCaseData(false,  "  // > aaa\n"
-                                "  //   \t\t\n"
-                                "  //  ",
+          CTestCaseData(false, "* item 1\n"
+                               "  * sub item\n"
+                               "* item 2",
               CPI_DEFAULT,
-                              "  // > aaa\n"
-                              "  //\n"
-                              "  //",
-              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+                               "* item 1\n"
+                               "  * sub\n"
+                               "    item\n"
+                               "* item 2",
+              false, 0, { 8, SCLEX_CPP, SC_EOL_LF }),
 /*
           CTestCaseData(false, "* item 1\n"
                                "  * sub item\n"
