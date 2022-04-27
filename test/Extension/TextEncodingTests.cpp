@@ -61,14 +61,17 @@ std::wstring GetStringDiff(const std::string& expected, const std::string& actua
   }
 
   ss << L"Offset  |   Expected   |   Actual" << std::endl;
-  const int maxLength = min(expected.size(), actual.size());
+  const int sizeDiff = actual.size() - expected.size();
+  const int maxLength = (sizeDiff > 0) && (sizeDiff < 10) ? actual.size() : min(expected.size(), actual.size());
   const int maxLines = 50;
   int count = 1;
   for (auto i = 0; i < maxLength; ++i)
   {
-    if (expected[i] != actual[i])
+    const char _expectedChar = (i < expected.size()) ? expected[i] : '-';
+    const char _actualChar = (i < actual.size()) ? actual[i] : '-';
+    if (_expectedChar != _actualChar)
     {
-      ss << std::setw(9) << i << L"   " << std::setw(9) << GetCharWString(expected[i]) << L"   " << std::setw(9) << GetCharWString(actual[i]) << std::endl;
+      ss << std::setw(9) << i << L"   " << std::setw(9) << GetCharWString(_expectedChar) << L"   " << std::setw(9) << GetCharWString(_actualChar) << std::endl;
       ++count;
       if (count >= maxLines)
         break;
@@ -825,6 +828,15 @@ namespace Notepad2eTests
                                "    * sub item\n"
                                "  * item 2",
               false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  * item 1\n"
+                               "    * sub item\n"
+                               "* item 2",
+              CPI_DEFAULT,
+                               "  * item 1\n"
+                               "    * sub item\n"
+                               "  * item 2",
+              false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
@@ -907,6 +919,32 @@ namespace Notepad2eTests
                                "  // * aa\n"
                                "  // * bb",
                 false, 0, { 17, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " * item 1\n"
+                               "  * sub item\n"
+                               "    * sub sub item\n"
+                               "   * sub item 2\n"
+                               "* item 2\n",
+              CPI_DEFAULT,
+                               " * item 1\n"
+                               "  * sub item\n"
+                               "    * sub sub item\n"
+                               "  * sub item 2\n"
+                               " * item 2\n",
+              false, 0, { 25, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "// * item 1\n"
+                               "//  * sub item\n"
+                               "//    * sub sub item\n"
+                               "//   * sub item 2\n"
+                               "//* item 2\n",
+              CPI_DEFAULT,
+                               "// * item 1\n"
+                               "//  * sub item\n"
+                               "//    * sub sub item\n"
+                               "//  * sub item 2\n"
+                               "// * item 2\n",
+              false, 0, { 25, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST

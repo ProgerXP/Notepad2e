@@ -79,6 +79,25 @@ struct Paragraph
   std::shared_ptr<Prefix> prefix;
 };
 
+class CLineAttribute
+{
+private:
+  int offset = -1;
+public:
+  CLineAttribute() {}
+  CLineAttribute(const int o) : offset(o) {}
+  operator bool() const { return offset >= 0; }
+  int GetOffset() const { return offset; }
+};
+
+struct TNextLineParams
+{
+  CLineAttribute isComment;
+  CLineAttribute isCommentedStaticMarker;
+  CLineAttribute isStaticMarker;
+  CLineAttribute isEmptyLine;
+};
+
 struct CALWData
 {
 public:
@@ -102,9 +121,11 @@ protected:
   int m_iActiveParagraphIndex = 0;
   std::shared_ptr<Paragraph> m_cp;
 
+  TNextLineParams checkNextLine(EncodingData* pED) const;
+
   std::shared_ptr<Paragraph> addParagraph();
   std::shared_ptr<Paragraph> nextParagraph();
-  std::shared_ptr<const Paragraph> prevParagraph() const;
+  std::shared_ptr<const Paragraph> prevParagraph(const int currentPrefixLength) const;
   std::string readLinePrefix(EncodingData* pED, const char ch, const int count, bool& isCommentLine) const;
   BOOL updateCharsProcessed(long* piCharsProcessed, int iCharsProcessed) const;
   void addEOL(EncodingData* pED);
@@ -112,8 +133,8 @@ protected:
   BOOL IsEOL(const unsigned char ch) const;
   BOOL GetTrailingEOLLength() const;
 
-  bool isCommentStyleOnNextLine(EncodingData* pED, int& iCharsProcessed) const;
-  bool isStaticMarkerOnNextLine(EncodingData* pED, const bool isCurrentPrefixMarker, int& iCharsProcessed) const;
+  CLineAttribute isCommentStyleOnNextLine(EncodingData* pED) const;
+  CLineAttribute isStaticMarkerOnNextLine(EncodingData* pED, const int _offset = 0) const;
   bool savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed);
   bool saveStaticMarkerPrefix(EncodingData* pED, int& iCharsProcessed);
   bool saveDynamicMarkerPrefix(EncodingData* pED, int& iCharsProcessed);
