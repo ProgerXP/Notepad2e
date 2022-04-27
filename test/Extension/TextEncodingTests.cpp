@@ -945,10 +945,62 @@ namespace Notepad2eTests
                                "//  * sub item 2\n"
                                "// * item 2\n",
               false, 0, { 25, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " line 1  \n"
+                               "   2   3   \n"
+                               " 4",
+              CPI_DEFAULT,
+                               " line 1 2 3 4",
+              false, 0, { 18, SCLEX_NULL, SC_EOL_LF }),
+
+          CTestCaseData(false, "//  line 1  \n"
+                               "//   2   3   \n"
+                               "//4",
+              CPI_DEFAULT,
+                               "//  line 1 2 3 4",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "line 1  \n"
+                               "   line 2   ",
+              CPI_DEFAULT,
+                               "line 1 line 2",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " line 1  \n"
+                               "   line 2   ",
+              CPI_DEFAULT,
+                               " line 1 line 2",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "line 1  2   3   ",
+              CPI_DEFAULT,
+                               "line 1 2 3",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " line 1  \n"
+                               "   2   3   \n"
+                               " 4",
+              CPI_DEFAULT,
+                               " line 1 2 3 4",
+              false, 0, { 18, SCLEX_NULL, SC_EOL_LF }),
+
+          CTestCaseData(false, "//  line 1  \n"
+                               "//   2   3   \n"
+                               "//4",
+              CPI_DEFAULT,
+                               "//  line 1 2 3 4",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  // line 1  \n"
+                               "   line 2   ",
+              CPI_DEFAULT,
+                               "  // line 1\n"
+                               "   line 2",
+              false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST
-          CTestCaseData(false, "* item 1\n"
+/*          CTestCaseData(false, "* item 1\n"
                                "  * sub item\n"
                                "* item 2",
               CPI_DEFAULT,

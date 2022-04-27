@@ -132,9 +132,39 @@ int TextBuffer_GetHeadLength(TextBuffer* pTB)
   return pTB->m_iPos;
 }
 
+int TextBuffer_GetLineHeadLength(TextBuffer* pTB)
+{
+  int res = 0;
+  while (pTB->m_iPos - res >= 0)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos - res];
+    if (IsEOLChar(_ch))
+    {
+      break;
+    }
+    ++res;
+  }
+  return res - 1;
+}
+
 int TextBuffer_GetTailLength(TextBuffer* pTB)
 {
   return pTB->m_iMaxPos - pTB->m_iPos;
+}
+
+int TextBuffer_GetLineTailLength(TextBuffer* pTB)
+{
+  int res = 0;
+  while (pTB->m_iPos + res < pTB->m_iMaxPos)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos + res];
+    if (IsEOLChar(_ch))
+    {
+      return res;
+    }
+    ++res;
+  }
+  return res;
 }
 
 int TextLengthInChars(LPCSTR lpStr1, LPCSTR lpStr2, const int _iEncoding, int *piByteCount)
@@ -208,7 +238,7 @@ BOOL TextBuffer_IsAnyCharAtPos_IgnoreSpecial(TextBuffer* pTB, LPCSTR lpChars, LP
     }
     ++res;
   }
-  return res;
+  return FALSE;
 }
 
 BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, LPCSTR lpstrIgnored, const int iOffsetFrom)

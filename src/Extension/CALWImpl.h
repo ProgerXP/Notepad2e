@@ -108,9 +108,6 @@ public:
 
   PassState ps[3];
 
-  BOOL previosLineUseMarker = FALSE;
-
-  BOOL skipNextEOL = FALSE;
   int iLineOffset = 0;
   int iWordCount = 0;
   int iSingleLineCommentPrefixLength = 0;
@@ -133,6 +130,9 @@ protected:
   BOOL IsEOL(const unsigned char ch) const;
   BOOL GetTrailingEOLLength() const;
 
+  BOOL isCommentStyleOnThisLine(EncodingData* pED) const;
+  BOOL isStaticMarkerOnThisLine(EncodingData* pED) const;
+  BOOL isDynamicMarkerOnThisLine(EncodingData* pED) const;
   CLineAttribute isCommentStyleOnNextLine(EncodingData* pED) const;
   CLineAttribute isStaticMarkerOnNextLine(EncodingData* pED, const int _offset = 0) const;
   bool savePlainPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed);
