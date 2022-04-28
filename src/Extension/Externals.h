@@ -12,6 +12,7 @@ extern DWORD dwLastIOError;
 extern int iLongLinesLimit;
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
+void EditSelectEx(HWND, int, int);
 
 #ifndef N2E_TESTING
 

@@ -114,6 +114,8 @@ BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const 
     && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer));
 }
 
+void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos) {}
+
 WCHAR szIniFile[MAX_PATH];
 
 #endif // #ifdef N2E_TESTING

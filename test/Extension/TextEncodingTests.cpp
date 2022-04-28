@@ -637,7 +637,7 @@ namespace Notepad2eTests
         CTestCaseData(false, "aa\r\n"
                              "bb\r\n"
                              "* cc\r\n"
-                             "dd\r\n"
+                             "  dd\r\n"
                              "\r\n"
                              "ee",
                 CPI_DEFAULT,
@@ -997,6 +997,47 @@ namespace Notepad2eTests
                                "  // line 1\n"
                                "   line 2",
               false, 0, { 18, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "List:\n"
+                               "* item",
+              CPI_DEFAULT,
+                               "List:\n"
+                               "* item",
+              false, 0, { 8, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item\n"
+                               "List:",
+              CPI_DEFAULT,
+                               "* item\n"
+                               "List:",
+              false, 0, { 8, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item\n"
+                               "  List:",
+              CPI_DEFAULT,
+                               "* item List:",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item\n"
+                               " List:",
+              CPI_DEFAULT,
+                               "* item\n"
+                               " List:",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " * item\n"
+                               "List:",
+              CPI_DEFAULT,
+                               " * item\n"
+                               "List:",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* item\n"
+                               "List:",
+              CPI_DEFAULT,
+                               "* item\n"
+                               "List:",
+              false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST

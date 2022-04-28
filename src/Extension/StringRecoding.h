@@ -24,6 +24,7 @@ struct TTextRange
   long m_iPositionStart;
   long m_iPositionCurrent;
   long m_iExpectedProcessedChars;
+  BOOL m_emptyOritinalSelection;
 };
 typedef struct TTextRange TextRange;
 

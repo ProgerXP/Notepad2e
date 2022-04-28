@@ -596,7 +596,8 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
   pTR->m_hwnd = pSS->hwnd;
   pTR->m_iSelStart = StringSource_GetSelectionStart(pSS);
   pTR->m_iSelEnd = StringSource_GetSelectionEnd(pSS);
-  if (pTR->m_iSelStart == pTR->m_iSelEnd)
+  pTR->m_emptyOritinalSelection = (pTR->m_iSelStart == pTR->m_iSelEnd);
+  if (pTR->m_emptyOritinalSelection)
   {
     if (pRA->recodingType == ERT_CALW)
     {
@@ -938,6 +939,12 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     SciCall_SetSel(iSelStart, iSelEnd);
     SciCall_EndUndoAction();
     SciCall_SetSkipUIUpdate(0);
+    if ((pRA->recodingType == ERT_CALW) && ed.m_tr.m_emptyOritinalSelection)
+    {
+      const auto line = SciCall_LineFromPosition(iSelEnd);
+      const auto pos = SciCall_PositionFromLine(line + 1);
+      EditSelectEx(pSS->hwnd, pos, pos);
+    }
     UpdateWindow(pSS->hwnd);
   }
   
