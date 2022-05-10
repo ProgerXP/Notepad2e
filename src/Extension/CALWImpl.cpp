@@ -471,7 +471,7 @@ extern "C" {
     if (n2e_IsSingleLineCommentStyleAtPos(NULL, lexerId, iCommentOffset, pED))
     {
       const int iWhiteSpacesAfterComment = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCommentOffset);
-      leadingSpaces = iCommentOffset;
+      leadingSpaces = iCommentOffset - iSingleLineCommentPrefixLength;
       trailingSpaces = iWhiteSpacesAfterComment;
       res = iCommentOffset + iWhiteSpacesAfterComment;
     }
@@ -593,11 +593,15 @@ extern "C" {
       ++ps[pRA->iPassIndex].relativeLineIndex;
 
       const TNextLineParams lineParams = checkNextLine(pED);
-      if (lineParams.isComment
-        && m_cp->prefix->IsComment()
-        && !m_cp->prefix->IsCommentedMarker()
-         && ((m_cp->prefix->CountTrailingWhiteSpaces() == lineParams.isComment.GetTrailingWhiteSpaces())
-           || TextBuffer_IsWhiteSpaceLine(&pED->m_tb, lineParams.isComment.GetOffset() - GetTrailingEOLLength(), nullptr)))
+      if (lineParams.isComment && !lineParams.isCommentedStaticMarker
+         && m_cp->prefix->IsComment()
+         && ((!m_cp->prefix->IsCommentedMarker() && m_cp->prefix->CountTrailingWhiteSpaces() == lineParams.isComment.GetTrailingWhiteSpaces())
+           || (!m_cp->prefix->IsCommentedMarker() && TextBuffer_IsWhiteSpaceLine(&pED->m_tb, lineParams.isComment.GetOffset() - GetTrailingEOLLength(), nullptr))
+            || (m_cp->prefix->IsCommentedMarker()
+                 && !TextBuffer_IsWhiteSpaceLine(&pED->m_tb, lineParams.isComment.GetOffset(), NULL)
+                 && (m_cp->prefix->GetLength() - m_cp->prefix->CountLeadingWhiteSpaces()  == lineParams.isComment.GetOffset() - lineParams.isComment.GetLeadingWhiteSpaces()))
+              )
+        )
       {
         iCharsProcessed += lineParams.isComment.GetOffset();
         TextBuffer_OffsetPos(&pED->m_tb, lineParams.isComment.GetOffset());

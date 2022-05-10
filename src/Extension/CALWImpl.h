@@ -92,6 +92,7 @@ public:
   CLineAttribute(const int o, const int ls, const int ts) : offset(o), leadingSpaces(ls), trailingSpaces(ts) {}
   operator bool() const { return offset >= 0; }
   int GetOffset() const { return offset; }
+  int GetLeadingWhiteSpaces() const { return leadingSpaces; }
   int GetTrailingWhiteSpaces() const { return trailingSpaces; }
 };
 

@@ -463,6 +463,18 @@ namespace Notepad2eTests
                              "* it em",
               false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
 
+          CTestCaseData(false, "//* item\n"
+                               "//  List",
+              CPI_DEFAULT,
+                               "//* item List",
+              false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "//* item\n"
+                               "  //  List",
+              CPI_DEFAULT,
+                               "//* item List",
+              false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
+
         CTestCaseData(false, "// * Lorem Ipsum",
                 CPI_DEFAULT,
                              "// * Lorem\n"
