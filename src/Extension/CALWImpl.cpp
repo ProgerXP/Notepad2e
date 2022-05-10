@@ -22,19 +22,6 @@ extern "C" {
 extern "C" {
 #endif
 
-  static unsigned char CHAR_SPACE = ' ';
-  static unsigned char CHAR_EOL_R = '\r';
-  static unsigned char CHAR_EOL_N = '\n';
-  static unsigned char CHAR_FORCE_EOL = '\a';
-  static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
-  static unsigned char CHAR_NEXT_PARAGRAPH = '\f';
-
-  static LPCSTR lpstrWhiteSpaces = " \t";
-  static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
-  static LPCSTR lpstrStaticMarkerChars = ">=?*";        // #TODO: removed # (comment line in perl)
-  static LPCSTR lpstrDynamicMarkerChars = ":).";
-  static LPCSTR lpstrDigits = "0123456789";
-
   BOOL isStaticMarker(const unsigned char ch)
   {
     return IsCharFromString(lpstrStaticMarkerChars, ch);
@@ -109,20 +96,26 @@ extern "C" {
     initWhitespace();
   }
 
+  int Prefix::CountLeadingWhiteSpaces() const
+  {
+    const auto it = std::find_if(m_data.cbegin(), m_data.cend(), [&](const char& ch) {
+      return !IsCharFromString(lpstrWhiteSpaces, ch);
+      });
+    return std::distance(m_data.cbegin(), it);
+  }
+
   int Prefix::CountTrailingWhiteSpaces() const
   {
-    int res = 0;
-    int pos = m_data.size() - 1;
-    while (pos > 0)
-    {
-      if (!IsCharFromString(lpstrWhiteSpaces, m_data.at(pos)))
-      {
-        break;
-      }
-      --pos;
-      ++res;
-    }
-    return res;
+    const auto it = std::find_if(m_data.crbegin(), m_data.crend(), [&](const char& ch) {
+      return !IsCharFromString(lpstrWhiteSpaces, ch);
+      });
+    return std::distance(m_data.crbegin(), it);
+  }
+
+  void Prefix::SetupLeadingWhiteSpaces(const struct Prefix& originPrefix)
+  {
+    m_data.erase(0, CountLeadingWhiteSpaces());
+    m_data.insert(0, originPrefix.GetString().substr(0, originPrefix.CountLeadingWhiteSpaces()).c_str());
   }
 
   void Prefix::initWhitespace()
@@ -250,22 +243,27 @@ extern "C" {
     }
   }
 
-  std::shared_ptr<const Paragraph> CALWData::prevParagraph(const int currentPrefixLength) const
+  std::shared_ptr<const Paragraph> CALWData::prevParagraph() const
+  {
+    return (m_iActiveParagraphIndex > 0) ? m_paragraphs.at(m_iActiveParagraphIndex - 1) : nullptr;
+  }
+
+  std::shared_ptr<const Paragraph> CALWData::prevParagraphByPrefixLength(const int currentPrefixLength) const
   {
     int iActiveParagraphIndex = m_iActiveParagraphIndex - 1;
     int iMinLengthParagraphIndex = iActiveParagraphIndex;
     while ((iActiveParagraphIndex >= 0)
-          && (m_paragraphs.at(iActiveParagraphIndex)->prefix->GetLength() > currentPrefixLength))
+      && (m_paragraphs.at(iActiveParagraphIndex)->prefix->GetLength() > currentPrefixLength))
     {
       iMinLengthParagraphIndex = (m_paragraphs.at(iActiveParagraphIndex)->prefix->GetLength() < m_paragraphs.at(iMinLengthParagraphIndex)->prefix->GetLength())
         ? iActiveParagraphIndex : iMinLengthParagraphIndex;
       --iActiveParagraphIndex;
     }
     return (iActiveParagraphIndex >= 0)
-            ? m_paragraphs.at(iActiveParagraphIndex)
-            : (iMinLengthParagraphIndex >= 0)
-              ? m_paragraphs.at(iMinLengthParagraphIndex)
-              : nullptr;
+      ? m_paragraphs.at(iActiveParagraphIndex)
+      : (iMinLengthParagraphIndex >= 0)
+      ? m_paragraphs.at(iMinLengthParagraphIndex)
+      : nullptr;
   }
 
   CALWData::CALWData(const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3)
@@ -459,6 +457,8 @@ extern "C" {
   CLineAttribute CALWData::isCommentStyleOnNextLine(EncodingData* pED) const
   {
     int res = -1;
+    int leadingSpaces = 0;
+    int trailingSpaces = 0;
     char ch = TextBuffer_GetChar(&pED->m_tb);
     int iCharCount = TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0);
     if (GetTrailingEOLLength() > 0)
@@ -471,23 +471,29 @@ extern "C" {
     if (n2e_IsSingleLineCommentStyleAtPos(NULL, lexerId, iCommentOffset, pED))
     {
       const int iWhiteSpacesAfterComment = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCommentOffset);
+      leadingSpaces = iCommentOffset;
+      trailingSpaces = iWhiteSpacesAfterComment;
       res = iCommentOffset + iWhiteSpacesAfterComment;
     }
-    return res;
+    return { res, leadingSpaces, trailingSpaces };
   }
 
   CLineAttribute CALWData::isStaticMarkerOnNextLine(EncodingData* pED, const int _offset) const
   {
     int res = -1;
+    int leadingSpaces = 0;
+    int trailingSpaces = 0;
     int iOffset = _offset + GetTrailingEOLLength();
     int iCharsProcessed = iOffset + TextBuffer_CountWhiteSpaces(&pED->m_tb, iOffset);
     if (isStaticMarker(TextBuffer_GetCharAt(&pED->m_tb, iCharsProcessed)))
     {
+      leadingSpaces = iOffset;
       iCharsProcessed += 1; // static marker itself
-      iCharsProcessed += TextBuffer_CountWhiteSpaces(&pED->m_tb, iCharsProcessed);
+      trailingSpaces = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCharsProcessed);
+      iCharsProcessed += trailingSpaces;
       res = iCharsProcessed;
     }
-    return res;
+    return { res, leadingSpaces, trailingSpaces };
   }
 
   bool CALWData::saveCommentPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed)
@@ -514,6 +520,13 @@ extern "C" {
       }
       m_cp->prefix->SetInitialized();
       iCharsProcessed = m_cp->prefix->GetLength();
+      if (auto prevPar = prevParagraph())
+      {
+        if (prevPar->prefix->IsComment() == m_cp->prefix->IsComment())
+        {
+          m_cp->prefix->SetupLeadingWhiteSpaces(*prevPar->prefix);
+        }
+      }
     }
     return res;
   }
@@ -527,7 +540,9 @@ extern "C" {
     else
       res.isStaticMarker = isStaticMarkerOnNextLine(pED);
     int lineOffset = 0;
-    res.isEmptyLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &lineOffset) ? CLineAttribute(lineOffset + GetTrailingEOLLength()) : CLineAttribute();
+    res.isEmptyLine = TextBuffer_IsWhiteSpaceLine(&pED->m_tb, GetTrailingEOLLength(), &lineOffset)
+                        ? CLineAttribute(lineOffset + GetTrailingEOLLength(), lineOffset, 0)
+                        : CLineAttribute();
 
     return res;
   }
@@ -580,7 +595,9 @@ extern "C" {
       const TNextLineParams lineParams = checkNextLine(pED);
       if (lineParams.isComment
         && m_cp->prefix->IsComment()
-        && !m_cp->prefix->IsCommentedMarker())
+        && !m_cp->prefix->IsCommentedMarker()
+         && ((m_cp->prefix->CountTrailingWhiteSpaces() == lineParams.isComment.GetTrailingWhiteSpaces())
+           || TextBuffer_IsWhiteSpaceLine(&pED->m_tb, lineParams.isComment.GetOffset() - GetTrailingEOLLength(), nullptr)))
       {
         iCharsProcessed += lineParams.isComment.GetOffset();
         TextBuffer_OffsetPos(&pED->m_tb, lineParams.isComment.GetOffset());
@@ -600,7 +617,7 @@ extern "C" {
           if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_SPACE)
           {
             TextBuffer_PushChar(&pED->m_tbRes,
-              IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))
+              (IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1)) || (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_NEXT_PARAGRAPH))
               ? CHAR_FORCE_EOL_PROCESSED
               : CHAR_SPACE);
           }
@@ -620,20 +637,10 @@ extern "C" {
       {
         const auto prefixIsMarker = lineParams.isCommentedStaticMarker ? m_cp->prefix->IsCommentedMarker() : m_cp->prefix->IsMarker();
         const auto markerOffset = lineParams.isCommentedStaticMarker ? lineParams.isCommentedStaticMarker.GetOffset() : lineParams.isStaticMarker.GetOffset();
-        
-        if (prefixIsMarker && (markerOffset - GetTrailingEOLLength() == m_cp->prefix->GetLength()))
-        {
-          iCharsProcessed += markerOffset;
-          TextBuffer_OffsetPos(&pED->m_tb, markerOffset);
-
-          TextBuffer_PushChar(&pED->m_tbRes, CHAR_FORCE_EOL);
-        }
-        else
-        {
           bool processed = false;
           if (markerOffset - GetTrailingEOLLength() < m_cp->prefix->GetLength())
           {
-            const auto _prevParagraph = prevParagraph(markerOffset - GetTrailingEOLLength());
+          const auto _prevParagraph = prevParagraphByPrefixLength(markerOffset - GetTrailingEOLLength());
             const auto prevPrefix(_prevParagraph ? _prevParagraph->prefix : nullptr);
             const auto prevPrefixIsMarker = lineParams.isCommentedStaticMarker ? (prevPrefix && prevPrefix->IsCommentedMarker()) : (prevPrefix && prevPrefix->IsMarker());
             if (prefixIsMarker && prevPrefixIsMarker)
@@ -654,7 +661,6 @@ extern "C" {
           }
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_NEXT_PARAGRAPH);
         }
-      }
       else if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_FORCE_EOL)
       {
         const int iSkippedChars = GetTrailingEOLLength();
@@ -677,7 +683,8 @@ extern "C" {
         }
         else if (!lineParams.isComment && !lineParams.isStaticMarker && !lineParams.isEmptyLine
           && TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_NEXT_PARAGRAPH
-          && (m_cp->prefix->IsPlain() || (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))))
+          && (m_cp->prefix->IsPlain() && (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))))
+//        else if (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))
         {
           const int iSkippedChars = GetTrailingEOLLength();
           iCharsProcessed += iSkippedChars;
@@ -727,12 +734,32 @@ extern "C" {
     ++iLineIndex;
   }
 
+  int CALWData::addPrefix(const unsigned char ch, EncodingData* pED)    // returns actual prefix length
+  {
+    auto prefixLength = m_cp->prefix->GetLength();
+    if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED)
+      || ((ch == CHAR_NEXT_PARAGRAPH) && (TextBuffer_GetTailLength(&pED->m_tb) > 0) && TextBuffer_IsWhiteSpaceLine(&pED->m_tb, 0, nullptr)))//&& IsEOL(TextBuffer_GetCharAt(&pED->m_tb, 1))))
+    {
+      prefixLength -= m_cp->prefix->CountTrailingWhiteSpaces();
+    }
+    for (int i = 0; i < prefixLength; ++i)
+    {
+      TextBuffer_PushChar(&pED->m_tbRes, m_cp->prefix->GetChar(i, iLineIndex));
+      ++iLineOffset;
+    }
+    return prefixLength;
+  }
+
   BOOL CALWData::RunPass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
   {
     const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
 
     if (ch == CHAR_NEXT_PARAGRAPH)
     {
+      if ((pED->m_tb.m_iPos == 0) || (TextBuffer_GetCharAt(&pED->m_tb, -1) == CHAR_FORCE_EOL_PROCESSED))
+      {
+        addPrefix(ch, pED);
+      }
       addEOL(pED);
 
       TextBuffer_PopChar(&pED->m_tb);

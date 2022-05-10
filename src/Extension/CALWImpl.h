@@ -60,7 +60,9 @@ public:
   void Init(const Prefix& p);
   PrefixType GetType() const;
   void SetType(const PrefixType type);
+  int CountLeadingWhiteSpaces() const;
   int CountTrailingWhiteSpaces() const;
+  void SetupLeadingWhiteSpaces(const struct Prefix& originPrefix);
   std::string GetString() const;
   void SetString(const std::string s);
   void PushChar(const unsigned char ch);
@@ -83,11 +85,14 @@ class CLineAttribute
 {
 private:
   int offset = -1;
+  int leadingSpaces = 0;
+  int trailingSpaces = 0;
 public:
   CLineAttribute() {}
-  CLineAttribute(const int o) : offset(o) {}
+  CLineAttribute(const int o, const int ls, const int ts) : offset(o), leadingSpaces(ls), trailingSpaces(ts) {}
   operator bool() const { return offset >= 0; }
   int GetOffset() const { return offset; }
+  int GetTrailingWhiteSpaces() const { return trailingSpaces; }
 };
 
 struct TNextLineParams
@@ -122,10 +127,12 @@ protected:
 
   std::shared_ptr<Paragraph> addParagraph();
   std::shared_ptr<Paragraph> nextParagraph();
-  std::shared_ptr<const Paragraph> prevParagraph(const int currentPrefixLength) const;
+  std::shared_ptr<const Paragraph> prevParagraph() const;
+  std::shared_ptr<const Paragraph> prevParagraphByPrefixLength(const int currentPrefixLength) const;
   std::string readLinePrefix(EncodingData* pED, const char ch, const int count, bool& isCommentLine) const;
   BOOL updateCharsProcessed(long* piCharsProcessed, int iCharsProcessed) const;
   void addEOL(EncodingData* pED);
+  int addPrefix(const unsigned char ch, EncodingData* pED);
   
   BOOL IsEOL(const unsigned char ch) const;
   BOOL GetTrailingEOLLength() const;

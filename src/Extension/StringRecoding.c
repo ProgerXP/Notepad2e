@@ -20,8 +20,6 @@ int iRecodingBufferSizeMax = DEFAULT_RECODING_BUFFER_SIZE_MAX;
 
 #define HEX_DIGITS_UPPER  "0123456789ABCDEF"
 
-static LPCSTR lpstrWhiteSpaces = " \t";
-
 BOOL bBreakOnError = TRUE;
 
 BOOL n2e_IsUnicodeEncodingMode()
@@ -272,7 +270,10 @@ BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* pi
   while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
   {
     const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
-    if (IsEOLChar(_ch))
+    if (IsEOLChar(_ch)
+      || (_ch == CHAR_FORCE_EOL)
+      || (_ch == CHAR_FORCE_EOL_PROCESSED)
+      || (_ch == CHAR_NEXT_PARAGRAPH))
     {
       if (piLineLength)
       {
@@ -281,7 +282,7 @@ BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* pi
       return TRUE;
     }
     ++res;
-    if (strchr(" \t", _ch))
+    if (IsCharFromString(lpstrWhiteSpaces, _ch))
     {
       continue;
     }

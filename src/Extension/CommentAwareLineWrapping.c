@@ -9,17 +9,6 @@
 #include "SciLexer.h"
 #include "StringRecoding.h"
 
-static unsigned char CHAR_SPACE = ' ';
-static unsigned char CHAR_EOL_R = '\r';
-static unsigned char CHAR_EOL_N = '\n';
-static unsigned char CHAR_FORCE_EOL = '\a';
-static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
-static LPCSTR lpstrWhiteSpaces = " \t";
-static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
-static LPCSTR lpstrStaticMarkerChars = "#>=?*";
-static LPCSTR lpstrDynamicMarkerChars = ":).";
-static LPCSTR lpstrDigits = "0123456789";
-
 static HCALWData hcalwdata;
 
 void PrefixData_SetEmpty(PrefixData* pd)

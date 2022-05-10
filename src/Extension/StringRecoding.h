@@ -7,6 +7,19 @@ extern int RECODING_BUFFER_SIZE;
 extern int RECODING_BUFFER_SIZE_MAX;
 extern BOOL bBreakOnError;
 
+static unsigned char CHAR_SPACE = ' ';
+static unsigned char CHAR_EOL_R = '\r';
+static unsigned char CHAR_EOL_N = '\n';
+static unsigned char CHAR_FORCE_EOL = '\a';
+static unsigned char CHAR_FORCE_EOL_PROCESSED = '\b';
+static unsigned char CHAR_NEXT_PARAGRAPH = '\f';
+
+static LPCSTR lpstrWhiteSpaces = " \t";
+static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
+static LPCSTR lpstrStaticMarkerChars = ">=?*";        // #TODO: removed # (comment line in perl)
+static LPCSTR lpstrDynamicMarkerChars = ":).";
+static LPCSTR lpstrDigits = "0123456789";
+
 struct TTextBuffer
 {
   int m_iSize;
