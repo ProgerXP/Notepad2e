@@ -457,6 +457,12 @@ namespace Notepad2eTests
 
 #ifdef ENABLE_SHORT_TESTS
 /**/
+        CTestCaseData(false, "* it\n"
+                             "  em",
+              CPI_DEFAULT,
+                             "* it em",
+              false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
+
         CTestCaseData(false, "// * Lorem Ipsum",
                 CPI_DEFAULT,
                              "// * Lorem\n"
@@ -644,8 +650,7 @@ namespace Notepad2eTests
                              "ee",
                 CPI_DEFAULT,
                              "aa bb\r\n"
-                             "* cc\r\n"
-                             "  dd\r\n"
+                             "* cc dd\r\n"
                              "\r\n"
                              "ee",
                 false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }),
@@ -1028,8 +1033,7 @@ namespace Notepad2eTests
           CTestCaseData(false, "* item\n"
                                "  List:",
               CPI_DEFAULT,
-                               "* item\n"
-                               "  List:",
+                               "* item List:",
               false, 0, { 15, SCLEX_CPP, SC_EOL_LF }),
 
           CTestCaseData(false, "* item\n"

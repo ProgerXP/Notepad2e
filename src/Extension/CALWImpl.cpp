@@ -683,8 +683,10 @@ extern "C" {
         }
         else if (!lineParams.isComment && !lineParams.isStaticMarker && !lineParams.isEmptyLine
           && TextBuffer_GetCharAt(&pED->m_tbRes, -1) != CHAR_NEXT_PARAGRAPH
-          && (m_cp->prefix->IsPlain() && (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))))
-//        else if (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))
+          && (
+              (m_cp->prefix->IsPlain() || m_cp->prefix->IsMarkerStatic()) && (m_cp->prefix->GetLength() == TextBuffer_CountWhiteSpaces(&pED->m_tb, GetTrailingEOLLength()))
+            )
+          )
         {
           const int iSkippedChars = GetTrailingEOLLength();
           iCharsProcessed += iSkippedChars;
