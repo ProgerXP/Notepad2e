@@ -107,6 +107,7 @@ int TextBuffer_GetLineHeadLength(TextBuffer* pTB);
 int TextBuffer_GetTailLength(TextBuffer* pTB);
 int TextBuffer_GetLineTailLength(TextBuffer* pTB);
 int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount);
+int TextBuffer_GetWordRLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount);
 int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int iOffsetFrom);
 int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
 int TextBuffer_CountWhiteSpaces(TextBuffer* pTB, const int iOffsetFrom);

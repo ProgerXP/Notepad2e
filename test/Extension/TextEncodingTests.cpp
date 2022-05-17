@@ -857,6 +857,32 @@ namespace Notepad2eTests
                                "    * sub item\n"
                                "  * item 2",
               false, 0, { 24, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* *a *b",
+              CPI_DEFAULT,
+                               "* *a *b",
+              false, 0, { 5, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* *a *b",
+              CPI_DEFAULT,
+                               "* *a *b",
+              false, 0, { 3, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* a *b",
+              CPI_DEFAULT,
+                               "* a *b",
+              false, 0, { 5, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "* a b *c",
+              CPI_DEFAULT,
+                               "* a b *c",
+              false, 0, { 5, SCLEX_CPP, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "* a b *c",
+              CPI_DEFAULT,
+                               "* a\n"
+                               "  b *c",
+              false, 0, { 4, SCLEX_CPP, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS

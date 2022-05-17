@@ -787,6 +787,41 @@ extern "C" {
     auto prefixLength = m_cp->prefix->GetLength();
     if ((iLineOffset == 0) && (prefixLength > 0))
     {
+      if ((iLineIndex > 0) && isStaticMarker(ch))
+      {
+        TextBuffer_OffsetPos(&pED->m_tb, -1);
+        int iWordByteCountOrigin = 0;
+        TextBuffer_GetWordRLength(&pED->m_tb, iEncoding, &iWordByteCountOrigin);
+        TextBuffer_OffsetPos(&pED->m_tb, -iWordByteCountOrigin);
+        int iBackOffset = -(1 + iWordByteCountOrigin);
+
+        TextBuffer_OffsetPos(&pED->m_tbRes, -(1 + GetTrailingEOLLength()));
+        int iWordByteCount = 0;
+        TextBuffer_GetWordRLength(&pED->m_tbRes, iEncoding, &iWordByteCount);
+        TextBuffer_OffsetPos(&pED->m_tbRes, -iWordByteCount);
+        if (TextBuffer_GetLineHeadLength(&pED->m_tbRes) + iWordByteCount >= longLineLimit)
+        {
+          iLineOffset = TextBuffer_GetLineHeadLength(&pED->m_tbRes) + iWordByteCount;
+          TextBuffer_OffsetPos(&pED->m_tbRes, iWordByteCount);
+          TextBuffer_OffsetPos(&pED->m_tb, iWordByteCountOrigin);
+          TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
+          iBackOffset += iWordByteCountOrigin;
+        }
+        else
+        {
+          const auto lineIndexBackup = iLineIndex;
+          addEOL(pED);
+          iLineIndex = lineIndexBackup;
+        }
+        if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
+        {
+          TextBuffer_PopChar(&pED->m_tb);
+          ++iBackOffset;
+        }
+        
+        return updateCharsProcessed(piCharsProcessed, iBackOffset);
+      }
+
       if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED)
         || ((ch == CHAR_NEXT_PARAGRAPH) && (TextBuffer_GetTailLength(&pED->m_tb) > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tb, 1))))
       {
@@ -811,7 +846,7 @@ extern "C" {
     int iWordByteCount = 0;
     const int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
     if ((iWordCount == 0)
-        || (iLineOffset + iWordLength <= longLineLimit))
+        || (iLineOffset + iWordLength <= longLineLimit) || isStaticMarker(ch))
     {
       if (m_cp->prefix->IsMarker()
         && ((pED->m_tbRes.m_iPos > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))
@@ -915,29 +950,32 @@ extern "C" {
         && (iLineOffset >= longLineLimit)
         && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
     {
-      iLineOffset = 0;
-      iWordCount = 0;
-      if (!IsEOL(TextBuffer_GetChar(&pED->m_tb))
-        || m_cp->prefix->IsComment())
+      const auto chNext = TextBuffer_GetChar(&pED->m_tb);
+      if (!isStaticMarker(chNext))
       {
-        if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_SPACE)
+        iLineOffset = 0;
+        iWordCount = 0;
+        if (!IsEOL(TextBuffer_GetChar(&pED->m_tb))
+          || m_cp->prefix->IsComment())
         {
-          TextBuffer_DecPos(&pED->m_tbRes);
-        }
-        const auto chNext = TextBuffer_GetChar(&pED->m_tb);
-        if (chNext != CHAR_NEXT_PARAGRAPH)
-          addEOL(pED);
-        if (IsEOL(chNext))
-        {
-          const int offset = 1 + (((chNext == CHAR_FORCE_EOL) || (chNext == CHAR_FORCE_EOL_PROCESSED)) ? 0 : GetTrailingEOLLength());
-          TextBuffer_OffsetPos(&pED->m_tb, offset);
-          iCharsProcessed += offset;
-        }
-        // skip trailing space
-        else if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
-        {
-          TextBuffer_PopChar(&pED->m_tb);
-          ++iCharsProcessed;
+          if (TextBuffer_GetCharAt(&pED->m_tbRes, -1) == CHAR_SPACE)
+          {
+            TextBuffer_DecPos(&pED->m_tbRes);
+          }
+          if (chNext != CHAR_NEXT_PARAGRAPH)
+            addEOL(pED);
+          if (IsEOL(chNext))
+          {
+            const int offset = 1 + (((chNext == CHAR_FORCE_EOL) || (chNext == CHAR_FORCE_EOL_PROCESSED)) ? 0 : GetTrailingEOLLength());
+            TextBuffer_OffsetPos(&pED->m_tb, offset);
+            iCharsProcessed += offset;
+          }
+          // skip trailing space
+          else if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
+          {
+            TextBuffer_PopChar(&pED->m_tb);
+            ++iCharsProcessed;
+          }
         }
       }
     }

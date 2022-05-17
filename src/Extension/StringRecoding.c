@@ -202,6 +202,32 @@ int TextBuffer_GetWordLength(TextBuffer* pTB, const int _iEncoding, int *piByteC
   }
 }
 
+char* strrpbrk(const char* strBegin, const char* strEnd, const char* accept)
+{
+  while (strEnd >= strBegin)
+  {
+    const char *a = accept;
+    while (*a != '\0')
+      if (*a++ == *strEnd)
+        return (char *)strEnd;
+    --strEnd;
+  }
+  return NULL;
+}
+
+int TextBuffer_GetWordRLength(TextBuffer* pTB, const int _iEncoding, int *piByteCount)
+{
+  const LPSTR pSpace = strrpbrk(pTB->m_ptr, pTB->m_ptr + pTB->m_iPos - 1, " \t\r\n\a\b\f");
+  if (pSpace)
+  {
+    return TextLengthInChars(pSpace, pTB->m_ptr + pTB->m_iPos, _iEncoding, piByteCount);
+  }
+  else
+  {
+    return TextLengthInChars(pTB->m_ptr, pTB->m_ptr + pTB->m_iPos, _iEncoding, piByteCount);
+  }
+}
+
 int TextBuffer_GetCharSequenceLength(TextBuffer* pTB, const char ch, const int iOffsetFrom)
 {
   int res = 0;
