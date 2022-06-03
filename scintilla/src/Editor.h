@@ -437,6 +437,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NotifyDwelling(Point pt, bool state);
 	void NotifyZoom();
 	void NotifyLineCountChanged();
+	void NotifyDropCompleted();
 
 	void NotifyModifyAttempt(Document *document, void *userData) override;
 	void NotifySavePoint(Document *document, void *userData, bool atSavePoint) override;

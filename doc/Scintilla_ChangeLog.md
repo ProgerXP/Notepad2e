@@ -1083,3 +1083,45 @@ Replace SCI_LINEDELETE handler:
 /**Ctrl+Shift+D - affect selected lines #354**
 
 ---
+**Focus target split view after drag & drop between views #406**
+
+New notification code added:
+
+[scintilla/include/Scintilla.h]
+```
+#define SCN_DROPCOMPLETED 2035
+```
+
+New notification proc added:
+
+[scintilla/src/Editor.h]
+```
+void NotifyDropCompleted();
+```
+
+[scintilla/src/Editor.cxx]
+```
+void Editor::NotifyDropCompleted()
+{
+  SCNotification scn = { 0 };
+  scn.nmhdr.code = SCN_DROPCOMPLETED;
+  NotifyParent(scn);
+}
+```
+
+Corresponding call added to ```Editor::DropAt()```:
+```
+	if ((inDragDrop != ddDragging) || !(positionWasInSelection) ||
+	        (positionOnEdgeOfSelection && !moving)) {
+		...
+		NotifyDropCompleted();
+		...
+
+	} else if (inDragDrop == ddDragging) {
+		SetEmptySelection(position);
+	}
+```
+
+/**Focus target split view after drag & drop between views #406**
+
+---

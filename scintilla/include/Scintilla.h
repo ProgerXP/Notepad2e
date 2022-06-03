@@ -1150,6 +1150,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCN_AUTOCSELECTIONCHANGE 2032
 #define SCN_CARETMOVED 2033
 #define SCN_LINECOUNTCHANGED  2034
+#define SCN_DROPCOMPLETED 2035
 #ifndef SCI_DISABLE_PROVISIONAL
 #define SC_LINECHARACTERINDEX_NONE 0
 #define SC_LINECHARACTERINDEX_UTF32 1

@@ -5552,6 +5552,11 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
         case SCN_LINECOUNTCHANGED:
           VIEW_COMMAND(UpdateLineNumberWidth);
           break;
+
+        // [2e]: Focus target split view after drag & drop between views #406
+        case SCN_DROPCOMPLETED:
+          SetFocus(hwndFrom);
+          break;
         // [/2e]
       }
       n2e_SelectionNotificationHandler(hwndFrom, pnmh->code, scn);

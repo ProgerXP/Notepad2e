@@ -128,6 +128,7 @@ void EditInit(HWND);
 void UpdateStatusbar();
 void UpdateToolbar();
 void UpdateLineNumberWidth(HWND);
+void OnDropCompleted(HWND);
 void SetWordWrap(HWND);
 void SetSelectEx(HWND);
 void SetLongLineMarker(HWND);

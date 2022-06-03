@@ -2540,6 +2540,13 @@ void Editor::NotifyLineCountChanged()
 	NotifyParent(scn);
 }
 
+void Editor::NotifyDropCompleted()
+{
+	SCNotification scn = { 0 };
+	scn.nmhdr.code = SCN_DROPCOMPLETED;
+	NotifyParent(scn);
+}
+
 // Notifications from document
 void Editor::NotifyModifyAttempt(Document *, void *) {
 	//Platform::DebugPrintf("** Modify Attempt\n");
@@ -4423,6 +4430,7 @@ void Editor::DropAt(SelectionPosition position, const char *value, size_t length
 				SetSelection(posAfterInsertion, position);
 			}
 		}
+		NotifyDropCompleted();
 		if (pdoc->LinesTotal() != linesTotal) {
 			NotifyLineCountChanged();
 		}
