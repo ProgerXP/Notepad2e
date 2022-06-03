@@ -1,9 +1,5 @@
 #pragma once
-
-struct TEncodingData;
-typedef struct TEncodingData EncodingData;
-struct TRecodingAlgorithm;
-typedef struct TRecodingAlgorithm RecodingAlgorithm;
+#include "StringRecoding-fwd.h"
 
 BOOL QP_IsValidSequence(EncodingData* pED, const int requiredChars);
 LPVOID QP_InitAlgorithmData(const BOOL isEncoding);
@@ -15,8 +11,10 @@ BOOL QP_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed
 extern "C" { // C-Declarations
 #endif //__cplusplus
 
-  LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength);
-  LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength);
+  LPCSTR EncodeStringToQP(LPCSTR text, const int textLength, const int encoding,
+    const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength);
+  LPCSTR DecodeQPToString(LPCSTR text, const int textLength, const int encoding,
+    const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength);
   void EncodeStrToQP(const HWND hwnd);
   void DecodeQPToStr(const HWND hwnd);
 

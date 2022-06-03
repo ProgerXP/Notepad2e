@@ -438,6 +438,21 @@
     <ClInclude Include="src\Extension\ViewHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\CommentAwareLineWrapping.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\LexerUtils.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\Lexers.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\CALWImpl.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Extension\CALWInterface.h">
+      <Filter>Header Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -1099,6 +1114,21 @@
     </ClCompile>
     <ClCompile Include="src\Extension\SplitterWnd.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\CommentAwareLineWrapping.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\LexerUtils.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\Lexers.c">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\CALWImpl.cpp">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\CALWInterface.cpp">
+      <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

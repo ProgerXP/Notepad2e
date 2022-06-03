@@ -1,9 +1,14 @@
 #include "Externals.h"
+#include "SciLexer.h"
 #include  <assert.h>
+#include  "LexerUtils.h"
+#include  "StringRecoding.h"
 
 #ifdef N2E_TESTING
 
 int iEncoding = CPI_DEFAULT;
+int iLongLinesLimit = 80;
+int iEOLMode = SC_EOL_CRLF;
 
 // Code duplication for mEncoding:
 // https://github.com/ProgerXP/Notepad2e/issues/118#issuecomment-353869333
@@ -102,6 +107,14 @@ void n2e_HideProgressBarInStatusBar()
 void n2e_IncProgressBarPosInStatusBar(const long nOffset) 
 {
 }
+
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
+{
+  return (iLexer != SCLEX_NULL)
+    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer));
+}
+
+void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos) {}
 
 WCHAR szIniFile[MAX_PATH];
 

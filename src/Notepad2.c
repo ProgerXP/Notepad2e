@@ -42,6 +42,8 @@
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
+#include "Extension/Lexers.h"
+#include "Extension/LexerUtils.h"
 #include "Extension/MainWndHelper.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/InlineProgressBarCtrl.h"
@@ -2094,7 +2096,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CloseClipboard();
 
   EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
-  EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i);
+  EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i || bExtendedSplitLines);
   EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
   EnableCmd(hmenu, IDM_EDIT_SENTENCECASE, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS, i);
@@ -2115,12 +2117,9 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_QPENCODE, i3);
   EnableCmd(hmenu, IDM_EDIT_QPDECODE, i3);
   EnableCmd(hmenu, IDM_VIEW_SHOWEXCERPT, i);
-  i = (int)SendMessage(hwndEdit, SCI_GETLEXER, 0, 0);
-  EnableCmd(hmenu, IDM_EDIT_LINECOMMENT, !(i == SCLEX_NULL || i == SCLEX_DIFF));
-  EnableCmd(hmenu, IDM_EDIT_STREAMCOMMENT,
-            !(i == SCLEX_NULL || i == SCLEX_VBSCRIPT || i == SCLEX_MAKEFILE || i == SCLEX_VB || i == SCLEX_ASM ||
-              i == SCLEX_SQL || i == SCLEX_PERL || i == SCLEX_PYTHON || i == SCLEX_PROPERTIES || i == SCLEX_CONF ||
-              i == SCLEX_POWERSHELL || i == SCLEX_BATCH || i == SCLEX_DIFF));
+  const COMMENTINFO* pCommentInfo = n2e_GetCommentInfo(SendMessage(hwndEdit, SCI_GETLEXER, 0, 0));
+  EnableCmd(hmenu, IDM_EDIT_LINECOMMENT, wcslen(pCommentInfo->pszLineCommentW) > 0);
+  EnableCmd(hmenu, IDM_EDIT_STREAMCOMMENT, wcslen(pCommentInfo->pszStreamStartW) > 0);
   EnableCmd(hmenu, IDM_EDIT_INSERT_ENCODING, *mEncoding[iEncoding].pszParseNames);
   i = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
   EnableCmd(hmenu, IDM_EDIT_FIND, i);
@@ -3282,8 +3281,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_SPLITLINES:
       BeginWaitCursor();
-      SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
-      SendMessage(hwndEdit, SCI_LINESSPLIT, 0, 0);
+      // [2e]: Change Ctrl+I to perform comment-aware line wrapping #320
+      if (bExtendedSplitLines)
+      {
+        n2e_SplitLines(hwndEdit);
+      }
+      else
+      {
+        SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
+        SendMessage(hwndEdit, SCI_LINESSPLIT, 0, 0);
+      }
       EndWaitCursor();
       break;
 
@@ -3487,90 +3494,28 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_LINECOMMENT:
-      switch (SendMessage(hwndEdit, SCI_GETLEXER, 0, 0))
       {
-        case SCLEX_NULL:
-        case SCLEX_DIFF:
-          break;
-        case SCLEX_HTML:
-        case SCLEX_XML:
-        case SCLEX_CPP:
-        // [2e]: CSS syntax scheme improvements #4
-        case SCLEX_CSS:
-        case SCLEX_PASCAL:
-          BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L"//", FALSE);
-          EndWaitCursor();
-          break;
-        case SCLEX_VBSCRIPT:
-        case SCLEX_VB:
-          BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L"'", FALSE);
-          EndWaitCursor();
-          break;
-        case SCLEX_MAKEFILE:
-        case SCLEX_PERL:
-        case SCLEX_PYTHON:
-        case SCLEX_CONF:
-        case SCLEX_POWERSHELL:
-          BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L"#", TRUE);
-          EndWaitCursor();
-          break;
+        const COMMENTINFO* pCommentInfo = n2e_GetCommentInfo(SendMessage(hwndEdit, SCI_GETLEXER, 0, 0));
+        if (wcslen(pCommentInfo->pszLineCommentW) > 0)
+        {
         case SCLEX_AHK:
-        case SCLEX_ASM:
-        case SCLEX_PROPERTIES:
           BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L";", TRUE);
+          EditToggleLineComments(hwndEdit, pCommentInfo->pszLineCommentW, pCommentInfo->bInsertLineCommentAtLineStart);
           EndWaitCursor();
-          break;
-        case SCLEX_SQL:
-        // [2e]: Lua comments #111
-        case SCLEX_LUA:
-          BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L"--", TRUE);
-          EndWaitCursor();
-          break;
-        case SCLEX_BATCH:
-          BeginWaitCursor();
-          EditToggleLineComments(hwndEdit, L"rem ", TRUE);
-          EndWaitCursor();
-          break;
+        }
       }
       break;
 
 
     case IDM_EDIT_STREAMCOMMENT:
-      switch (SendMessage(hwndEdit, SCI_GETLEXER, 0, 0))
       {
-        case SCLEX_NULL:
-        case SCLEX_VBSCRIPT:
-        case SCLEX_MAKEFILE:
-        case SCLEX_VB:
-        case SCLEX_ASM:
-        case SCLEX_SQL:
-        case SCLEX_PERL:
-        case SCLEX_PYTHON:
-        case SCLEX_PROPERTIES:
-        case SCLEX_CONF:
-        case SCLEX_POWERSHELL:
-        case SCLEX_BATCH:
-        case SCLEX_DIFF:
-          break;
-        case SCLEX_HTML:
-        case SCLEX_XML:
-        case SCLEX_CSS:
-        case SCLEX_CPP:
-          EditEncloseSelection(hwndEdit, L"/*", L"*/");
-          break;
-        case SCLEX_PASCAL:
-          EditEncloseSelection(hwndEdit, L"{", L"}");
-          break;
-        // [2e]: Lua comments #111
-        case SCLEX_LUA:
-          EditEncloseSelection(hwndEdit, L"--[[", L"]]");
-          break;
-        // [/2e]
+        const COMMENTINFO* pCommentInfo = n2e_GetCommentInfo(SendMessage(hwndEdit, SCI_GETLEXER, 0, 0));
+        if (wcslen(pCommentInfo->pszStreamStartW) > 0)
+        {
+          BeginWaitCursor();
+          EditEncloseSelection(hwndEdit, pCommentInfo->pszStreamStartW, pCommentInfo->pszStreamEndW);
+          EndWaitCursor();
+        }
       }
       break;
 

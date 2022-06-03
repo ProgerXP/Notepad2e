@@ -178,10 +178,11 @@ BOOL Base64_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProce
   return TRUE;
 }
 
-LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encoding,
+  const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE, additionalData1, additionalData2, additionalData3);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -189,10 +190,11 @@ LPCSTR EncodeStringToBase64(LPCSTR text, const int textLength, const int encodin
   return ss.result;
 }
 
-LPCSTR DecodeBase64ToString(LPCSTR text, const int textLength, const int encoding, const int bufferSize, int* pResultLength)
+LPCSTR DecodeBase64ToString(LPCSTR text, const int textLength, const int encoding,
+  const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultLength)
 {
   iEncoding = encoding;
-  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE, additionalData1, additionalData2, additionalData3);
   StringSource_InitFromString(&ss, text, textLength);
   Recode_Run(&ra, &ss, bufferSize);
   RecodingAlgorithm_Release(&ra);
@@ -202,7 +204,7 @@ LPCSTR DecodeBase64ToString(LPCSTR text, const int textLength, const int encodin
 
 void EncodeStrToBase64(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, TRUE, 0, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
@@ -210,7 +212,7 @@ void EncodeStrToBase64(const HWND hwnd)
 
 void DecodeBase64ToStr(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE);
+  RecodingAlgorithm_Init(&ra, ERT_BASE64, FALSE, 0, 0, 0);
   StringSource_InitFromHWND(&ss, hwnd);
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);

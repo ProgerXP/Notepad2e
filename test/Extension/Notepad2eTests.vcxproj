@@ -92,7 +92,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\src\Extension\CALWImpl.h" />
+    <ClInclude Include="..\..\src\Extension\CALWInterface.h" />
     <ClInclude Include="..\..\src\Extension\CommonUtils.h" />
+    <ClInclude Include="..\..\src\Extension\CommentAwareLineWrapping.h" />
     <ClInclude Include="..\..\src\Extension\Externals.h" />
     <ClInclude Include="..\..\src\Extension\StringRecoding.h" />
     <ClInclude Include="..\..\src\Extension\StrToBase64.h" />
@@ -105,6 +108,16 @@
     <ClInclude Include="TextEncodingTestCaseData.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\Extension\CALWImpl.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\CALWInterface.cpp">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\CommentAwareLineWrapping.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="..\..\src\Extension\CommonUtils.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>
@@ -138,6 +151,14 @@
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\Trace.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\Lexers.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\LexerUtils.c">
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>

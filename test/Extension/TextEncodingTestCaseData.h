@@ -2,6 +2,7 @@
 #include <wtypes.h>
 #include <string>
 #include <vector>
+#include <tuple>
 
 #define CPI_WINDOWS_1251 30   // code page index in NP2ENCODING mEncoding[]-array
 #define CPI_WINDOWS_1250 19
@@ -29,6 +30,8 @@ static std::string StringFromVector(std::vector<unsigned char> v)
   return std::string((LPCSTR)v.data(), v.size());
 }
 
+typedef std::tuple<int, int, int> TData;
+
 class CTestCaseData
 {
 private:
@@ -39,27 +42,28 @@ private:
   bool isDecodeOnly;              // result sample is impure, data is for decoding test only
                                   // sufficient buffer size for decoder is required
   int iDecodeOnlyMinBufferSize;
+  TData tupleAdditionalData;
 public:
   CTestCaseData(const bool file, const std::string& src, const int encoding, const std::string& res, 
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {})
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
   {
     vectorSource = VectorFromString(src.c_str());
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::vector<unsigned char> src, const int encoding, const std::string res,
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {})
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
   {
     vectorSource = src;
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res,
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {})
     : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
   {
     vectorSource = VectorFromString(UCS2toUTF8(src).c_str());
     vectorExpectedResult = VectorFromString(res.c_str());
@@ -74,4 +78,5 @@ public:
   const std::vector<unsigned char>& GetPlainResult() const;
   std::vector<unsigned char> GetExpectedResultText() const;
   std::wstring GetEncodingName() const;
+  TData GetAdditionalData() const;
 };

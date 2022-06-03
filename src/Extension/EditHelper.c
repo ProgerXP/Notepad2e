@@ -1,11 +1,13 @@
 #include "EditHelper.h"
 #include <cassert>
 #include "CommonUtils.h"
+#include "CommentAwareLineWrapping.h"
 #include "Dialogs.h"
 #include "EditHelperEx.h"
 #include "Helpers.h"
 #include "Edit.h"
 #include "ExtSelection.h"
+#include "LexerUtils.h"
 #include "Notepad2.h"
 #include "resource.h"
 #include "SciCall.h"
@@ -37,6 +39,15 @@ extern int iOpenSaveFilterIndex;
 extern BOOL bAlwaysOnTop;
 extern int flagAlwaysOnTop;
 extern PEDITLEXER pLexCurrent;
+
+void n2e_SplitLines(const HWND hwnd)
+{
+  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+  {
+    return;
+  }
+  EncodeStrWithCALW(hwnd);
+}
 
 BOOL n2e_JoinLines_InitSelection()
 {
@@ -301,6 +312,18 @@ BOOL n2e_IsCommentStyleById(const int iStyle)
 BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
 {
   return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
+}
+
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
+{
+  const int iTestPos = pED->m_tr.m_iSelStart + pED->m_tb.m_iPos + iPos;
+  const HWND _hwnd = hwnd ? hwnd : hwndEdit;
+  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, iTestPos, 0);
+  const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
+  return (pStyle
+            && (StrStrI(pStyle->pszName, L"comment") != NULL)
+            && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle));
+    //|| (SciCall_GetLength() == iTestPos);
 }
 
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd)

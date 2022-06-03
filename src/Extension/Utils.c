@@ -47,6 +47,8 @@
 #define INI_SETTING_TREAT_QUOTES_AS_BRACES L"TreatQuotesAsBraces"
 #define INI_SETTING_USE_DIRECTWRITE L"UseDirectWrite"
 #define INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND L"SkipFileSavePromptOnNewWindowCommand"
+#define INI_SETTING_SPLIT_LINES L"SplitLines"
+
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
 #endif
@@ -85,6 +87,8 @@ BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 BOOL bUseDirectWrite = TRUE;
 BOOL bSkipFileSavePromptOnNewWindowCommand = FALSE;
+BOOL bExtendedSplitLines = TRUE;
+
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
 BOOL bLPegEnabled = FALSE;
@@ -483,6 +487,7 @@ void n2e_LoadINI()
   bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
   bSkipFileSavePromptOnNewWindowCommand = IniGetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
+  bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -574,6 +579,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 #endif
@@ -1087,11 +1093,6 @@ LPCWSTR n2e_GetExePath()
     }
   }
   return tchExePath;
-}
-
-inline BOOL IsEOLChar(const char ch)
-{
-  return (ch == '\r') || (ch == '\n');
 }
 
 BOOL n2e_Grep(void* _lpf, const BOOL grep)

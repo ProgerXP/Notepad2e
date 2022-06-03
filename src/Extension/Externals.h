@@ -1,12 +1,18 @@
 #pragma once
 #include <wtypes.h>
+#include "Extension/Lexers.h"
+#include "Extension/StringRecoding-fwd.h"
 #include "Scintilla.h"
+#include "Styles.h"
 
 extern HWND hwndEdit;
 extern int iEncoding;
 extern int iEOLMode;
 extern DWORD dwLastIOError;
+extern int iLongLinesLimit;
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
+void EditSelectEx(HWND, int, int);
 
 #ifndef N2E_TESTING
 
@@ -14,10 +20,13 @@ BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 #include "Utils.h"
 extern NP2ENCODING mEncoding[];
 extern HANDLE g_hScintilla;
+extern PEDITLEXER pLexCurrent;
 
 #else // ifndef N2E_TESTING
 
 #include <wtypes.h>
+
+extern PEDITLEXER pLexCurrent;
 
 #define NCP_DEFAULT            1
 #define NCP_UTF8               2
