@@ -6,7 +6,9 @@ LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalD
 void CALW_ReleaseAlgorithmData(LPVOID pData);
 BOOL CALW_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
 BOOL CALW_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
-void CALW_InitPass(RecodingAlgorithm* pRA, const int iPassIndex);
+void CALW_InitPass(RecodingAlgorithm* pRA);
+BOOL CALW_CanUseHWNDForReading(const RecodingAlgorithm* pRA);
+BOOL CALW_CanUseHWNDForWriting(const RecodingAlgorithm* pRA);
 
 #ifdef __cplusplus
 extern "C" { // C-Declarations

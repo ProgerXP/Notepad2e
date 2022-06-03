@@ -96,6 +96,7 @@ LPVOID CALW_InitAlgorithmData(const int iAdditionalData1, const int iAdditionalD
 
 void CALW_ReleaseAlgorithmData(LPVOID pData)
 {
+  CALW_Free(hcalwdata);
 }
 
 BOOL CALW_Encode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
@@ -108,9 +109,19 @@ BOOL CALW_Decode(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcess
   return FALSE;
 }
 
-void CALW_InitPass(RecodingAlgorithm* pRA, const int iPassIndex)
+void CALW_InitPass(RecodingAlgorithm* pRA)
 {
-  CALW_InitPassImpl(hcalwdata, pRA, iPassIndex);
+  CALW_InitPassImpl(hcalwdata, pRA);
+}
+
+BOOL CALW_CanUseHWNDForReading(const RecodingAlgorithm* pRA)
+{
+  return CALW_CanUseHWNDForReadingImpl(hcalwdata, pRA);
+}
+
+BOOL CALW_CanUseHWNDForWriting(const RecodingAlgorithm* pRA)
+{
+  return CALW_CanUseHWNDForWritingImpl(hcalwdata, pRA);
 }
 
 static StringSource ss = { 0 };
@@ -130,8 +141,8 @@ LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encodin
 
 void EncodeStrWithCALW(const HWND hwnd)
 {
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer, iEOLMode);
   StringSource_InitFromHWND(&ss, hwnd);
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer, MAKEWPARAM(iEOLMode, StringSource_GetSelectionStart(&ss) == StringSource_GetSelectionEnd(&ss)));
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
 }

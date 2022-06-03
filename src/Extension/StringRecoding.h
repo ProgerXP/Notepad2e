@@ -34,10 +34,11 @@ struct TTextRange
   HWND m_hwnd;
   long m_iSelStart;
   long m_iSelEnd;
+  long m_iSelEndOriginal;
   long m_iPositionStart;
   long m_iPositionCurrent;
   long m_iExpectedProcessedChars;
-  BOOL m_emptyOritinalSelection;
+  BOOL m_emptyOriginalSelection;
 };
 typedef struct TTextRange TextRange;
 
@@ -65,7 +66,7 @@ typedef struct TStringSource StringSource;
 typedef int(*ExpectedResultLengthMethod)(const BOOL isEncoding, const int originalLength);
 typedef BOOL(*IsValidStrSequence)(EncodingData* pED, const int requiredChars);
 typedef BOOL(*RecodeMethod)(LPVOID pRA, EncodingData* pED, long* piCharsProcessed);
-typedef void(*InitPassMethod)(LPVOID pRA, const int iPassIndex);
+typedef void(*InitPassMethod)(LPVOID pRA);
 
 struct TRecodingAlgorithm
 {
@@ -86,6 +87,10 @@ struct TRecodingAlgorithm
   InitPassMethod pInitPassMethod;
   wchar_t statusText[MAX_PATH];
   LPVOID data;
+  int iResultStart;
+  int iResultEnd;
+  int iResultEndBackup;
+  int iResultSelEnd;
 };
 typedef struct TRecodingAlgorithm RecodingAlgorithm;
 
@@ -140,6 +145,10 @@ typedef enum _ERecodingType
   ERT_CALW
 } ERecodingType;
 
+BOOL RecodingAlgorithm_ShouldBreak(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_ShouldBreakEncoding(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_CanUseHWNDForReading(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_CanUseHWNDForWriting(const RecodingAlgorithm* pRA);
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt,
   const BOOL isEncoding, const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3);
 BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);
@@ -151,9 +160,9 @@ long StringSource_GetSelectionEnd(const StringSource* pSS);
 long StringSource_GetLineStart(const StringSource* pSS, const int iPos);
 long StringSource_GetLineEnd(const StringSource* pSS, const int iPos);
 long StringSource_GetLength(const StringSource* pSS);
-char StringSource_GetCharAt(const StringSource* pSS, const int iPos);
-long StringSource_IsDataPortionAvailable(const StringSource* pSS, EncodingData* pED);
-BOOL StringSource_GetText(StringSource* pSS, LPSTR pText, const long iStart, const long iEnd);
+char StringSource_GetCharAt(const StringSource* pSS, const RecodingAlgorithm* pRA, const int iPos);
+long StringSource_IsDataPortionAvailable(const StringSource* pSS, const RecodingAlgorithm* pRA, EncodingData* pED);
+BOOL StringSource_GetText(StringSource* pSS, const RecodingAlgorithm* pRA, LPSTR pText, const long iStart, const long iEnd);
 
 void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize);
 BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, EncodingData* pED);
@@ -161,3 +170,4 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
 BOOL IsCharFromString(LPCSTR lpstrSample, const unsigned char ch);
 BOOL IsEOLChar(const unsigned char ch);
 BOOL IsTrailingEOL(const int eolMode, const unsigned char ch, TextBuffer* pTB);
+BOOL GetTrailingEOLLength(const int eolMode);

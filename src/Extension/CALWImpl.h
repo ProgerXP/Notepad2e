@@ -79,6 +79,10 @@ struct Paragraph
   static std::shared_ptr<Prefix> createPrefix();
 
   std::shared_ptr<Prefix> prefix;
+  std::map<int, int> mapCharOffset;
+
+  void SaveOffset(const int offset, const int offsetOrigin);
+  int FindOffset(const int offset) const;
 };
 
 class CLineAttribute
@@ -118,6 +122,7 @@ public:
   int iWordCount = 0;
   int iSingleLineCommentPrefixLength = 0;
   int iLineIndex = 0;                       // line index within paragraph
+  bool breakOnEOL = false;
 
 protected:
   std::vector<std::shared_ptr<Paragraph>> m_paragraphs;
@@ -148,11 +153,12 @@ protected:
   bool saveDynamicMarkerPrefix(EncodingData* pED, int& iCharsProcessed);
   bool saveCommentPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed);
 
+  void saveResultEnd(RecodingAlgorithm* pRA, EncodingData* pED, const int offset) const;
+
 public:
   CALWData(const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3);
 
-  void InitPass(LPVOID pRA, const int iPassIndex);
+  void InitPass(RecodingAlgorithm* pRA);
   BOOL RunPass0(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
   BOOL RunPass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
-  BOOL RunPass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed);
 };

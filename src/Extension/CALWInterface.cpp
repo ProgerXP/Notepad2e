@@ -16,9 +16,19 @@ void CALW_Free(HCALWData h)
   delete h;
 }
 
-void CALW_InitPassImpl(HCALWData h, RecodingAlgorithm* pRA, const int iPassIndex)
+void CALW_InitPassImpl(HCALWData h, RecodingAlgorithm* pRA)
 {
-  h->InitPass(pRA, iPassIndex);
+  h->InitPass(pRA);
+}
+
+BOOL CALW_CanUseHWNDForReadingImpl(HCALWData h, const RecodingAlgorithm* pRA)
+{
+  return (pRA->iPassIndex == 0);
+}
+
+BOOL CALW_CanUseHWNDForWritingImpl(HCALWData h, const RecodingAlgorithm* pRA)
+{
+  return (pRA->iPassIndex == pRA->iPassCount - 1);
 }
 
 BOOL CALW_Run(HCALWData h, RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
@@ -29,8 +39,6 @@ BOOL CALW_Run(HCALWData h, RecodingAlgorithm* pRA, EncodingData* pED, long* piCh
     return h->RunPass0(pRA, pED, piCharsProcessed);
   case 1:
     return h->RunPass1(pRA, pED, piCharsProcessed);
-  case 2:
-    return h->RunPass2(pRA, pED, piCharsProcessed);
   default:
     return FALSE;
   }

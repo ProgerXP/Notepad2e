@@ -199,6 +199,17 @@ extern "C" {
 
   Paragraph::Paragraph() : prefix(createPrefix()){}
 
+  void Paragraph::SaveOffset(const int offset, const int offsetOrigin)
+  {
+    mapCharOffset[offset] = offsetOrigin;
+  }
+
+  int Paragraph::FindOffset(const int offset) const
+  {
+    const auto it = mapCharOffset.find(offset);
+    return (it != mapCharOffset.cend()) ? it->second : -1;
+  }
+
   BOOL CALWData::updateCharsProcessed(long* piCharsProcessed, const int iCharCount) const
   {
     if (piCharsProcessed)
@@ -210,16 +221,7 @@ extern "C" {
 
   BOOL CALWData::GetTrailingEOLLength() const
   {
-    switch (iEOLMode)
-    {
-    case SC_EOL_CRLF:
-      return 1;
-    case SC_EOL_LF:
-    case SC_EOL_CR:
-      return 0;
-    }
-    assert(0);
-    return 0;
+    return ::GetTrailingEOLLength(iEOLMode);
   }
 
   std::shared_ptr<Paragraph> CALWData::addParagraph()
@@ -270,7 +272,8 @@ extern "C" {
   {
     longLineLimit = iAdditionalData1;
     lexerId = iAdditionalData2;
-    iEOLMode = iAdditionalData3;
+    iEOLMode = LOWORD(iAdditionalData3);
+    breakOnEOL = HIWORD(iAdditionalData3);
     iTrailingEOLLength = GetTrailingEOLLength();
     iSingleLineCommentPrefixLength = n2e_GetSingleLineCommentPrefixLength(lexerId);
     for (int i = 0; i < 3; ++i)
@@ -298,33 +301,11 @@ extern "C" {
     return FALSE;
   }
 
-  void CALWData::InitPass(LPVOID pRA, const int /*iPassIndex*/)
+  void CALWData::InitPass(RecodingAlgorithm* pRA)
   {
+    pRA->iResultEnd = 0;
     m_iActiveParagraphIndex = 0;
     m_cp = (m_paragraphs.size() > 0) ? *m_paragraphs.cbegin() : nullptr;
-  }
-
-  BOOL CALWData::RunPass0(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
-  {
-    const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
-    int iCharCount = 1 + (!IsTrailingEOL(iEOLMode, ch, &pED->m_tb) ? TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 0) : 0);
-    BOOL skipChars = FALSE;
-
-    if (!skipChars)
-    {
-      for (int i = 0; i < iCharCount; ++i)
-      {
-        TextBuffer_PushChar(&pED->m_tbRes, ch);
-      }
-      TextBuffer_OffsetPos(&pED->m_tb, iCharCount - 1);
-    }
-
-    if (IsTrailingEOL(iEOLMode, ch, &pED->m_tb) && !skipChars)
-    {
-      ++ps[pRA->iPassIndex].relativeLineIndex;
-    }
-
-    return updateCharsProcessed(piCharsProcessed, iCharCount);
   }
 
   std::string CALWData::readLinePrefix(EncodingData* pED, const char ch, const int count, bool& isCommentLine) const
@@ -547,7 +528,7 @@ extern "C" {
     return res;
   }
   
-  BOOL CALWData::RunPass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
+  BOOL CALWData::RunPass0(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
   {
     BOOL skipChars = FALSE;
     const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
@@ -720,6 +701,20 @@ extern "C" {
       skipChars = TRUE;
     }
 
+    if (breakOnEOL)
+    {
+      if (m_iActiveParagraphIndex < 2)
+      {
+        m_cp->SaveOffset(pED->m_tbRes.m_iPos, pED->m_tr.m_iSelStart + pED->m_tb.m_iPos - (skipChars ? 0 : 1));
+      }
+      else
+      {
+        pED->m_tr.m_iPositionCurrent = pED->m_tr.m_iSelEnd;
+        pRA->iResultEnd = 1;
+        skipChars = TRUE;
+      }
+    }
+
     if (!skipChars)
     {
       for (int i = 0; i < iCharCount; ++i)
@@ -756,7 +751,15 @@ extern "C" {
     return prefixLength;
   }
 
-  BOOL CALWData::RunPass2(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
+  void CALWData::saveResultEnd(RecodingAlgorithm* pRA, EncodingData* pED, const int offset) const
+  {
+    auto res = m_cp->FindOffset(pED->m_tb.m_iPos) + offset;
+    if (res == -1)
+      res = pRA->iResultEndBackup;
+    pRA->iResultEnd = res;
+  }
+
+  BOOL CALWData::RunPass1(RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
   {
     const unsigned char ch = TextBuffer_GetChar(&pED->m_tb);
 
@@ -834,8 +837,18 @@ extern "C" {
       }
     }
 
+    if (breakOnEOL && (iLineIndex == 1) && (prefixLength == iLineOffset))
+    {
+      saveResultEnd(pRA, pED, 0);
+      return updateCharsProcessed(piCharsProcessed, 0);
+    }
+
     if (ch == CHAR_NEXT_PARAGRAPH)
     {
+      if (breakOnEOL)
+      {
+        saveResultEnd(pRA, pED, 0);
+      }
       return updateCharsProcessed(piCharsProcessed, 0);
     }
 
@@ -978,6 +991,11 @@ extern "C" {
           }
         }
       }
+    }
+
+    if (TextBuffer_GetTailLength(&pED->m_tb) == 0)
+    {
+      saveResultEnd(pRA, pED, 0);
     }
 
     return updateCharsProcessed(piCharsProcessed, iCharsProcessed);
