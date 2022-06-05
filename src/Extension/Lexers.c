@@ -1758,7 +1758,7 @@ EDITLEXER lexAHK = { SCLEX_AHK, 63036, L"AutoHotkey Script", L"ahk; ia; scriptle
 
 // [2e]: Lua LPeg Lexers #251
 #ifdef LPEG_LEXER
-EDITLEXER lexLPEG = { SCLEX_LPEG, 63037, L"LPEG", L"", L"", &KeyWords_NULL, {
+EDITLEXER lexLPEG = { SCLEX_LPEG, 63037, L"LPEG", L"", L"", &KeyWords_NULL, NULL_COMMENT_INFO, {
         { 0, 63126, L"Default", L"", L"" },
         { -1, 00000, L"", L"", L"" }
       }
