@@ -3006,6 +3006,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTALL:
+      // [2e]: Implicit commit of Edit Mode on Shift+Tab and Ctrl+A #403
+      if (n2e_IsSelectionEditModeOn())
+      {
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
+      }
       SendMessage(hwndEdit, SCI_SELECTALL, 0, 0);
       break;
 
@@ -3147,6 +3152,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_UNINDENT:
+      // [2e]: Implicit commit of Edit Mode on Shift+Tab and Ctrl+A #403
+      if (n2e_IsSelectionEditModeOn())
+      {
+        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
+      }
       // [2e]: Unindent and tabs #128
       SendMessage(hwndEdit, SCI_BACKTAB, 0, 0);
       break;
