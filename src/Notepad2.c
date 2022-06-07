@@ -1362,11 +1362,11 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         if ((iFileWatchingMode == 2 && !bModified && iEncoding == iOriginalEncoding) ||
             MsgBox(MBYESNO, IDS_FILECHANGENOTIFY) == IDYES)
         {
+          // [2e]: Retain split view state on document reload #405
+          VIEW_COMMAND(n2e_SaveViewState);
+
           int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
           int iAnchorPos = (int)SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
-          int iVisTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-          int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
-          int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
           BOOL bIsTail = (iCurPos == iAnchorPos) && (iCurPos == SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
           iWeakSrcEncoding = iEncoding;
           if (FileLoad(TRUE, FALSE, TRUE, FALSE, szCurFile))
@@ -1382,12 +1382,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
               SendMessage(hwndEdit, SCI_GETTEXT, 5, (LPARAM)tch);
               if (lstrcmpiA(tch, ".LOG") != 0)
               {
-                int iNewTopLine;
-                SendMessage(hwndEdit, SCI_SETSEL, iAnchorPos, iCurPos);
-                SendMessage(hwndEdit, SCI_ENSUREVISIBLE, (WPARAM)iDocTopLine, 0);
-                iNewTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-                SendMessage(hwndEdit, SCI_LINESCROLL, 0, (LPARAM)iVisTopLine - iNewTopLine);
-                SendMessage(hwndEdit, SCI_SETXOFFSET, (WPARAM)iXOffset, 0);
+                // [2e]: Retain split view state on document reload #405
+                VIEW_COMMAND(n2e_LoadViewState);
               }
             }
           }
@@ -2266,14 +2262,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           WCHAR tchCurFile2[MAX_PATH];
 
-          int iCurPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-          int iAnchorPos = (int)SendMessage(hwndEdit, SCI_GETANCHOR, 0, 0);
-          int iVisTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-          int iDocTopLine = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0);
-          int iXOffset = (int)SendMessage(hwndEdit, SCI_GETXOFFSET, 0, 0);
-
           if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBOKCANCEL, IDS_ASK_REVERT) != IDOK)
             return (0);
+
+          // [2e]: Retain split view state on document reload #405
+          VIEW_COMMAND(n2e_SaveViewState);
 
           lstrcpy(tchCurFile2, szCurFile);
           iWeakSrcEncoding = iEncoding;
@@ -2285,12 +2278,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               SendMessage(hwndEdit, SCI_GETTEXT, 5, (LPARAM)tch);
               if (lstrcmpiA(tch, ".LOG") != 0)
               {
-                int iNewTopLine;
-                SendMessage(hwndEdit, SCI_SETSEL, iAnchorPos, iCurPos);
-                SendMessage(hwndEdit, SCI_ENSUREVISIBLE, (WPARAM)iDocTopLine, 0);
-                iNewTopLine = (int)SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
-                SendMessage(hwndEdit, SCI_LINESCROLL, 0, (LPARAM)iVisTopLine - iNewTopLine);
-                SendMessage(hwndEdit, SCI_SETXOFFSET, (WPARAM)iXOffset, 0);
+                // [2e]: Retain split view state on document reload #405
+                VIEW_COMMAND(n2e_LoadViewState);
               }
             }
           }

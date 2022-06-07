@@ -1,6 +1,7 @@
 #include "EditHelperEx.h"
 #include <boost/regex.hpp>
 #include "../scintilla/src/UniConversion.h"
+#include "Scintilla.h"
 
 extern "C"
 {
@@ -245,5 +246,37 @@ extern "C"
   LPSE_DATA n2e_GetEditSelection(const int index)
   {
     return &vectorEditSelections[index];
+  }
+
+  std::map<HWND, std::tuple<int, int, int, int, int>> g_mapViewSettings;
+
+  void n2e_SaveViewState(HWND hwnd)
+  {
+    const int iVisTopLine = (int)SendMessage(hwnd, SCI_GETFIRSTVISIBLELINE, 0, 0);
+    g_mapViewSettings[hwnd] = std::make_tuple(
+      SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0),
+      SendMessage(hwnd, SCI_GETANCHOR, 0, 0),
+      iVisTopLine,
+      SendMessage(hwnd, SCI_DOCLINEFROMVISIBLE, (WPARAM)iVisTopLine, 0),
+      SendMessage(hwnd, SCI_GETXOFFSET, 0, 0));
+  }
+
+  void n2e_LoadViewState(HWND hwnd)
+  {
+    if (g_mapViewSettings.find(hwnd) == g_mapViewSettings.cend())
+      return;
+
+    const auto settings = g_mapViewSettings.at(hwnd);
+    const auto iCurPos = std::get<0>(settings);
+    const auto iAnchorPos = std::get<1>(settings);
+    const auto iVisTopLine = std::get<2>(settings);
+    const auto iDocTopLine = std::get<3>(settings);
+    const auto iXOffset = std::get<4>(settings);
+
+    SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurPos);
+    SendMessage(hwnd, SCI_ENSUREVISIBLE, (WPARAM)iDocTopLine, 0);
+    const auto iNewTopLine = (int)SendMessage(hwnd, SCI_GETFIRSTVISIBLELINE, 0, 0);
+    SendMessage(hwnd, SCI_LINESCROLL, 0, (LPARAM)iVisTopLine - iNewTopLine);
+    SendMessage(hwnd, SCI_SETXOFFSET, (WPARAM)iXOffset, 0);
   }
 }

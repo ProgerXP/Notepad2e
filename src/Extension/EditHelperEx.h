@@ -22,6 +22,9 @@ extern "C" {
   void n2e_ClearEditSelections();
   void n2e_AddEditSelection(LPSE_DATA pData);
   LPSE_DATA n2e_GetEditSelection(const int index);
+
+  void n2e_SaveViewState(HWND hwnd);
+  void n2e_LoadViewState(HWND hwnd);
 #ifdef __cplusplus
 }//end extern "C"
 #endif
