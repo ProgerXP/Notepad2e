@@ -1340,6 +1340,10 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
             return (lrv);
           }
 
+        // [2e]: Prevent Alt keypress from leaving the text area #399
+        case SC_KEYMENU:
+            return (0);
+
         // [2e]: Edit Mode hint not hidden on window resize/move #349
         case SC_MOVE:
         case SC_SIZE:
