@@ -4484,6 +4484,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         n2e_SelectionEditStop(hwndEdit, SES_REJECT);
       }
+      // [2e]: Make Escape in main window close visible dialog, if any #398
+      else if (IsWindow(hDlgFindReplace) || IsWindow(hDlgGotoLine))
+      {
+        SendMessage(IsWindow(hDlgFindReplace) ? hDlgFindReplace : hDlgGotoLine, WM_SYSCOMMAND, SC_CLOSE, 0);
+      }
       // [/2e]
       else
       {
