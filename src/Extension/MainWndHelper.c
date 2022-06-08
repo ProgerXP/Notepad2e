@@ -23,6 +23,8 @@ WCHAR arrwchExpressionStatusbarValue[MAX_PATH] = { 0 };
 
 extern HWND hwndMain;
 extern int aWidth[6];
+extern int flagPasteBoard;
+extern BOOL bLastCopyFromMe;
 
 BOOL ScreenToClientRect(const HWND hwnd, LPRECT pRect)
 {
@@ -69,6 +71,8 @@ void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
   {
     if (wcslen(arrwchExpressionValue) > 0)
     {
+      if (flagPasteBoard)
+        bLastCopyFromMe = TRUE;
       n2e_SetClipboardText(hwnd, arrwchExpressionValue);
     }
   }
