@@ -1,7 +1,5 @@
 #include "Lexers.h"
 
-#define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
-
 
 KEYWORDLIST KeyWords_NULL = {
     "", "", "", "", "", "", "", "", ""
@@ -96,7 +94,7 @@ KEYWORDLIST KeyWords_HTML = {
 };
 
 
-EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; aspx; shtml; htd; xhtml; php; php3; phtml; htt; cfm; tpl; dtd; hta; htc", L"", &KeyWords_HTML, COMMENT_INFO(C_COMMENT, 0/*#TODO*/), {
+EDITLEXER lexHTML = { SCLEX_HTML, 63001, L"Web Source Code", L"html; htm; asp; aspx; shtml; htd; xhtml; php; php3; phtml; htt; cfm; tpl; dtd; hta; htc", L"", &KeyWords_HTML, COMMENT_INFO(C_COMMENT, MULTI_STYLE(SCE_HPHP_COMMENTLINE, SCE_HJ_COMMENTLINE, SCE_HJA_COMMENTLINE, SCE_HBA_COMMENTLINE)), {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
         { MULTI_STYLE(SCE_H_TAG, SCE_H_TAGEND, 0, 0), 63136, L"HTML Tag", L"fore:#648000", L"" },
         { SCE_H_TAGUNKNOWN, 63137, L"HTML Unknown Tag", L"fore:#C80000; back:#FFFF80", L"" },

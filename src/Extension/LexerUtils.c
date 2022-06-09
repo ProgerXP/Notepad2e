@@ -34,5 +34,10 @@ int n2e_GetSingleLineCommentPrefixLength(const int iLexer)
 
 BOOL n2e_IsSingleLineCommentStyle(const int iLexer, const int iStyle)
 {
-  return n2e_GetCommentInfo(iLexer)->iLineStyle == iStyle;
+  const int iLineStyle = n2e_GetCommentInfo(iLexer)->iLineStyle;
+  return (iLineStyle == iStyle)
+    || (MULTI_STYLE_STYLE1(iLineStyle) == iStyle)
+    || (MULTI_STYLE_STYLE2(iLineStyle) == iStyle)
+    || (MULTI_STYLE_STYLE3(iLineStyle) == iStyle)
+    || (MULTI_STYLE_STYLE4(iLineStyle) == iStyle);
 }

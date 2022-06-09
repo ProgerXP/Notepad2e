@@ -283,11 +283,6 @@ BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
 
 PEDITSTYLE n2e_GetStyleById(const int iStyle)
 {
-#define MULTI_STYLE_STYLE1(s) (s & 0xFF)
-#define MULTI_STYLE_STYLE2(s) ((s >> 8) & 0xFF)
-#define MULTI_STYLE_STYLE3(s) ((s >> 16) & 0xFF)
-#define MULTI_STYLE_STYLE4(s) ((s >> 24) & 0xFF)
-
   PEDITSTYLE pStyle = pLexCurrent->Styles;
   int i = 0;
   while (pStyle && (pStyle->iStyle >= 0))

@@ -3,6 +3,12 @@
 #include "SciLexer.h"
 #include "Scintilla.h"
 
+#define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
+#define MULTI_STYLE_STYLE1(s) (s & 0xFF)
+#define MULTI_STYLE_STYLE2(s) ((s >> 8) & 0xFF)
+#define MULTI_STYLE_STYLE3(s) ((s >> 16) & 0xFF)
+#define MULTI_STYLE_STYLE4(s) ((s >> 24) & 0xFF)
+
 #define NULL_COMMENT   FALSE, "", "", "", L"", L"", L""
 #define ASM_COMMENT    TRUE, ";", "", "", L";", L"", L""
 #define BASH_COMMENT   TRUE, "#", "", "", L"#", L"", L""
