@@ -359,6 +359,7 @@
 #define IDM_EDIT_QPENCODE               40379  
 #define IDM_EDIT_QPDECODE               40380
 #define IDM_EDIT_INSERT_RANDOM          40381
+#define IDM_EDIT_INSERTREPLACEMENT      40382
 #define IDM_VIEW_SCHEME                 40400
 #define IDM_VIEW_USE2NDDEFAULT          40401
 #define IDM_VIEW_SCHEMECONFIG           40402

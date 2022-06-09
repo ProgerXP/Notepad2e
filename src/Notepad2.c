@@ -2128,6 +2128,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_FINDPREV, i && lstrlenA(efrData.szFind));
   EnableCmd(hmenu, IDM_EDIT_REPLACE, i);
   EnableCmd(hmenu, IDM_EDIT_REPLACENEXT, i);
+  EnableCmd(hmenu, IDM_EDIT_INSERTREPLACEMENT, i);
   EnableCmd(hmenu, IDM_EDIT_SELTONEXT, i && lstrlenA(efrData.szFind));
   EnableCmd(hmenu, IDM_EDIT_SELTOPREV, i && lstrlenA(efrData.szFind));
   EnableCmd(hmenu, IDM_EDIT_FINDMATCHINGBRACE, i);
@@ -3763,13 +3764,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_REPLACENEXT:
     case IDM_EDIT_SELTONEXT:
     case IDM_EDIT_SELTOPREV:
+    // [2e]: New command: Insert Replacement #387
+    case IDM_EDIT_INSERTREPLACEMENT:
 
       if (SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0) == 0)
         break;
 
       if (!lstrlenA(efrData.szFind))
       {
-        if (LOWORD(wParam) != IDM_EDIT_REPLACENEXT)
+        if ((LOWORD(wParam) != IDM_EDIT_REPLACENEXT) && (LOWORD(wParam) != IDM_EDIT_INSERTREPLACEMENT))
           SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_FIND, 1), 0);
         else
           SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
@@ -3806,10 +3809,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
           case IDM_EDIT_REPLACENEXT:
             if (bReplaceInitialized)
-              EditReplace(n2e_GetActiveEditCheckFocus(), &efrData);
+              EditReplace(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);
             else
               SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
             break;
+
+          // [2e]: New command: Insert Replacement #387
+          case IDM_EDIT_INSERTREPLACEMENT:
+            if (bReplaceInitialized)
+              EditReplace(n2e_GetActiveEditCheckFocus(), &efrData, FALSE);
+            else
+              SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
+            break;
+          // [/2e]
 
           case IDM_EDIT_SELTONEXT:
             EditFindNext(n2e_GetActiveEditCheckFocus(), &efrData, TRUE);

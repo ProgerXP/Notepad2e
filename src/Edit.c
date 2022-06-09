@@ -5287,7 +5287,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
             case IDC_REPLACE:
               bReplaceInitialized = TRUE;
-              bCloseDlg &= EditReplace(lpefr->hwnd, lpefr);
+              bCloseDlg &= EditReplace(lpefr->hwnd, lpefr, TRUE);
               break;
 
             case IDC_REPLACEALL:
@@ -5627,7 +5627,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 //
 //  EditReplace()
 //
-BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
+BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
 {
 
   struct TextToFind ttf;
@@ -5682,8 +5682,21 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
-  // [2e]: Find/Replace - Skip comments mode #303
-  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+  // [2e]: New command : Insert Replacement #387
+  if (bUseFindNext)
+  {
+    // [2e]: Find/Replace - Skip comments mode #303
+    iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+  }
+  else
+  {
+    iPos = iSelStart;
+    ttf.chrg.cpMin = iSelStart;
+    ttf.chrg.cpMax = iSelEnd;
+    ttf.chrgText.cpMin = iSelStart;
+    ttf.chrgText.cpMax = iSelEnd;
+  }
+  // [/2e]
 
   if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap)
   {
@@ -5717,24 +5730,34 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr)
   SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
   SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
 
-  ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
-  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-
-  // [2e]: Find/Replace - Skip comments mode #303
-  iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
-
-  bSuppressNotFound = FALSE;
-  if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap)
+  // [2e]: New command : Insert Replacement #387
+  if (bUseFindNext)
   {
-    if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
+    ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
+    ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+
+    // [2e]: Find/Replace - Skip comments mode #303
+    iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+
+    bSuppressNotFound = FALSE;
+    if (iPos == -1 && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap)
     {
-      ttf.chrg.cpMin = 0;
-      // [2e]: Find/Replace - Skip comments mode #303
-      iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+      if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
+      {
+        ttf.chrg.cpMin = 0;
+        // [2e]: Find/Replace - Skip comments mode #303
+        iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+      }
+      else
+        bSuppressNotFound = TRUE;
     }
-    else
-      bSuppressNotFound = TRUE;
   }
+  else
+  {
+    ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
+    ttf.chrgText.cpMax = ttf.chrg.cpMax;
+  }
+  // [/2e]
 
   // [2e]: Gutter not updated on Replace #206
   VIEW_COMMAND(UpdateLineNumberWidth);
