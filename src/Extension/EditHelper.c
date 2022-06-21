@@ -1520,6 +1520,21 @@ int n2e_GetExpressionTextRange(int* piStart, int* piEnd)
   return *piEnd - *piStart;
 }
 
+void n2e_CopyEvaluatedExpressionToClipboard()
+{
+  const int iEvaluateMathExpressionOrigin = iEvaluateMathExpression;
+  iEvaluateMathExpression = EEM_LINE;
+  char arrchText[MAX_PATH] = { 0 };
+  WCHAR arrwchValue[MAX_PATH] = { 0 };
+  if (n2e_FormatEvaluatedExpression(hwndEdit,
+        arrchText, COUNTOF(arrchText),
+        arrwchValue, COUNTOF(arrwchValue)))
+  {
+    n2e_SetClipboardText(hwndMain, arrwchValue);
+  }
+  iEvaluateMathExpression = iEvaluateMathExpressionOrigin;
+}
+
 BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
 {
 #ifndef ICU_BUILD

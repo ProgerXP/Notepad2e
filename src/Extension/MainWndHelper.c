@@ -16,10 +16,9 @@
 HHOOK hShellHook = NULL;
 
 EExpressionValueMode modePrevExpressionValue = EVM_DEC;
-char arrchPrevExpressionText[MAX_EXPRESSION_LENGTH] = { 0 };
+char arrchExpressionText[MAX_EXPRESSION_LENGTH] = { 0 };
 EExpressionValueMode modeExpressionValue = EVM_DEC;
 WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
-WCHAR arrwchExpressionStatusbarValue[MAX_PATH] = { 0 };
 
 extern HWND hwndMain;
 extern int aWidth[6];
@@ -91,13 +90,18 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
   return 0;
 }
 
-BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int bufferSize)
+BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
+  char* expressionText, const int expressionTextLength,
+  WCHAR* expressionValue, const int expressionValueLength)
 {
+  WCHAR tchBuffer[MAX_PATH] = { 0 };
+  const int bufferLength = COUNTOF(tchBuffer);
+
   int iCount = 0;
+  BOOL bValidExpression = FALSE;
   if (n2e_IsExpressionEvaluationEnabled())
   {
     char *pszText = NULL;
-    BOOL bValidExpression = FALSE;
     if (n2e_IsRectangularSelection())
     {
       pszText = LocalAlloc(LPTR, MAX_EXPRESSION_LENGTH + 1);
@@ -137,14 +141,14 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
       }
     }
 
-    bValidExpression = (strlen(arrchPrevExpressionText) > 0) && pszText && (strcmp(pszText, arrchPrevExpressionText) == 0);
+    bValidExpression = (strlen(expressionText) > 0) && pszText && (strcmp(pszText, expressionText) == 0);
     if ((iCount > 0) && (iCount <= MAX_EXPRESSION_LENGTH) && 
-      ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
+      ((strcmp(pszText, expressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
     {
       double exprValue = 0.0;
       bValidExpression = is_valid_expression(pszText, 1, &exprValue);
       if (bValidExpression && 
-        ((strcmp(pszText, arrchPrevExpressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
+        ((strcmp(pszText, expressionText) != 0) || (modePrevExpressionValue != modeExpressionValue)))
       {
         UINT idExpressionFormatString = IDS_EXPRESSION_VALUE_INTEGER;
         switch (modeExpressionValue)
@@ -157,7 +161,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
             break;
           case EVM_BIN:
             {
-              n2e_int2bin((unsigned int)floor(exprValue), arrwchExpressionValue);
+              n2e_int2bin((unsigned int)floor(exprValue), expressionValue);
               idExpressionFormatString = IDS_EXPRESSION_VALUE_BINARY_STRING;
             }
             break;
@@ -170,20 +174,19 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
         switch (modeExpressionValue)
         {
           case EVM_BIN:
-            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, arrwchExpressionValue);
+            FormatString(tchBuffer, bufferLength - 1, idExpressionFormatString, expressionValue);
             break;
           case EVM_DEC:
-            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, exprValue);
+            FormatString(tchBuffer, bufferLength - 1, idExpressionFormatString, exprValue);
             break;
           case EVM_HEX:
           case EVM_OCT:
-            FormatString(tchBuffer, bufferSize - 1, idExpressionFormatString, (int)exprValue);
+            FormatString(tchBuffer, bufferLength - 1, idExpressionFormatString, (int)exprValue);
             break;
         }
         modePrevExpressionValue = modeExpressionValue;
-        strncpy_s(arrchPrevExpressionText, COUNTOF(arrchPrevExpressionText) - 1, pszText, strlen(pszText));
-        wcsncpy_s(arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1, tchBuffer, bufferSize - 1);
-        wcsncpy_s(arrwchExpressionStatusbarValue, COUNTOF(arrwchExpressionStatusbarValue) - 1, arrwchExpressionValue, COUNTOF(arrwchExpressionValue) - 1);
+        strncpy_s(expressionText, expressionTextLength - 1, pszText, strlen(pszText));
+        wcsncpy_s(expressionValue, expressionValueLength - 1, tchBuffer, bufferLength - 1);
         if (modeExpressionValue == EVM_DEC)
         {
           LPNUMBERFMT lpFormat = NULL;
@@ -194,8 +197,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
             format.NumDigits = 0;
             lpFormat = &format;
           }
-          GetNumberFormat(LOCALE_USER_DEFAULT, 0, arrwchExpressionValue, lpFormat, tchBuffer, bufferSize - 1);
-          wcsncpy_s(arrwchExpressionStatusbarValue, COUNTOF(arrwchExpressionStatusbarValue) - 1, tchBuffer, bufferSize - 1);
+          GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
         }
         LocalFree(pszText);
         return TRUE;
@@ -203,19 +205,13 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, WCHAR* tchBuffer, const int 
     }
     
     LocalFree(pszText);
-    if (bValidExpression)
-    {
-      wcsncpy_s(tchBuffer, bufferSize - 1, arrwchExpressionStatusbarValue, wcslen(arrwchExpressionStatusbarValue));
-      return TRUE;
-    }
   }
-  else
+  if (!bValidExpression && (strlen(expressionText) > 0))
   {
-    memset(arrchPrevExpressionText, 0, sizeof(arrchPrevExpressionText));
-    memset(arrwchExpressionValue, 0, sizeof(arrwchExpressionValue));
-    memset(arrwchExpressionStatusbarValue, 0, sizeof(arrwchExpressionStatusbarValue));
+    expressionText[0] = 0;
+    expressionValue[0] = 0;
   }
-  return FALSE;
+  return bValidExpression;
 }
 
 BOOL bIsModalDialogOnTop = FALSE;

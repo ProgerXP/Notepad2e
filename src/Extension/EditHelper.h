@@ -72,6 +72,7 @@ void n2e_SaveTagsData_EditInsertTagDlg(PTAGSDATA pdata);
 void n2e_int2bin(unsigned int val, LPWSTR binString);
 BOOL n2e_IsExpressionEvaluationEnabled();
 int n2e_GetExpressionTextRange(int* piStart, int* piEnd);
+void n2e_CopyEvaluatedExpressionToClipboard();
 
 BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr);
 

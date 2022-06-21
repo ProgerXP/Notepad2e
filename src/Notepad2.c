@@ -4465,6 +4465,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       iEvaluateMathExpression = EEM_LINE;
       UpdateStatusbar();
       break;
+
+    // [2e]: Add command to copy result of math expression #414
+    case ID_SETTINGS_EVAL_COPYRESULT:
+      n2e_CopyEvaluatedExpressionToClipboard();
+      break;
     // [/2e]
 
 
@@ -7049,8 +7054,13 @@ void UpdateStatusbar()
     FormatString(tchDocPos, COUNTOF(tchDocPos), IDS_DOCPOS2, tchLn, tchLines, tchCol, tchCols, tchSel, tchPos);
   
   // [2e]: "Evaluate selection"-feature
-  const BOOL docSizeOK = n2e_FormatEvaluatedExpression(hwndEdit, tchDocSize, COUNTOF(tchDocSize));
-  if (!docSizeOK)
+  if (n2e_FormatEvaluatedExpression(hwndEdit,
+        arrchExpressionText, COUNTOF(arrchExpressionText),
+        arrwchExpressionValue, COUNTOF(arrwchExpressionValue)))
+  {
+    wcsncpy_s(tchDocSize, COUNTOF(tchDocSize), arrwchExpressionValue, COUNTOF(arrwchExpressionValue));
+  }
+  else
   {
     iBytes = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
     StrFormatByteSize(iBytes, tchBytes, COUNTOF(tchBytes));
