@@ -8,6 +8,7 @@
 #include "Edit.h"
 #include "ExtSelection.h"
 #include "LexerUtils.h"
+#include "MainWndHelper.h"
 #include "Notepad2.h"
 #include "resource.h"
 #include "SciCall.h"
@@ -1530,6 +1531,8 @@ void n2e_CopyEvaluatedExpressionToClipboard()
         arrchText, COUNTOF(arrchText),
         arrwchValue, COUNTOF(arrwchValue)))
   {
+    if (flagPasteBoard)
+      bLastCopyFromMe = TRUE;
     n2e_SetClipboardText(hwndMain, arrwchValue);
   }
   iEvaluateMathExpression = iEvaluateMathExpressionOrigin;

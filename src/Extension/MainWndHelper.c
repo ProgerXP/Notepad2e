@@ -22,8 +22,6 @@ WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
 
 extern HWND hwndMain;
 extern int aWidth[6];
-extern int flagPasteBoard;
-extern BOOL bLastCopyFromMe;
 
 BOOL ScreenToClientRect(const HWND hwnd, LPRECT pRect)
 {
