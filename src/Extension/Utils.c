@@ -188,30 +188,20 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
       n2e_OnMouseVanishEvent(FALSE);
       if (fSelectEx)
       {
-        if ((wParam == VK_LEFT) || (wParam == VK_RIGHT)
-          || (wParam == VK_UP) || (wParam == VK_DOWN)
-          || (wParam == VK_HOME) || (wParam == VK_END)
-          || (wParam == VK_PRIOR) || (wParam == VK_NEXT))
+        n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+        const auto posEnd = n2e_CallOriginalWindowProc(hwnd, SCI_GETCURRENTPOS, 0, 0);
+        n2e_CallOriginalWindowProc(hwnd, SCI_SETSELECTIONMODE, iSelectExMode, 0);
+        if (iSelectExMode == SC_SEL_RECTANGLE)
         {
-          n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
-          const auto posEnd = n2e_CallOriginalWindowProc(hwnd, SCI_GETCURRENTPOS, 0, 0);
-          n2e_CallOriginalWindowProc(hwnd, SCI_SETSELECTIONMODE, iSelectExMode, 0);
-          if (iSelectExMode == SC_SEL_RECTANGLE)
-          {
-            n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONANCHOR, posSelectExStart, 0);
-            n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONCARET, posEnd, 0);
-          }
-          else
-          {
-            n2e_CallOriginalWindowProc(hwnd, SCI_SETANCHOR, posSelectExStart, 0);
-            n2e_CallOriginalWindowProc(hwnd, SCI_SETCURRENTPOS, posEnd, 0);
-          }
-          return 0;
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONANCHOR, posSelectExStart, 0);
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETRECTANGULARSELECTIONCARET, posEnd, 0);
         }
         else
         {
-          fSelectEx = FALSE;
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETANCHOR, posSelectExStart, 0);
+          n2e_CallOriginalWindowProc(hwnd, SCI_SETCURRENTPOS, posEnd, 0);
         }
+        return 0;
       }
       break;
 

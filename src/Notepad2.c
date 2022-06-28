@@ -3985,11 +3985,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: New toolbar button: selection mode #339
     case IDM_VIEW_SELECTEX:
       fSelectEx = (fSelectEx) ? FALSE : TRUE;
       SetSelectEx(hwndEdit);
       UpdateToolbar();
       break;
+    // [/2e]
 
 
     case IDM_VIEW_LONGLINEMARKER:
@@ -5162,12 +5164,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         MessageBeep(0);
       break;
 
+
+    // [2e]: New toolbar button: selection mode #339
     case IDT_VIEW_SELECTEX:
       if (IsCmdEnabled(hwnd, IDM_VIEW_SELECTEX))
         SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_VIEW_SELECTEX, 1), 0);
       else
         MessageBeep(0);
       break;
+    // [/2e]
 
 
     case IDT_VIEW_ZOOMIN:
@@ -7134,6 +7139,7 @@ void SetWordWrap(HWND hwnd)
 }
 
 
+// [2e]: New toolbar button: selection mode #339
 void SetSelectEx(HWND hwnd)
 {
   if (fSelectEx)
@@ -7142,6 +7148,7 @@ void SetSelectEx(HWND hwnd)
     posSelectExStart = SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
   }
 }
+// [/2e]
 
 
 void SetLongLineMarker(HWND hwnd)
