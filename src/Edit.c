@@ -3419,7 +3419,9 @@ void EditToggleLineComments(HWND hwnd, LPCWSTR pwszComment, BOOL bInsertAtStart)
       tr.lpstrText = tchBuf;
       SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
 
-      if (StrCmpNIA(tchBuf, mszComment, cchComment) == 0)
+      // [2e]: Line Comment to prefix all lines, even comments #410
+      const BOOL bUncommentLine = (StrCmpNIA(tchBuf, mszComment, cchComment) == 0) && (iAction != 1);
+      if (bUncommentLine)
       {
         switch (iAction)
         {
