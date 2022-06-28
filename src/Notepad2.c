@@ -7580,9 +7580,14 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   else
+  {
+    // [2e]: Junk file name output in the Access Denied message box #412
+    lstrcpy(tchFile, szCurFile);
+
     fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
                // [2e]: Process elevation #166
                || n2e_ParentProcess_ElevatedFileIO(szCurFile);
+  }
 
   if (fSuccess)
   {
