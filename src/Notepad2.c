@@ -290,11 +290,11 @@ int iLineEndings[3] = {
     SC_EOL_CR
 };
 
-WCHAR wchPrefixSelection[256] = L"";
-WCHAR wchAppendSelection[256] = L"";
+WCHAR wchPrefixSelection[TEXT_BUFFER_LENGTH] = L"";
+WCHAR wchAppendSelection[TEXT_BUFFER_LENGTH] = L"";
 
-WCHAR wchPrefixLines[256] = L"";
-WCHAR wchAppendLines[256] = L"";
+WCHAR wchPrefixLines[TEXT_BUFFER_LENGTH] = L"";
+WCHAR wchAppendLines[TEXT_BUFFER_LENGTH] = L"";
 
 int   iSortOptions = 0;
 int   iAlignMode = 0;
@@ -3391,8 +3391,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_INSERT_TAG: {
-        WCHAR wszOpen[256] = L"";
-        WCHAR wszClose[256] = L"";
+        WCHAR wszOpen[TEXT_BUFFER_LENGTH] = L"";
+        WCHAR wszClose[TEXT_BUFFER_LENGTH] = L"";
         if (EditInsertTagDlg(hwnd, wszOpen, wszClose))
           EditEncloseSelection(hwndEdit, wszOpen, wszClose);
       }
@@ -3784,7 +3784,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           if (cp != SC_CP_UTF8)
           {
-            WCHAR wch[512];
+            WCHAR wch[TEXT_BUFFER_LENGTH];
             MultiByteToWideChar(CP_UTF8, 0, efrData.szFindUTF8, -1, wch, COUNTOF(wch));
             WideCharToMultiByte(cp, 0, wch, -1, efrData.szFind, COUNTOF(efrData.szFind), NULL, NULL);
             MultiByteToWideChar(CP_UTF8, 0, efrData.szReplaceUTF8, -1, wch, COUNTOF(wch));
@@ -4868,7 +4868,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
           if (cpLastFind != SC_CP_UTF8)
           {
-            WCHAR wszBuf[512];
+            WCHAR wszBuf[TEXT_BUFFER_LENGTH];
 
             MultiByteToWideChar(cpLastFind, 0, mszSelection, -1, wszBuf, COUNTOF(wszBuf));
             WideCharToMultiByte(CP_UTF8, 0, wszBuf, -1, efrData.szFindUTF8, COUNTOF(efrData.szFindUTF8), NULL, NULL);

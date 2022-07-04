@@ -1622,7 +1622,7 @@ BOOL SetDlgItemIntEx(HWND hwnd, int nIdItem, UINT uValue)
 //
 UINT GetDlgItemTextA2W(UINT uCP, HWND hDlg, int nIDDlgItem, LPSTR lpString, int nMaxCount)
 {
-  WCHAR wsz[1024] = L"";
+  WCHAR wsz[TEXT_BUFFER_LENGTH] = L"";
   UINT uRet = GetDlgItemTextW(hDlg, nIDDlgItem, wsz, COUNTOF(wsz));
   ZeroMemory(lpString, nMaxCount);
   WCharToMBCS(uCP, wsz, lpString, nMaxCount - 2);
@@ -1631,7 +1631,7 @@ UINT GetDlgItemTextA2W(UINT uCP, HWND hDlg, int nIDDlgItem, LPSTR lpString, int 
 
 UINT SetDlgItemTextA2W(UINT uCP, HWND hDlg, int nIDDlgItem, LPSTR lpString)
 {
-  WCHAR wsz[1024] = L"";
+  WCHAR wsz[TEXT_BUFFER_LENGTH] = L"";
   MBCSToWChar(uCP, lpString, wsz, COUNTOF(wsz));
   return SetDlgItemTextW(hDlg, nIDDlgItem, wsz);
 }

@@ -2842,8 +2842,8 @@ void EditMoveDown(HWND hwnd)
 //
 void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 {
-  char  mszPrefix1[256 * 3] = "";
-  char  mszAppend1[256 * 3] = "";
+  char  mszPrefix1[TEXT_BUFFER_LENGTH] = "";
+  char  mszAppend1[TEXT_BUFFER_LENGTH] = "";
   int   mbcp;
 
   int iSelStart = SciCall_GetSelStart();
@@ -2912,7 +2912,7 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
       if (lstrlen(pwszPrefix))
       {
-        char mszInsert[512 * 3];
+        char mszInsert[TEXT_BUFFER_LENGTH];
         lstrcpyA(mszInsert, mszPrefix1);
 
         // [2e]: Alt+M - replace all substitutions #271
@@ -2929,7 +2929,7 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
       if (lstrlen(pwszAppend))
       {
-        char mszInsert[512 * 3];
+        char mszInsert[TEXT_BUFFER_LENGTH];
         lstrcpyA(mszInsert, mszAppend1);
 
         // [2e]: Alt+M - replace all substitutions #271
@@ -3259,8 +3259,8 @@ void EditAlignText(HWND hwnd, int nMode)
 //
 void EditEncloseSelection(HWND hwnd, LPCWSTR pwszOpen, LPCWSTR pwszClose)
 {
-  char  mszOpen[256 * 3] = "";
-  char  mszClose[256 * 3] = "";
+  char  mszOpen[TEXT_BUFFER_LENGTH] = "";
+  char  mszClose[TEXT_BUFFER_LENGTH] = "";
   int   mbcp;
 
   int iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
@@ -4854,7 +4854,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   LPEDITFINDREPLACE lpefr;
   int i;
-  WCHAR tch[512 + 32];
+  WCHAR tch[TEXT_BUFFER_LENGTH];
   BOOL bCloseDlg;
   BOOL bIsFindDlg;
 
@@ -4925,7 +4925,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
         }
 
-        SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, 500, 0);
+        SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEXTENDEDUI, TRUE, 0);
 
         if (!GetWindowTextLengthW(GetDlgItem(hwnd, IDC_FINDTEXT)))
@@ -4933,7 +4933,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         if (GetDlgItem(hwnd, IDC_REPLACETEXT))
         {
-          SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_LIMITTEXT, 500, 0);
+          SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
           SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_SETEXTENDEDUI, TRUE, 0);
           SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_REPLACETEXT, lpefr->szReplaceUTF8);
         }
@@ -5068,7 +5068,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             // [2e]: disable search for invalid regex values
             if (bEnable && (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED))
             {
-              char szFind[512], szReplace[512];
+              char szFind[TEXT_BUFFER_LENGTH], szReplace[TEXT_BUFFER_LENGTH];
               GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
               // [2e]: insert empty groups to make any back-references (\1..\9) valid to pass regexp check #145
               #define FAKE_REGEXP_GROUPS "()()()()()()()()()"
@@ -5457,7 +5457,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   struct TextToFind ttf;
   int iPos;
   int iSelPos, iSelAnchor;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
   BOOL bSuppressNotFound = FALSE;
 
   if (!lstrlenA(lpefr->szFind))
@@ -5548,7 +5548,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   int iPos;
   int iSelPos, iSelAnchor;
   int iLength;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
   BOOL bSuppressNotFound = FALSE;
 
   if (!lstrlenA(lpefr->szFind))
@@ -5637,7 +5637,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
   int iSelStart;
   int iSelEnd;
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
   char *pszReplace2;
   BOOL bSuppressNotFound = FALSE;
 
@@ -5792,7 +5792,7 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   int iPos;
   int iCount = 0;
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
   char *pszReplace2;
   BOOL bRegexStartOfLine;
   BOOL bRegexStartOrEndOfLine;
@@ -5948,7 +5948,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   int iCount = 0;
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
   BOOL fCancel = FALSE;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
   char *pszReplace2;
   BOOL bRegexStartOfLine;
   BOOL bRegexStartOrEndOfLine;
@@ -6351,9 +6351,9 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 
         pdata = (PMODLINESDATA)lParam;
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
 
         // [2e]: Remove line breaks from Alt+M #173
         n2e_EnableClipboardFiltering(hwnd, 100);
@@ -6580,9 +6580,9 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         // [/2e]
 
         pdata = (PENCLOSESELDATA)lParam;
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 255, 0);
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         DPI_INIT();
         CenterDlgInParent(hwnd);
@@ -6761,9 +6761,9 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, 254, 0);
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SetDlgItemTextW(hwnd, 100, wchLastHTMLTag);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, 255, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
         SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);
@@ -6777,14 +6777,14 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
         case 100:
           if (HIWORD(wParam) == EN_CHANGE)
           {
-            WCHAR wchBuf[256];
-            GetDlgItemTextW(hwnd, 100, wchBuf, 256);
+            WCHAR wchBuf[TEXT_BUFFER_LENGTH];
+            GetDlgItemTextW(hwnd, 100, wchBuf, TEXT_BUFFER_LENGTH);
             SetDlgItemTextW(hwnd, 101, n2e_GetClosingTagText_EditInsertTagDlg(wchBuf));
           }
           break;
         case IDOK:
-          GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
-          GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+          GetDlgItemTextW(hwnd, 100, pdata->pwsz1, TEXT_BUFFER_LENGTH);
+          GetDlgItemTextW(hwnd, 101, pdata->pwsz2, TEXT_BUFFER_LENGTH);
           n2e_SaveTagsData_EditInsertTagDlg(pdata);
           EndDialog(hwnd, IDOK);
           break;
