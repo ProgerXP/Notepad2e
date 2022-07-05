@@ -1151,13 +1151,9 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
             SciCall_SetSel(pRA->iResultStart, pRA->iResultEnd);
             pRA->iResultSelEnd = pRA->iResultStart + pED->m_tbRes.m_iPos;
           }
-          else if ((pED->m_tr.m_iPositionStart == 0) && (pED->m_tr.m_iSelStart != 0))
-          {
-            SciCall_SetSel(pED->m_tr.m_iSelStart, pED->m_tr.m_iSelEndOriginal);
-          }
           else
           {
-            SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
+            SciCall_SetSel(pED->m_tr.m_iSelStart, pED->m_tr.m_iSelEndOriginal);
           }          
           SciCall_ReplaceSel(0, "");
           SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);

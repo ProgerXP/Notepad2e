@@ -39,6 +39,7 @@ struct Prefix
 {
   bool m_isInitialized = false;
   PrefixType m_type = PrefixType::Plain;
+  PrefixType m_subtype = PrefixType::Plain;
   bool m_isEmptyLine = false;
   std::string m_data;
   unsigned m_charWhitespace = ' ';
@@ -60,6 +61,7 @@ public:
   void Init(const Prefix& p);
   PrefixType GetType() const;
   void SetType(const PrefixType type);
+  void SetSubType(const PrefixType type);
   int CountLeadingWhiteSpaces() const;
   int CountTrailingWhiteSpaces() const;
   void SetupLeadingWhiteSpaces(const struct Prefix& originPrefix);
