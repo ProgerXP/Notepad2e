@@ -168,6 +168,8 @@ void MarginView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const View
 				pixmapSelPatternOffset1->FillRectangle(rcPixel, colourFMFill);
 			}
 		}
+		pixmapSelPattern->EndDraw();
+		pixmapSelPatternOffset1->EndDraw();
 	}
 }
 

@@ -39,7 +39,7 @@ BOOL bNeedUpdateInEditMode = FALSE;
 extern BOOL bHighlightLineIfWindowInactive;
 extern long iMaxSearchDistance;
 extern EWordNavigationMode iWordNavigationMode;
-extern BOOL bUseDirectWrite;
+extern int iDisplayTechnology;
 extern HWND hwndMain;
 extern HWND hwndEdit;
 
@@ -119,7 +119,7 @@ void n2e_EditInit(const HWND hwnd)
   tiEditSelection.uFlags = TTF_TRACK | TTF_TRANSPARENT;
   n2e_ToolTipAddToolInfo(hwndToolTipEdit, &tiEditSelection);
 
-  SendMessage(hwnd, SCI_SETTECHNOLOGY, bUseDirectWrite ? SC_TECHNOLOGY_DIRECTWRITE : SC_TECHNOLOGY_DEFAULT, 0);
+  SendMessage(hwnd, SCI_SETTECHNOLOGY, iDisplayTechnology, 0);
   SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwnd, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
   SendMessage(hwnd, SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0);

@@ -477,6 +477,7 @@ public:
 	void Init(WindowID wid) override;
 	void Init(SurfaceID sid, WindowID wid) override;
 	void InitPixMap(int width, int height, Surface *surface_, WindowID wid) override;
+	void EndDraw() override;
 
 	void Release() override;
 	bool Initialised() override;
@@ -585,6 +586,9 @@ void SurfaceGDI::InitPixMap(int width, int height, Surface *surface_, WindowID) 
 	::SetTextAlign(hdc, TA_BASELINE);
 	SetUnicodeMode(psurfOther->unicodeMode);
 	SetDBCSMode(psurfOther->codePage);
+}
+
+void SurfaceGDI::EndDraw() {
 }
 
 void SurfaceGDI::PenColour(ColourDesired fore) {
@@ -1027,6 +1031,7 @@ public:
 	void Init(WindowID wid) override;
 	void Init(SurfaceID sid, WindowID wid) override;
 	void InitPixMap(int width, int height, Surface *surface_, WindowID wid) override;
+	void EndDraw() override;
 
 	void Release() override;
 	bool Initialised() override;
@@ -1168,6 +1173,11 @@ void SurfaceD2D::InitPixMap(int width, int height, Surface *surface_, WindowID) 
 	}
 	SetUnicodeMode(psurfOther->unicodeMode);
 	SetDBCSMode(psurfOther->codePage);
+}
+
+void SurfaceD2D::EndDraw() {
+	if (pRenderTarget)
+		pRenderTarget->EndDraw();
 }
 
 void SurfaceD2D::PenColour(ColourDesired fore) {
