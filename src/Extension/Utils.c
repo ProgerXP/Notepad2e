@@ -45,7 +45,7 @@
 #define INI_SETTING_URL_ENCODE_MODE L"UrlEncodeMode"
 #define INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE L"FindSelectToMatchingBraceMode"
 #define INI_SETTING_TREAT_QUOTES_AS_BRACES L"TreatQuotesAsBraces"
-#define INI_SETTING_USE_DIRECTWRITE L"UseDirectWrite"
+#define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
 #define INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND L"SkipFileSavePromptOnNewWindowCommand"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 
@@ -85,7 +85,7 @@ EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
 BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
-BOOL bUseDirectWrite = TRUE;
+int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bSkipFileSavePromptOnNewWindowCommand = FALSE;
 BOOL bExtendedSplitLines = TRUE;
 
@@ -474,7 +474,7 @@ void n2e_LoadINI()
   iUrlEncodeMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
-  bUseDirectWrite = IniGetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
+  iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   bSkipFileSavePromptOnNewWindowCommand = IniGetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 
@@ -566,7 +566,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_URL_ENCODE_MODE, iUrlEncodeMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_USE_DIRECTWRITE, bUseDirectWrite);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 #ifdef LPEG_LEXER
