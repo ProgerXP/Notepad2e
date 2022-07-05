@@ -999,7 +999,7 @@ namespace Notepad2eTests
                                "//  * sub item\n"
                                "//    * sub sub item\n"
                                "//  * sub item 2\n"
-                               "// * item 2\n",
+                               "//* item 2\n",
               false, 0, { 25, SCLEX_CPP, SC_EOL_LF }),
 
           CTestCaseData(false, " line 1  \n"
