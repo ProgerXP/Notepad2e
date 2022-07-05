@@ -218,7 +218,7 @@ BEGIN
             MENUITEM "&Filename\tCtrl+F9",          IDM_EDIT_INSERT_FILENAME
             MENUITEM "&Path and Filename\tCtrl+Shift+F9", IDM_EDIT_INSERT_PATHNAME
             MENUITEM SEPARATOR
-            MENUITEM "&Random\tCtrl+Alt+Shift+R",   IDM_EDIT_INSERT_RANDOM
+            MENUITEM "&Random Number\tCtrl+Alt+Shift+R",   IDM_EDIT_INSERT_RANDOM
         END
         POPUP "Spec&ial"
         BEGIN
