@@ -111,6 +111,7 @@ DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, 
 DeclareSciCallV2(GetStyledText, GETSTYLEDTEXT, int, unused, struct Sci_TextToFind *, ft);
 DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
 DeclareSciCallR2(GetText, GETTEXT, int, int, length, char*, text);
+DeclareSciCallR2(GetTargetText, GETTARGETTEXT, int, int, unused, char*, text);
 DeclareSciCallR2(GetTextRange, GETTEXTRANGE, int, int, unused, struct Sci_TextRange*, tr);
 DeclareSciCallR2(GetWordStartPos, WORDSTARTPOSITION, int, int, pos, BOOL, onlyWordCharacters);
 DeclareSciCallR2(GetWordEndPos, WORDENDPOSITION, int, int, pos, BOOL, onlyWordCharacters);

@@ -532,6 +532,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
   struct Sci_TextRange tr;
   int cur_pos = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
   int delta_len = 0;
+  char *target_word = NULL;
   tr.lpstrText = 0;
   old_ind = SendMessage(hwndEdit, SCI_GETINDICATORCURRENT, 0, 0);
   if (cur_pos < trEditSelection.chrg.cpMin || cur_pos > trEditSelection.chrg.cpMax)
@@ -573,7 +574,15 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
       trEditSelection.lpstrText = n2e_Realloc(trEditSelection.lpstrText, trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin + 1);
     }
     SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&trEditSelection);
+    if (case_compare(old_word, trEditSelection.lpstrText, FALSE))
+    {
+      N2E_TRACE("case (%d) compare exit!", bEditSelectionWholeWordMode);
+      goto _EXIT;
+    }
   }
+  
+  target_word = n2e_Alloc(iOriginalSelectionLength + 1);
+
   /*
   clear cur edit
   */
@@ -641,17 +650,15 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
       SendMessage(hwndEdit, SCI_SETTARGETEND, se->pos + iOriginalSelectionLength, 0);
       if (rollback)
       {
-        if (!case_compare(pEditSelectionOriginalWord, se->original, TRUE))
+        target_word[SciCall_GetTargetText(iOriginalSelectionLength, target_word)] = 0;
+        if (!case_compare(target_word, se->original, FALSE))
         {
           SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)se->original);
         }
       }
       else
       {
-        if (!case_compare(trEditSelection.lpstrText, se->original, TRUE))
-        {
-          SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)trEditSelection.lpstrText);
-        }
+        SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)trEditSelection.lpstrText);
       }
       delta_len += (new_len - iOriginalSelectionLength);
       if (se->pos < trEditSelection.chrg.cpMax)
@@ -669,6 +676,11 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
     N2E_TRACE("new se pos %d = %d (%d). delta %d", k, se->pos, se->len, delta_len);
   }
 _EXIT:
+  if (target_word)
+  {
+    n2e_Free(target_word);
+  }
+
   iOriginalSelectionLength = new_len;
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, old_ind, 0);
   if (old_word)
