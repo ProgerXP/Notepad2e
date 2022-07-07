@@ -892,6 +892,12 @@ namespace Notepad2eTests
                                "// 2. test\n"
                                "//    string\n",
               false, 0, { 10, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo",
+              CPI_DEFAULT,
+                               " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo\r\n"
+                               " //    foo foo",
+              false, 0, { 80, SCLEX_CPP, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
