@@ -74,6 +74,8 @@ HWND      hDlgGotoLine = NULL;
 BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
+// [2e] : Use non-proportional font in search/replace dialog #381
+HFONT     hMonospacedFont = NULL;
 
 #define NUMTOOLBITMAPS  33
 #define NUMINITIALTOOLS 29

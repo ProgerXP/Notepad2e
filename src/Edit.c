@@ -47,6 +47,7 @@
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
 extern HWND  hwndEditParent;
+extern HFONT hMonospacedFont;
 extern HINSTANCE g_hInstance;
 extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
@@ -4880,6 +4881,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
         lpefr = (LPEDITFINDREPLACE)lParam;
+
+        // [2e]: Use non-proportional font in search/replace dialog #381
+        SendDlgItemMessage(hwnd, IDC_FINDTEXT, WM_SETFONT, (WPARAM)hMonospacedFont, 0);
+        SendDlgItemMessage(hwnd, IDC_REPLACETEXT, WM_SETFONT, (WPARAM)hMonospacedFont, 0);
+        // [/2e]
 
         // Get the current code page for Unicode conversion
         uCPEdit = (UINT)SendMessage(lpefr->hwnd, SCI_GETCODEPAGE, 0, 0);

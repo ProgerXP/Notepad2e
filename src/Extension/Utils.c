@@ -95,6 +95,9 @@ BOOL bLPegEnabled = FALSE;
 WCHAR wchLPegHomeOrigin[MAX_PATH] = { 0 };
 WCHAR g_wchLPegHome[MAX_PATH] = { 0 };
 
+extern BOOL fIsConsolasAvailable;
+extern HFONT hMonospacedFont;
+
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
 extern WCHAR szTitleExcerpt[128];
@@ -114,6 +117,7 @@ extern LPMRULIST mruFind;
 extern enum ESaveSettingsMode nSaveSettingsMode;
 
 LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
+BOOL IsFontAvailable(LPCWSTR);
 
 extern HWND _hwndEdit;
 
@@ -125,6 +129,23 @@ void n2e_InitInstance()
   n2e_EditInit(_hwndEdit);
   n2e_ScintillaDPIInit(_hwndEdit);
   hShellHook = SetWindowsHookEx(WH_SHELL, n2e_ShellProc, NULL, GetCurrentThreadId());
+  
+  HDC hdc = GetDC(hwndMain);
+  HFONT hFontDefault = (HFONT)SendMessage(hwndMain, WM_GETFONT, 0, 0);
+  LOGFONT lf = { 0 };
+  GetObject(hFontDefault, sizeof(LOGFONT), &lf);
+  LPCWSTR arrMonospacedFontNames[] = { L"Consolas", L"Courier", L"Courier New", L"Lucida Console" };
+  for (int i = 0; i < COUNTOF(arrMonospacedFontNames); ++i)
+  {
+    if (IsFontAvailable(arrMonospacedFontNames[i]))
+    {
+      lstrcpy(lf.lfFaceName, arrMonospacedFontNames[i]);
+      lf.lfHeight = -MulDiv(9, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+      break;
+    }
+  }
+  ReleaseDC(hwndMain, hdc);
+  hMonospacedFont = CreateFontIndirect(&lf);
 }
 
 void n2e_ExitInstance()
