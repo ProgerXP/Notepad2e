@@ -1090,7 +1090,7 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
   int k = 0;
   int res = 0;
   int line_first, line_last;
-  char szFind2[512];
+  char szFind2[TEXT_BUFFER_LENGTH];
 
   struct Sci_TextToFind ttf;
   if (!lstrlenA(lpf->szFind))

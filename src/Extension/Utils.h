@@ -3,6 +3,8 @@
 #include <wtypes.h>
 #include <Richedit.h>
 
+#define TEXT_BUFFER_LENGTH  MAX_PATH * 20
+
 typedef enum
 {
   CSS_SASSY = 1 << 0,

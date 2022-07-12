@@ -28,10 +28,10 @@ BOOL Scintilla_ReleaseResources();
 
 typedef struct _editfindreplace
 {
-  char szFind[512];
-  char szReplace[512];
-  char szFindUTF8[3 * 512];
-  char szReplaceUTF8[3 * 512];
+  char szFind[TEXT_BUFFER_LENGTH];
+  char szReplace[TEXT_BUFFER_LENGTH];
+  char szFindUTF8[TEXT_BUFFER_LENGTH];
+  char szReplaceUTF8[TEXT_BUFFER_LENGTH];
   UINT fuFlags;
   BOOL bTransformBS;
   BOOL bObsolete /* was bFindUp */;
