@@ -41,6 +41,7 @@ struct Prefix
   PrefixType m_type = PrefixType::Plain;
   PrefixType m_subtype = PrefixType::Plain;
   bool m_isEmptyLine = false;
+  int m_iContentOffset = 0;
   std::string m_data;
   unsigned m_charWhitespace = ' ';
   Range m_rangeMarker;
@@ -60,8 +61,9 @@ public:
   void SetInitialized();
   void Init(const Prefix& p);
   PrefixType GetType() const;
-  void SetType(const PrefixType type);
+  void SetType(const PrefixType type, const int iContentOffset);
   void SetSubType(const PrefixType type);
+  int GetContentOffset() const;
   int CountLeadingWhiteSpaces() const;
   int CountTrailingWhiteSpaces() const;
   void SetupLeadingWhiteSpaces(const struct Prefix& originPrefix);

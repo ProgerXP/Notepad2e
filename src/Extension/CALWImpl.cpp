@@ -81,7 +81,7 @@ extern "C" {
   void Prefix::Init(const Prefix& p)
   {
     SetString(p.GetString());
-    SetType(p.GetType());
+    SetType(p.GetType(), p.GetContentOffset());
     SetInitialized();
   }
 
@@ -90,15 +90,21 @@ extern "C" {
     return m_type;
   }
 
-  void Prefix::SetType(const PrefixType type)
+  void Prefix::SetType(const PrefixType type, const int iContentOffset)
   {
     m_type = type;
+    m_iContentOffset = iContentOffset;
     initWhitespace();
   }
 
   void Prefix::SetSubType(const PrefixType type)
   {
     m_subtype = type;
+  }
+
+  int Prefix::GetContentOffset() const
+  {
+    return m_iContentOffset;
   }
 
   int Prefix::CountLeadingWhiteSpaces() const
@@ -125,19 +131,19 @@ extern "C" {
 
   void Prefix::initWhitespace()
   {
-    const auto posWhitespace = m_data.find_first_of(lpstrWhiteSpaces);
+    const auto posWhitespace = m_data.find_first_of(lpstrWhiteSpaces, m_iContentOffset);
     m_charWhitespace = (posWhitespace != std::string::npos) ? m_data.at(posWhitespace) : CHAR_SPACE;
 
-    if (IsMarkerStatic())
+    if (IsMarkerStatic() || (m_subtype == PrefixType::MarkerStatic))
     {
-      const auto posMarker = m_data.find_first_of(lpstrStaticMarkerChars);
+      const auto posMarker = m_data.find_first_of(lpstrStaticMarkerChars, m_iContentOffset);
       if (posMarker != std::string::npos)
       {
         m_rangeMarker.pos1 = posMarker;
         m_rangeMarker.pos2 = m_rangeMarker.pos1 + 1;
       }
     }
-    else if (IsMarkerDynamic())
+    else if (IsMarkerDynamic() || (m_subtype == PrefixType::MarkerDynamic))
     {
       const auto posMarkerStart = m_data.find_first_of(lpstrDigits, posWhitespace);
       const auto posMarkerEnd = m_data.find_first_of(lpstrDynamicMarkerChars, posWhitespace);
@@ -347,7 +353,7 @@ extern "C" {
     const auto res = isStaticMarker(TextBuffer_GetCharAt(&pED->m_tb, iWhiteSpacesBeforeMarker));
     if (res)
     {
-      m_cp->prefix->SetType(PrefixType::MarkerStatic);
+      m_cp->prefix->SetType(PrefixType::MarkerStatic, 0);
       for (int i = 0; i < iWhiteSpacesBeforeMarker; ++i)
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
@@ -370,7 +376,7 @@ extern "C" {
     const auto res = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, iWhiteSpacesBeforeMarker);
     if (res)
     {
-      m_cp->prefix->SetType(PrefixType::MarkerDynamic);
+      m_cp->prefix->SetType(PrefixType::MarkerDynamic, 0);
       for (int i = 0; i < iWhiteSpacesBeforeMarker; ++i)
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
@@ -396,7 +402,7 @@ extern "C" {
     bool res = IsCharFromString(lpstrWhiteSpaces, ch);
     if (res)
     {
-      m_cp->prefix->SetType(PrefixType::Plain);
+      m_cp->prefix->SetType(PrefixType::Plain, 0);
       for (int i = 0; i < iCharCount; ++i)
       {
         m_cp->prefix->PushChar(ch);
@@ -485,7 +491,7 @@ extern "C" {
   bool CALWData::saveCommentPrefix(EncodingData* pED, const char ch, const int iCharCount, int& iCharsProcessed)
   {
     const BOOL isWhiteSpace = IsCharFromString(lpstrWhiteSpaces, ch);
-    const int iCommentOffset = iCharCount + (isWhiteSpace ? iSingleLineCommentPrefixLength : 0);
+    const int iCommentOffset = iSingleLineCommentPrefixLength + (isWhiteSpace ? iCharCount : 0);
     const BOOL isSingleLineComment = n2e_IsSingleLineCommentStyleAtPos(NULL, lexerId, iCommentOffset, pED);
     const BOOL isEmptyLine = isSingleLineComment
       ? TextBuffer_IsWhiteSpaceLine(&pED->m_tb, iCommentOffset, NULL)
@@ -505,7 +511,7 @@ extern "C" {
         ? PrefixType::MarkerDynamic
         : PrefixType::Plain);
 
-      m_cp->prefix->SetType(PrefixType::Comment);
+      m_cp->prefix->SetType(PrefixType::Comment, iSingleLineCommentPrefixLength);
       if ((TextBuffer_GetTailLength(&pED->m_tb) == 0))
       {
         m_cp->prefix->rtrim();
@@ -803,7 +809,7 @@ extern "C" {
     auto prefixLength = m_cp->prefix->GetLength();
     if ((iLineOffset == 0) && (prefixLength > 0))
     {
-      if ((iLineIndex > 0) && isStaticMarker(ch))
+      if ((iLineIndex > 0) && isMarker(ch, pED))
       {
         TextBuffer_OffsetPos(&pED->m_tb, -1);
         int iWordByteCountOrigin = 0;
@@ -977,7 +983,7 @@ extern "C" {
         && (TextBuffer_GetTailLength(&pED->m_tb) > 0))
     {
       const auto chNext = TextBuffer_GetChar(&pED->m_tb);
-      if (!isStaticMarker(chNext))
+      if (!isMarker(chNext, pED))
       {
         iLineOffset = 0;
         iWordCount = 0;

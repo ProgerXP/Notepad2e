@@ -691,6 +691,12 @@ namespace Notepad2eTests
                                " ipsum",
                 false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
 
+          CTestCaseData(false, " # Lorem ipsum",
+                CPI_DEFAULT,
+                               " # Lorem\r\n"
+                               "   ipsum",
+                false, 0, { 3, SCLEX_NULL, SC_EOL_CRLF }),
+
           CTestCaseData(false, ">   Lorem ipsum",
                 CPI_DEFAULT,
                                ">   Lorem\r\n"
@@ -898,6 +904,18 @@ namespace Notepad2eTests
                                " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo\r\n"
                                " //    foo foo",
               false, 0, { 80, SCLEX_CPP, SC_EOL_CRLF }),
+
+          CTestCaseData(false, " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo 2. foo",
+              CPI_DEFAULT,
+                               " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo 2.\n"
+                               " //    foo",
+              false, 0, { 70, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "## b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b",
+              CPI_DEFAULT,
+                               "## b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b\r\n"
+                               "#  b b b",
+              false, 0, { 70, SCLEX_CONF, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS

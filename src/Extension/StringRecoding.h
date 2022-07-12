@@ -16,7 +16,7 @@ static unsigned char CHAR_NEXT_PARAGRAPH = '\f';
 
 static LPCSTR lpstrWhiteSpaces = " \t";
 static LPCSTR lpstrWhiteSpacesAndEOLs = " \t\r\n";
-static LPCSTR lpstrStaticMarkerChars = ">=?*";        // #TODO: removed # (comment line in perl)
+static LPCSTR lpstrStaticMarkerChars = ">=?*#";
 static LPCSTR lpstrDynamicMarkerChars = ":).";
 static LPCSTR lpstrDigits = "0123456789";
 
