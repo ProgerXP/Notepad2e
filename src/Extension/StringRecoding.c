@@ -1153,7 +1153,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
           }
           else
           {
-            SciCall_SetSel(pED->m_tr.m_iSelStart, pED->m_tr.m_iSelEndOriginal);
+            SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
           }          
           SciCall_ReplaceSel(0, "");
           SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
@@ -1164,7 +1164,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
           SciCall_SetSel(iPos, iPos);
         }
         pSS->iResultLength += pED->m_tbRes.m_iPos;
-        pED->m_tr.m_iSelEnd = pED->m_tr.m_iSelStart + pED->m_tbRes.m_iPos;
+        pED->m_tr.m_iSelEnd += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
         pED->m_tr.m_iPositionCurrent = SciCall_GetCurrentPos();
         iCursorOffset = 0;
       }
