@@ -6994,7 +6994,7 @@ void UpdateStatusbar()
   
   int iBytes;
   WCHAR tchBytes[64];
-  WCHAR tchDocSize[256];
+  WCHAR tchDocSize[MAX_EXPRESSION_LENGTH];
 
   WCHAR tchEOLMode[32];
   WCHAR tchOvrMode[32];

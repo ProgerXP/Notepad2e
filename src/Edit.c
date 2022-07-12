@@ -6369,8 +6369,8 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
       switch (LOWORD(wParam))
       {
         case IDOK: {
-            GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
-            GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+            GetDlgItemTextW(hwnd, 100, pdata->pwsz1, TEXT_BUFFER_LENGTH);
+            GetDlgItemTextW(hwnd, 101, pdata->pwsz2, TEXT_BUFFER_LENGTH);
             EndDialog(hwnd, IDOK);
           }
           break;
@@ -6596,11 +6596,11 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         case 100: {
             if (HIWORD(wParam) == EN_CHANGE)
             {
-              WCHAR wcIns[256], wcBuf[256];
+              WCHAR wcIns[TEXT_BUFFER_LENGTH], wcBuf[TEXT_BUFFER_LENGTH];
               WCHAR* br;
               BOOL brackets;
               int bCount;
-              GetDlgItemTextW(hwnd, 100, wcBuf, 255);
+              GetDlgItemTextW(hwnd, 100, wcBuf, TEXT_BUFFER_LENGTH);
               *wcIns = L'\0';
               bCount = 0;
               brackets = TRUE;
@@ -6640,8 +6640,8 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
           break;
         // [/2e]
         case IDOK: {
-            GetDlgItemTextW(hwnd, 100, pdata->pwsz1, 256);
-            GetDlgItemTextW(hwnd, 101, pdata->pwsz2, 256);
+            GetDlgItemTextW(hwnd, 100, pdata->pwsz1, TEXT_BUFFER_LENGTH);
+            GetDlgItemTextW(hwnd, 101, pdata->pwsz2, TEXT_BUFFER_LENGTH);
             EndDialog(hwnd, IDOK);
           }
           break;

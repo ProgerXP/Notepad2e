@@ -25,6 +25,7 @@
 BOOL Scintilla_RegisterClasses(void*);
 BOOL Scintilla_ReleaseResources();
 
+
 typedef struct _editfindreplace
 {
   char szFind[TEXT_BUFFER_LENGTH];
