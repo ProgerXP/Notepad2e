@@ -95,7 +95,6 @@ BOOL bLPegEnabled = FALSE;
 WCHAR wchLPegHomeOrigin[MAX_PATH] = { 0 };
 WCHAR g_wchLPegHome[MAX_PATH] = { 0 };
 
-extern BOOL fIsConsolasAvailable;
 extern HFONT hMonospacedFont;
 
 extern HWND  hwndMain;
