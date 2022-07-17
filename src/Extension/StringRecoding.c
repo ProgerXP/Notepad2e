@@ -246,29 +246,25 @@ int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
   return pRes ? pRes - pSrc : -1;
 }
 
-BOOL TextBuffer_IsAnyCharAtPos_IgnoreSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrIgnored, const int iOffsetFrom)
+BOOL TextBuffer_IsAnyCharAtPos_RequireSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrSpecial, const int iOffsetFrom)
 {
   int res = 0;
+  BOOL bSpecialFound = FALSE;
   while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
   {
     const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
-    if (strchr(lpChars, _ch))
+    if (strchr(lpChars, _ch) && bSpecialFound)
     {
       return TRUE;
     }
-    else if (!strchr(lpstrIgnored, _ch))
+    else if (!strchr(lpstrSpecial, _ch))
     {
       return FALSE;
     }
+    bSpecialFound = TRUE;
     ++res;
   }
   return FALSE;
-}
-
-BOOL TextBuffer_IsCharAtPos_IgnoreSpecial(TextBuffer* pTB, const char ch, LPCSTR lpstrIgnored, const int iOffsetFrom)
-{
-  const CHAR chars[2] = { ch, 0 };
-  return TextBuffer_IsAnyCharAtPos_IgnoreSpecial(pTB, &chars[0], lpstrIgnored, iOffsetFrom);
 }
 
 int TextBuffer_CountWhiteSpaces(TextBuffer* pTB, const int iOffsetFrom)
@@ -1009,7 +1005,11 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     SciCall_SetSkipUIUpdate(0);
     if ((pRA->recodingType == ERT_CALW) && ed.m_tr.m_emptyOriginalSelection)
     {
-      const auto pos = SciCall_PositionFromLine(SciCall_LineFromPosition(pRA->iResultSelEnd));
+      const int initialLineIndex = SciCall_LineFromPosition(iSelStart);
+      const int lineIndex = SciCall_LineFromPosition(pRA->iResultSelEnd);
+      const int pos = (lineIndex != initialLineIndex)
+                        ? SciCall_PositionFromLine(lineIndex)
+                        : SciCall_GetLength();
       EditSelectEx(pSS->hwnd, pos, pos);
     }
     UpdateWindow(pSS->hwnd);

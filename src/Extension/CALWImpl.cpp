@@ -29,7 +29,7 @@ extern "C" {
 
   BOOL isMarker(const unsigned char ch, EncodingData* pED)
   {
-    const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
+    const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_RequireSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
     return isStaticMarker(ch) || isDynamicMarker;
   }
 
@@ -373,7 +373,7 @@ extern "C" {
   bool CALWData::saveDynamicMarkerPrefix(EncodingData* pED, int& iCharsProcessed)
   {
     const int iWhiteSpacesBeforeMarker = TextBuffer_CountWhiteSpaces(&pED->m_tb, 0);
-    const auto res = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, iWhiteSpacesBeforeMarker);
+    const auto res = TextBuffer_IsAnyCharAtPos_RequireSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, iWhiteSpacesBeforeMarker);
     if (res)
     {
       m_cp->prefix->SetType(PrefixType::MarkerDynamic, 0);
@@ -442,7 +442,7 @@ extern "C" {
     int res = -1;
     const int iLineHeadLength = TextBuffer_GetLineHeadLength(&pED->m_tb);
     const int iCharCount = TextBuffer_CountWhiteSpaces(&pED->m_tb, -iLineHeadLength);
-    return TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, -iLineHeadLength + iCharCount);
+    return TextBuffer_IsAnyCharAtPos_RequireSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, -iLineHeadLength + iCharCount);
   }
 
 
@@ -872,13 +872,13 @@ extern "C" {
     }
 
     auto prefixFirstLineLength = prefixLength;
-    prefixLength = m_cp->prefix->IsMarker() ? m_cp->prefix->GetLength() : 0;
+    prefixLength = m_cp->prefix->GetLength();
 
     int iCharsProcessed = 0;
     int iWordByteCount = 0;
     const int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
     if ((iWordCount == 0)
-        || (iLineOffset + iWordLength <= longLineLimit) || isStaticMarker(ch))
+        || (iLineOffset + iWordLength <= longLineLimit) || isMarker(ch, pED))
     {
       if (m_cp->prefix->IsMarker()
         && ((TextBuffer_GetHeadLength(&pED->m_tbRes) > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))
@@ -940,7 +940,7 @@ extern "C" {
       {
         for (int i = 1; i <= iWordByteCount; ++i)
         {
-          const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_IgnoreSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
+          const BOOL isDynamicMarker = TextBuffer_IsAnyCharAtPos_RequireSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, 0);
           const unsigned char ch = TextBuffer_PopChar(&pED->m_tb);
           const BOOL isStaticMarker = IsCharFromString(lpstrStaticMarkerChars, ch);
           isMarker = isStaticMarker || isDynamicMarker;

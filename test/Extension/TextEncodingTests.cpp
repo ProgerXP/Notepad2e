@@ -911,6 +911,24 @@ namespace Notepad2eTests
                                " //    foo",
               false, 0, { 70, SCLEX_CPP, SC_EOL_LF }),
 
+          CTestCaseData(false, " // . foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo 2. foo",
+              CPI_DEFAULT,
+                               " // . foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo 2.\n"
+                               " // foo",
+              false, 0, { 70, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo . foo",
+              CPI_DEFAULT,
+                               " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo\n"
+                               " //    . foo",
+              false, 0, { 70, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo , foo",
+              CPI_DEFAULT,
+                               " // 1. foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo\n"
+                               " //    , foo",
+              false, 0, { 70, SCLEX_CPP, SC_EOL_LF }),
+
           CTestCaseData(false, "## b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b",
               CPI_DEFAULT,
                                "## b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b\r\n"
