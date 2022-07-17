@@ -6767,9 +6767,10 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        // [2e]: Remove input length limit in dialogs #408: leave free space(-3) for </..>
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 3, 0);
         SetDlgItemTextW(hwnd, 100, wchLastHTMLTag);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 3, 0);
         SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);

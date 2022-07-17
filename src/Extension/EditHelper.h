@@ -19,8 +19,8 @@ extern EExpressionEvaluationMode iEvaluateMathExpression;
 extern EWordNavigationMode iWordNavigationMode;
 extern EUrlEncodeMode iUrlEncodeMode;
 extern BOOL bExtendedSplitLines;
-extern WCHAR wchLastHTMLTag[0xff];
-extern WCHAR wchLastHTMLEndTag[0xff];
+extern WCHAR wchLastHTMLTag[TEXT_BUFFER_LENGTH];
+extern WCHAR wchLastHTMLEndTag[TEXT_BUFFER_LENGTH];
 
 void n2e_SplitLines(const HWND hwnd);
 BOOL n2e_JoinLines_InitSelection();

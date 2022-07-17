@@ -25,8 +25,8 @@
 #define BRACES "()[]{}<>"
 #define BRACES_WITH_QUOTES BRACES "'\"`"
 
-WCHAR wchLastHTMLTag[0xff] = L"<tag>";
-WCHAR wchLastHTMLEndTag[0xff] = L"</tag>";
+WCHAR wchLastHTMLTag[TEXT_BUFFER_LENGTH] = L"<tag>";
+WCHAR wchLastHTMLEndTag[TEXT_BUFFER_LENGTH] = L"</tag>";
 
 extern NP2ENCODING mEncoding[];
 extern int iEncoding;
@@ -1343,7 +1343,7 @@ BOOL n2e_IsValidClosingTagW(LPCWSTR pwchTag)
 
 WCHAR* n2e_GetClosingTagText_EditInsertTagDlg(WCHAR* wchBuf)
 {
-  static WCHAR wchIns[256];
+  static WCHAR wchIns[TEXT_BUFFER_LENGTH];
   WCHAR *pwCur;
   int  cchIns = 2;
   BOOL bClear = TRUE;
