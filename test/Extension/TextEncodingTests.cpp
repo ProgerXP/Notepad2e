@@ -934,6 +934,24 @@ namespace Notepad2eTests
                                "## b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b b\r\n"
                                "#  b b b",
               false, 0, { 70, SCLEX_CONF, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "# # abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc",
+              CPI_DEFAULT,
+                               "# # abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc\n"
+                               "#   abc abc abc abc",
+              false, 0, { 70, SCLEX_CONF, SC_EOL_LF }),
+
+          CTestCaseData(false, "  # # abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc",
+              CPI_DEFAULT,
+                               "  # # abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc\n"
+                               "  #   abc abc abc abc",
+              false, 0, { 70, SCLEX_CONF, SC_EOL_LF }),
+
+          CTestCaseData(false, "  #  1.  abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc",
+              CPI_DEFAULT,
+                               "  #  1.  abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc\n"
+                               "  #      abc abc abc abc abc",
+              false, 0, { 70, SCLEX_CONF, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS

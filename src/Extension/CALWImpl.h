@@ -64,6 +64,7 @@ public:
   void SetType(const PrefixType type, const int iContentOffset);
   void SetSubType(const PrefixType type);
   int GetContentOffset() const;
+  void SetContentOffset(const int iOffset);
   int CountLeadingWhiteSpaces() const;
   int CountTrailingWhiteSpaces() const;
   void SetupLeadingWhiteSpaces(const struct Prefix& originPrefix);

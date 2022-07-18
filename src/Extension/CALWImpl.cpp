@@ -93,7 +93,7 @@ extern "C" {
   void Prefix::SetType(const PrefixType type, const int iContentOffset)
   {
     m_type = type;
-    m_iContentOffset = iContentOffset;
+    SetContentOffset(iContentOffset);
     initWhitespace();
   }
 
@@ -105,6 +105,11 @@ extern "C" {
   int Prefix::GetContentOffset() const
   {
     return m_iContentOffset;
+  }
+
+  void Prefix::SetContentOffset(const int iOffset)
+  {
+    m_iContentOffset = iOffset;
   }
 
   int Prefix::CountLeadingWhiteSpaces() const
@@ -145,8 +150,8 @@ extern "C" {
     }
     else if (IsMarkerDynamic() || (m_subtype == PrefixType::MarkerDynamic))
     {
-      const auto posMarkerStart = m_data.find_first_of(lpstrDigits, posWhitespace);
-      const auto posMarkerEnd = m_data.find_first_of(lpstrDynamicMarkerChars, posWhitespace);
+      const auto posMarkerStart = m_data.find_first_of(lpstrDigits, (posWhitespace != std::string::npos) ? posWhitespace : m_iContentOffset);
+      const auto posMarkerEnd = m_data.find_first_of(lpstrDynamicMarkerChars, (posMarkerStart != std::string::npos) ? posMarkerStart : m_iContentOffset);
       if ((posMarkerStart != std::string::npos) && (posMarkerEnd != std::string::npos))
       {
         m_rangeMarker.pos1 = posMarkerStart;
@@ -174,7 +179,7 @@ extern "C" {
 
   unsigned char Prefix::GetChar(const std::size_t pos, const int iLineIndex)
   {
-    if (IsMarkerStatic() || IsCommentedMarker())
+    if (IsMarker() || IsCommentedMarker())
     {
       return (iLineIndex != 0) && m_rangeMarker.check(pos)
             ? CHAR_SPACE
@@ -353,7 +358,7 @@ extern "C" {
     const auto res = isStaticMarker(TextBuffer_GetCharAt(&pED->m_tb, iWhiteSpacesBeforeMarker));
     if (res)
     {
-      m_cp->prefix->SetType(PrefixType::MarkerStatic, 0);
+      m_cp->prefix->SetType(PrefixType::MarkerStatic, m_cp->prefix->GetContentOffset());
       for (int i = 0; i < iWhiteSpacesBeforeMarker; ++i)
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
@@ -376,7 +381,7 @@ extern "C" {
     const auto res = TextBuffer_IsAnyCharAtPos_RequireSpecial(&pED->m_tb, lpstrDynamicMarkerChars, lpstrDigits, iWhiteSpacesBeforeMarker);
     if (res)
     {
-      m_cp->prefix->SetType(PrefixType::MarkerDynamic, 0);
+      m_cp->prefix->SetType(PrefixType::MarkerDynamic, m_cp->prefix->GetContentOffset());
       for (int i = 0; i < iWhiteSpacesBeforeMarker; ++i)
       {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
@@ -505,13 +510,14 @@ extern "C" {
         m_cp->prefix->PushChar(TextBuffer_PopChar(&pED->m_tb));
       }
 
+      m_cp->prefix->SetContentOffset(m_cp->prefix->GetLength());
       m_cp->prefix->SetSubType(saveStaticMarkerPrefix(pED, iCharsProcessed)
         ? PrefixType::MarkerStatic
         : saveDynamicMarkerPrefix(pED, iCharsProcessed)
         ? PrefixType::MarkerDynamic
         : PrefixType::Plain);
 
-      m_cp->prefix->SetType(PrefixType::Comment, iSingleLineCommentPrefixLength);
+      m_cp->prefix->SetType(PrefixType::Comment, m_cp->prefix->GetContentOffset());
       if ((TextBuffer_GetTailLength(&pED->m_tb) == 0))
       {
         m_cp->prefix->rtrim();

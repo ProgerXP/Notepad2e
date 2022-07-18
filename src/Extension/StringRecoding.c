@@ -686,14 +686,19 @@ BOOL RecodingAlgorithm_ShouldBreakEncoding(const RecodingAlgorithm* pRA)
   return RecodingAlgorithm_ShouldBreak(pRA) && (pRA->iPassIndex >= pRA->iPassCount - 1);
 }
 
+BOOL RecodingAlgorithm_IsRestrictedForHWNDUse(const RecodingAlgorithm* pRA)
+{
+  return (pRA->recodingType == ERT_CALW);
+}
+
 BOOL RecodingAlgorithm_CanUseHWNDForReading(const RecodingAlgorithm* pRA)
 {
-  return (pRA->recodingType != ERT_CALW) || CALW_CanUseHWNDForReading(pRA);
+  return !RecodingAlgorithm_IsRestrictedForHWNDUse(pRA) || CALW_CanUseHWNDForReading(pRA);
 }
 
 BOOL RecodingAlgorithm_CanUseHWNDForWriting(const RecodingAlgorithm* pRA)
 {
-  return (pRA->recodingType != ERT_CALW) || CALW_CanUseHWNDForWriting(pRA);
+  return !RecodingAlgorithm_IsRestrictedForHWNDUse(pRA) || CALW_CanUseHWNDForWriting(pRA);
 }
 
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding,
@@ -1151,6 +1156,10 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
             SciCall_SetSel(pRA->iResultStart, pRA->iResultEnd);
             pRA->iResultSelEnd = pRA->iResultStart + pED->m_tbRes.m_iPos;
           }
+          else if (RecodingAlgorithm_IsRestrictedForHWNDUse(pRA))
+          {
+            SciCall_SetSel(pED->m_tr.m_iSelStart, pED->m_tr.m_iSelEndOriginal);
+          }
           else
           {
             SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
@@ -1185,7 +1194,7 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
       }
       else
       {
-        pSS->iProcessedChars += iCharsProcessed / 2;
+        pSS->iProcessedChars += iCharsProcessed;
       }
       pED->m_tr.m_iExpectedProcessedChars = 0;
     }
