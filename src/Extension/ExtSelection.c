@@ -32,7 +32,7 @@ EHighlightCurrentSelectionMode iHighlightSelection = HCS_WORD_AND_SELECTION;
 BOOL bEditSelection = FALSE;
 BOOL bEditSelectionScope = FALSE;
 int iEditSelectionFirstVisibleLine = 0;
-BOOL bHighlightAll = TRUE;
+ESelectionMode iSelectionMode = SM_ALL;
 BOOL bEditSelectionInit = FALSE;
 BOOL bNeedUpdateInEditMode = FALSE;
 
@@ -228,28 +228,27 @@ int n2e_HighlightWord(LPCSTR word)
   struct Sci_TextToFind ttf;
   len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-  if (bHighlightAll)
+  switch (iSelectionMode)
   {
-    if (bEditSelectionInit && bEditSelectionScope)
+  case SM_LINE:
+    lstart = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, curr, 0);
+    lrange = 0;
+    break;
+  case SM_ALL:
+  case SM_INVERSED_ALL:
+    if (bEditSelectionInit && (bEditSelectionScope == (iSelectionMode == SM_ALL)))
     {
       lstart = 0;
+      lrange = SciCall_GetLineCount();
     }
     else
     {
       lstart = SendMessage(hwndEdit, SCI_GETFIRSTVISIBLELINE, 0, 0);
       lstart = (int)SendMessage(hwndEdit, SCI_DOCLINEFROMVISIBLE, lstart, 0);
+      lrange = min(SciCall_GetLinesOnScreen(), SciCall_GetLineCount());
     }
+    break;
   }
-  else
-  {
-    lstart = SendMessage(hwndEdit, SCI_LINEFROMPOSITION, curr, 0);
-  }
-
-  lrange = bHighlightAll
-    ? (bEditSelectionInit && bEditSelectionScope)
-      ? SciCall_GetLineCount()
-      : min(SciCall_GetLinesOnScreen(), SciCall_GetLineCount())
-    : 0;
 
   ttf.chrg.cpMin = SendMessage(hwndEdit, SCI_POSITIONFROMLINE, lstart, 0);
   ttf.chrg.cpMax = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, lstart + lrange, 0) + 1;
@@ -288,10 +287,10 @@ int n2e_HighlightWord(LPCSTR word)
     {
       curr_indi = N2E_SELECT_INDICATOR_EDIT;
       iOriginalSelectionLength = wlen;
-      bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax, bHighlightAll ? iMaxSearchDistance : 0, len, search_opt) > 1);
+      bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax, (iSelectionMode == SM_ALL) ? iMaxSearchDistance : 0, len, search_opt) > 1);
       if (!n2e_IsSelectionEditModeOn())
       {
-        bHighlightAll = TRUE;
+        iSelectionMode = SM_ALL;
       }
     }
 
@@ -299,7 +298,7 @@ int n2e_HighlightWord(LPCSTR word)
     {
       int cpMin = ttf.chrg.cpMin;
       int cpMax = ttf.chrg.cpMax;
-      if (bHighlightAll)
+      if (iSelectionMode == SM_ALL)
       {
         int cpMin2 = cpMin;
         int cpMax2 = cpMax;
@@ -708,9 +707,10 @@ BOOL n2e_IsSelectionEditModeOn()
   return bEditSelection;
 }
 
-void n2e_SelectionEditStart(const BOOL highlightAll)
+void n2e_SelectionEditStart(const ESelectionMode mode)
 {
-  bHighlightAll = highlightAll;
+  iSelectionMode = mode;
+
   // if mode already ON - then turn it OFF
   if (n2e_IsSelectionEditModeOn())
   {
@@ -733,9 +733,11 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
     WCHAR buf[MAX_PATH];
     wsprintf(buf, L"Editing %d occurrence%s (%s)", iEditSelectionCount,
               iEditSelectionCount > 1 ? L"s" : L"",
-              highlightAll
-                    ? bEditSelectionScope ? L"document-wise" : L"visible only"
-                    : L"on line");
+              (iSelectionMode == SM_LINE)
+                    ? L"on line"
+                    : (bEditSelectionScope == (iSelectionMode == SM_ALL))
+                      ? L"document-wise"
+                      : L"visible only");
     tiEditSelection.lpszText = buf;
     n2e_ToolTipSetToolInfo(hwndToolTipEdit, &tiEditSelection);
 
@@ -751,7 +753,7 @@ void n2e_SelectionEditStart(const BOOL highlightAll)
 BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
 {
   bEditSelectionInit = FALSE;
-  bHighlightAll = TRUE;
+  iSelectionMode = SM_ALL;
   if (n2e_IsSelectionEditModeOn())
   {
     n2e_SelectionEditHideToolTip();

@@ -2,6 +2,13 @@
 
 typedef enum
 {
+  SM_ALL,
+  SM_INVERSED_ALL,
+  SM_LINE
+} ESelectionMode;
+
+typedef enum
+{
   SUM_INIT,
   SUM_UPDATE,
   SUM_MODIF
@@ -20,7 +27,7 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
 void n2e_SelectionUpdate(const ESelectionUpdateMode place);
 BOOL n2e_IsHighlightSelectionEnabled();
 BOOL n2e_IsSelectionEditModeOn();
-void n2e_SelectionEditStart(const BOOL highlightAll);
+void n2e_SelectionEditStart(const ESelectionMode mode);
 BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode);
 BOOL n2e_SelectionEditIsVisibleOnScreen();
 void n2e_SelectionEditHideToolTip();

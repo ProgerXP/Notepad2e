@@ -2144,6 +2144,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, ID_EDIT_FINDPREVIOUSWORD, i);
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION, i);
   EnableCmd(hmenu, ID_EDIT_EDITSELECTION_LINE, i);
+  EnableCmd(hmenu, ID_EDIT_EDITSELECTION_INVERSED, i);
   // [/2e]
   CheckCmd(hmenu, IDM_VIEW_USE2NDDEFAULT, Style_GetUse2ndDefault(hwndEdit));
   CheckCmd(hmenu, IDM_VIEW_WORDWRAP, fWordWrap);
@@ -4410,14 +4411,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Edit highlighted word #18
     case ID_EDIT_EDITSELECTION:
-      n2e_SelectionEditStart(TRUE);
+      n2e_SelectionEditStart(SM_ALL);
       return 1;
 
 
     case ID_EDIT_EDITSELECTION_LINE:
-      n2e_SelectionEditStart(FALSE);
+      n2e_SelectionEditStart(SM_LINE);
       return 1;
-    // [/2e]
+
+
+    // [2e]: Alt+Backtick: enter Edit Mode with inverse line/document-wise setting #366
+    case ID_EDIT_EDITSELECTION_INVERSED:
+      n2e_SelectionEditStart(SM_INVERSED_ALL);
+      return 1;
 
 
     // [2e]: Replace settings in all instances #5
