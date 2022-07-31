@@ -198,10 +198,8 @@ void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInse
 
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
 {
-  if (n2e_SelectionEditStop(hwnd, SES_APPLY))
-  {
-    return;
-  }
+  n2e_SelectionEditStop(hwnd, SES_APPLY);
+
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   const int iCurLine = SendMessage(hwnd, SCI_LINEFROMPOSITION, iCurPos, 0);
   const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
