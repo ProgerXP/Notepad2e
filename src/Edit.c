@@ -58,10 +58,8 @@ extern BOOL bReplaceInitialized;
 
 static EDITFINDREPLACE efrSave;
 static BOOL bSwitchedFindReplace = FALSE;
-static int xFindReplaceDlgSave;
-static int yFindReplaceDlgSave;
-extern int xFindReplaceDlg;
-extern int yFindReplaceDlg;
+extern int xFindReplaceDlg = 0;
+extern int yFindReplaceDlg = 0;
 
 extern int iDefaultEncoding;
 extern int iDefaultEOLMode;
@@ -5001,16 +4999,13 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
         }
 
-        if (!bSwitchedFindReplace)
-        {
-          if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
-            CenterDlgInParent(hwnd);
-          else
-            SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
-        }
+        if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
+          CenterDlgInParent(hwnd);
         else
+          SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
+
+        if (bSwitchedFindReplace)
         {
-          SetDlgPos(hwnd, xFindReplaceDlgSave, yFindReplaceDlgSave);
           bSwitchedFindReplace = FALSE;
           CopyMemory(lpefr, &efrSave, sizeof(EDITFINDREPLACE));
         }
@@ -5138,7 +5133,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
               || (!bIsFindDlg && (LOWORD(wParam) == IDMSG_SWITCHTOFIND))
               || (LOWORD(wParam) == IDMSG_SWITCHTOGOTO))
           {
-            GetDlgPos(hwnd, &xFindReplaceDlgSave, &yFindReplaceDlgSave);
+            GetDlgPos(hwnd, &xFindReplaceDlg, &yFindReplaceDlg);
             bSwitchedFindReplace = TRUE;
             // [2e]: Match indicator
             n2e_ResetFindIcon();
@@ -6138,16 +6133,13 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
         DPI_INIT();
 
-        if (!bSwitchedFindReplace)
-        {
-          if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
-            CenterDlgInParent(hwnd);
-          else
-            SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
-        }
+        if (xFindReplaceDlg == 0 || yFindReplaceDlg == 0)
+          CenterDlgInParent(hwnd);
         else
+          SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
+
+        if (bSwitchedFindReplace)
         {
-          SetDlgPos(hwnd, xFindReplaceDlgSave, yFindReplaceDlgSave);
           bSwitchedFindReplace = FALSE;
         }
       }
