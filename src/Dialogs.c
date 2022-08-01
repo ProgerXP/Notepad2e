@@ -113,10 +113,12 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       break;
   }
 
+  // [2e]: File change notify MsgBox: use icon depending on unsaved state #350
   if ((iIcon & (MB_ICONEXCLAMATION | MB_ICONINFORMATION)) == 0)
   {
     iIcon |= n2e_IsDocumentModified() ? MB_ICONEXCLAMATION : MB_ICONINFORMATION;
   }
+  // [/2e]
 
   if (!(hwnd = GetFocus()))
     hwnd = hwndMain;
