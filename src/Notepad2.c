@@ -187,7 +187,8 @@ int       iPrintFooter;
 int       iPrintColor;
 int       iPrintZoom;
 RECT      pagesetupMargin;
-BOOL      bSaveBeforeRunningTools;
+// [2e]: Add INI setting to disable file save prompt in Launch > New Window #361
+enum ESaveBeforeRunningToolsMode iSaveBeforeRunningTools = SBRT_DISABLED;
 int       iFileWatchingMode;
 BOOL      bResetFileWatching;
 DWORD     dwFileCheckInterval;
@@ -2184,7 +2185,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_VIEW_TRANSPARENT, bTransparentModeAvailable);
   CheckCmd(hmenu, IDM_VIEW_NOSAVERECENT, bSaveRecentFiles);
   CheckCmd(hmenu, IDM_VIEW_NOSAVEFINDREPL, bSaveFindReplace);
-  CheckCmd(hmenu, IDM_VIEW_SAVEBEFORERUNNINGTOOLS, bSaveBeforeRunningTools);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_SAVEBEFORERUNNINGTOOLS_DISABLED, IDM_VIEW_SAVEBEFORERUNNINGTOOLS_EXCEPT_NEW_WINDOW, n2e_GetSaveBeforeRunningToolsMenuID(), MF_BYCOMMAND);
   CheckCmd(hmenu, IDM_VIEW_CHANGENOTIFY, iFileWatchingMode);
   CheckMenuRadioItem(hmenu, IDM_VIEW_SHOWFILENAMEONLY, IDM_VIEW_SHOWEXCERPT, n2e_GetCurrentShowTitleMenuID(), MF_BYCOMMAND);
   // [2e]: Language indication #86
@@ -2432,11 +2433,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int x, y, cx, cy, imax;
         WCHAR tch[64];
 
-        if (bSaveBeforeRunningTools
-            && (LOWORD(wParam) != IDM_FILE_NEWWINDOW2)      // [2e]: Disable save prompt for some Launch commands #176
-            && !bSkipFileSavePromptOnNewWindowCommand
-            && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
-          break;
+        // [2e]: Add INI setting to disable file save prompt in Launch > New Window #361
+        // [2e]: Disable save prompt for some Launch commands #176
+        if ((iSaveBeforeRunningTools == SBRT_ENABLED)
+            || ((iSaveBeforeRunningTools == SBRT_EXCEPT_NEW_WINDOW) && (LOWORD(wParam) != IDM_FILE_NEWWINDOW2)))
+        {
+          if (!FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+            break;
+        }
 
         GetModuleFileName(NULL, szModuleName, COUNTOF(szModuleName));
 
@@ -2513,7 +2517,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (!lstrlen(szCurFile))
           break;
 
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         if (lstrlen(szCurFile))
@@ -2567,7 +2571,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_FILE_RUN: {
         WCHAR tchCmdLine[MAX_PATH + 4];
-        if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         lstrcpy(tchCmdLine, szCurFile);
@@ -2595,7 +2599,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_FILE_OPENWITH:
-      if (bSaveBeforeRunningTools && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
         break;
       OpenWithDlg(hwnd, szCurFile);
       break;
@@ -4323,9 +4327,20 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
-    case IDM_VIEW_SAVEBEFORERUNNINGTOOLS:
-      bSaveBeforeRunningTools = (bSaveBeforeRunningTools) ? FALSE : TRUE;
+    // [2e]: Add INI setting to disable file save prompt in Launch > New Window #361
+    case IDM_VIEW_SAVEBEFORERUNNINGTOOLS_DISABLED:
+      iSaveBeforeRunningTools = SBRT_DISABLED;
       break;
+
+
+    case IDM_VIEW_SAVEBEFORERUNNINGTOOLS_ENABLED:
+      iSaveBeforeRunningTools = SBRT_ENABLED;
+      break;
+
+    case IDM_VIEW_SAVEBEFORERUNNINGTOOLS_EXCEPT_NEW_WINDOW:
+      iSaveBeforeRunningTools = SBRT_EXCEPT_NEW_WINDOW;
+      break;
+    // [/2e]
 
 
     case IDM_VIEW_CHANGENOTIFY:
@@ -5892,8 +5907,8 @@ void LoadSettings()
   pagesetupMargin.bottom = IniSectionGetInt(pIniSection, L"PrintMarginBottom", -1);
   pagesetupMargin.bottom = max(pagesetupMargin.bottom, -1);
 
-  bSaveBeforeRunningTools = IniSectionGetInt(pIniSection, L"SaveBeforeRunningTools", 0);
-  if (bSaveBeforeRunningTools) bSaveBeforeRunningTools = 1;
+  iSaveBeforeRunningTools = IniSectionGetInt(pIniSection, L"SaveBeforeRunningTools", SBRT_DISABLED);
+  iSaveBeforeRunningTools = max(min(iSaveBeforeRunningTools, SBRT_EXCEPT_NEW_WINDOW), SBRT_DISABLED);
 
   iFileWatchingMode = IniSectionGetInt(pIniSection, L"FileWatchingMode", 0);
   iFileWatchingMode = max(min(iFileWatchingMode, 2), 0);
@@ -6098,7 +6113,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     IniSectionSetInt(pIniSection, L"PrintMarginTop", pagesetupMargin.top);
     IniSectionSetInt(pIniSection, L"PrintMarginRight", pagesetupMargin.right);
     IniSectionSetInt(pIniSection, L"PrintMarginBottom", pagesetupMargin.bottom);
-    IniSectionSetInt(pIniSection, L"SaveBeforeRunningTools", bSaveBeforeRunningTools);
+    IniSectionSetInt(pIniSection, L"SaveBeforeRunningTools", iSaveBeforeRunningTools);
     IniSectionSetInt(pIniSection, L"FileWatchingMode", iFileWatchingMode);
     IniSectionSetInt(pIniSection, L"ResetFileWatching", bResetFileWatching);
     IniSectionSetInt(pIniSection, L"EscFunction", iEscFunction);

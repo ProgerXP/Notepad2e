@@ -46,7 +46,6 @@
 #define INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE L"FindSelectToMatchingBraceMode"
 #define INI_SETTING_TREAT_QUOTES_AS_BRACES L"TreatQuotesAsBraces"
 #define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
-#define INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND L"SkipFileSavePromptOnNewWindowCommand"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 
 #ifdef LPEG_LEXER
@@ -86,7 +85,6 @@ BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
-BOOL bSkipFileSavePromptOnNewWindowCommand = FALSE;
 BOOL bExtendedSplitLines = TRUE;
 
 HWND hwndStatusProgressBar = NULL;
@@ -504,7 +502,6 @@ void n2e_LoadINI()
   iFindSelectToMatchingBraceMode = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
-  bSkipFileSavePromptOnNewWindowCommand = IniGetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 
 #ifdef LPEG_LEXER
@@ -596,7 +593,6 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_SELECT_TO_MATCHING_BRACE_MODE, iFindSelectToMatchingBraceMode);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_SKIP_FILE_SAVE_PROMPT_ON_NEW_WINDOW_COMMAND, bSkipFileSavePromptOnNewWindowCommand);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
@@ -1412,6 +1408,22 @@ int n2e_GetCurrentEvalMenuID()
     return ID_SETTINGS_EVAL_SELECTION;
   case EEM_LINE:
     return ID_SETTINGS_EVAL_LINE;
+  default:
+    assert(FALSE);
+    return 0;
+  }
+}
+
+int n2e_GetSaveBeforeRunningToolsMenuID()
+{
+  switch (iSaveBeforeRunningTools)
+  {
+  case SBRT_DISABLED:
+    return IDM_VIEW_SAVEBEFORERUNNINGTOOLS_DISABLED;
+  case SBRT_ENABLED:
+    return IDM_VIEW_SAVEBEFORERUNNINGTOOLS_ENABLED;
+  case SBRT_EXCEPT_NEW_WINDOW:
+    return IDM_VIEW_SAVEBEFORERUNNINGTOOLS_EXCEPT_NEW_WINDOW;
   default:
     assert(FALSE);
     return 0;

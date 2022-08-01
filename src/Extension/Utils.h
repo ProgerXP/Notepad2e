@@ -40,6 +40,13 @@ typedef enum
   PNM_FULLPATH = 2
 } EPathNameFormat;
 
+typedef enum
+{
+  SBRT_DISABLED = 0,
+  SBRT_ENABLED = 1,
+  SBRT_EXCEPT_NEW_WINDOW = 2
+} ESaveBeforeRunningToolsMode;
+
 typedef enum 
 {
   EEF_IGNORE = 0,
@@ -131,7 +138,6 @@ extern ECSSSettingsMode iCSSSettings;
 extern ELanguageIndicatorMode iShowLanguageInTitle;
 extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
 extern BOOL bTreatQuotesAsBraces;
-extern BOOL bSkipFileSavePromptOnNewWindowCommand;
 
 BOOL n2e_IsDocumentModified();
 
@@ -180,8 +186,10 @@ int n2e_GetCurrentSaveSettingsMenuID();
 int n2e_GetCurrentSaveOnLoseFocusMenuID();
 int n2e_GetCurrentHighlightCurrentSelectionMenuID();
 int n2e_GetCurrentEvalMenuID();
+int n2e_GetSaveBeforeRunningToolsMenuID();
 
 extern int iScrollYCaretPolicy;
+extern int iSaveBeforeRunningTools;
 extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;
 extern BOOL bShowProgressBar;

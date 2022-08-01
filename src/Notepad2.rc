@@ -367,7 +367,12 @@ BEGIN
         MENUITEM "Accelerated &Ctrl-Arrow Navigation", ID_SETTINGS_WORD_NAVIGATION
         MENUITEM "C&trl+Wheel Scroll",          ID_SETTINGS_CTRL_WHEEL_SCROLL
         MENUITEM "Move Caret On Ri&ght Click",  ID_SETTINGS_MOVE_CARET_ON_RCLICK
-        MENUITEM "Sa&ve Before Running Tools",  IDM_VIEW_SAVEBEFORERUNNINGTOOLS
+        POPUP "Sa&ve Before Running Tools"
+        BEGIN
+            MENUITEM "&Disabled",               IDM_VIEW_SAVEBEFORERUNNINGTOOLS_DISABLED
+            MENUITEM "&Enabled",                IDM_VIEW_SAVEBEFORERUNNINGTOOLS_ENABLED
+            MENUITEM "Enabled e&xcept for New Window", IDM_VIEW_SAVEBEFORERUNNINGTOOLS_EXCEPT_NEW_WINDOW
+        END
         MENUITEM SEPARATOR
         MENUITEM "S&how Toolbar",               IDM_VIEW_TOOLBAR
         MENUITEM "C&ustomize Toolbar...",       IDM_VIEW_CUSTOMIZETB
