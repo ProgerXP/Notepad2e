@@ -926,7 +926,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         n2e_SaveActiveEdit();
         n2e_SelectionEditStop(hwndEdit, SES_APPLY);
         // [2e]: Save on deactivate #164
-        if (!bReadOnly && bModified && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
+        if (!bReadOnly && n2e_IsDocumentModified() && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
@@ -1360,12 +1360,12 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_CHANGENOTIFY:
-      if (iFileWatchingMode == 1 || bModified || iEncoding != iOriginalEncoding)
+      if (iFileWatchingMode == 1 || n2e_IsDocumentModified())
         SetForegroundWindow(hwnd);
 
       if (PathFileExists(szCurFile))
       {
-        if ((iFileWatchingMode == 2 && !bModified && iEncoding == iOriginalEncoding) ||
+        if ((iFileWatchingMode == 2 && !n2e_IsDocumentModified()) ||
             MsgBox(MBYESNO, IDS_FILECHANGENOTIFY) == IDYES)
         {
           // [2e]: Retain split view state on document reload #405
@@ -2270,7 +2270,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           WCHAR tchCurFile2[MAX_PATH];
 
-          if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBOKCANCEL, IDS_ASK_REVERT) != IDOK)
+          if (n2e_IsDocumentModified() && MsgBox(MBOKCANCEL, IDS_ASK_REVERT) != IDOK)
             return (0);
 
           // [2e]: Retain split view state on document reload #405
@@ -2844,7 +2844,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           if (iEncoding == CPI_UNICODEBEBOM)
             iNewEncoding = CPI_UNICODEBE;
 
-          if ((bModified || iEncoding != iOriginalEncoding) && MsgBox(MBOKCANCEL, IDS_ASK_RECODE) != IDOK)
+          if (n2e_IsDocumentModified() && MsgBox(MBOKCANCEL, IDS_ASK_RECODE) != IDOK)
             return (0);
 
           if (RecodeDlg(hwnd, &iNewEncoding))
@@ -7497,7 +7497,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
     }
   }
 
-  if (!bSaveAlways && (!bModified && iEncoding == iOriginalEncoding || bIsEmptyNewFile) && !bSaveAs)
+  if (!bSaveAlways && (!n2e_IsDocumentModified() || bIsEmptyNewFile) && !bSaveAs)
     return TRUE;
 
   if (bAsk)
@@ -8288,7 +8288,7 @@ void SetNotifyIconTitle(HWND hwnd)
   else
     GetString(IDS_UNTITLED, tchTitle, COUNTOF(tchTitle) - 4);
 
-  if (bModified || iEncoding != iOriginalEncoding)
+  if (n2e_IsDocumentModified())
     lstrcpy(nid.szTip, L"* ");
   else
     lstrcpy(nid.szTip, L"");

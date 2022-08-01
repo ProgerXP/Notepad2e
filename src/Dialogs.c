@@ -100,17 +100,22 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       iIcon = MB_ICONEXCLAMATION;
       break;
     case MBYESNO:
-      iIcon = MB_ICONEXCLAMATION | MB_YESNO;
+      iIcon = MB_YESNO;
       break;
     case MBYESNOCANCEL:
-      iIcon = MB_ICONEXCLAMATION | MB_YESNOCANCEL;
+      iIcon = MB_YESNOCANCEL;
       break;
     case MBYESNOWARN:
-      iIcon = MB_ICONEXCLAMATION | MB_YESNO;
+      iIcon = MB_YESNO;
       break;
     case MBOKCANCEL:
-      iIcon = MB_ICONEXCLAMATION | MB_OKCANCEL;
+      iIcon = MB_OKCANCEL;
       break;
+  }
+
+  if ((iIcon & (MB_ICONEXCLAMATION | MB_ICONINFORMATION)) == 0)
+  {
+    iIcon |= n2e_IsDocumentModified() ? MB_ICONEXCLAMATION : MB_ICONINFORMATION;
   }
 
   if (!(hwnd = GetFocus()))

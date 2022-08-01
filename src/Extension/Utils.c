@@ -120,6 +120,11 @@ BOOL IsFontAvailable(LPCWSTR);
 
 extern HWND _hwndEdit;
 
+BOOL n2e_IsDocumentModified()
+{
+  return bModified || (iEncoding != iOriginalEncoding);
+}
+
 void n2e_InitInstance()
 {
   n2e_Init();
@@ -1302,7 +1307,7 @@ BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
 void n2e_UpdateWindowTitle(const HWND hwnd)
 {
   SetWindowTitle(hwnd, uidsAppTitle, flagPasteBoard, fIsElevated, IDS_UNTITLED, szCurFile,
-                 iPathNameFormat, bModified || iEncoding != iOriginalEncoding,
+                 iPathNameFormat, n2e_IsDocumentModified(),
                  IDS_READONLY, bReadOnly, szTitleExcerpt);
 }
 

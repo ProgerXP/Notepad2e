@@ -133,6 +133,8 @@ extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
 extern BOOL bTreatQuotesAsBraces;
 extern BOOL bSkipFileSavePromptOnNewWindowCommand;
 
+BOOL n2e_IsDocumentModified();
+
 void n2e_InitInstance();
 void n2e_ExitInstance();
 
