@@ -2584,6 +2584,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             PathFileExists(szCurFile)
             )
         {
+          // [2e]: Hide pointer while typing #230
+          n2e_OnMouseVanishEvent(TRUE);
+          // [/2e]
           n2e_ExplorerCxtMenu(szCurFile, hwnd);
         }
       }

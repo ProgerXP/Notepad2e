@@ -248,6 +248,10 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
       }
       break;
 
+    case WM_CAPTURECHANGED:
+      n2e_OnMouseVanishEvent(TRUE);
+      break;
+
     default:
       break;
   }
