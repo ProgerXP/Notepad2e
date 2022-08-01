@@ -1269,7 +1269,7 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                           SHGFI_USEFILEATTRIBUTES | SHGFI_SMALLICON | SHGFI_SYSICONINDEX);
             lvi.iImage = shfi.iIcon;
 
-            // [2e]: History dialog: focus second item on show #209
+            // [2e]: History dialog: focus third (second) item on show #209
             const int iCount = MRU_Enum(pFileMRU, 0, NULL, 0);
             int iOpenedItem = -1;
             for (i = 0; i < iCount; i++)
@@ -1285,8 +1285,10 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
               }
             }
             const int iSelectedItem = ((iCount > 1) && (iOpenedItem >= 0))
-                                     ? (iOpenedItem < iCount - 1) ? iOpenedItem + 1 : 0                          
-                                     : 0;
+                                      ? (iOpenedItem < iCount - 1)
+                                        ? min(iOpenedItem + 2, iCount - 1)
+                                        : 0
+                                      : 0;
             ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), iSelectedItem, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
             // [/2e]
             ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_FILEMRU), 0, LVSCW_AUTOSIZE_USEHEADER);
