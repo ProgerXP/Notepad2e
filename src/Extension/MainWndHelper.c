@@ -109,9 +109,11 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
         const Sci_Position posStart = SciCall_GetSelectionNStart(i);
         const Sci_Position posEnd = SciCall_GetSelectionNEnd(i);
         const int iCountOnLine = posEnd - posStart;
-        if (((iCountOnLine <= 0)
-          || (iCountOnLine > MAX_EXPRESSION_LENGTH))
-          || (iCount + iCountOnLine + 2 > MAX_EXPRESSION_LENGTH))
+        if (iCountOnLine == 0)
+        {
+          continue;
+        }
+        if ((iCountOnLine > MAX_EXPRESSION_LENGTH) || (iCount + iCountOnLine + 2 > MAX_EXPRESSION_LENGTH))
         {
           break;
         }
