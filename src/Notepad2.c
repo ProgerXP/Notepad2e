@@ -2085,8 +2085,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   i = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
   i2 = (int)SendMessage(hwndEdit, SCI_CANPASTE, 0, 0);
   i3 = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
-  EnableCmd(hmenu, IDM_EDIT_CUT, i);
-  EnableCmd(hmenu, IDM_EDIT_COPY, i);
+  EnableCmd(hmenu, IDM_EDIT_CUT, i3);
+  EnableCmd(hmenu, IDM_EDIT_COPY, i3);
   EnableCmd(hmenu, IDM_EDIT_COPYALL, i3);
   // [2e]: "Copy Add (Ctrl+E)" not working when clipboard is empty
   EnableCmd(hmenu, IDM_EDIT_COPYADD, i3);
@@ -2937,14 +2937,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_CUT:
       if (flagPasteBoard)
         bLastCopyFromMe = TRUE;
-      SendMessage(hwndEdit, SCI_CUT, 0, 0);
+      // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_CUT);
       break;
 
 
     case IDM_EDIT_COPY:
       if (flagPasteBoard)
         bLastCopyFromMe = TRUE;
-      SendMessage(hwndEdit, SCI_COPY, 0, 0);
+      // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_COPY);
       UpdateToolbar();
       break;
 
@@ -3031,12 +3033,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTWORD: {
-        int iSel =
-          (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
-          (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-        if (iSel > 0)
-          break;
+        const int iSelStart = SciCall_GetSelStart();
+        const int iSelEnd = SciCall_GetSelEnd();
+        const int iSel = iSelEnd - iSelStart;
+        const int iAnchor = SciCall_GetAnchor();
         // [2e]: Always select closest word #205
+        if (iSel <= 0)
+        {
         const int iPos = SciCall_GetCurrentPos();
         const int iLine = SciCall_LineFromPosition(iPos);
         int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
@@ -3068,6 +3071,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (iWordStart != iWordEnd)
         {
           SciCall_SetSel(iWordStart, iWordEnd);
+        }
+        }
+        // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
+        if (lParam)
+        {
+          SendMessage(hwndEdit, lParam, 0, 0);
+          if (iSel <= 0)
+          {
+            SciCall_SetSel(iSelStart, iSelEnd);
+            SciCall_SetAnchor(iAnchor);
+          }
         }
         // [/2e]
       }
@@ -6969,12 +6983,10 @@ void UpdateToolbar()
   EnableTool(IDT_EDIT_UNDO, SendMessage(hwndEdit, SCI_CANUNDO, 0, 0));
   EnableTool(IDT_EDIT_REDO, SendMessage(hwndEdit, SCI_CANREDO, 0, 0));
 
-  i = (int)SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) - (int)SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
-  EnableTool(IDT_EDIT_CUT, i);
-  EnableTool(IDT_EDIT_COPY, SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0));
-  EnableTool(IDT_EDIT_PASTE, SendMessage(hwndEdit, SCI_CANPASTE, 0, 0));
-
   i = (int)SendMessage(hwndEdit, SCI_GETLENGTH, 0, 0);
+  EnableTool(IDT_EDIT_CUT, i);
+  EnableTool(IDT_EDIT_COPY, i);
+  EnableTool(IDT_EDIT_PASTE, SendMessage(hwndEdit, SCI_CANPASTE, 0, 0));
   EnableTool(IDT_EDIT_FIND, i);
   EnableTool(IDT_EDIT_REPLACE, i);
   EnableTool(IDT_EDIT_CLEAR, i);
