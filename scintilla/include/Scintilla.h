@@ -1051,6 +1051,8 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_ALTWORDLEFTEXTEND 9003
 #define SCI_ALTWORDRIGHT 9004
 #define SCI_ALTWORDRIGHTEXTEND 9005
+#define SCI_ALTDELWORDLEFT 9006
+#define SCI_ALTDELWORDRIGHT 9007
 #define SC_MOD_NONE 0x0
 #define SC_MOD_INSERTTEXT 0x1
 #define SC_MOD_DELETETEXT 0x2

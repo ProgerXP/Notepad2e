@@ -3411,6 +3411,8 @@ static bool IsAltWordMessage(unsigned int iMessage) noexcept {
 	case SCI_ALTWORDLEFTEXTEND:
 	case SCI_ALTWORDRIGHT:
 	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDRIGHT:
 		return true;
 	default:
 		return false;
@@ -3676,7 +3678,7 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 
 	// Rightwards and leftwards deletions differ in treatment of virtual space.
 	// Clear virtual space for leftwards, realise for rightwards.
-	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT);
+	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT);
 
 	if (!additionalSelectionTyping) {
 		InvalidateWholeSelection();
@@ -3698,14 +3700,16 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 		Range rangeDelete;
 		switch (iMessage) {
 		case SCI_DELWORDLEFT:
+		case SCI_ALTDELWORDLEFT:
 			rangeDelete = Range(
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, IsAltWordMessage(iMessage)),
 				sel.Range(r).caret.Position());
 			break;
 		case SCI_DELWORDRIGHT:
+		case SCI_ALTDELWORDRIGHT:
 			rangeDelete = Range(
 				sel.Range(r).caret.Position(),
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, IsAltWordMessage(iMessage)));
 			break;
 		case SCI_DELWORDRIGHTEND:
 			rangeDelete = Range(
@@ -3940,7 +3944,9 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 
 	case SCI_DELWORDLEFT:
+	case SCI_ALTDELWORDLEFT:
 	case SCI_DELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT:
 	case SCI_DELWORDRIGHTEND:
 	case SCI_DELLINELEFT:
 	case SCI_DELLINERIGHT:
@@ -7651,7 +7657,9 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_ZOOMIN:
 	case SCI_ZOOMOUT:
 	case SCI_DELWORDLEFT:
+	case SCI_ALTDELWORDLEFT:
 	case SCI_DELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT:
 	case SCI_DELWORDRIGHTEND:
 	case SCI_DELLINELEFT:
 	case SCI_DELLINERIGHT:

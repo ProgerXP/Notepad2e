@@ -983,6 +983,8 @@ Add new messages:
 #define SCI_ALTWORDLEFTEXTEND 9003
 #define SCI_ALTWORDRIGHT 9004
 #define SCI_ALTWORDRIGHTEXTEND 9005
+#define SCI_ALTDELWORDLEFT 9006
+#define SCI_ALTDELWORDRIGHT 9007
 ```
 
 Add changes:
@@ -1021,6 +1023,8 @@ static bool IsAltWordMessage(unsigned int iMessage) noexcept {
     case SCI_ALTWORDLEFTEXTEND:
     case SCI_ALTWORDRIGHT:
     case SCI_ALTWORDRIGHTEXTEND:
+    case SCI_ALTDELWORDLEFT:
+    case SCI_ALTDELWORDRIGHT:
         return true;
     default:
         return false;
@@ -1054,17 +1058,41 @@ int Editor::HorizontalMove(unsigned int iMessage) {
             case SCI_ALTWORDRIGHTEXTEND:
 ...
 
+
+int Editor::DelWordOrLine(unsigned int iMessage) {
+
+...
+	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT);
+...
+
         case SCI_DELWORDLEFT:
+        case SCI_ALTDELWORDLEFT:
             rangeDelete = Range(
-                pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
+                pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, IsAltWordMessage(iMessage)),
                 sel.Range(r).caret.Position());
             break;
         case SCI_DELWORDRIGHT:
+        case SCI_ALTDELWORDRIGHT:
             rangeDelete = Range(
                 sel.Range(r).caret.Position(),
-                pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
+                pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, IsAltWordMessage(iMessage)));
             break;
+
 ...
+
+    case SCI_DELWORDLEFT:
+    case SCI_ALTDELWORDLEFT:
+    case SCI_DELWORDRIGHT:
+    case SCI_ALTDELWORDRIGHT:
+
+...
+
+    case SCI_DELWORDLEFT:
+    case SCI_ALTDELWORDLEFT:
+    case SCI_DELWORDRIGHT:
+    case SCI_ALTDELWORDRIGHT:
+...
+
 ```
 
 /**Alt+Arrow to invert accelerated mode for single navigation #323**
