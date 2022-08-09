@@ -2517,7 +2517,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (!lstrlen(szCurFile))
           break;
 
-        if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         if (lstrlen(szCurFile))
@@ -2571,7 +2571,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_FILE_RUN: {
         WCHAR tchCmdLine[MAX_PATH + 4];
-        if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
           break;
 
         lstrcpy(tchCmdLine, szCurFile);
@@ -2599,7 +2599,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_FILE_OPENWITH:
-      if ((iSaveBeforeRunningTools == SBRT_ENABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
         break;
       OpenWithDlg(hwnd, szCurFile);
       break;
@@ -3040,38 +3040,38 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         // [2e]: Always select closest word #205
         if (iSel <= 0)
         {
-        const int iPos = SciCall_GetCurrentPos();
-        const int iLine = SciCall_LineFromPosition(iPos);
-        int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
-        int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
-        if (iWordStart == iWordEnd)
-        {
-          // search forward
-          const int iLineEndPos = SciCall_LineEndPosition(iLine);
-          int i = iPos;
-          while ((i < iLineEndPos) && (iWordStart == iWordEnd))
+          const int iPos = SciCall_GetCurrentPos();
+          const int iLine = SciCall_LineFromPosition(iPos);
+          int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
+          int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
+          if (iWordStart == iWordEnd)
           {
-            iWordStart = SciCall_GetWordStartPos(i, TRUE);
-            iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
-            i = SciCall_PositionAfter(iWordEnd);
+            // search forward
+            const int iLineEndPos = SciCall_LineEndPosition(iLine);
+            int i = iPos;
+            while ((i < iLineEndPos) && (iWordStart == iWordEnd))
+            {
+              iWordStart = SciCall_GetWordStartPos(i, TRUE);
+              iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+              i = SciCall_PositionAfter(iWordEnd);
+            }
           }
-        }
-        if (iWordStart == iWordEnd)
-        {
-          // search backward
-          const int iLineStartPos = SciCall_PositionFromLine(iLine);
-          int i = iPos;
-          while ((i > iLineStartPos) && (iWordStart == iWordEnd))
+          if (iWordStart == iWordEnd)
           {
-            iWordEnd = SciCall_GetWordEndPos(i, TRUE);
-            iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
-            i = SciCall_PositionBefore(iWordStart);
+            // search backward
+            const int iLineStartPos = SciCall_PositionFromLine(iLine);
+            int i = iPos;
+            while ((i > iLineStartPos) && (iWordStart == iWordEnd))
+            {
+              iWordEnd = SciCall_GetWordEndPos(i, TRUE);
+              iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
+              i = SciCall_PositionBefore(iWordStart);
+            }
           }
-        }
-        if (iWordStart != iWordEnd)
-        {
-          SciCall_SetSel(iWordStart, iWordEnd);
-        }
+          if (iWordStart != iWordEnd)
+          {
+            SciCall_SetSel(iWordStart, iWordEnd);
+          }
         }
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
         if (lParam)
