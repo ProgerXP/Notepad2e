@@ -2435,8 +2435,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
         // [2e]: Add INI setting to disable file save prompt in Launch > New Window #361
         // [2e]: Disable save prompt for some Launch commands #176
-        if ((iSaveBeforeRunningTools == SBRT_ENABLED)
-            || ((iSaveBeforeRunningTools == SBRT_EXCEPT_NEW_WINDOW) && (LOWORD(wParam) != IDM_FILE_NEWWINDOW)))
+        if ((LOWORD(wParam) != IDM_FILE_NEWWINDOW2)
+            && ((iSaveBeforeRunningTools == SBRT_ENABLED)
+                || ((iSaveBeforeRunningTools == SBRT_EXCEPT_NEW_WINDOW) && (LOWORD(wParam) != IDM_FILE_NEWWINDOW)))
+           )
         {
           if (!FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
             break;
