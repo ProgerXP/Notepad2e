@@ -3788,6 +3788,7 @@ void EditCompressSpaces(HWND hwnd)
     int iLineStart = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelStart, 0);
     int iLineEnd = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)iSelEnd, 0);
     int iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+    int iCursorOffset = 0;
 
     char *pszIn;
     char *pszOut;
@@ -3826,11 +3827,25 @@ void EditCompressSpaces(HWND hwnd)
           {
             ci++;
             bModified = TRUE;
+            // [2e]: Preserve edit state after Compress Whitespace #421
+            if ((iCurPos == iAnchorPos) && (ci - pszIn < iCurPos))
+            {
+              ++iCursorOffset;
+            }
+            // [/2e]
           }
           if (!bIsLineStart && (*(ci + 1) != '\n' && * (ci + 1) != '\r'))
             *co++ = ' ';
           else
+          {
             bModified = TRUE;
+            // [2e]: Preserve edit state after Compress Whitespace #421
+            if ((iCurPos == iAnchorPos) && (ci - pszIn < iCurPos))
+            {
+              ++iCursorOffset;
+            }
+            // [/2e]
+          }
         }
         else
         {
@@ -3870,6 +3885,13 @@ void EditCompressSpaces(HWND hwnd)
           iAnchorPos = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
           SendMessage(hwnd, SCI_SETSEL, (WPARAM)iAnchorPos, (LPARAM)iCurPos);
         }
+        // [2e]: Preserve edit state after Compress Whitespace #421
+        else
+        {
+          iCurPos -= iCursorOffset;
+          SendMessage(hwnd, SCI_SETSEL, (WPARAM)iCurPos, (LPARAM)iCurPos);
+        }
+        // [/2e]
         SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
       }
     }
