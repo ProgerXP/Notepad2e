@@ -3036,13 +3036,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         const int iSelEnd = SciCall_GetSelEnd();
         const int iSel = iSelEnd - iSelStart;
         const int iAnchor = SciCall_GetAnchor();
+        int iWordStart = 0;
+        int iWordEnd = 0;
         // [2e]: Always select closest word #205
         if (iSel <= 0)
         {
           const int iPos = SciCall_GetCurrentPos();
           const int iLine = SciCall_LineFromPosition(iPos);
-          int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
-          int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
+          iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
+          iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
           if (iWordStart == iWordEnd)
           {
             // search forward
@@ -3078,8 +3080,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SendMessage(hwndEdit, lParam, 0, 0);
           if (iSel <= 0)
           {
-            SciCall_SetSel(iSelStart, iSelEnd);
-            SciCall_SetAnchor(iAnchor);
+            if (lParam == SCI_CUT)
+            {
+              SciCall_SetSel(iWordStart, iWordStart);
+              SciCall_SetAnchor(iWordStart);
+            }
+            else
+            {
+              SciCall_SetSel(iSelStart, iSelEnd);
+              SciCall_SetAnchor(iAnchor);
+            }
           }
         }
         // [/2e]
