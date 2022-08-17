@@ -228,6 +228,19 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
       }
       break;
 
+    case WM_SYSKEYDOWN:
+      {
+        const int res = n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
+        // Skip the following WM_SYSCHAR to prevent default beeping when processing Alt+Backspace hotkey
+        if ((res == 0) && (wParam == VK_BACK) && ((lParam & (1 << 29)) != 0))
+        {
+          MSG msg = { 0 };
+          PeekMessage(&msg, hwnd, WM_SYSCHAR, WM_SYSCHAR, PM_REMOVE);
+        }
+        return res;
+      }
+      break;
+
     case WM_LBUTTONDOWN:
       if (fSelectEx && (hwnd == hwndEdit))
       {
