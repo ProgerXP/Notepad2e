@@ -1913,3 +1913,99 @@ void n2e_GetNumberFormat(LPNUMBERFMT lpFormat)
   lpFormat->lpThousandSep = g_defaultNumberFormat.lpThousandSep;
   lpFormat->NegativeOrder = g_defaultNumberFormat.NegativeOrder;
 }
+
+static DWORD dwWatchThreadId = 0;
+static HANDLE hWatchThread = INVALID_HANDLE_VALUE;
+static HANDLE hEventExitWatchThread = INVALID_HANDLE_VALUE;
+
+extern DWORD dwFileCheckInterval;
+extern DWORD dwAutoReloadTimeout;
+extern int iFileWatchingMode;
+
+WIN32_FIND_DATA fdCurFile = { 0 };
+DWORD dwChangeNotifyTime = 0;
+
+DWORD WINAPI n2e_WatchThreadProc(LPVOID lpParam)
+{
+  while (WaitForSingleObject(hEventExitWatchThread, dwFileCheckInterval) == WAIT_TIMEOUT)
+  {
+    if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > dwAutoReloadTimeout)
+    {
+      // Save data of current file
+      HANDLE hFind = FindFirstFile(szCurFile, &fdCurFile);
+      if (hFind != INVALID_HANDLE_VALUE)
+        FindClose(hFind);
+      else
+        ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
+
+      dwChangeNotifyTime = 0;
+      PostMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
+      break;
+    }
+
+    // Check if the changes affect the current file
+    WIN32_FIND_DATA fdUpdated;
+    HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
+    if (INVALID_HANDLE_VALUE != hFind)
+      FindClose(hFind);
+    else
+      // The current file has been removed
+      ZeroMemory(&fdUpdated, sizeof(WIN32_FIND_DATA));
+
+    // Check if the file has been changed
+    if (CompareFileTime(&fdCurFile.ftLastWriteTime, &fdUpdated.ftLastWriteTime) != 0 ||
+      fdCurFile.nFileSizeLow != fdUpdated.nFileSizeLow ||
+      fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
+    {
+      // Shutdown current watching and give control to main window
+      if (iFileWatchingMode == 2)
+      {
+        if (dwChangeNotifyTime == 0)
+          dwChangeNotifyTime = GetTickCount();
+      }
+      else
+      {
+        dwChangeNotifyTime = 0;
+        PostMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
+      }
+    }
+  }
+  return 0;
+}
+
+BOOL n2e_IsWatchThreadRunning()
+{
+  return (hWatchThread != INVALID_HANDLE_VALUE) && (WaitForSingleObject(hWatchThread, 0) == WAIT_TIMEOUT);
+}
+
+void n2e_RunWatchThread()
+{
+  if (hEventExitWatchThread == INVALID_HANDLE_VALUE)
+  {
+    hEventExitWatchThread = CreateEvent(NULL, FALSE, FALSE, NULL);
+  }
+
+  // Save data of current file
+  HANDLE hFind = FindFirstFile(szCurFile, &fdCurFile);
+  if (hFind != INVALID_HANDLE_VALUE)
+    FindClose(hFind);
+  else
+    ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
+
+  n2e_StopWatchThread();
+  hWatchThread = CreateThread(NULL, 0, n2e_WatchThreadProc, (LPVOID)NULL, 0, &dwWatchThreadId);
+}
+
+void n2e_StopWatchThread()
+{
+  if (n2e_IsWatchThreadRunning())
+  {
+    SetEvent(hEventExitWatchThread);
+    WaitForSingleObject(hWatchThread, INFINITE);
+  }
+  if (hWatchThread != INVALID_HANDLE_VALUE)
+  {
+    CloseHandle(hWatchThread);
+    hWatchThread = INVALID_HANDLE_VALUE;
+  }
+}

@@ -226,3 +226,7 @@ BOOL n2e_FindMRUAdd(LPCSTR pszNew);
 void n2e_StrTrimA(LPSTR* psz, LPCSTR pszTrimChars);
 
 void n2e_GetNumberFormat(LPNUMBERFMT lpFormat);
+
+BOOL n2e_IsWatchThreadRunning();
+void n2e_RunWatchThread();
+void n2e_StopWatchThread();

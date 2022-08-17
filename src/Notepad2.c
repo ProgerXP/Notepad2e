@@ -269,10 +269,6 @@ UINT      uidsAppTitle = IDS_APPTITLE;
 WCHAR     szTitleExcerpt[128] = L"";
 int       fKeepTitleExcerpt = 0;
 
-BOOL      bRunningWatch = FALSE;
-DWORD     dwChangeNotifyTime = 0;
-WIN32_FIND_DATA fdCurFile;
-
 UINT      msgTaskbarCreated = 0;
 
 HMODULE   hModUxTheme = NULL;
@@ -1401,7 +1397,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         if (MsgBox(MBYESNO, IDS_FILECHANGENOTIFY2) == IDYES)
           FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
       }
-      if (!bRunningWatch)
+      // [2e]: Improve File Change Notification for slow medium #409
+      if (!n2e_IsWatchThreadRunning())
         InstallFileWatching(szCurFile);
       break;
 
@@ -8338,98 +8335,19 @@ void SetNotifyIconTitle(HWND hwnd)
 //
 void InstallFileWatching(LPCWSTR lpszFile)
 {
-
-  WCHAR tchDirectory[MAX_PATH];
-  HANDLE hFind;
-
   // Terminate
   if (!iFileWatchingMode || !lpszFile || lstrlen(lpszFile) == 0)
   {
-    if (bRunningWatch)
-    {
-      KillTimer(hwndMain, ID_WATCHTIMER);
-      bRunningWatch = FALSE;
-      dwChangeNotifyTime = 0;
-    }
+    // [2e]: Improve File Change Notification for slow medium #409
+    n2e_StopWatchThread();
     return;
   }
 
   // Install
   else
   {
-    // Terminate previous watching
-    if (bRunningWatch)
-    {
-      dwChangeNotifyTime = 0;
-    }
-
-    // No previous watching installed, so launch the timer first
-    else
-    {
-      SetTimer(hwndMain, ID_WATCHTIMER, dwFileCheckInterval, WatchTimerProc);
-    }
-    lstrcpy(tchDirectory, lpszFile);
-    PathRemoveFileSpec(tchDirectory);
-
-    // Save data of current file
-    hFind = FindFirstFile(szCurFile, &fdCurFile);
-    if (hFind != INVALID_HANDLE_VALUE)
-      FindClose(hFind);
-    else
-      ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
-
-    bRunningWatch = TRUE;
-    dwChangeNotifyTime = 0;
-  }
-}
-
-
-//=============================================================================
-//
-//  WatchTimerProc()
-//
-//
-void CALLBACK WatchTimerProc(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
-{
-  if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > dwAutoReloadTimeout)
-  {
-    KillTimer(hwndMain, ID_WATCHTIMER);
-    bRunningWatch = FALSE;
-    dwChangeNotifyTime = 0;
-    SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
-  }
-
-  else
-  {
-    // Check if the changes affect the current file
-    WIN32_FIND_DATA fdUpdated;
-    HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
-    if (INVALID_HANDLE_VALUE != hFind)
-      FindClose(hFind);
-    else
-      // The current file has been removed
-      ZeroMemory(&fdUpdated, sizeof(WIN32_FIND_DATA));
-
-    // Check if the file has been changed
-    if (CompareFileTime(&fdCurFile.ftLastWriteTime, &fdUpdated.ftLastWriteTime) != 0 ||
-        fdCurFile.nFileSizeLow != fdUpdated.nFileSizeLow ||
-        fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
-    {
-      // Shutdown current watching and give control to main window
-      if (iFileWatchingMode == 2)
-      {
-        bRunningWatch = TRUE; /* ! */
-        if (dwChangeNotifyTime == 0)
-          dwChangeNotifyTime = GetTickCount();
-      }
-      else
-      {
-        KillTimer(hwndMain, ID_WATCHTIMER);
-        bRunningWatch = FALSE;
-        dwChangeNotifyTime = 0;
-        SendMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
-      }
-    }
+    // [2e]: Improve File Change Notification for slow medium #409
+    n2e_RunWatchThread();
   }
 }
 
