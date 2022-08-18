@@ -1927,43 +1927,48 @@ void n2e_GetNumberFormat(LPNUMBERFMT lpFormat)
   lpFormat->NegativeOrder = g_defaultNumberFormat.NegativeOrder;
 }
 
-static DWORD dwWatchThreadId = 0;
 static HANDLE hWatchThread = INVALID_HANDLE_VALUE;
 static HANDLE hEventExitWatchThread = INVALID_HANDLE_VALUE;
 
-extern DWORD dwFileCheckInterval;
-extern DWORD dwAutoReloadTimeout;
-extern int iFileWatchingMode;
+struct TWatchThreadParams
+{
+  WCHAR lpszFileName[MAX_PATH + 40];
+  DWORD dwFileCheckInterval;
+  DWORD dwAutoReloadTimeout;
+  int iFileWatchingMode;
+};
 
-WIN32_FIND_DATA fdCurFile = { 0 };
-DWORD dwChangeNotifyTime = 0;
+typedef struct TWatchThreadParams WatchThreadParams;
+
+void n2e_SaveFindData(LPCWSTR szFile, WIN32_FIND_DATA* pFindData)
+{
+  // Save data of file
+  const HANDLE hFind = FindFirstFile(szFile, pFindData);
+  if (hFind != INVALID_HANDLE_VALUE)
+    FindClose(hFind);
+  else
+    ZeroMemory(pFindData, sizeof(*pFindData));
+}
 
 DWORD WINAPI n2e_WatchThreadProc(LPVOID lpParam)
 {
-  while (WaitForSingleObject(hEventExitWatchThread, dwFileCheckInterval) == WAIT_TIMEOUT)
-  {
-    if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > dwAutoReloadTimeout)
-    {
-      // Save data of current file
-      HANDLE hFind = FindFirstFile(szCurFile, &fdCurFile);
-      if (hFind != INVALID_HANDLE_VALUE)
-        FindClose(hFind);
-      else
-        ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
+  WatchThreadParams* p = (WatchThreadParams*)lpParam;
+  WIN32_FIND_DATA fdCurFile = { 0 };
+  DWORD dwChangeNotifyTime = 0;
 
-      dwChangeNotifyTime = 0;
+  n2e_SaveFindData(p->lpszFileName, &fdCurFile);
+
+  while (WaitForSingleObject(hEventExitWatchThread, p->dwFileCheckInterval) == WAIT_TIMEOUT)
+  {
+    if (dwChangeNotifyTime > 0 && GetTickCount() - dwChangeNotifyTime > p->dwAutoReloadTimeout)
+    {
       PostMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
       break;
     }
 
     // Check if the changes affect the current file
-    WIN32_FIND_DATA fdUpdated;
-    HANDLE hFind = FindFirstFile(szCurFile, &fdUpdated);
-    if (INVALID_HANDLE_VALUE != hFind)
-      FindClose(hFind);
-    else
-      // The current file has been removed
-      ZeroMemory(&fdUpdated, sizeof(WIN32_FIND_DATA));
+    WIN32_FIND_DATA fdUpdated = { 0 };
+    n2e_SaveFindData(p->lpszFileName, &fdUpdated);
 
     // Check if the file has been changed
     if (CompareFileTime(&fdCurFile.ftLastWriteTime, &fdUpdated.ftLastWriteTime) != 0 ||
@@ -1971,18 +1976,19 @@ DWORD WINAPI n2e_WatchThreadProc(LPVOID lpParam)
       fdCurFile.nFileSizeHigh != fdUpdated.nFileSizeHigh)
     {
       // Shutdown current watching and give control to main window
-      if (iFileWatchingMode == 2)
+      if (p->iFileWatchingMode == 2)
       {
         if (dwChangeNotifyTime == 0)
           dwChangeNotifyTime = GetTickCount();
       }
       else
       {
-        dwChangeNotifyTime = 0;
         PostMessage(hwndMain, WM_CHANGENOTIFY, 0, 0);
+        break;
       }
     }
   }
+  n2e_Free(lpParam);
   return 0;
 }
 
@@ -1991,22 +1997,26 @@ BOOL n2e_IsWatchThreadRunning()
   return (hWatchThread != INVALID_HANDLE_VALUE) && (WaitForSingleObject(hWatchThread, 0) == WAIT_TIMEOUT);
 }
 
-void n2e_RunWatchThread()
+void n2e_RunWatchThread(LPCWSTR lpszFile)
 {
   if (hEventExitWatchThread == INVALID_HANDLE_VALUE)
   {
     hEventExitWatchThread = CreateEvent(NULL, FALSE, FALSE, NULL);
   }
 
-  // Save data of current file
-  HANDLE hFind = FindFirstFile(szCurFile, &fdCurFile);
-  if (hFind != INVALID_HANDLE_VALUE)
-    FindClose(hFind);
-  else
-    ZeroMemory(&fdCurFile, sizeof(WIN32_FIND_DATA));
-
   n2e_StopWatchThread();
-  hWatchThread = CreateThread(NULL, 0, n2e_WatchThreadProc, (LPVOID)NULL, 0, &dwWatchThreadId);
+
+  extern DWORD dwFileCheckInterval;
+  extern DWORD dwAutoReloadTimeout;
+  extern int iFileWatchingMode;
+
+  WatchThreadParams* p = n2e_Alloc(sizeof(*p));
+  wcsncpy_s(p->lpszFileName, COUNTOF(p->lpszFileName), lpszFile, wcslen(lpszFile) + 1);
+  p->dwFileCheckInterval = dwFileCheckInterval;
+  p->dwAutoReloadTimeout = dwAutoReloadTimeout;
+  p->iFileWatchingMode = iFileWatchingMode;
+
+  hWatchThread = CreateThread(NULL, 0, n2e_WatchThreadProc, (LPVOID)p, 0, NULL);
 }
 
 void n2e_StopWatchThread()

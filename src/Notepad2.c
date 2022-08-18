@@ -8357,7 +8357,7 @@ void InstallFileWatching(LPCWSTR lpszFile)
   else
   {
     // [2e]: Improve File Change Notification for slow medium #409
-    n2e_RunWatchThread();
+    n2e_RunWatchThread(lpszFile);
   }
 }
 
