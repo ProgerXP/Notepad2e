@@ -4951,7 +4951,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
         }
 
-        SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
         SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_SETEXTENDEDUI, TRUE, 0);
 
         if (!GetWindowTextLengthW(GetDlgItem(hwnd, IDC_FINDTEXT)))
@@ -4959,7 +4959,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         if (GetDlgItem(hwnd, IDC_REPLACETEXT))
         {
-          SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+          SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
           SendDlgItemMessage(hwnd, IDC_REPLACETEXT, CB_SETEXTENDEDUI, TRUE, 0);
           SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_REPLACETEXT, lpefr->szReplaceUTF8);
         }
@@ -6368,9 +6368,9 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 
         pdata = (PMODLINESDATA)lParam;
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
 
         // [2e]: Remove line breaks from Alt+M #173
         n2e_EnableClipboardFiltering(hwnd, 100);
@@ -6597,9 +6597,9 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
         // [/2e]
 
         pdata = (PENCLOSESELDATA)lParam;
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
         SetDlgItemTextW(hwnd, 100, pdata->pwsz1);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         DPI_INIT();
         CenterDlgInParent(hwnd);
@@ -6778,10 +6778,10 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
 
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
-        // [2e]: Remove input length limit in dialogs #408: leave free space(-3) for </..>
-        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 3, 0);
+        // [2e]: Remove input length limit in dialogs #408: leave free space(-4) for </..>
+        SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 4, 0);
         SetDlgItemTextW(hwnd, 100, wchLastHTMLTag);
-        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 3, 0);
+        SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 4, 0);
         SetDlgItemTextW(hwnd, 101, wchLastHTMLEndTag);
         SetFocus(GetDlgItem(hwnd, 100));
         n2e_Init_EditInsertTagDlg(hwnd);
