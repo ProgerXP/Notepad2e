@@ -65,10 +65,10 @@ std::wstring GetStringDiff(const std::string& expected, const std::string& actua
   const int maxLength = (sizeDiff > 0) && (sizeDiff < 10) ? actual.size() : min(expected.size(), actual.size());
   const int maxLines = 50;
   int count = 1;
-  for (auto i = 0; i < maxLength; ++i)
+  for (int i = 0; i < maxLength; ++i)
   {
-    const char _expectedChar = (i < expected.size()) ? expected[i] : '-';
-    const char _actualChar = (i < actual.size()) ? actual[i] : '-';
+    const char _expectedChar = (i < (int)expected.size()) ? expected[i] : '-';
+    const char _actualChar = (i < (int)actual.size()) ? actual[i] : '-';
     if (_expectedChar != _actualChar)
     {
       ss << std::setw(9) << i << L"   " << std::setw(9) << GetCharWString(_expectedChar) << L"   " << std::setw(9) << GetCharWString(_actualChar) << std::endl;

@@ -358,6 +358,11 @@ BOOL IsEOLChar(const unsigned char ch)
   return (ch == '\r') || (ch == '\n');
 }
 
+BOOL IsEOLCharW(const WCHAR wch)
+{
+  return (wch == L'\r') || (wch == L'\n');
+}
+
 BOOL IsTrailingEOL(const int eolMode, const unsigned char ch, TextBuffer* pTB)
 {
   switch (eolMode)

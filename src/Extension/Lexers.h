@@ -58,6 +58,9 @@ typedef struct _commentinfo
   int     iLineStyle;      // lexer style id for single line comment
 } COMMENTINFO;
 
+#pragma warning( push )
+#pragma warning( disable : 4200 ) // nonstandard extension used: zero-sized array in struct/union
+
 typedef struct _editlexer
 {
   int iLexer;
@@ -71,6 +74,7 @@ typedef struct _editlexer
 
 } EDITLEXER, *PEDITLEXER;
 
+#pragma warning( pop )
 
 // Number of Lexers in pLexArray
 #ifdef LPEG_LEXER

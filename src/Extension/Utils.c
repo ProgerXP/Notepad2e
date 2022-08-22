@@ -15,6 +15,7 @@
 #include "Helpers.h"
 #include "SciCall.h"
 #include "SciLexer.h"
+#include "StringRecoding.h"
 #include "Styles.h"
 #include "Notepad2.h"
 #include "Trace.h"

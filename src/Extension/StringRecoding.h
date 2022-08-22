@@ -169,5 +169,6 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
 
 BOOL IsCharFromString(LPCSTR lpstrSample, const unsigned char ch);
 BOOL IsEOLChar(const unsigned char ch);
+BOOL IsEOLCharW(const WCHAR wch);
 BOOL IsTrailingEOL(const int eolMode, const unsigned char ch, TextBuffer* pTB);
 BOOL GetTrailingEOLLength(const int eolMode);

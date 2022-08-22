@@ -250,7 +250,7 @@ extern "C" {
   std::shared_ptr<Paragraph> CALWData::nextParagraph()
   {
     ++m_iActiveParagraphIndex;
-    if (m_iActiveParagraphIndex < m_paragraphs.size())
+    if (m_iActiveParagraphIndex < (int)m_paragraphs.size())
     {
       return m_paragraphs.at(m_iActiveParagraphIndex);
     }

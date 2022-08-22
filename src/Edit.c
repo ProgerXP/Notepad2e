@@ -38,6 +38,7 @@
 #include "Extension/ExtSelection.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
+#include "Extension/StringRecoding.h"
 #include "Extension/ProcessElevationUtils.h"
 #include "Extension/UnicodeQuotes.h"
 #include "Extension/Utils.h"
@@ -556,7 +557,7 @@ BOOL EditCopyAppend(HWND hwnd)
 
   lstrcpy(pszNew, pszOld);
   // [2e]: Copy Add (Ctrl+E) to insert line break after, not before #344
-  if ((lstrlen(pszOld) > 0) && !IsEOLChar(pszOld[lstrlen(pszOld)-1]))
+  if ((lstrlen(pszOld) > 0) && !IsEOLCharW(pszOld[lstrlen(pszOld)-1]))
   {
     lstrcatW(pszNew, pszSep);
   }
@@ -4505,7 +4506,7 @@ void EditSortLines(HWND hwnd, int iSortFlags)
           else
             break;
         }
-        bSkipSortColumnWidth &= wcslen(pLines[i].pwszSortEntry) <= sortSettings.iSortColumnWidth;
+        bSkipSortColumnWidth &= (int)wcslen(pLines[i].pwszSortEntry) <= sortSettings.iSortColumnWidth;
       }
     }
     else
