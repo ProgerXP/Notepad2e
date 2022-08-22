@@ -1953,7 +1953,7 @@ void n2e_SaveFindData(LPCWSTR szFile, WIN32_FIND_DATA* pFindData)
 DWORD WINAPI n2e_WatchThreadProc(LPVOID lpParam)
 {
   WatchThreadParams* p = (WatchThreadParams*)lpParam;
-  WIN32_FIND_DATA fdCurFile = { 0 };
+  WIN32_FIND_DATA fdCurFile;
   DWORD dwChangeNotifyTime = 0;
 
   n2e_SaveFindData(p->lpszFileName, &fdCurFile);
@@ -1967,7 +1967,7 @@ DWORD WINAPI n2e_WatchThreadProc(LPVOID lpParam)
     }
 
     // Check if the changes affect the current file
-    WIN32_FIND_DATA fdUpdated = { 0 };
+    WIN32_FIND_DATA fdUpdated;
     n2e_SaveFindData(p->lpszFileName, &fdUpdated);
 
     // Check if the file has been changed
@@ -2017,6 +2017,11 @@ void n2e_RunWatchThread(LPCWSTR lpszFile)
   p->iFileWatchingMode = iFileWatchingMode;
 
   hWatchThread = CreateThread(NULL, 0, n2e_WatchThreadProc, (LPVOID)p, 0, NULL);
+  if (!hWatchThread)
+  {
+    n2e_Free(p);
+    hWatchThread = INVALID_HANDLE_VALUE;
+  }
 }
 
 void n2e_StopWatchThread()
