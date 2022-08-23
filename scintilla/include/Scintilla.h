@@ -722,6 +722,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_SETFOCUS 2380
 #define SCI_GETFOCUS 2381
 #define SCI_SETWORDNAVIGATIONMODE 2382
+#define SCI_SETSTARTINGLINENUMBER 2383
 #define SC_STATUS_OK 0
 #define SC_STATUS_FAILURE 1
 #define SC_STATUS_BADALLOC 2

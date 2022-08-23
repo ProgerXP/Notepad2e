@@ -48,6 +48,7 @@
 #define INI_SETTING_TREAT_QUOTES_AS_BRACES L"TreatQuotesAsBraces"
 #define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
+#define INI_SETTING_STARTING_LINE_NUMBER L"StartingLineNumber"
 
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
@@ -87,6 +88,7 @@ BOOL bFindWordMatchCase = FALSE;
 BOOL bFindWordWrapAround = FALSE;
 int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bExtendedSplitLines = TRUE;
+int iStartingLineNumber = 1;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
@@ -518,6 +520,7 @@ void n2e_LoadINI()
   bTreatQuotesAsBraces = IniGetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
+  iStartingLineNumber = IniGetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -609,6 +612,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_TREAT_QUOTES_AS_BRACES, bTreatQuotesAsBraces);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 #endif
@@ -650,6 +654,7 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
   int cou = 0;
   BOOL is_hex = 0;
   WCHAR *ec = 0;
+  BOOL bNegativeNumber = FALSE;
   while (lstrlen(temp))
   {
     if (hex)
@@ -702,11 +707,14 @@ BOOL n2e_GetGotoNumber(LPTSTR temp, int *out, const BOOL hex)
     {
       if (isdigit(temp[0]))
       {
-        *out = wcstol(temp, &ec, RADIX_DEC);
+        *out = wcstol(temp, &ec, RADIX_DEC) * (bNegativeNumber ? -1 : 1);
         return 1;
       }
       else
       {
+        if (n2e_IsMinusSign(temp[0]))
+          bNegativeNumber = TRUE;
+
         temp++;
       }
     }
@@ -2037,4 +2045,57 @@ void n2e_StopWatchThread()
     CloseHandle(hWatchThread);
     hWatchThread = INVALID_HANDLE_VALUE;
   }
+}
+
+BOOL n2e_IsUnicodeDigit(wchar_t ch)
+{
+  WORD type;
+  return GetStringTypeW(CT_CTYPE1, &ch, 1, &type) && (type & C1_DIGIT);
+}
+
+BOOL n2e_IsMinusSign(const wchar_t ch)
+{
+  return (ch == L'-') || (ch == L'\x2212');     // plain or Unicode minus sign
+}
+
+LRESULT CALLBACK n2e_SignedIntegerSubclassProc(
+  HWND hwnd,
+  UINT uMsg,
+  WPARAM wParam,
+  LPARAM lParam,
+  UINT_PTR uIdSubclass,
+  DWORD_PTR dwRefData)
+{
+  switch (uMsg) {
+  case WM_NCDESTROY:
+    RemoveWindowSubclass(hwnd, n2e_SignedIntegerSubclassProc, uIdSubclass);
+    break;
+
+  case WM_CHAR:
+    {
+      wchar_t ch = (wchar_t)wParam;
+      if (ch < L' ') break;
+      else if (n2e_IsMinusSign(ch)) break;
+      else if (n2e_IsUnicodeDigit(ch)) break;
+      MessageBeep(0);
+      return 0;
+    }
+  }
+
+  return DefSubclassProc(hwnd, uMsg, wParam, lParam);
+}
+
+BOOL n2e_EnforceSignedIntegerEdit(HWND hwnd)
+{
+  return SetWindowSubclass(hwnd, n2e_SignedIntegerSubclassProc, 0, 0);
+}
+
+int n2e_GetVisibleLineNumber(const int iLineIndex)
+{
+  return iLineIndex + iStartingLineNumber;
+}
+
+int n2e_GetActualLineNumber(const int iVisibleLineIndex)
+{
+  return iVisibleLineIndex - iStartingLineNumber;
 }

@@ -316,6 +316,7 @@ BEGIN
         END
         MENUITEM SEPARATOR
         MENUITEM "Line &Numbers\tCtrl+Shift+N", IDM_VIEW_LINENUMBERS
+        MENUITEM "St&arting Line Number...",    IDM_VIEW_STARTINGLINENUMBER
         MENUITEM "Selection &Margin\tCtrl+Shift+M", IDM_VIEW_MARGIN
         MENUITEM SEPARATOR
         MENUITEM "Zoom &In\tCtrl++",            IDM_VIEW_ZOOMIN
@@ -1169,6 +1170,17 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,282,119,50,14
 END
 
+IDD_STARTINGLINENUMBER DIALOGEX 0, 0, 174, 43
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Starting Line Number"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    LTEXT           "&First line number:",IDC_STATIC,6,8,58,8
+    EDITTEXT        100,67,7,35,12,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,117,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,117,24,50,14
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1421,6 +1433,10 @@ BEGIN
         VERTGUIDE, 42
         TOPMARGIN, 7
         BOTTOMMARGIN, 133
+    END
+
+    IDD_STARTINGLINENUMBER, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED

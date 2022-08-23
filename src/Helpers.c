@@ -1589,6 +1589,10 @@ int FormatNumberStr(LPWSTR lpNumberStr)
 
   while ((c = CharPrev(lpNumberStr, c)) != lpNumberStr)
   {
+    // [2e]: View > St&arting Line Number... #342
+    if ((c - 1 == lpNumberStr) && n2e_IsMinusSign(lpNumberStr[0]))
+      break;
+
     if (++i == 3)
     {
       i = 0;

@@ -4101,6 +4101,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       VIEW_COMMAND(UpdateLineNumberWidth);
       break;
 
+    // [2e]: View > St&arting Line Number... #342
+    case IDM_VIEW_STARTINGLINENUMBER:
+      ThemedDialogBox(g_hInstance, MAKEINTRESOURCE(IDD_STARTINGLINENUMBER), hwnd, StartingLineNumberDlgProc);
+      SendMessage(hwndEdit, SCI_SETSTARTINGLINENUMBER, iStartingLineNumber, 0);
+      VIEW_COMMAND(UpdateLineNumberWidth);
+      break;
+    // [/2e]
+
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
@@ -7053,11 +7061,13 @@ void UpdateStatusbar()
 
   iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
 
-  iLn = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0) + 1;
+  // [2e]: View > St&arting Line Number... #342
+  iLn = n2e_GetVisibleLineNumber((int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, iPos, 0));
   wsprintf(tchLn, L"%i", iLn);
   FormatNumberStr(tchLn);
 
-  iLines = (int)SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0);
+  // [2e]: View > St&arting Line Number... #342
+  iLines = n2e_GetVisibleLineNumber((int)SendMessage(hwndEdit, SCI_GETLINECOUNT, 0, 0) - 1);
   wsprintf(tchLines, L"%i", iLines);
   FormatNumberStr(tchLines);
 
@@ -7156,16 +7166,23 @@ void UpdateStatusbar()
 //
 void UpdateLineNumberWidth(HWND hwnd)
 {
-  char tchLines[32];
+  char tchFirstLineIndex[32], tchLastLineIndex[32];
   int  iLineMarginWidthNow;
   int  iLineMarginWidthFit;
 
   if (bShowLineNumbers)
   {
-    wsprintfA(tchLines, "_%i_", SendMessage(hwnd, SCI_GETLINECOUNT, 0, 0));
+    // [2e]: View > St&arting Line Number... #342
+    wsprintfA(tchFirstLineIndex, "_%i_", n2e_GetVisibleLineNumber(0));
+    wsprintfA(tchLastLineIndex, "_%i_", n2e_GetVisibleLineNumber(SendMessage(hwnd, SCI_GETLINECOUNT, 0, 0) - 1));
 
     iLineMarginWidthNow = (int)SendMessage(hwnd, SCI_GETMARGINWIDTHN, 0, 0);
-    iLineMarginWidthFit = (int)SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchLines);
+
+    // View > St&arting Line Number... #342
+    iLineMarginWidthFit = max(
+        SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchFirstLineIndex),
+        SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchLastLineIndex)
+      );
 
     if (iLineMarginWidthNow != iLineMarginWidthFit)
     {

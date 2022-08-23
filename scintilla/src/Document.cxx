@@ -134,6 +134,8 @@ Document::Document(int options) :
 	backspaceUnindents = false;
 	// [2e]: ctrl+arrow behavior toggle #89
 	wordNavigationMode = 0;
+	// [2e]: View > St&arting Line Number... #342
+	startingLineNumber = 1;
 
 	matchesValid = false;
 
@@ -2800,6 +2802,17 @@ int Document::CalcWordNavigationMode(const bool invertMode) const
 		return wordNavigationMode;
 
 	return (wordNavigationMode != 0) ? 0 : 1;
+}
+
+// [2e]: View > St&arting Line Number... #342
+void Document::SetStartingLineNumber(const int lineNumber)
+{
+	startingLineNumber = lineNumber;
+}
+
+int Document::GetStartingLineNumber() const
+{
+	return startingLineNumber;
 }
 // [/2e]
 

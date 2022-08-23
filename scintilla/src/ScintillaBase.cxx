@@ -1048,6 +1048,11 @@ sptr_t ScintillaBase::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lPara
 	case SCI_SETWORDNAVIGATIONMODE:
 		pdoc->SetWordNavigationMode((int)wParam);
 		break;
+
+    // [2e]: View > St&arting Line Number... #342
+	case SCI_SETSTARTINGLINENUMBER:
+		pdoc->SetStartingLineNumber((int)wParam);
+		break;
 	// [/2e]
 
 	case SCI_USEPOPUP:

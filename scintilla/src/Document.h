@@ -283,6 +283,8 @@ public:
 	ActionDuration durationStyleOneLine;
 	// [2e]: ctrl+arrow behavior toggle #89
 	int wordNavigationMode;
+	// [2e]: View > St&arting Line Number... #342
+	int startingLineNumber;
 
 	std::unique_ptr<IDecorationList> decorations;
 
@@ -500,6 +502,10 @@ public:
 	// [2e]: ctrl+arrow behavior toggle #89
 	void SetWordNavigationMode(const int iMode);
 	int CalcWordNavigationMode(const bool invertMode) const;
+	// [2e]: View > St&arting Line Number... #342
+	void SetStartingLineNumber(const int lineNumber);
+	int GetStartingLineNumber() const;
+	// [/2e]
 
 private:
 	void NotifyModifyAttempt();

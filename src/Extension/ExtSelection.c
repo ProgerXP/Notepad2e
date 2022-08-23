@@ -123,6 +123,7 @@ void n2e_EditInit(const HWND hwnd)
   SendMessage(hwnd, SCI_SETCARETLINEVISIBLEALWAYS, bHighlightLineIfWindowInactive, 0);
   SendMessage(hwnd, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
   SendMessage(hwnd, SCI_SETVIRTUALSPACEOPTIONS, SCVS_RECTANGULARSELECTION, 0);
+  SendMessage(hwnd, SCI_SETSTARTINGLINENUMBER, iStartingLineNumber, 0);
 
 #define DEFAULT_SECTION 6
 #define EXTENDED_SECTION 7

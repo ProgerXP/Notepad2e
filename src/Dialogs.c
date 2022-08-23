@@ -2355,3 +2355,50 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
     InfoBoxDlgProc,
     (LPARAM)&ib);
 }
+
+// [2e]: View > St&arting Line Number... #342
+INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+  switch (umsg)
+  {
+    DPI_CHANGED_HANDLER();
+
+    case WM_INITDIALOG: {
+        DPI_INIT();
+        SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 7, 0);
+        SetDlgItemInt(hwnd, IDC_LINENUM, iStartingLineNumber, TRUE);
+        n2e_EnforceSignedIntegerEdit(GetDlgItem(hwnd, 100));
+        CenterDlgInParent(hwnd);
+      }
+      return TRUE;
+
+    case WM_DESTROY:
+      return FALSE;
+
+    case WM_COMMAND:
+      switch (LOWORD(wParam))
+      {
+        case IDOK:
+          {
+            BOOL fTranslated;
+            iStartingLineNumber = GetDlgItemInt(hwnd, IDC_LINENUM, &fTranslated, TRUE);
+            if (fTranslated)
+            {
+              EndDialog(hwnd, IDOK);
+            }
+            else
+            {
+              PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, 100)), 1);
+            }
+          }
+          break;
+
+        case IDCANCEL:
+          EndDialog(hwnd, IDCANCEL);
+          break;
+      }
+      return TRUE;
+  }
+  return FALSE;
+}
+// [/2e]

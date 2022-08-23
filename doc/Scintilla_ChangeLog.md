@@ -1234,3 +1234,72 @@ void MarginView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const View
 /**Graphical artifacts in Indentation Guides #396**
 
 ---
+
+**View > St&arting Line Number... #342**
+
+Add new message SCI_SETSTARTINGLINENUMBER:
+
+[scintilla/include/Scintilla.h]
+```
+#define SCI_SETSTARTINGLINENUMBER 2383
+```
+
+Add message handler in ScintillaBase::WndProc:
+
+[scintilla/src/ScintillaBase.cxx]
+```
+	case SCI_SETSTARTINGLINENUMBER:
+		pdoc->SetStartingLineNumber((int)wParam);
+		break;
+```
+
+Add method declaration/implemention to Document class:
+
+[scintilla/src/Document.h]
+```
+	double durationStyleOneLine;
+	int wordNavigationMode;
+	*int startingLineNumber*
+...
+	void SetStartingLineNumber(const int lineNumber);
+	int GetStartingLineNumber() const;
+```
+
+[scintilla/src/Document.cxx]
+```
+	durationStyleOneLine = 0.00001;
+	wordNavigationMode = 0;
+	*startingLineNumber = 0;*
+...
+
+void Document::SetStartingLineNumber(const int lineNumber)
+{
+	startingLineNumber = lineNumber;
+}
+
+int Document::GetStartingLineNumber() const
+{
+	return startingLineNumber;
+}
+```
+
+[scintilla/src/MarginView.cxx]
+
+Replace code in MarginView::PaintMargin:
+```
+                        if (lineDoc >= 0) {
+                            sNumber = std::to_string(lineDoc + 1);
+                        }
+```
+
+->
+
+```
+                        if (lineDoc >= 0) {
+                            sNumber = std::to_string(lineDoc + model.pdoc->GetStartingLineNumber());
+                        }
+```
+
+/**View > St&arting Line Number... #342**
+
+---

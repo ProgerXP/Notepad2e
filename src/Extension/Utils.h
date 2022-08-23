@@ -196,6 +196,7 @@ extern BOOL bShowProgressBar;
 extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
+extern int iStartingLineNumber;
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();
@@ -230,3 +231,8 @@ void n2e_GetNumberFormat(LPNUMBERFMT lpFormat);
 BOOL n2e_IsWatchThreadRunning();
 void n2e_RunWatchThread(LPCWSTR lpszFile);
 void n2e_StopWatchThread();
+
+BOOL n2e_IsMinusSign(const wchar_t ch);
+BOOL n2e_EnforceSignedIntegerEdit(HWND hwnd);
+int n2e_GetVisibleLineNumber(const int iLineIndex);
+int n2e_GetActualLineNumber(const int iVisibleLineIndex);

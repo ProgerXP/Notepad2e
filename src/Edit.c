@@ -2918,7 +2918,8 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
         lstrcpyA(mszInsert, mszPrefix1);
 
         // [2e]: Alt+M - replace all substitutions #271
-        n2e_FormatLineText(mszInsert, iLineStart, iLine,
+        // [2e]: View > St&arting Line Number... #342
+        n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
           chPrefixAbsFormat, chPrefixAbsZeroFormat,
           chPrefixRelFormat, chPrefixRelZeroFormat,
           chPrefixRel0Format, chPrefixRel0ZeroFormat);
@@ -2935,7 +2936,8 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
         lstrcpyA(mszInsert, mszAppend1);
 
         // [2e]: Alt+M - replace all substitutions #271
-        n2e_FormatLineText(mszInsert, iLineStart, iLine,
+        // [2e]: View > St&arting Line Number... #342
+        n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
           chPrefixAbsFormat, chPrefixAbsZeroFormat,
           chPrefixRelFormat, chPrefixRelZeroFormat,
           chPrefixRel0Format, chPrefixRel0ZeroFormat);
@@ -4686,22 +4688,24 @@ void EditJumpTo(HWND hwnd, int iNewLine, int iNewCol)
   int iMaxLine = (int)SendMessage(hwnd, SCI_GETLINECOUNT, 0, 0);
 
   // Jumpt to end with line set to -1
-  if (iNewLine == -1)
+  // [2e]: View > St&arting Line Number... #342
+  if ((n2e_GetVisibleLineNumber(0) == 1) && (iNewLine == -1))
   {
     SendMessage(hwnd, SCI_DOCUMENTEND, 0, 0);
     return;
   }
 
   // Line maximum is iMaxLine
-  iNewLine = min(iNewLine, iMaxLine);
+  iNewLine = min(iNewLine, n2e_GetVisibleLineNumber(iMaxLine - 1));
 
   // Column minimum is 1
   iNewCol = max(iNewCol, 1);
 
-  if (iNewLine > 0 && iNewLine <= iMaxLine && iNewCol > 0)
+  // [2e]: View > St&arting Line Number... #342
+  if (iNewLine > n2e_GetVisibleLineNumber(-1) && iNewLine <= n2e_GetVisibleLineNumber(iMaxLine - 1) && iNewCol > 0)
   {
-    int iNewPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iNewLine - 1, 0);
-    int iLineEndPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iNewLine - 1, 0);
+    int iNewPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)n2e_GetActualLineNumber(iNewLine), 0);
+    int iLineEndPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)n2e_GetActualLineNumber(iNewLine), 0);
     while (iNewCol - 1 > SendMessage(hwnd, SCI_GETCOLUMN, (WPARAM)iNewPos, 0))
     {
       if (iNewPos >= iLineEndPos)
@@ -6138,8 +6142,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         if (!lpgoto || lpgoto->bForceDefaultInit || !strlen(lpgoto->lpefr->szFindUTF8))
         {
           lpgoto->bForceDefaultInit = FALSE;
-          int iCurLine = (int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0) + 1;
-          SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, FALSE);
+          // [2e]: View > St&arting Line Number... #342
+          int iCurLine = n2e_GetVisibleLineNumber((int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0));
+          SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, TRUE);
         }
         else
         {
@@ -6240,8 +6245,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
               {
                 iNewCol = 1;
               }
-              if (iNewLine > 0
-                  && iNewLine <= iMaxLine
+              // [2e]: View > St&arting Line Number... #342
+              if (iNewLine > n2e_GetVisibleLineNumber(-1)
+                  && iNewLine <= n2e_GetVisibleLineNumber(iMaxLine - 1)
                   )
               {
                 EditJumpTo(hwndEdit, iNewLine, iNewCol);
