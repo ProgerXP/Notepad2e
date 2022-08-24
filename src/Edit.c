@@ -4732,7 +4732,8 @@ void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
   // [2e]: ScrollYCaretPolicy ini-option
   const int linesOnScreen = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
   int yCaretSlop = 5;
-  switch (iScrollYCaretPolicy)
+  // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
+  switch ((n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()) ? SCP_LEGACY : iScrollYCaretPolicy)
   {
     case SCP_LEGACY:
     default:

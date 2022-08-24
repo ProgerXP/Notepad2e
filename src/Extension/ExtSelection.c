@@ -229,6 +229,16 @@ int n2e_HighlightWord(LPCSTR word)
   struct Sci_TextToFind ttf;
   len = SendMessage(hwndEdit, SCI_GETTEXTLENGTH, 0, 0);
   curr = SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+
+  if (bEditSelectionInit)
+  {
+    if ((SciCall_LineFromPosition(curr) < SciCall_GetFirstVisibleLine())
+      || (SciCall_LineFromPosition(curr) > SciCall_GetFirstVisibleLine() + SciCall_GetLinesOnScreen()))
+    {
+      SciCall_GotoPos(curr);
+    }
+  }
+
   switch (iSelectionMode)
   {
   case SM_LINE:
@@ -708,6 +718,11 @@ BOOL n2e_IsSelectionEditModeOn()
   return bEditSelection;
 }
 
+BOOL n2e_IsPageWiseSelectionEditMode()
+{
+  return !(bEditSelectionScope == (iSelectionMode == SM_ALL));
+}
+
 void n2e_SelectionEditStart(const ESelectionMode mode)
 {
   iSelectionMode = mode;
@@ -736,9 +751,9 @@ void n2e_SelectionEditStart(const ESelectionMode mode)
               iEditSelectionCount > 1 ? L"s" : L"",
               (iSelectionMode == SM_LINE)
                     ? L"on line"
-                    : (bEditSelectionScope == (iSelectionMode == SM_ALL))
-                      ? L"document-wise"
-                      : L"visible only");
+                    : n2e_IsPageWiseSelectionEditMode()
+                      ? L"visible only"
+                      : L"document-wise");
     tiEditSelection.lpszText = buf;
     n2e_ToolTipSetToolInfo(hwndToolTipEdit, &tiEditSelection);
 
@@ -768,19 +783,6 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
     n2e_SelectionHighlightTurn(FALSE);
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
     return TRUE;
-  }
-  return FALSE;
-}
-
-BOOL n2e_SelectionEditIsVisibleOnScreen()
-{
-  const int nFirstVisiblePosition = SciCall_PositionFromLine(SciCall_GetFirstVisibleLine());
-  const int nLastVisiblePosition = SciCall_LineEndPosition(SciCall_GetFirstVisibleLine() + SciCall_GetLinesOnScreen());
-  for (int i = 0; i < n2e_GetEditSelectionCount(); ++i)
-  {
-    LPSE_DATA se = n2e_GetEditSelection(i);
-    if ((se->pos >= nFirstVisiblePosition) && (se->pos < nLastVisiblePosition))
-      return TRUE;
   }
   return FALSE;
 }
