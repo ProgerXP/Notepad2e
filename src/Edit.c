@@ -4728,10 +4728,6 @@ void EditJumpTo(HWND hwnd, int iNewLine, int iNewCol)
 //
 void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
 {
-  // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
-  if (n2e_IsSelectionEditModeOn() && n2e_SelectionEditIsVisibleOnScreen())
-    return;
-
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
   // [2e]: ScrollYCaretPolicy ini-option
   const int linesOnScreen = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
@@ -5493,10 +5489,6 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   // [2e]: Boost regex and Cyrillic #162
   if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
-
-  // [2e]: Do not clear new selection on exit from Edit mode #318
-  if (n2e_IsSelectionEditModeOn())
-    n2e_SelectionEditStop(hwnd, SES_APPLY);
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)

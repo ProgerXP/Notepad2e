@@ -762,12 +762,6 @@ BOOL n2e_SelectionEditStop(const HWND hwnd, const ESelectionEditStopMode mode)
     if (mode & SES_REJECT)
     {
       n2e_SelectionProcessChanges(PCM_ROLLBACK);
-      SciCall_SetSel(iEditSelectionOffest, iEditSelectionOffest);
-    }
-    else
-    {
-      const int pos = SciCall_GetCurrentPos();
-      SciCall_SetSel(pos, pos);
     }
     bEditSelection = FALSE;
 
