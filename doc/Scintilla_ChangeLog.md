@@ -122,6 +122,7 @@ LINK_LEXER(lmTeX);
 
 ---
 **13. "No line selection on active selection"-feature**
+
 Remove triple-click handler in Editor::ButtonDown():
 
 [scintilla/src/Editor.cxx]
