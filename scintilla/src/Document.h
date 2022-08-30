@@ -644,4 +644,6 @@ public:
 
 }
 
+constexpr bool IsLineEndChar(char c) noexcept;
+
 #endif

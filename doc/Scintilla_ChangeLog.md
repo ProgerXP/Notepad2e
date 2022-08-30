@@ -333,16 +333,37 @@ New code around DropAt()-call:
 ---
 **Drag & drop improvement #63**
 
+Declare ``IsLineEnd`` function:
+
+[scintilla/src/Document.h]
+```
+constexpr bool IsLineEndChar(char c) noexcept;
+
+```
+
+Modify ``IsLineEnd`` function:
+
+[scintilla/src/Document.cpp]
+```
+static constexpr bool IsLineEndChar(char c) noexcept {
+
+->
+
+constexpr bool IsLineEndChar(char c) noexcept {
+
+```
+
+
 New code around DropAt()-call:
 
 [scintilla/win32/ScintillaWin.cxx]
 ```
-    const bool bIsTrailingLineEnd = (data.size() >= 3) && (data[data.size() - 3] == '\r') && (data[data.size() - 2] == '\n');
+    const bool bIsTrailingLineEnd = (data.size() >= 2) && IsLineEndChar(*++data.rbegin());
     const bool bAddNewLine = (inDragDrop != ddDragging) && (!bIsTrailingLineEnd && pdoc->IsLineStartPosition(movePos.Position()) && pdoc->IsLineEndPosition(movePos.Position()));
     if (bAddNewLine)
     {
-      data.insert(data.end() - 1, '\r');
-      data.insert(data.end() - 1, '\n');
+        const std::string eol(StringFromEOLMode(pdoc->eolMode));
+        data.insert(data.cend() - 1, eol.cbegin(), eol.cend());
     }
     DropAt(movePos, &data[0], data.size() - 1, \*pdwEffect == DROPEFFECT_MOVE, hrRectangular == S_OK);
     if (bAddNewLine)

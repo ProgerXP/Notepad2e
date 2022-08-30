@@ -2668,7 +2668,7 @@ Sci::Position Document::WordPartRight(Sci::Position pos) const {
 	return pos;
 }
 
-static constexpr bool IsLineEndChar(char c) noexcept {
+constexpr bool IsLineEndChar(char c) noexcept {
 	return (c == '\n' || c == '\r');
 }
 
