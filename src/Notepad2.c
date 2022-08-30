@@ -3082,8 +3082,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           {
             if (lParam == SCI_CUT)
             {
-              SciCall_SetSel(iWordStart, iWordStart);
-              SciCall_SetAnchor(iWordStart);
+              const auto iPos = min(iSelStart, iWordStart);
+              SciCall_SetSel(iPos, iPos);
+              SciCall_SetAnchor(iPos);
             }
             else
             {
