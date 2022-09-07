@@ -210,6 +210,7 @@
 #define IDS_EXPRESSION_VALUE_HEX        10021
 #define IDS_EXPRESSION_VALUE_OCT        10022
 #define IDS_EXPRESSION_VALUE_BINARY_STRING  10023
+#define IDS_UNSAVED_FILENAME            10024
 #define CMD_ESCAPE                      20000
 #define CMD_SHIFTESC                    20001
 #define CMD_CTRLENTER                   20002

@@ -1008,6 +1008,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_QUERYENDSESSION:
+      // [2e]: Customize Windows shutdown prevention message on modified file #422
+      if (bModified && (lstrlen(szCurFile) > 0))
+      {
+        WCHAR tchs[MAX_STR_BLOCKREASON] = { 0 };
+        FormatString(tchs, COUNTOF(tchs), IDS_UNSAVED_FILENAME, PathFindFileName(szCurFile));
+        ShutdownBlockReasonCreate(hwndMain, tchs);
+      }
+      // [/2e]
       if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
         return TRUE;
       else
