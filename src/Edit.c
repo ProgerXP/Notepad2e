@@ -4733,21 +4733,23 @@ void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
   const int linesOnScreen = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
   int yCaretSlop = 5;
   // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
-  switch ((n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()) ? SCP_LEGACY : iScrollYCaretPolicy)
+  if (!(n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()))
   {
-    case SCP_LEGACY:
-    default:
-      // legacy Notepad2 behavior
-      break;
-    case SCP_THIRD:
-      yCaretSlop = linesOnScreen / 3;
-      break;
-    case SCP_HALF:
-      yCaretSlop = linesOnScreen / 2;
-      break;
+    switch (iScrollYCaretPolicy)
+    {
+      case SCP_LEGACY:
+      default:
+        // legacy Notepad2 behavior
+        break;
+      case SCP_THIRD:
+        yCaretSlop = linesOnScreen / 3;
+        break;
+      case SCP_HALF:
+        yCaretSlop = linesOnScreen / 2;
+        break;
+    }
+    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, yCaretSlop);
   }
-  // [/2e]
-  SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, yCaretSlop);
   SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
   SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0);
