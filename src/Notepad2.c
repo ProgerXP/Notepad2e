@@ -3750,7 +3750,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             const int iSelEnd = SciCall_GetSelEnd();
             if (iBrace2 == iSelEnd)
             {
-              iBrace2 = SciCall_PositionAfter(iSelEnd);
+              // no additional setup required, do nothing
             }
             else if (iBrace2 > iPos)
             {
