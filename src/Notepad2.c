@@ -3064,6 +3064,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
               i = SciCall_PositionAfter(iWordEnd);
             }
+            // search forward, ignore EOLs
+            if (iWordStart == iWordEnd)
+            {
+              iWordStart = SciCall_GetWordEndPos(iPos, FALSE);
+              iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+            }
           }
           if (iWordStart == iWordEnd)
           {
