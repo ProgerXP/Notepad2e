@@ -2244,7 +2244,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 //
 LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 {
-  switch (LOWORD(wParam))
+  const WORD wCommandID = LOWORD(wParam);
+  switch (wCommandID)
   {
 
     case IDM_FILE_NEW:
@@ -4907,10 +4908,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int cchSelection = iSelectionEnd - iSelectionStart;
         if (cchSelection == 0)
         {
-          const int iPos = SciCall_GetCurrentPos();
-          iSelectionStart = SciCall_GetWordStartPos(iPos, TRUE);
-          iSelectionEnd = SciCall_GetWordEndPos(iPos, TRUE);
+          // [2e]: Find Next/Previous must skip first match #424
+          if (wCommandID != IDM_EDIT_SAVEFIND)
+          {
+            SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+            iSelectionStart = SciCall_GetSelStart();
+            iSelectionEnd = SciCall_GetSelEnd();
+          }
+          // [2e]: Save Find Text (Alt+F3) - remove selection #321
+          else
+          {
+            const int iPos = SciCall_GetCurrentPos();
+            iSelectionStart = SciCall_GetWordStartPos(iPos, TRUE);
+            iSelectionEnd = SciCall_GetWordEndPos(iPos, TRUE);
+          }
           cchSelection = iSelectionEnd - iSelectionStart;
+          // [/2e]
         }
         if (cchSelection > 0 && cchSelection <= 500)
         {
