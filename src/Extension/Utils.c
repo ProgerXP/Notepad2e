@@ -1572,10 +1572,20 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
       ++iLine;
       if (!n2e_IsEmptyLine(iLine))
       {
-        const int _iSelStart = SciCall_PositionFromLine(iLineStart) + n2e_GetLastNonSpaceCharPos(iLineStart) + 1;
-        const int _iSelEnd = SciCall_PositionFromLine(iLine) + n2e_GetFirstNonSpaceCharPos(iLine);
-        SciCall_SetSel(_iSelStart, _iSelEnd);
-        SciCall_ReplaceSel(0, " ");
+        if (n2e_IsEmptyLine(iLineStart) && (iSelStart > SciCall_PositionFromLine(iLineStart) + n2e_GetLastNonSpaceCharPos(iLineStart)))
+        {
+          const int _iSelStart = iSelStart;
+          const int _iSelEnd = SciCall_PositionFromLine(iLine) + n2e_GetFirstNonSpaceCharPos(iLine);
+          SciCall_SetSel(_iSelStart, _iSelEnd);
+          SciCall_ReplaceSel(0, "");
+        }
+        else
+        {
+          const int _iSelStart = SciCall_PositionFromLine(iLineStart) + n2e_GetLastNonSpaceCharPos(iLineStart) + 1;
+          const int _iSelEnd = SciCall_PositionFromLine(iLine) + n2e_GetFirstNonSpaceCharPos(iLine);
+          SciCall_SetSel(_iSelStart, _iSelEnd);
+          SciCall_ReplaceSel(0, " ");
+        }
         if (pbContinueProcessing)
         {
           *pbContinueProcessing = FALSE;
