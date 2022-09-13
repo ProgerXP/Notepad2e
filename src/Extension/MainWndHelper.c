@@ -66,12 +66,7 @@ void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
   }
   else
   {
-    if (wcslen(arrwchExpressionValue) > 0)
-    {
-      if (flagPasteBoard)
-        bLastCopyFromMe = TRUE;
-      n2e_SetClipboardText(hwnd, arrwchExpressionValue);
-    }
+    n2e_CopyEvaluatedExpressionToClipboard();
   }
 }
 
@@ -90,7 +85,7 @@ LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
   char* expressionText, const int expressionTextLength,
-  WCHAR* expressionValue, const int expressionValueLength)
+  WCHAR* expressionValue, const int expressionValueLength, const BOOL bApplyLocaleForDecimalResult)
 {
   WCHAR tchBuffer[MAX_PATH] = { 0 };
   const int bufferLength = COUNTOF(tchBuffer);
@@ -187,7 +182,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
         modePrevExpressionValue = modeExpressionValue;
         strncpy_s(expressionText, expressionTextLength - 1, pszText, strlen(pszText));
         wcsncpy_s(expressionValue, expressionValueLength - 1, tchBuffer, bufferLength - 1);
-        if (modeExpressionValue == EVM_DEC)
+        if (bApplyLocaleForDecimalResult && (modeExpressionValue == EVM_DEC))
         {
           LPNUMBERFMT lpFormat = NULL;
           NUMBERFMT format = { 0 };
@@ -198,6 +193,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
             lpFormat = &format;
           }
           GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
+          wcsncpy_s(expressionValue, expressionValueLength - 1, tchBuffer, bufferLength - 1);
         }
         LocalFree(pszText);
         return TRUE;

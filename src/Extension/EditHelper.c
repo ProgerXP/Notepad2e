@@ -1527,7 +1527,7 @@ void n2e_CopyEvaluatedExpressionToClipboard()
   WCHAR arrwchValue[MAX_PATH] = { 0 };
   if (n2e_FormatEvaluatedExpression(hwndEdit,
         arrchText, COUNTOF(arrchText),
-        arrwchValue, COUNTOF(arrwchValue)))
+        arrwchValue, COUNTOF(arrwchValue), FALSE))
   {
     if (flagPasteBoard)
       bLastCopyFromMe = TRUE;

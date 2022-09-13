@@ -7147,7 +7147,7 @@ void UpdateStatusbar()
   // [2e]: "Evaluate selection"-feature
   if (n2e_FormatEvaluatedExpression(hwndEdit,
         arrchExpressionText, COUNTOF(arrchExpressionText),
-        arrwchExpressionValue, COUNTOF(arrwchExpressionValue)))
+        arrwchExpressionValue, COUNTOF(arrwchExpressionValue), TRUE))
   {
     wcsncpy_s(tchDocSize, COUNTOF(tchDocSize), arrwchExpressionValue, COUNTOF(arrwchExpressionValue));
   }
