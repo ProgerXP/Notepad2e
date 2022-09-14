@@ -34,6 +34,7 @@ EDITLEXER lexDefault = { SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; l
   /* 23 */ { SCI_SETCARETFORE + SCI_SETCARETWIDTH, 63121, L"2nd Caret (Color, Size 1-3)", L"", L"" },
   /* 24 */ { SCI_SETEDGECOLOUR, 63122, L"2nd Long Line Marker (Colors)", L"fore:#FFC000", L"" },
   /* 25 */ { SCI_SETEXTRAASCENT + SCI_SETEXTRADESCENT, 63123, L"2nd Extra Line Spacing (Size)", L"", L"" },
+  /* 26 */ { 0, 63124, L"Splitter (Color, Size)", L"size:0", L"" },
   { -1, 00000, L"", L"", L"" }
 }
 };
@@ -972,7 +973,7 @@ EDITLEXER lexBASH = { SCLEX_BASH, 63023, L"Bash Script", L"sh; bash; configure; 
         { SCE_SH_OPERATOR, 63132, L"Operator", L"fore:#000000,bold", L"" },
         { SCE_SH_IDENTIFIER, 63129, L"Identifier", L"fore:#000000", L"" },
         { SCE_SH_SCALAR, 63215, L"Scalar $var", L"fore:#000000,back:#FFE0E0", L"" },
-        { SCE_SH_PARAM, 63124, L"Parameter", L"fore:#000000,back:#FFFFE0", L"" },
+        { SCE_SH_PARAM, 63125, L"Parameter", L"fore:#000000,back:#FFFFE0", L"" },
         { SCE_SH_BACKTICKS, 63221, L"Back ticks", L"fore:#FFFF00,back:#A08080", L"" },
         { SCE_SH_HERE_DELIM, 63223, L"Here-doc (delimiter)", L"fore:#000000,back:#DDD0DD", L"" },
         { SCE_SH_HERE_Q, 63224, L"Here-doc (single quoted, q)", L"fore:#7F007F,back:#DDD0DD,eolfilled,notbold", L"" },

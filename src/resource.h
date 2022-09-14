@@ -247,6 +247,10 @@
 #define CMD_COPYWINPOS                  20033
 #define CMD_DEFAULTWINPOS               20034
 #define CMD_OPENINIFILE                 20035
+#define CMD_GOTO_NEXT_VIEW              20036
+#define CMD_GOTO_PREVIOUS_VIEW          20037
+#define CMD_HSPLIT_VIEW                 20038
+#define CMD_VSPLIT_VIEW                 20039
 #define IDM_FILE_NEW                    40000
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_REVERT                 40002

@@ -5432,7 +5432,33 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
     // [/2e]
 
+    // [2e]: Split view #316
+    case CMD_GOTO_NEXT_VIEW:
+    case CMD_GOTO_PREVIOUS_VIEW:
+      {
+        const HWND hwndActive = n2e_GetActiveEditCheckFocus();
+        const int windowsCount = n2e_ScintillaWindowsCount();
+        for (int i = 0; i < windowsCount; ++i)
+        {
+          const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+          if (hwnd == hwndActive)
+          {
+            n2e_SetActiveEdit(
+              n2e_ScintillaWindowByIndex((wCommandID == CMD_GOTO_NEXT_VIEW)
+                ? (i + 1 >= windowsCount) ? 0 : i + 1
+                : (i - 1 < 0) ? windowsCount - 1 : i - 1));
+            n2e_RestoreActiveEdit();
+            break;
+          }
+        }
+      }
+      break;
 
+    case CMD_HSPLIT_VIEW:
+    case CMD_VSPLIT_VIEW:
+      n2e_SplitView(wCommandID == CMD_HSPLIT_VIEW);
+      break;
+    // [/2e]
   }
   return (0);
 }

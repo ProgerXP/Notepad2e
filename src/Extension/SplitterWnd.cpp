@@ -20,10 +20,22 @@ UINT WM_SPLITTER_CHILDREN_COUNT = RegisterWindowMessage(L"WM_GET_SPLITTER_CHILDR
 UINT WM_SPLITTER_CHILD_BY_INDEX = RegisterWindowMessage(L"WM_SPLITTER_CHILD_BY_INDEX");
 
 #define HTSPLITTER_MOVE 25
-const int SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) * 3 / 8; // = 37.5%
+const int DEFAULT_SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) * 3 / 8; // = 37.5%
 const int SPLITTER_MIN_PANE_SIZE = 20;
 
+int iGripSize = DEFAULT_SPLITTER_GRIP_SIZE;
+
 #define INIT_SELF() auto pSelf = CSplitterWindow::FromHWND(hWnd);
+
+int GetSplitterGripSize()
+{
+  return iGripSize;
+}
+
+void SetSplitterGripSize(const int iDifference)
+{
+  iGripSize = DEFAULT_SPLITTER_GRIP_SIZE + 2 * iDifference;
+}
 
 struct Rect : public RECT
 {
@@ -96,13 +108,13 @@ public:
   int UpdateChild(const Rect& rc, const bool isHorizontalSplitter, const int paneOffset, const bool isLastPane, HDWP* lpHDWP) {
     if (isHorizontalSplitter)
     {
-      m_rcChild = { rc.left + paneOffset, rc.top, rc.left + paneOffset + m_size - SPLITTER_GRIP_SIZE, rc.bottom };
-      m_rcGrip = { m_rcChild.right, m_rcChild.top, m_rcChild.right + SPLITTER_GRIP_SIZE, m_rcChild.bottom };
+      m_rcChild = { rc.left + paneOffset, rc.top, rc.left + paneOffset + m_size - GetSplitterGripSize(), rc.bottom };
+      m_rcGrip = { m_rcChild.right, m_rcChild.top, m_rcChild.right + GetSplitterGripSize(), m_rcChild.bottom };
     }
     else
     {
-      m_rcChild = { rc.left, rc.top + paneOffset, rc.right, rc.top + paneOffset + m_size - SPLITTER_GRIP_SIZE };
-      m_rcGrip = { m_rcChild.left, m_rcChild.bottom, m_rcChild.right, m_rcChild.bottom + SPLITTER_GRIP_SIZE };
+      m_rcChild = { rc.left, rc.top + paneOffset, rc.right, rc.top + paneOffset + m_size - GetSplitterGripSize() };
+      m_rcGrip = { m_rcChild.left, m_rcChild.bottom, m_rcChild.right, m_rcChild.bottom + GetSplitterGripSize() };
     }
     if (isLastPane)
     {
@@ -561,6 +573,43 @@ LRESULT CALLBACK CSplitterWindow::SplitterProc(HWND hWnd, UINT uMsg, WPARAM wPar
   return DefWindowProc(hWnd, uMsg, wParam, lParam);
 }
 
+void SetSplitterColor(const HWND hwnd, const COLORREF color)
+{
+  CSplitterWindow* pSplitter = CSplitterWindow::FromHWND(IsSplitterWnd(hwnd) ? hwnd : GetParent(hwnd));
+  if (pSplitter)
+  {
+    SetClassLongPtr(pSplitter->GetHWND(), GCLP_HBRBACKGROUND, (LONG_PTR)CreateSolidBrush(color));
+  }
+}
+
+void UpdateSplitterWndColorAndSize(const HWND hwnd)
+{
+  int iValue = 0;
+  if (Style_StrGetColor(FALSE, lexDefault.Styles[26].szValue, &iValue))
+  {
+    SetSplitterColor(hwnd, (COLORREF)iValue);
+  }
+  WCHAR tch[32];
+  if (Style_StrGetSizeStr(lexDefault.Styles[26].szValue, tch, sizeof(tch)/sizeof(tch[0])))
+  {
+    SetSplitterGripSize(_wtoi(tch));
+  }
+  
+  for (int i = 0; i < n2e_ScintillaWindowsCount(); ++i)
+  {
+    const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+    CSplitterWindow* pSplitter = CSplitterWindow::FromHWND(GetParent(hwnd));
+    if (pSplitter)
+    {
+      pSplitter->ScalePanes();
+    }
+  }
+
+  const HWND hwndTop = GetTopWindow(hwnd);
+  InvalidateRect(hwndTop, NULL, TRUE);
+  UpdateWindow(hwndTop);
+}
+
 HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND hwndChild2, const BOOL bHorizontal)
 {
   auto pSplitter = new CSplitterWindow(hwndParent, bHorizontal);
@@ -569,6 +618,7 @@ HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND 
     assert(0);
     return NULL;
   }
+  UpdateSplitterWndColorAndSize(pSplitter->GetHWND());
   pSplitter->AddChild(hwndChild1);
   pSplitter->AddChild(hwndChild2);
   pSplitter->UpdatePanes();

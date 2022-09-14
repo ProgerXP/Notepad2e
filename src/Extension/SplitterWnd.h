@@ -5,6 +5,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+#include "Styles.h"
 #include "ViewHelper.h"
 
   extern UINT WM_SPLITTER_CHILDREN_COUNT;
@@ -12,6 +13,7 @@ extern "C" {
 
   BOOL IsSplitterWnd(const HWND hwnd);
   HWND GetTopSplitterWnd(const HWND hwnd);
+  void UpdateSplitterWndColorAndSize(const HWND hwnd);
   HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND hwndChild2, const BOOL bHorizontal);
   HWND AddSplitterChild(HWND hwndParent, const HWND hwndChildActive, const HWND hwndChild, const BOOL bHorizontal);
   void DeleteSplitterChild(HWND hwndChild, HWND hwndParentForLast, HWND* hwndEditParent);

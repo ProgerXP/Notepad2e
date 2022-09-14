@@ -74,12 +74,12 @@ void n2e_UpdateMainWindow()
 void n2e_UpdateView(const HWND hwnd, const LRESULT pDoc)
 {
   SendMessage(hwnd, SCI_SETDOCPOINTER, 0, pDoc);
-  n2e_UpdateLexer(hwnd);
   InitScintillaHandle(hwnd);
   n2e_InitScintilla(hwnd);
   EditInit(hwnd);
   n2e_EditInit(hwnd);
   n2e_ScintillaDPIInit(hwnd);
+  n2e_UpdateLexer(hwnd);
   UpdateLineNumberWidth(hwnd);
 
   FileVars_Apply(hwnd, &fvCurFile);
