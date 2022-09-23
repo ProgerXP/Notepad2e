@@ -13,7 +13,7 @@ extern "C" {
 
   BOOL IsSplitterWnd(const HWND hwnd);
   HWND GetTopSplitterWnd(const HWND hwnd);
-  void UpdateSplitterWndColorAndSize(const HWND hwnd);
+  void UpdateSplitterWndColorAndSize(const HWND hwnd, const BOOL bRepaint);
   HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND hwndChild2, const BOOL bHorizontal);
   HWND AddSplitterChild(HWND hwndParent, const HWND hwndChildActive, const HWND hwndChild, const BOOL bHorizontal);
   void DeleteSplitterChild(HWND hwndChild, HWND hwndParentForLast, HWND* hwndEditParent);

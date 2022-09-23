@@ -405,6 +405,7 @@
 #define IDM_VIEW_NOESCFUNC              40434
 #define IDM_VIEW_ESCMINIMIZE            40435
 #define IDM_VIEW_ESCEXIT                40436
+#define IDM_VIEW_ESCCLOSEVIEW           40437
 #define IDM_VIEW_NOSAVERECENT           40438
 #define IDM_VIEW_NOSAVEFINDREPL         40439
 #define IDM_VIEW_TOOLBAR                40440

@@ -2335,7 +2335,7 @@ void Style_ConfigDlg(HWND hwnd)
 
   // Apply new (or previous) Styles
   Style_SetLexer(hwnd,pLexCurrent);
-  UpdateSplitterWndColorAndSize(hwnd);
+  UpdateSplitterWndColorAndSize(hwnd, TRUE);
 }
 
 

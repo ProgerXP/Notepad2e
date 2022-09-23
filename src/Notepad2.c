@@ -193,7 +193,7 @@ int       iFileWatchingMode;
 BOOL      bResetFileWatching;
 DWORD     dwFileCheckInterval;
 DWORD     dwAutoReloadTimeout;
-enum EEscFunction iEscFunction = EEF_IGNORE;
+enum EEscFunction iEscFunction = EEF_CLOSEVIEW;
 BOOL      bAlwaysOnTop;
 BOOL      bMinimizeToTray;
 BOOL      bTransparentMode;
@@ -2199,9 +2199,13 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     i = IDM_VIEW_ESCMINIMIZE;
   else if (iEscFunction == EEF_EXIT)
     i = IDM_VIEW_ESCEXIT;
+  // [2e]: Split view #316
+  else if (iEscFunction == EEF_CLOSEVIEW)
+    i = IDM_VIEW_ESCCLOSEVIEW;
+  // [/2e]
   else
     i = IDM_VIEW_NOESCFUNC;
-  CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCCLOSEVIEW, i, MF_BYCOMMAND);
 
   i = lstrlen(szIniFile);
   // [2e]: Save on exit and History #101
@@ -4411,6 +4415,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       iEscFunction = EEF_EXIT;
       break;
 
+    // [2e]: Split view #316
+    case IDM_VIEW_ESCCLOSEVIEW:
+      iEscFunction = EEF_CLOSEVIEW;
+      break;
+    // [/2e]
+
 
     // [2e]: Save on exit and History #101
     case IDM_VIEW_SAVESETTINGS_MODE_ALL:
@@ -4593,6 +4603,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           case EEF_EXIT:
             SendMessage(hwnd, WM_CLOSE, 0, 0);
             break;
+          // [2e]: Split view #316
+          case EEF_CLOSEVIEW:
+            n2e_CloseView();
+            break;
+          // [/2e]
           case EEF_IGNORE:
           default:
             break;
@@ -6002,8 +6017,8 @@ void LoadSettings()
   bResetFileWatching = IniSectionGetInt(pIniSection, L"ResetFileWatching", 1);
   if (bResetFileWatching) bResetFileWatching = 1;
 
-  iEscFunction = IniSectionGetInt(pIniSection, L"EscFunction", 0);
-  iEscFunction = max(min(iEscFunction, EEF_EXIT), 0);
+  iEscFunction = IniSectionGetInt(pIniSection, L"EscFunction", EEF_CLOSEVIEW);
+  iEscFunction = max(min(iEscFunction, EEF_CLOSEVIEW), 0);
 
   bAlwaysOnTop = IniSectionGetInt(pIniSection, L"AlwaysOnTop", 0);
   if (bAlwaysOnTop) bAlwaysOnTop = 1;
@@ -7076,7 +7091,7 @@ void UpdateToolbar()
   // [2e]: Binary Save Options button #170
   CheckTool(IDT_BINARY_SAFE_SAVE, !bFixLineEndings && !bAutoStripBlanks);
   // [2e]: Split view #316
-  EnableTool(IDT_CLOSE_SPLIT, n2e_GetActiveEditCheckFocus() != _hwndEdit);
+  EnableTool(IDT_CLOSE_SPLIT, n2e_ScintillaWindowsCount() > 1);
 }
 
 

@@ -356,6 +356,8 @@ BEGIN
             MENUITEM "&None",                       IDM_VIEW_NOESCFUNC
             MENUITEM "&Minimize Notepad 2e",        IDM_VIEW_ESCMINIMIZE
             MENUITEM "E&xit Notepad 2e",            IDM_VIEW_ESCEXIT
+            MENUITEM SEPARATOR
+            MENUITEM "First Close Current &Split View, If Any" IDM_VIEW_ESCCLOSEVIEW
         END
         POPUP "Evaluate &Math Expressions"
         BEGIN

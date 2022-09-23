@@ -61,6 +61,11 @@ HWND n2e_ScintillaWindowByIndex(const int index)
     : _hwndEdit;
 }
 
+void n2e_ForceWindowRedraw(const HWND hwnd)
+{
+  RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ERASE | RDW_FRAME | RDW_NOFRAME | RDW_NOINTERNALPAINT | RDW_ALLCHILDREN);
+}
+
 void n2e_UpdateMainWindow()
 {
   extern HWND hwndMain;
@@ -110,6 +115,7 @@ void n2e_SplitView(const BOOL bHorizontally)
   const HWND hwndEditActive = n2e_GetActiveEditCheckFocus();
   hwndEditParent = GetParent(hwndEditActive);
   const auto activePosition = SciCall_PositionFromLine(SciCall_LineFromPosition(SciCall_GetCurrentPos()));
+  LockWindowUpdate(hwndMain);
   const HWND hwndEditNew = n2e_EditCreateImpl(hwndEditActive, hwndEditParent, bHorizontally, &hwndEditParent);
   if (PrivateIsAppThemed())
   {
@@ -121,31 +127,52 @@ void n2e_SplitView(const BOOL bHorizontally)
   n2e_UpdateView(hwndEditNew, SendMessage(hwndEdit, SCI_GETDOCPOINTER, 0, 0));
   n2e_SetActiveEdit(hwndEditNew);
   EditSelectEx(hwndEditNew, activePosition, activePosition);
+  LockWindowUpdate(NULL);
+  n2e_ForceWindowRedraw(hwndMain);
+
   SetFocus(hwndEditNew);
 }
 
 void n2e_CloseView()
 {
   const HWND hwnd = n2e_GetActiveEditCheckFocus();
-  if (hwnd != _hwndEdit)
+  const int iViewCount = n2e_ScintillaWindowsCount();
+  if (iViewCount > 1)
   {
-    const int iViewCount = n2e_ScintillaWindowsCount();
-    for (int i = 0; i < iViewCount; ++i)
+    LockWindowUpdate(hwndMain);
+    if (hwnd == _hwndEdit)
     {
-      if (n2e_ScintillaWindowByIndex(i) == hwnd)
+      HWND hwndNewActive = n2e_ScintillaWindowByIndex(1);
+      n2e_SetActiveEdit(hwndNewActive);
+      DeleteSplitterChild(hwnd, hwndMain, &hwndEditParent);
+      _hwndEdit = hwndNewActive;
+      if (iViewCount == 2)
       {
-        n2e_SetActiveEdit((i + 1 >= iViewCount) ? n2e_ScintillaWindowByIndex(i - 1) : n2e_ScintillaWindowByIndex(i + 1));
-        break;
+        hwndEditParent = hwndNewActive;
       }
-    }
-
-    SendMessage(hwnd, SCI_SETDOCPOINTER, 0, 0);
-    DeleteSplitterChild(hwnd, _hwndEdit, &hwndEditParent);
-
-    if (hwndEditParent == _hwndEdit)
-    {
       n2e_UpdateMainWindow();
     }
+    else
+    {
+      for (int i = 0; i < iViewCount; ++i)
+      {
+        if (n2e_ScintillaWindowByIndex(i) == hwnd)
+        {
+          n2e_SetActiveEdit((i + 1 >= iViewCount) ? n2e_ScintillaWindowByIndex(i - 1) : n2e_ScintillaWindowByIndex(i + 1));
+          break;
+        }
+      }
+
+      SendMessage(hwnd, SCI_SETDOCPOINTER, 0, 0);
+      DeleteSplitterChild(hwnd, _hwndEdit, &hwndEditParent);
+
+      if (hwndEditParent == _hwndEdit)
+      {
+        n2e_UpdateMainWindow();
+      }
+    }
+    LockWindowUpdate(NULL);
+    n2e_ForceWindowRedraw(hwndMain);
     SetFocus(n2e_GetActiveEdit());
   }
 }

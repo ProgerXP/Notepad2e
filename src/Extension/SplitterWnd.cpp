@@ -582,7 +582,7 @@ void SetSplitterColor(const HWND hwnd, const COLORREF color)
   }
 }
 
-void UpdateSplitterWndColorAndSize(const HWND hwnd)
+void UpdateSplitterWndColorAndSize(const HWND hwnd, const BOOL bRepaint)
 {
   int iValue = 0;
   if (Style_StrGetColor(FALSE, lexDefault.Styles[26].szValue, &iValue))
@@ -604,10 +604,10 @@ void UpdateSplitterWndColorAndSize(const HWND hwnd)
       pSplitter->ScalePanes();
     }
   }
-
-  const HWND hwndTop = GetTopWindow(hwnd);
-  InvalidateRect(hwndTop, NULL, TRUE);
-  UpdateWindow(hwndTop);
+  if (bRepaint)
+  {
+    n2e_ForceWindowRedraw(GetTopWindow(hwnd));
+  }
 }
 
 HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND hwndChild2, const BOOL bHorizontal)
@@ -618,7 +618,7 @@ HWND CreateSplitterWnd(const HWND hwndParent, const HWND hwndChild1, const HWND 
     assert(0);
     return NULL;
   }
-  UpdateSplitterWndColorAndSize(pSplitter->GetHWND());
+  UpdateSplitterWndColorAndSize(pSplitter->GetHWND(), FALSE);
   pSplitter->AddChild(hwndChild1);
   pSplitter->AddChild(hwndChild2);
   pSplitter->UpdatePanes();

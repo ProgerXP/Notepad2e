@@ -51,7 +51,8 @@ typedef enum
 {
   EEF_IGNORE = 0,
   EEF_MINIMIZE = 1,
-  EEF_EXIT = 2
+  EEF_EXIT = 2,
+  EEF_CLOSEVIEW = 3
 } EEscFunction;
 
 typedef enum

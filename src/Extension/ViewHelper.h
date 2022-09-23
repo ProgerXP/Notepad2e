@@ -23,6 +23,8 @@ void n2e_SetActiveEdit(const HWND hwnd);
 void n2e_SaveActiveEdit();
 void n2e_RestoreActiveEdit();
 
+void n2e_ForceWindowRedraw(const HWND hwnd);
+
 #ifndef N2E_TESTING
 #define hwndEdit n2e_GetActiveEdit()
 #else
