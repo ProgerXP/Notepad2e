@@ -25,6 +25,18 @@
 #define COMMENT_INFO(info, style) { info, style }
 #define NULL_COMMENT_INFO COMMENT_INFO(NULL_COMMENT, -1)
 
+typedef enum
+{
+  DLO_MARGIN_AND_LINE_COLOR = 1,
+  DLO_CURRENT_LINE_BACKGROUND = 8,
+  DLO_CURRENT_LINE_BACKGROUND_INACTIVE = 9,
+  DLO_CARET_COLOR = 10,
+  DLO_LONG_LINE_MARKER = 11,
+  DLO_EXTRA_LINE_SPACING = 12,
+  DLO_SPLITTER_COLOR = 13,
+  DLO_2ND_DEFAULT_STYLE = 14
+} EDefaultLexerOptions;
+
 typedef struct _editstyle
 {
   union

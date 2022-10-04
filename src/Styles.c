@@ -37,17 +37,6 @@
 #include "Extension/Utils.h"
 
 
-typedef enum
-{
-  DLO_CURRENT_LINE_BACKGROUND = 8,
-  DLO_CURRENT_LINE_BACKGROUND_INACTIVE = 9,
-  DLO_CARET_COLOR = 10,
-  DLO_LONG_LINE_MARKER = 11,
-  DLO_EXTRA_LINE_SPACING = 12,
-  DLO_2ND_DEFAULT_STYLE = 13
-} EDefaultLexerOptions;
-
-
 COLORREF crCustom[16];
 BOOL bUse2ndDefaultStyle;
 BOOL fStylesModified = FALSE;
@@ -2246,6 +2235,7 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
 
             Style_SetLexer(hwndEdit, pLexCurrent);
             UpdateLineNumberWidth(hwndEdit);
+            UpdateSplitterWndColorAndSize(hwndEdit, TRUE);
           }
           break;
 

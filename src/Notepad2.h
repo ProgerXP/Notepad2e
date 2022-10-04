@@ -131,7 +131,7 @@ void UpdateLineNumberWidth(HWND);
 void OnDropCompleted(HWND);
 void SetWordWrap(HWND);
 void SetSelectEx(HWND);
-void SetLongLineMarker(HWND);
+void SetLongLineSettings(HWND);
 void SetMarginWidthN(HWND);
 void ShowWhiteSpace(HWND);
 void SetViewEOL(HWND);

@@ -4050,7 +4050,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_LONGLINEMARKER:
       bMarkLongLines = (bMarkLongLines) ? FALSE : TRUE;
-      VIEW_COMMAND(SetLongLineMarker);
+      VIEW_COMMAND(SetLongLineSettings);
       UpdateStatusbar();
       break;
 
@@ -4059,10 +4059,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       if (LongLineSettingsDlg(hwnd, IDD_LONGLINES, &iLongLinesLimit))
       {
         bMarkLongLines = TRUE;
-        SendMessage(hwndEdit, SCI_SETEDGEMODE, (iLongLineMode == EDGE_LINE) ? EDGE_LINE : EDGE_BACKGROUND, 0);
-        Style_SetLongLineColors(hwndEdit);
         iLongLinesLimit = max(min(iLongLinesLimit, 4096), 0);
-        SendMessage(hwndEdit, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
+        VIEW_COMMAND(SetLongLineSettings);
         UpdateStatusbar();
         iLongLinesLimitG = iLongLinesLimit;
       }
@@ -7285,7 +7283,7 @@ void SetSelectEx(HWND hwnd)
 // [/2e]
 
 
-void SetLongLineMarker(HWND hwnd)
+void SetLongLineSettings(HWND hwnd)
 {
   if (bMarkLongLines)
   {
@@ -7293,7 +7291,10 @@ void SetLongLineMarker(HWND hwnd)
     Style_SetLongLineColors(hwnd);
   }
   else
+  {
     SendMessage(hwnd, SCI_SETEDGEMODE, EDGE_NONE, 0);
+  }  
+  SendMessage(hwnd, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
 }
 
 void SetMarginWidthN(HWND hwnd)

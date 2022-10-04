@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "Lexers.h"
 #include "CommonUtils.h"
 #include "Scintilla.h"
 #include "ViewHelper.h"
@@ -20,7 +21,13 @@ UINT WM_SPLITTER_CHILDREN_COUNT = RegisterWindowMessage(L"WM_GET_SPLITTER_CHILDR
 UINT WM_SPLITTER_CHILD_BY_INDEX = RegisterWindowMessage(L"WM_SPLITTER_CHILD_BY_INDEX");
 
 #define HTSPLITTER_MOVE 25
+
+const int SPLITTER_SYSCOLOR_INDEX = COLOR_BTNFACE;
+const COLORREF DEFAULT_SPLITTER_COLOR = GetSysColor(SPLITTER_SYSCOLOR_INDEX);
+const HBRUSH DEFAULT_SPLITTER_BRUSH = GetSysColorBrush(SPLITTER_SYSCOLOR_INDEX);
+
 const int DEFAULT_SPLITTER_GRIP_SIZE = GetSystemMetrics(SM_CYVSCROLL) * 3 / 8; // = 37.5%
+const HBRUSH DEFAULT_SPLITTER_GRIP_BRUSH = GetSysColorBrush(COLOR_GRAYTEXT);
 const int SPLITTER_MIN_PANE_SIZE = 20;
 
 int iGripSize = DEFAULT_SPLITTER_GRIP_SIZE;
@@ -72,7 +79,7 @@ public:
   {
     if (!s_classAtom)
     {
-      WNDCLASS wc = { 0, DefWindowProc, 0, 0, GetModuleHandle(NULL), NULL, NULL, GetSysColorBrush(COLOR_GRAYTEXT), NULL, UC_SPLITTER_INDICATOR };
+      WNDCLASS wc = { 0, DefWindowProc, 0, 0, GetModuleHandle(NULL), NULL, NULL, DEFAULT_SPLITTER_GRIP_BRUSH, NULL, UC_SPLITTER_INDICATOR };
       s_classAtom = RegisterClass(&wc);
     }
 
@@ -151,7 +158,7 @@ private:
   {
     if (!s_classAtom)
     {
-      WNDCLASS wc = { 0, SplitterProc, 0, 0, GetModuleHandle(NULL), NULL, NULL, GetSysColorBrush(COLOR_BTNFACE), NULL, UC_SPLITTER };
+      WNDCLASS wc = { 0, SplitterProc, 0, 0, GetModuleHandle(NULL), NULL, NULL, DEFAULT_SPLITTER_BRUSH, NULL, UC_SPLITTER };
       s_classAtom = RegisterClass(&wc);
     }
   }
@@ -578,19 +585,22 @@ void SetSplitterColor(const HWND hwnd, const COLORREF color)
   CSplitterWindow* pSplitter = CSplitterWindow::FromHWND(IsSplitterWnd(hwnd) ? hwnd : GetParent(hwnd));
   if (pSplitter)
   {
-    SetClassLongPtr(pSplitter->GetHWND(), GCLP_HBRBACKGROUND, (LONG_PTR)CreateSolidBrush(color));
+    SetClassLongPtr(pSplitter->GetHWND(), GCLP_HBRBACKGROUND,
+      (LONG_PTR)((color == DEFAULT_SPLITTER_COLOR) ? DEFAULT_SPLITTER_BRUSH : CreateSolidBrush(color)));
   }
 }
 
 void UpdateSplitterWndColorAndSize(const HWND hwnd, const BOOL bRepaint)
 {
   int iValue = 0;
-  if (Style_StrGetColor(FALSE, lexDefault.Styles[26].szValue, &iValue))
-  {
-    SetSplitterColor(hwnd, (COLORREF)iValue);
-  }
+  SetSplitterColor(hwnd, 
+    (Style_StrGetColor(FALSE, lexDefault.Styles[DLO_SPLITTER_COLOR].szValue, &iValue)
+    || Style_StrGetColor(FALSE, lexDefault.Styles[DLO_MARGIN_AND_LINE_COLOR].szValue, &iValue))
+      ? (COLORREF)iValue
+      : DEFAULT_SPLITTER_COLOR);
+
   WCHAR tch[32];
-  if (Style_StrGetSizeStr(lexDefault.Styles[26].szValue, tch, sizeof(tch)/sizeof(tch[0])))
+  if (Style_StrGetSizeStr(lexDefault.Styles[DLO_SPLITTER_COLOR].szValue, tch, sizeof(tch)/sizeof(tch[0])))
   {
     SetSplitterGripSize(_wtoi(tch));
   }
