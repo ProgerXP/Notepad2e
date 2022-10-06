@@ -193,7 +193,8 @@ int       iFileWatchingMode;
 BOOL      bResetFileWatching;
 DWORD     dwFileCheckInterval;
 DWORD     dwAutoReloadTimeout;
-enum EEscFunction iEscFunction = EEF_CLOSEVIEW;
+enum EEscFunction iEscFunction = EEF_IGNORE;
+BOOL      bEscForCurrentSplitView = TRUE;
 BOOL      bAlwaysOnTop;
 BOOL      bMinimizeToTray;
 BOOL      bTransparentMode;
@@ -932,7 +933,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       else
       {
         // [2e]: Split view #316
-        n2e_RestoreActiveEdit();
+        n2e_RestoreActiveEdit(FALSE);
       }
       break;
     // [/2e]
@@ -1049,7 +1050,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_SETFOCUS:
-      n2e_RestoreActiveEdit();
+      n2e_RestoreActiveEdit(FALSE);
       UpdateToolbar();
       UpdateStatusbar();
 
@@ -2199,13 +2200,10 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
     i = IDM_VIEW_ESCMINIMIZE;
   else if (iEscFunction == EEF_EXIT)
     i = IDM_VIEW_ESCEXIT;
-  // [2e]: Split view #316
-  else if (iEscFunction == EEF_CLOSEVIEW)
-    i = IDM_VIEW_ESCCLOSEVIEW;
-  // [/2e]
   else
     i = IDM_VIEW_NOESCFUNC;
-  CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCCLOSEVIEW, i, MF_BYCOMMAND);
+  CheckMenuRadioItem(hmenu, IDM_VIEW_NOESCFUNC, IDM_VIEW_ESCEXIT, i, MF_BYCOMMAND);
+  CheckCmd(hmenu, IDM_VIEW_ESCCLOSEVIEW, bEscForCurrentSplitView);
 
   i = lstrlen(szIniFile);
   // [2e]: Save on exit and History #101
@@ -4415,7 +4413,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Split view #316
     case IDM_VIEW_ESCCLOSEVIEW:
-      iEscFunction = EEF_CLOSEVIEW;
+      bEscForCurrentSplitView = (bEscForCurrentSplitView) ? FALSE : TRUE;
       break;
     // [/2e]
 
@@ -4593,22 +4591,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [/2e]
       else
       {
-        switch (iEscFunction)
+        // [2e]: Split view #316
+        const BOOL bEscUtilized = bEscForCurrentSplitView && n2e_CloseView();
+        if (!bEscUtilized)
         {
+          switch (iEscFunction)
+          {
           case EEF_MINIMIZE:
             SendMessage(hwnd, WM_SYSCOMMAND, SC_MINIMIZE, 0);
             break;
           case EEF_EXIT:
             SendMessage(hwnd, WM_CLOSE, 0, 0);
             break;
-          // [2e]: Split view #316
-          case EEF_CLOSEVIEW:
-            n2e_CloseView();
-            break;
-          // [/2e]
           case EEF_IGNORE:
           default:
             break;
+          }
         }
       }
       break;
@@ -5460,7 +5458,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               n2e_ScintillaWindowByIndex((wCommandID == CMD_GOTO_NEXT_VIEW)
                 ? (i + 1 >= windowsCount) ? 0 : i + 1
                 : (i - 1 < 0) ? windowsCount - 1 : i - 1));
-            n2e_RestoreActiveEdit();
+            n2e_RestoreActiveEdit(TRUE);
             break;
           }
         }
@@ -6015,8 +6013,11 @@ void LoadSettings()
   bResetFileWatching = IniSectionGetInt(pIniSection, L"ResetFileWatching", 1);
   if (bResetFileWatching) bResetFileWatching = 1;
 
-  iEscFunction = IniSectionGetInt(pIniSection, L"EscFunction", EEF_CLOSEVIEW);
-  iEscFunction = max(min(iEscFunction, EEF_CLOSEVIEW), 0);
+  iEscFunction = IniSectionGetInt(pIniSection, L"EscFunction", EEF_EXIT);
+  iEscFunction = max(min(iEscFunction, EEF_EXIT), 0);
+
+  bEscForCurrentSplitView = IniSectionGetInt(pIniSection, L"EscForCurrentSplitView", 1);
+  if (bEscForCurrentSplitView) bEscForCurrentSplitView = 1;
 
   bAlwaysOnTop = IniSectionGetInt(pIniSection, L"AlwaysOnTop", 0);
   if (bAlwaysOnTop) bAlwaysOnTop = 1;
@@ -6216,6 +6217,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     IniSectionSetInt(pIniSection, L"FileWatchingMode", iFileWatchingMode);
     IniSectionSetInt(pIniSection, L"ResetFileWatching", bResetFileWatching);
     IniSectionSetInt(pIniSection, L"EscFunction", iEscFunction);
+    IniSectionSetInt(pIniSection, L"EscForCurrentSplitView", bEscForCurrentSplitView);
     IniSectionSetInt(pIniSection, L"AlwaysOnTop", bAlwaysOnTop);
     IniSectionSetInt(pIniSection, L"MinimizeToTray", bMinimizeToTray);
     IniSectionSetInt(pIniSection, L"TransparentMode", bTransparentMode);

@@ -236,7 +236,7 @@ void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam)
   bIsModalDialogOnTop = (wParam == WA_INACTIVE) ? n2e_IsModalDialog((HWND)lParam) : FALSE;
   if (wParam != WA_INACTIVE)
   {
-    n2e_RestoreActiveEdit();
+    n2e_RestoreActiveEdit(FALSE);
     UpdateToolbar();
     UpdateStatusbar();
   }

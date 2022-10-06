@@ -12,7 +12,7 @@ HWND n2e_ScintillaWindowByIndex(const int index);
 void n2e_SplitView(const BOOL bHorizontally);
 void n2e_UpdateViews();
 void n2e_UpdateViewsDPI(const WPARAM dpi);
-void n2e_CloseView();
+BOOL n2e_CloseView();
 void n2e_UpdateLexer(HWND hwnd);
 void n2e_ApplyViewCommand(ViewCommandHandler lpHandler);
 
@@ -21,7 +21,7 @@ HWND n2e_GetActiveEditCheckFocus();
 HWND n2e_GetActiveEdit();
 void n2e_SetActiveEdit(const HWND hwnd);
 void n2e_SaveActiveEdit();
-void n2e_RestoreActiveEdit();
+void n2e_RestoreActiveEdit(const BOOL forceUpdateUI);
 
 void n2e_ForceWindowRedraw(const HWND hwnd);
 
