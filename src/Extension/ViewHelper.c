@@ -126,8 +126,8 @@ void n2e_SplitView(const BOOL bHorizontally)
   n2e_UpdateMainWindow();
   n2e_UpdateView(hwndEditNew, SendMessage(hwndEdit, SCI_GETDOCPOINTER, 0, 0));
   n2e_SetActiveEdit(hwndEditNew);
-  EditSelectEx(hwndEditNew, activePosition, activePosition);
   LockWindowUpdate(NULL);
+  EditSelectEx(hwndEditNew, activePosition, activePosition);
   n2e_ForceWindowRedraw(hwndMain);
   n2e_RestoreActiveEdit(TRUE);
 }
