@@ -3,6 +3,7 @@
 // Used by Notepad2.rc
 //
 #define IDR_RT_MANIFEST                 1
+#define IDR_ABOUT                       1
 #define ID_FILE_RENAMETO                2
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
 #define ID_GREP                         4
@@ -36,6 +37,8 @@
 #define ID_SAVEONLOSEFOCUS_ENABLED      58
 #define ID_SAVEONLOSEFOCUS_ENABLEDUNTILANEWFILE 59
 #define IDM_FILE_ELEVATE                60
+#define IDM_HELP_COMMANDLINEARGUMENTS   61
+#define IDM_HELP_MANUAL                 62
 #define IDR_MAINWND                     100
 #define IDC_FINDTEXT                    100
 #define IDC_LINENUM                     100
@@ -522,8 +525,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        0
-#define _APS_NEXT_COMMAND_VALUE         61
+#define _APS_NEXT_RESOURCE_VALUE        2
+#define _APS_NEXT_COMMAND_VALUE         63
 #define _APS_NEXT_CONTROL_VALUE         6
 #define _APS_NEXT_SYMED_VALUE           0
 #endif

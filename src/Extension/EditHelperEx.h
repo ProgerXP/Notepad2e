@@ -25,6 +25,17 @@ extern "C" {
 
   void n2e_SaveViewState(HWND hwnd);
   void n2e_LoadViewState(HWND hwnd);
+
+  struct TRTFData
+  {
+    LPSTR lpData;
+    LONG nLength;
+    LONG nOffset;
+  };
+  typedef struct TRTFData RTFData;
+
+  LPSTR n2e_LoadRTFResource(const UINT uiResID, int* pLength);
+  DWORD CALLBACK n2e_EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);
 #ifdef __cplusplus
 }//end extern "C"
 #endif

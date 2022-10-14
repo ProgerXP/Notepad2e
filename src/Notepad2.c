@@ -415,7 +415,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   // Command Line Help Dialog
   if (flagDisplayHelp)
   {
-    DisplayCmdLineHelp();
+    DisplayCmdLineHelp(NULL);
     return (0);
   }
 
@@ -4561,6 +4561,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     // [/2e]
+
+
+    case IDM_HELP_COMMANDLINEARGUMENTS:
+      DisplayCmdLineHelp(hwnd);
+      break;
+
+
+    case IDM_HELP_MANUAL:
+      if (ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e#readme", NULL, NULL, SW_SHOWNORMAL) <= 32)
+      {
+        SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_HELP_ABOUT, 1), 0);
+      }
+      break;
 
 
     case IDM_HELP_ABOUT:

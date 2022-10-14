@@ -134,7 +134,7 @@ int MsgBox(int iType, UINT uIdMsg, ...)
 //
 //  DisplayCmdLineHelp()
 //
-void DisplayCmdLineHelp()
+void DisplayCmdLineHelp(const HWND hwnd)
 {
   MSGBOXPARAMS mbp;
 
@@ -145,7 +145,7 @@ void DisplayCmdLineHelp()
   GetString(IDS_CMDLINEHELP, szText, COUNTOF(szText));
 
   mbp.cbSize = sizeof(MSGBOXPARAMS);
-  mbp.hwndOwner = NULL;
+  mbp.hwndOwner = hwnd;
   mbp.hInstance = g_hInstance;
   mbp.lpszText = szText;
   mbp.lpszCaption = szTitle;
@@ -234,24 +234,10 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
     // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
         WCHAR wch[256];
-        LOGFONT lf;
 
         lstrcpy(wch, L"Built on ");
         lstrcat(wch, H_TIMESTAMP);
         SetDlgItemText(hwnd, IDC_TIME, wch);
-        SetDlgItemText(hwnd, IDC_COPYRIGHT, VERSION_LEGALCOPYRIGHT_SHORT);
-        SetDlgItemText(hwnd, IDC_AUTHORNAME, VERSION_AUTHORNAME);
-        wsprintf(wch, L"<A>%s</A>", VERSION_WEBPAGEDISPLAY);
-        SetDlgItemText(hwnd, IDC_WEBPAGE, wch);
-        wsprintf(wch, L"<A>%s</A>", VERSION_EMAILDISPLAY);
-        SetDlgItemText(hwnd, IDC_EMAIL, wch);
-        SetDlgItemText(hwnd, IDC_EXT, VERSION_EXT_VERSION);
-        SetDlgItemText(hwnd, IDC_BY, VERSION_EXT_BY);
-        wsprintf(wch, L"<A>%s</A>", VERSION_EXT_PAGE);
-        SetDlgItemText(hwnd, IDC_WEB, wch);
-
-        if (hFontTitle)
-          DeleteObject(hFontTitle);
 
         // [2e]: Boost regex and Cyrillic #162 (ICU build)
         wchar_t szText[MAX_PATH] = { 0 };
@@ -264,16 +250,12 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
           StrCatBuff(szText, L")", COUNTOF(szText));
           SetWindowText(hwnd, szText);
           SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETTEXT, 0, (LPARAM)szText);
-        }
-        // [/2e]
 
-        if (NULL == (hFontTitle = (HFONT)SendDlgItemMessage(hwnd, IDC_VERSION, WM_GETFONT, 0, 0)))
-          hFontTitle = GetStockObject(DEFAULT_GUI_FONT);
-        GetObject(hFontTitle, sizeof(LOGFONT), &lf);
-        lf.lfWeight = FW_BOLD;
-        hFontTitle = CreateFontIndirect(&lf);
-        SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
-        SendDlgItemMessage(hwnd, IDC_EXT, WM_SETFONT, (WPARAM)hFontTitle, TRUE);
+          char szVersion[MAX_PATH] = { 0 };
+          WCharToMBCS(CP_UTF8, szText, szVersion, COUNTOF(szVersion));
+
+          n2e_InitAboutText(GetDlgItem(hwnd, IDC_RICHEDIT), szVersion, BUILD_YEAR_STR);
+        }
 
         DPI_INIT();
         CenterDlgInParent(hwnd);
@@ -284,14 +266,9 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         LPNMHDR pnmhdr = (LPNMHDR)lParam;
         switch (pnmhdr->code)
         {
-          case NM_CLICK:
-          case NM_RETURN: {
-              if (pnmhdr->idFrom == IDC_WEBPAGE)
-                ShellExecute(hwnd, L"open", L"http://www.flos-freeware.ch", NULL, NULL, SW_SHOWNORMAL);
-              else if (pnmhdr->idFrom == IDC_EMAIL)
-                ShellExecute(hwnd, L"open", L"mailto:florian.balmer@gmail.com", NULL, NULL, SW_SHOWNORMAL);
-              else if (pnmhdr->idFrom == IDC_WEB)
-                ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e", NULL, NULL, SW_SHOWNORMAL);
+          case EN_LINK:
+            if (pnmhdr->idFrom == IDC_RICHEDIT) {
+              n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
             }
             break;
         }

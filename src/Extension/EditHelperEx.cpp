@@ -279,4 +279,51 @@ extern "C"
     SendMessage(hwnd, SCI_LINESCROLL, 0, (LPARAM)iVisTopLine - iNewTopLine);
     SendMessage(hwnd, SCI_SETXOFFSET, (WPARAM)iXOffset, 0);
   }
+
+  LPSTR n2e_LoadRTFResource(const UINT uiResID, int* pLength)
+  {
+    extern HINSTANCE g_hInstance;
+    static std::map<UINT, std::tuple<HRSRC, HGLOBAL, LPSTR>> data;
+
+    if (data.find(uiResID) == data.cend())
+    {
+      data[uiResID] = std::make_tuple(FindResource(g_hInstance, MAKEINTRESOURCE(uiResID), L"RTF"), (HGLOBAL)NULL, (LPSTR)NULL);
+    }
+    auto it = data.at(uiResID);
+    const auto hRes = std::get<0>(it);
+    auto& hGlob = std::get<1>(it);
+    auto& lpRTF = std::get<2>(it);
+    if (hRes && !hGlob)
+    {
+      hGlob = LoadResource(g_hInstance, hRes);
+    }
+    if (hGlob && !lpRTF)
+    {
+      lpRTF = (LPSTR)LockResource(hGlob);
+    }
+    if (pLength)
+    {
+      *pLength = hRes ? SizeofResource(g_hInstance, hRes) : 0;
+    }
+    return lpRTF;
+  }
+
+  DWORD CALLBACK n2e_EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+  {
+    RTFData* prtfData = (RTFData*)dwCookie;
+    if (prtfData->nLength < cb)
+    {
+      *pcb = prtfData->nLength;
+      memcpy(pbBuff, (LPCSTR)prtfData->lpData, *pcb);
+    }
+    else
+    {
+      *pcb = cb;
+      memcpy(pbBuff, (LPCSTR)(prtfData->lpData + prtfData->nOffset), *pcb);
+      prtfData->nOffset += cb;
+    }
+    return 0;
+  }
+
+
 }

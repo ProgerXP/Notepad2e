@@ -1193,5 +1193,6 @@
     <None Include="res\default.lua">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\About.rtf" />
   </ItemGroup>
 </Project>
