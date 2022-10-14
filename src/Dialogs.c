@@ -233,12 +233,6 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
     // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
-        WCHAR wch[256];
-
-        lstrcpy(wch, L"Built on ");
-        lstrcat(wch, H_TIMESTAMP);
-        SetDlgItemText(hwnd, IDC_TIME, wch);
-
         // [2e]: Boost regex and Cyrillic #162 (ICU build)
         wchar_t szText[MAX_PATH] = { 0 };
         if (GetString(IDS_APPTITLE, szText, COUNTOF(szText)-1))
@@ -248,13 +242,17 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
           StrCatBuff(szText, L", ", COUNTOF(szText));
           StrCatBuff(szText, VERSION_COMMIT, COUNTOF(szText));
           StrCatBuff(szText, L")", COUNTOF(szText));
-          SetWindowText(hwnd, szText);
           SendDlgItemMessage(hwnd, IDC_VERSION, WM_SETTEXT, 0, (LPARAM)szText);
 
           char szVersion[MAX_PATH] = { 0 };
           WCharToMBCS(CP_UTF8, szText, szVersion, COUNTOF(szVersion));
 
-          n2e_InitAboutText(GetDlgItem(hwnd, IDC_RICHEDIT), szVersion, BUILD_YEAR_STR);
+          char szBuildDate[MAX_PATH] = { 0 };
+          lstrcpy(szText, L"Built on ");
+          lstrcat(szText, H_TIMESTAMP);
+          WCharToMBCS(CP_UTF8, szText, szBuildDate, COUNTOF(szBuildDate));
+
+          n2e_InitAboutText(GetDlgItem(hwnd, IDC_RICHEDIT), szVersion, BUILD_YEAR_STR, szBuildDate);
         }
 
         DPI_INIT();

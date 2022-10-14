@@ -1652,7 +1652,7 @@ LPSTR n2e_LoadAbout3rdPartyText(int* pLength)
   return n2e_LoadRTFResource(IDR_ABOUT_3RD_PARTY, pLength);
 }
 
-void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpcstrYear)
+void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpcstrYear, LPCSTR lpcstrBuildDate)
 {
   n2e_SubclassWindow(hwndRichedit, n2e_About3rdPartyRicheditWndProc);
 
@@ -1662,11 +1662,13 @@ void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpc
 
   RTFData rtfData = { 0 };
   LPCSTR lpText = n2e_LoadAboutText(&rtfData.nLength);
-  rtfData.lpData = n2e_Alloc(rtfData.nLength + 10);
+  rtfData.nLength += MAX_PATH; // reserve additional space
+  rtfData.lpData = n2e_Alloc(rtfData.nLength);
   lstrcpyA(rtfData.lpData, lpText);
 
   n2e_ReplaceSubstring(rtfData.lpData, "[NOTEPAD2E_VERSION]", lpcstrVersion);
   n2e_ReplaceSubstring(rtfData.lpData, "[NOTEPAD2E_YEAR]", lpcstrYear);
+  n2e_ReplaceSubstring(rtfData.lpData, "[BUILD_DATE]", lpcstrBuildDate);
 
   EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, n2e_EditStreamCallBack };
   SendMessage(hwndRichedit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
