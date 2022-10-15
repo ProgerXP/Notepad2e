@@ -122,6 +122,8 @@ BOOL IsFontAvailable(LPCWSTR);
 
 extern HWND _hwndEdit;
 
+HMODULE hModuleRichedit = NULL;
+
 BOOL n2e_IsDocumentModified()
 {
   return bModified || (iEncoding != iOriginalEncoding);
@@ -129,6 +131,7 @@ BOOL n2e_IsDocumentModified()
 
 void n2e_InitInstance()
 {
+  hModuleRichedit = LoadLibrary(L"Msftedit.dll");
   n2e_Init();
   InitScintillaHandle(_hwndEdit);
   n2e_InitScintilla(_hwndEdit);

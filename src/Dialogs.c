@@ -262,12 +262,9 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
 
     case WM_NOTIFY: {
         LPNMHDR pnmhdr = (LPNMHDR)lParam;
-        switch (pnmhdr->code)
+        if (pnmhdr->idFrom == IDC_RICHEDIT)
         {
-          case EN_LINK:
-            if (pnmhdr->idFrom == IDC_RICHEDIT) {
-              n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
-            }
+            n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
             break;
         }
       }
