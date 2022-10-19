@@ -50,6 +50,7 @@
 #include "Extension/StringRecoding.h"
 #include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
+#include "Extension/User32Helper.h"
 #include "Extension/VersionHelper.h"
 #include "Extension/ViewHelper.h"
 
@@ -1014,7 +1015,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       {
         WCHAR tchs[MAX_STR_BLOCKREASON] = { 0 };
         FormatString(tchs, COUNTOF(tchs), IDS_UNSAVED_FILENAME, PathFindFileName(szCurFile));
-        ShutdownBlockReasonCreate(hwndMain, tchs);
+        n2e_ShutdownBlockReasonCreate(hwndMain, tchs);
       }
       // [/2e]
       if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))

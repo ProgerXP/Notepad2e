@@ -453,6 +453,9 @@
     <ClInclude Include="src\Extension\CALWInterface.h">
       <Filter>Header Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="src\Extension\User32Helper.h">
+      <Filter>Source Files\Extension</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">
@@ -1128,6 +1131,9 @@
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
     <ClCompile Include="src\Extension\CALWInterface.cpp">
+      <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Extension\User32Helper.c">
       <Filter>Source Files\Extension</Filter>
     </ClCompile>
   </ItemGroup>

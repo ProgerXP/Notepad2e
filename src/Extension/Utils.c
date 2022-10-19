@@ -25,6 +25,7 @@
 #include "Externals.h"
 #include "ProcessElevationUtils.h"
 #include "Shell32Helper.h"
+#include "User32Helper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_EDIT_SELECTION_SCOPE L"EditSelectionScope"
@@ -455,6 +456,7 @@ void n2e_Init()
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_InitClock();
   n2e_ResetLastRun();
+  n2e_User32Initialize();
   n2e_Shell32Initialize();
   bLPegEnabled = n2e_InitLPegHomeDir();
   n2e_UpdateAlwaysOnTopButton();
