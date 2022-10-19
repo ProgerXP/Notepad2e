@@ -4897,7 +4897,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         char *lpszSelection;
         char *lpsz;
 
-        WCHAR tch[128];
+        WCHAR tch[TEXT_BUFFER_LENGTH];
         HMENU hmenu;
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);

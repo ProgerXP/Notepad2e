@@ -47,7 +47,7 @@ int IniSectionGetString(
   int cchReturnedString)
 {
   WCHAR *p = (WCHAR *)lpCachedIniSection;
-  WCHAR tch[256];
+  WCHAR tch[TEXT_BUFFER_LENGTH];
   int  ich;
   if (p)
   {
@@ -104,7 +104,7 @@ int IniSectionGetInt(
 
 BOOL IniSectionSetString(LPWSTR lpCachedIniSection, LPCWSTR lpName, LPCWSTR lpString)
 {
-  WCHAR tch[32 + 512 * 3 + 32];
+  WCHAR tch[32 + TEXT_BUFFER_LENGTH];
   WCHAR *p = lpCachedIniSection;
 
   if (p)
@@ -113,7 +113,7 @@ BOOL IniSectionSetString(LPWSTR lpCachedIniSection, LPCWSTR lpName, LPCWSTR lpSt
     {
       p = StrEnd(p) + 1;
     }
-    wsprintf(tch, L"%s=%s", lpName, lpString);
+    swprintf_s(tch, COUNTOF(tch), L"%s=%s", lpName, lpString);
     lstrcpy(p, tch);
     p = StrEnd(p) + 1;
     *p = 0;
@@ -1833,7 +1833,7 @@ BOOL MRU_Load(LPMRULIST pmru)
 {
   int i, n = 0;
   WCHAR tchName[32];
-  WCHAR tchItem[1024];
+  WCHAR tchItem[TEXT_BUFFER_LENGTH];
   WCHAR *pIniSection = LocalAlloc(LPTR, sizeof(WCHAR) * 32 * 1024);
 
   MRU_Empty(pmru);
