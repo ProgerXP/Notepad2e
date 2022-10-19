@@ -36,6 +36,7 @@
 #include "_version.h"
 #include "Extension/Utils.h"
 #include "Extension/DPIHelper.h"
+#include "Extension/MainWndHelper.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -264,8 +265,28 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
         LPNMHDR pnmhdr = (LPNMHDR)lParam;
         if (pnmhdr->idFrom == IDC_RICHEDIT)
         {
+          if (pnmhdr->code == EN_REQUESTRESIZE)
+          {
+            RECT rc, rcRichedit, rcOK;
+            GetWindowRect(hwnd, &rc);
+            GetWindowRect(pnmhdr->hwndFrom, &rcRichedit);
+            const HWND hwndOK = GetDlgItem(hwnd, IDOK);
+            GetWindowRect(hwndOK, &rcOK);
+
+            REQRESIZE* prr = (REQRESIZE*)pnmhdr;
+            const int cx = prr->rc.right - prr->rc.left;
+            const int cy = prr->rc.bottom - prr->rc.top;
+            const int heightDiff = (rcRichedit.bottom - rcRichedit.top) - cy;
+            SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top - heightDiff, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+            SetWindowPos(pnmhdr->hwndFrom, NULL, 0, 0, cx, cy, SWP_NOMOVE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+            n2e_ScreenToClientRect(hwnd, &rcOK);
+            SetWindowPos(hwndOK, NULL, rcOK.left, rcOK.top - heightDiff, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+          }
+          else
+          {
             n2e_ProcessAbout3rdPartyUrl(GetDlgItem(hwnd, IDC_RICHEDIT), (ENLINK*)pnmhdr);
-            break;
+          }
+          break;
         }
       }
       break;

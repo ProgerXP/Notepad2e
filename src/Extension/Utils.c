@@ -1662,7 +1662,7 @@ void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpc
   n2e_SubclassWindow(hwndRichedit, n2e_About3rdPartyRicheditWndProc);
 
   SendMessage(hwndRichedit, EM_SETEVENTMASK, 0,
-    SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK);
+    SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK | ENM_REQUESTRESIZE);
   SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);
 
   RTFData rtfData = { 0 };
