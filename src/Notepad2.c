@@ -50,6 +50,7 @@
 #include "Extension/StringRecoding.h"
 #include "Extension/Subclassing.h"
 #include "Extension/Utils.h"
+#include "Extension/User32Helper.h"
 #include "Extension/VersionHelper.h"
 #include "Extension/ViewHelper.h"
 
@@ -415,7 +416,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   // Command Line Help Dialog
   if (flagDisplayHelp)
   {
-    DisplayCmdLineHelp();
+    DisplayCmdLineHelp(NULL);
     return (0);
   }
 
@@ -1014,7 +1015,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       {
         WCHAR tchs[MAX_STR_BLOCKREASON] = { 0 };
         FormatString(tchs, COUNTOF(tchs), IDS_UNSAVED_FILENAME, PathFindFileName(szCurFile));
-        ShutdownBlockReasonCreate(hwndMain, tchs);
+        n2e_ShutdownBlockReasonCreate(hwndMain, tchs);
       }
       // [/2e]
       if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
@@ -4561,6 +4562,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       SendMessage(hwndEdit, SCI_SETWORDNAVIGATIONMODE, iWordNavigationMode, 0);
       break;
     // [/2e]
+
+
+    case IDM_HELP_COMMANDLINEARGUMENTS:
+      DisplayCmdLineHelp(hwnd);
+      break;
+
+
+    case IDM_HELP_MANUAL:
+      if (ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e#readme", NULL, NULL, SW_SHOWNORMAL) <= 32)
+      {
+        SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_HELP_ABOUT, 1), 0);
+      }
+      break;
 
 
     case IDM_HELP_ABOUT:

@@ -23,7 +23,7 @@ WCHAR arrwchExpressionValue[MAX_PATH] = { 0 };
 extern HWND hwndMain;
 extern int aWidth[6];
 
-BOOL ScreenToClientRect(const HWND hwnd, LPRECT pRect)
+BOOL n2e_ScreenToClientRect(const HWND hwnd, LPRECT pRect)
 {
   if (!pRect)
   {
@@ -45,7 +45,7 @@ BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt)
   RECT rectStatus;
   ScreenToClient(hwndStatus, &pt);
   if (!GetWindowRect(hwndStatus, &rectStatus)
-      || !ScreenToClientRect(hwndStatus, &rectStatus)
+      || !n2e_ScreenToClientRect(hwndStatus, &rectStatus)
       || !PtInRect(&rectStatus, pt))
   {
     return FALSE;

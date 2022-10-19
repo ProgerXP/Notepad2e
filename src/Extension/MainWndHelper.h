@@ -21,6 +21,7 @@ extern WCHAR arrwchExpressionValue[MAX_PATH];
 extern int flagPasteBoard;
 extern BOOL bLastCopyFromMe;
 
+BOOL n2e_ScreenToClientRect(const HWND hwnd, LPRECT pRect);
 BOOL n2e_IsPaneSizePoint(const HWND hwnd, POINT pt);
 void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick);
 LRESULT CALLBACK n2e_ShellProc(int nCode, WPARAM wParam, LPARAM lParam);

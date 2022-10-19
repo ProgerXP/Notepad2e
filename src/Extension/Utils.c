@@ -8,6 +8,7 @@
 #include "DPIHelperScintilla.h"
 #include "ExtSelection.h"
 #include "EditHelper.h"
+#include "EditHelperEx.h"
 #include "InlineProgressBarCtrl.h"
 #include "MainWndHelper.h"
 #include "resource.h"
@@ -24,6 +25,7 @@
 #include "Externals.h"
 #include "ProcessElevationUtils.h"
 #include "Shell32Helper.h"
+#include "User32Helper.h"
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_EDIT_SELECTION_SCOPE L"EditSelectionScope"
@@ -121,6 +123,8 @@ BOOL IsFontAvailable(LPCWSTR);
 
 extern HWND _hwndEdit;
 
+HMODULE hModuleRichedit = NULL;
+
 BOOL n2e_IsDocumentModified()
 {
   return bModified || (iEncoding != iOriginalEncoding);
@@ -128,6 +132,7 @@ BOOL n2e_IsDocumentModified()
 
 void n2e_InitInstance()
 {
+  hModuleRichedit = LoadLibrary(L"Msftedit.dll");
   n2e_Init();
   InitScintillaHandle(_hwndEdit);
   n2e_InitScintilla(_hwndEdit);
@@ -451,6 +456,7 @@ void n2e_Init()
   n2e_SetWheelScroll(bCtrlWheelScroll);
   n2e_InitClock();
   n2e_ResetLastRun();
+  n2e_User32Initialize();
   n2e_Shell32Initialize();
   bLPegEnabled = n2e_InitLPegHomeDir();
   n2e_UpdateAlwaysOnTopButton();
@@ -1641,55 +1647,39 @@ LPVOID LoadDataFile(const UINT nResourceID, int* pLength)
   return lpResult;
 }
 
-LPCWSTR LoadAbout3rdPartyText(int* pLength)
+LPSTR n2e_LoadAboutText(int* pLength)
 {
-  static HRSRC hRes = NULL;
-  static HGLOBAL hGlob = NULL;
-  static LPCWSTR lpRTF = NULL;
-  if (!hRes)
-  {
-    hRes = FindResource(g_hInstance, MAKEINTRESOURCE(IDR_ABOUT_3RD_PARTY), L"RTF");
-  }
-  if (hRes && !hGlob)
-  {
-    hGlob = LoadResource(g_hInstance, hRes);
-  }
-  if (hGlob && !lpRTF)
-  {
-    lpRTF = (LPCWSTR)LockResource(hGlob);
-  }
-  if (pLength)
-  {
-    *pLength = hRes ? SizeofResource(g_hInstance, hRes) : 0;
-  }
-  return lpRTF;
+  return n2e_LoadRTFResource(IDR_ABOUT, pLength);
 }
 
-struct TRTFData
+LPSTR n2e_LoadAbout3rdPartyText(int* pLength)
 {
-  LPCWSTR lpData;
-  LONG nLength;
-  LONG nOffset;
-};
-typedef struct TRTFData RTFData;
+  return n2e_LoadRTFResource(IDR_ABOUT_3RD_PARTY, pLength);
+}
 
-RTFData rtfData = { 0 };
-
-DWORD CALLBACK EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb)
+void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpcstrYear, LPCSTR lpcstrBuildDate)
 {
-  RTFData* prtfData = (RTFData*)dwCookie;
-  if (prtfData->nLength < cb)
-  {
-    *pcb = prtfData->nLength;
-    memcpy(pbBuff, (LPCSTR)prtfData->lpData, *pcb);
-  }
-  else
-  {
-    *pcb = cb;
-    memcpy(pbBuff, (LPCSTR)(prtfData->lpData + prtfData->nOffset), *pcb);
-    prtfData->nOffset += cb;
-  }
-  return 0;
+  n2e_SubclassWindow(hwndRichedit, n2e_About3rdPartyRicheditWndProc);
+
+  SendMessage(hwndRichedit, EM_SETEVENTMASK, 0,
+    SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK | ENM_REQUESTRESIZE);
+  SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);
+
+  RTFData rtfData = { 0 };
+  LPCSTR lpText = n2e_LoadAboutText(&rtfData.nLength);
+  rtfData.nLength += MAX_PATH; // reserve additional space
+  rtfData.lpData = n2e_Alloc(rtfData.nLength);
+  lstrcpyA(rtfData.lpData, lpText);
+
+  n2e_ReplaceSubstring(rtfData.lpData, "[NOTEPAD2E_VERSION]", lpcstrVersion);
+  n2e_ReplaceSubstring(rtfData.lpData, "[NOTEPAD2E_YEAR]", lpcstrYear);
+  n2e_ReplaceSubstring(rtfData.lpData, "[BUILD_DATE]", lpcstrBuildDate);
+
+  EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, n2e_EditStreamCallBack };
+  SendMessage(hwndRichedit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
+  SendMessage(hwndRichedit, EM_SETTARGETDEVICE, (WPARAM)NULL, 1 /*disable wordwrap*/);
+
+  n2e_Free(rtfData.lpData);
 }
 
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit)
@@ -1700,13 +1690,10 @@ void n2e_InitAbout3rdPartyText(const HWND hwndRichedit)
     SendMessage(hwndRichedit, EM_GETEVENTMASK, 0, 0) | ENM_LINK);
   SendMessage(hwndRichedit, EM_AUTOURLDETECT, TRUE, 0);
 
-  if (!rtfData.lpData)
-  {
-    rtfData.lpData = LoadAbout3rdPartyText(&rtfData.nLength);
-  }
-  rtfData.nOffset = 0;
+  RTFData rtfData = { 0 };
+  rtfData.lpData = n2e_LoadAbout3rdPartyText(&rtfData.nLength);
 
-  EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, EditStreamCallBack };
+  EDITSTREAM es = { (DWORD_PTR)&rtfData, 0, n2e_EditStreamCallBack };
   SendMessage(hwndRichedit, EM_STREAMIN, SF_RTF, (LPARAM)&es);
   SendMessage(hwndRichedit, EM_SETTARGETDEVICE, (WPARAM)NULL, 0);
 }

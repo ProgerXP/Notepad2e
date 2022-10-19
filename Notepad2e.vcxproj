@@ -465,6 +465,7 @@
     <ClCompile Include="src\Extension\Subclassing.c" />
     <ClCompile Include="src\Extension\tinyexpr\tinyexpr.c" />
     <ClCompile Include="src\Extension\Trace.c" />
+    <ClCompile Include="src\Extension\User32Helper.c" />
     <ClCompile Include="src\Extension\Utils.c" />
     <ClCompile Include="src\Extension\VersionHelper.c" />
     <ClCompile Include="src\Extension\ViewHelper.c" />
@@ -602,6 +603,7 @@
     <ClInclude Include="src\Extension\Subclassing.h" />
     <ClInclude Include="src\Extension\tinyexpr\tinyexpr.h" />
     <ClInclude Include="src\Extension\Trace.h" />
+    <ClInclude Include="src\Extension\User32Helper.h" />
     <ClInclude Include="src\Extension\Utils.h" />
     <ClInclude Include="src\Extension\VersionHelper.h" />
     <ClInclude Include="src\Extension\ViewHelper.h" />
@@ -656,6 +658,7 @@
     <ClInclude Include="tinyexpr\tinyexpr.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="res\About.rtf" />
     <None Include="res\About3rdParty.rtf" />
     <None Include="res\Copy.cur" />
     <None Include="res\Encoding.bmp" />
