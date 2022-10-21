@@ -7204,7 +7204,7 @@ void UpdateStatusbar()
         arrchExpressionText, COUNTOF(arrchExpressionText),
         arrwchExpressionValue, COUNTOF(arrwchExpressionValue), TRUE))
   {
-    wcsncpy_s(tchDocSize, COUNTOF(tchDocSize), arrwchExpressionValue, COUNTOF(arrwchExpressionValue));
+    wcsncpy_s(tchDocSize, COUNTOF(tchDocSize), arrwchExpressionValue, COUNTOF(tchDocSize) - 1);
   }
   else
   {

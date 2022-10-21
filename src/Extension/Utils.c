@@ -2017,7 +2017,7 @@ void n2e_RunWatchThread(LPCWSTR lpszFile)
   extern int iFileWatchingMode;
 
   WatchThreadParams* p = n2e_Alloc(sizeof(*p));
-  wcsncpy_s(p->lpszFileName, COUNTOF(p->lpszFileName), lpszFile, wcslen(lpszFile) + 1);
+  wcsncpy_s(p->lpszFileName, COUNTOF(p->lpszFileName), lpszFile, COUNTOF(p->lpszFileName) - 1);
   p->dwFileCheckInterval = dwFileCheckInterval;
   p->dwAutoReloadTimeout = dwAutoReloadTimeout;
   p->iFileWatchingMode = iFileWatchingMode;

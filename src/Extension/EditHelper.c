@@ -1523,8 +1523,8 @@ void n2e_CopyEvaluatedExpressionToClipboard()
 {
   const int iEvaluateMathExpressionOrigin = iEvaluateMathExpression;
   iEvaluateMathExpression = EEM_LINE;
-  char arrchText[MAX_PATH] = { 0 };
-  WCHAR arrwchValue[MAX_PATH] = { 0 };
+  char arrchText[MAX_EXPRESSION_LENGTH] = { 0 };
+  WCHAR arrwchValue[MAX_EXPRESSION_LENGTH] = { 0 };
   if (n2e_FormatEvaluatedExpression(hwndEdit,
         arrchText, COUNTOF(arrchText),
         arrwchValue, COUNTOF(arrwchValue), FALSE))

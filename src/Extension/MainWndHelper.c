@@ -180,8 +180,8 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
             break;
         }
         modePrevExpressionValue = modeExpressionValue;
-        strncpy_s(expressionText, expressionTextLength - 1, pszText, strlen(pszText));
-        wcsncpy_s(expressionValue, expressionValueLength - 1, tchBuffer, bufferLength - 1);
+        strncpy_s(expressionText, expressionTextLength, pszText, expressionTextLength - 1);
+        wcsncpy_s(expressionValue, expressionValueLength, tchBuffer, expressionValueLength - 1);
         if (bApplyLocaleForDecimalResult && (modeExpressionValue == EVM_DEC))
         {
           LPNUMBERFMT lpFormat = NULL;
@@ -193,7 +193,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
             lpFormat = &format;
           }
           GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
-          wcsncpy_s(expressionValue, expressionValueLength - 1, tchBuffer, bufferLength - 1);
+          wcsncpy_s(expressionValue, expressionValueLength, tchBuffer, expressionValueLength - 1);
         }
         LocalFree(pszText);
         return TRUE;

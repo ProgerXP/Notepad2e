@@ -229,7 +229,7 @@ BOOL n2e_ParentProcess_ElevatedFileIO(LPCWSTR lpFilename)
   }
 
   IPCData ipcData = { 0 };
-  wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, wcslen(lpFilename));
+  wcsncpy_s(&ipcData.wchFileName[0], CSTRLEN(ipcData.wchFileName), lpFilename, CSTRLEN(ipcData.wchFileName) - 1);
   ipcData.iFileSize = n2e_CalculateFileLength();
 
   FileMapping_TryCreate(&fileMappingIPCData);
