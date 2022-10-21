@@ -407,7 +407,7 @@ KEYWORDLIST KeyWords_JS = {
 
 EDITLEXER lexJS = { SCLEX_CPP, 63010, L"JavaScript", L"js; jse; jsm; json; as", L"", &KeyWords_JS, COMMENT_INFO(C_COMMENT, SCE_C_COMMENTLINE), {
         { STYLE_DEFAULT, 63126, L"Default", L"", L"" },
-        { MULTI_STYLE(SCE_C_COMMENT, SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, 0), 63127, L"Comment", L"fore:#646464", L"" },
+        { MULTI_STYLE(SCE_C_COMMENT, SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, SCE_C_COMMENTLINEDOC), 63127, L"Comment", L"fore:#646464", L"" },
         { SCE_C_WORD, 63128, L"Keyword", L"bold; fore:#A46000", L"" },
         { SCE_C_IDENTIFIER, 63129, L"Identifier", L"", L"" },
         { MULTI_STYLE(SCE_C_STRING, SCE_C_CHARACTER, SCE_C_STRINGEOL, SCE_C_VERBATIM), 63131, L"String", L"fore:#008000", L"" },

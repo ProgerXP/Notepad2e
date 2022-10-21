@@ -817,6 +817,7 @@ extern "C" {
     {
       if ((iLineIndex > 0) && isMarker(ch, pED))
       {
+        BOOL bContinueAsUsual = FALSE;
         TextBuffer_OffsetPos(&pED->m_tb, -1);
         int iWordByteCountOrigin = 0;
         TextBuffer_GetWordRLength(&pED->m_tb, iEncoding, &iWordByteCountOrigin);
@@ -835,19 +836,31 @@ extern "C" {
           TextBuffer_PushChar(&pED->m_tbRes, CHAR_SPACE);
           iBackOffset += iWordByteCountOrigin;
         }
+        else if (pED->m_tb.m_iPos == 0)
+        {
+          TextBuffer_OffsetPos(&pED->m_tbRes, iWordByteCount);
+          TextBuffer_OffsetPos(&pED->m_tb, 1 + iWordByteCountOrigin);
+          const auto lineIndexBackup = iLineIndex;
+          addEOL(pED);
+          iLineIndex = lineIndexBackup;
+          bContinueAsUsual = TRUE;
+        }
         else
         {
           const auto lineIndexBackup = iLineIndex;
           addEOL(pED);
           iLineIndex = lineIndexBackup;
         }
-        if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
+
+        if (!bContinueAsUsual)
         {
-          TextBuffer_PopChar(&pED->m_tb);
-          ++iBackOffset;
+          if (TextBuffer_GetChar(&pED->m_tb) == CHAR_SPACE)
+          {
+            TextBuffer_PopChar(&pED->m_tb);
+            ++iBackOffset;
+          }
+          return updateCharsProcessed(piCharsProcessed, iBackOffset);
         }
-        
-        return updateCharsProcessed(piCharsProcessed, iBackOffset);
       }
 
       if ((ch == CHAR_FORCE_EOL) || (ch == CHAR_FORCE_EOL_PROCESSED)
