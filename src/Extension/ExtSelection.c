@@ -830,7 +830,12 @@ void n2e_SelectionNotificationHandler(const HWND hwnd, const int code, const str
     case SCN_UPDATEUI:
       if (hwnd == hwndPrev)
       {
-        if ((n2e_IsHighlightSelectionEnabled() && !n2e_IsSelectionEditModeOn())
+        if (n2e_IsRectangularSelection())
+        {
+          n2e_SelectionEditStop(hwnd, SES_REJECT);
+          n2e_SelectionHighlightTurn(FALSE);
+        }
+        else if ((n2e_IsHighlightSelectionEnabled() && !n2e_IsSelectionEditModeOn())
           || bNeedUpdateInEditMode)
         {
           if (bNeedUpdateInEditMode)
