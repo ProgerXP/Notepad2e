@@ -186,6 +186,18 @@ extern "C"
     }
   }
 
+  BOOL n2e_CheckStringMatchRegexp(LPCWSTR text, LPCWSTR regexFormat)
+  {
+    try
+    {
+      return boost::regex_match(text, boost::wregex(regexFormat));
+    }
+    catch (...)
+    {
+      return FALSE;
+    }
+  }
+
   int n2e_GetUTF8CharLength(const unsigned char ch)
   {
     return (int)Scintilla::UTF8CharLength(ch);

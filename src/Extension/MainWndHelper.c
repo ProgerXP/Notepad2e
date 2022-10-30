@@ -193,6 +193,13 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
             lpFormat = &format;
           }
           GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
+          if (n2e_CheckStringMatchRegexp(tchBuffer, L"0*[.,]0*"))
+          {
+            n2e_GetNumberFormat(&format);
+            format.NumDigits = 6;
+            lpFormat = &format;
+            GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
+          }
           wcsncpy_s(expressionValue, expressionValueLength, tchBuffer, expressionValueLength - 1);
         }
         LocalFree(pszText);
