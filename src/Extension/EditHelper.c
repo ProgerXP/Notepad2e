@@ -387,6 +387,7 @@ BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct
 
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next)
 {
+  EDITFINDREPLACE efr = *lpefr;
   struct Sci_TextRange tr;
   struct Sci_TextToFind ttf;
   int searchflags = 0;
@@ -495,10 +496,11 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
     {
       searchflags |= SCFIND_MATCHCASE;
     }
+    efr.fuFlags = searchflags;
 
-    res = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+    res = n2e_FindTextImpl(hwnd, &efr, &ttf);
     const BOOL bTextFound = (res >= 0);
-    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, lpefr, &ttf, res + 1) >= 0));
+    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, &efr, &ttf, res + 1) >= 0));
 
     if ((-1 == res) && (bFindWordWrapAround != 0))
     {
@@ -512,7 +514,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
         ttf.chrg.cpMin = doclen;
         ttf.chrg.cpMax = tr.chrg.cpMax;
       }
-      res = n2e_FindTextImpl(hwnd, lpefr, &ttf);
+      res = n2e_FindTextImpl(hwnd, &efr, &ttf);
       n2e_UpdateFindIcon(res >= 0);
     }
     if (res >= 0)
