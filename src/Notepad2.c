@@ -3068,12 +3068,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
               i = SciCall_PositionAfter(iWordEnd);
             }
-            // search forward, ignore EOLs
-            if (iWordStart == iWordEnd)
-            {
-              iWordStart = SciCall_GetWordEndPos(iPos, FALSE);
-              iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
-            }
           }
           if (iWordStart == iWordEnd)
           {
@@ -3085,6 +3079,24 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iWordEnd = SciCall_GetWordEndPos(i, TRUE);
               iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
               i = SciCall_PositionBefore(iWordStart);
+            }
+          }
+          if (iWordStart == iWordEnd)
+          {
+            // search forward, ignore EOLs
+            const int iLastLine = SciCall_GetLineCount();
+            for (int j = iLine + 1; j < iLastLine; ++j)
+            {
+              int i = SciCall_PositionFromLine(j);
+              int iLineEndPos = SciCall_LineEndPosition(j);
+              while ((i < iLineEndPos) && (iWordStart == iWordEnd))
+              {
+                iWordStart = SciCall_GetWordStartPos(i, TRUE);
+                iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+                i = SciCall_PositionAfter(iWordEnd);
+              }
+              if (iWordStart != iWordEnd)
+                break;
             }
           }
           if (iWordStart != iWordEnd)
