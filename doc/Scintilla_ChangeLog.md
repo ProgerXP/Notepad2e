@@ -1086,19 +1086,42 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 ...
 	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT);
 ...
+			if (iMessage != SCI_ALTDELWORDRIGHT)
+				// Delete to the right so first realise the virtual space.
+				sel.Range(r) = SelectionRange(
+					RealizeVirtualSpace(sel.Range(r).caret));
+...
 
-        case SCI_DELWORDLEFT:
-        case SCI_ALTDELWORDLEFT:
-            rangeDelete = Range(
-                pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, IsAltWordMessage(iMessage)),
-                sel.Range(r).caret.Position());
-            break;
-        case SCI_DELWORDRIGHT:
-        case SCI_ALTDELWORDRIGHT:
-            rangeDelete = Range(
-                sel.Range(r).caret.Position(),
-                pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, IsAltWordMessage(iMessage)));
-            break;
+		case SCI_DELWORDLEFT:
+			rangeDelete = Range(
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
+				sel.Range(r).caret.Position());
+			break;
+		case SCI_ALTDELWORDLEFT:
+			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
+				rangeDelete = Range(
+					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
+					std::max(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()));
+			else
+				rangeDelete = Range(
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, true),
+					sel.Range(r).caret.Position());
+			break;
+		case SCI_DELWORDRIGHT:
+			rangeDelete = Range(
+				sel.Range(r).caret.Position(),
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
+			break;
+		case SCI_ALTDELWORDRIGHT:
+			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
+				rangeDelete = Range(
+					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
+					std::max(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()));
+			else
+				rangeDelete = Range(
+					sel.Range(r).caret.Position(),
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, true));
+			break;
 
 ...
 
