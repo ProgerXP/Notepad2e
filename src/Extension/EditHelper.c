@@ -390,7 +390,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
   EDITFINDREPLACE efr = *lpefr;
   struct Sci_TextRange tr;
   struct Sci_TextToFind ttf;
-  int searchflags = 0;
+  int searchflags = SCFIND_WHOLEWORD;
   BOOL has = FALSE;
 #define _N2E_SEARCH_FOR_WORD_LIMIT 0x100
   N2E_TRACE(L"look for next(%d) word", next);
@@ -402,13 +402,11 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
   {
     tr.chrg.cpMin = SciCall_GetSelStart();
     tr.chrg.cpMax = SciCall_GetSelEnd();
-    searchflags = SCFIND_NONE;
   }
   else
   {
     tr.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
     tr.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
-    searchflags = SCFIND_WHOLEWORD;
   }
   int wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   int res = 0;
