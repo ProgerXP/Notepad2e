@@ -198,6 +198,11 @@ extern "C"
     }
   }
 
+  BOOL n2e_CheckStringContainsAnyOf(LPCWSTR text, LPCWSTR lpstrChars)
+  {
+    return std::wstring(text).find_first_of(lpstrChars) != std::string::npos;
+  }
+
   int n2e_GetUTF8CharLength(const unsigned char ch)
   {
     return (int)Scintilla::UTF8CharLength(ch);

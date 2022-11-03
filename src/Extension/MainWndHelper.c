@@ -193,7 +193,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
             lpFormat = &format;
           }
           GetNumberFormat(LOCALE_USER_DEFAULT, 0, expressionValue, lpFormat, tchBuffer, bufferLength - 1);
-          if (n2e_CheckStringMatchRegexp(tchBuffer, L"0*[.,]0*"))
+          if (!n2e_CheckStringContainsAnyOf(tchBuffer, L"123456789"))
           {
             n2e_GetNumberFormat(&format);
             format.NumDigits = 6;
