@@ -3044,14 +3044,10 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTWORD: {
-        const int iSelStart = SciCall_GetSelStart();
-        const int iSelEnd = SciCall_GetSelEnd();
-        const int iSel = iSelEnd - iSelStart;
-        const int iAnchor = SciCall_GetAnchor();
-        int iWordStart = 0;
-        int iWordEnd = 0;
+        int iWordStart = SciCall_GetSelStart();
+        int iWordEnd = SciCall_GetSelEnd();
         // [2e]: Always select closest word #205
-        if (iSel <= 0)
+        if (iWordEnd - iWordStart <= 0)
         {
           const int iPos = SciCall_GetCurrentPos();
           const int iLine = SciCall_LineFromPosition(iPos);
@@ -3099,33 +3095,30 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 break;
             }
           }
-          if (iWordStart != iWordEnd)
-          {
-            SciCall_SetSel(iWordStart, iWordEnd);
-          }
         }
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
-        if (lParam)
+        switch (lParam)
         {
+        case SCI_CUT:
+          SciCall_SetSel(iWordStart, iWordEnd);
           SendMessage(hwndEdit, lParam, 0, 0);
-          if (iSel <= 0)
-          {
-            if (lParam == SCI_CUT)
-            {
-              const auto iPos = iWordStart;
-              SciCall_SetSel(iPos, iPos);
-              SciCall_SetAnchor(iPos);
-            }
-            else
-            {
-              SciCall_SetSel(iSelStart, iSelEnd);
-              SciCall_SetAnchor(iAnchor);
-            }
+          SciCall_SetSel(iWordStart, iWordStart);
+          SciCall_SetAnchor(iWordStart);
+          break;
+        case SCI_COPY: {
+          const LPCSTR text = n2e_GetTextRange(iWordStart, iWordEnd);
+          const LPWSTR wtext = n2e_MultiByteToWideString(text);
+          n2e_SetClipboardText(hwndEdit, wtext);
+          n2e_Free(wtext);
+          n2e_Free(text);
           }
+          break;
+        default:
+          SciCall_SetSel(iWordStart, iWordEnd);
+          break;
         }
         // [/2e]
       }
-
       break;
 
 

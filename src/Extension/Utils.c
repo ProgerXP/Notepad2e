@@ -1310,6 +1310,19 @@ BOOL n2e_IsWordChar(const WCHAR ch)
   return IsCharAlphaNumericW(ch) || (ch == L'_');
 }
 
+LPCSTR n2e_GetTextRange(const int iStart, const int iEnd)
+{
+  struct Sci_TextRange tr = { 
+    .chrg = {
+      .cpMin = iStart,
+      .cpMax = iEnd
+    },
+    .lpstrText = (LPCSTR)n2e_Alloc(tr.chrg.cpMax - tr.chrg.cpMin + 1)
+  };
+  SciCall_GetTextRange(0, &tr);
+  return tr.lpstrText;
+}
+
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text)
 {
   if ((wcslen(text) <= 0) || !OpenClipboard(hwnd))

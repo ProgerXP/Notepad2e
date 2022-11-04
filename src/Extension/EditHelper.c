@@ -1072,6 +1072,14 @@ int n2e_MultiByteToWideChar(LPCSTR lpMultiByteStr, const int cbMultiByte, LPWSTR
   return MultiByteToWideChar(SciCall_GetCodePage(), 0, lpMultiByteStr, cbMultiByte, lpWideCharStr, cchWideChar);
 }
 
+LPWSTR n2e_MultiByteToWideString(LPCSTR text)
+{
+  const int textLength = n2e_MultiByteToWideChar(text, -1, NULL, 0);
+  LPWSTR pWideText = n2e_Alloc(textLength * 2);
+  n2e_MultiByteToWideChar(text, -1, pWideText, textLength);
+  return pWideText;
+}
+
 BOOL n2e_FilteredPasteFromClipboard(const HWND hwnd)
 {
   char *pClip = EditGetClipboardText(hwndEdit);
