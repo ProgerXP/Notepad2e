@@ -152,9 +152,7 @@ LPSTR GetLinePrefix(const HWND hwnd, const int iLine, LPBOOL pbLineEmpty)
   const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iLine, 0);
   const int iLinePrefixLength = iCurPos - iLineStart;
-  pszPrefix = (LPSTR)GlobalAlloc(GPTR, iLinePrefixLength + 1);
-  struct TextRange tr = { { iLineStart, iCurPos }, pszPrefix };
-  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr);
+  pszPrefix = n2e_GetTextRange(iLineStart, iCurPos);
 
   for (size_t i = 0; i < strlen(pszPrefix); ++i)
   {
@@ -168,14 +166,6 @@ LPSTR GetLinePrefix(const HWND hwnd, const int iLine, LPBOOL pbLineEmpty)
   }
 
   return pszPrefix;
-}
-
-void FreeLinePrefix(LPSTR pszPrefix)
-{
-  if (pszPrefix)
-  {
-    GlobalFree(pszPrefix);
-  }
 }
 
 void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInsertAbove)
@@ -258,7 +248,7 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
     }
   }
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-  FreeLinePrefix(pszPrefixText);
+  n2e_Free(pszPrefixText);
 }
 
 void n2e_AdjustOffset(const int pos)
@@ -411,67 +401,56 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
   int wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   int res = 0;
 
-  tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-  SciCall_GetTextRange(0, &tr);
+  has = wlen > 0;
 
-  n2e_Free(tr.lpstrText);
-
-  if (res == 0)
+  // look up for new word for search
+  if (!has)
   {
-    has = wlen > 0;
-
-    // look up for new word for search
-    if (!has)
+    tr.chrg.cpMin = cpos;
+    tr.chrg.cpMax = min(cpos + _N2E_SEARCH_FOR_WORD_LIMIT, doclen);
+    wlen = tr.chrg.cpMax - tr.chrg.cpMin;
+    if (wlen > 0)
     {
-      tr.chrg.cpMin = cpos;
-      tr.chrg.cpMax = min(cpos + _N2E_SEARCH_FOR_WORD_LIMIT, doclen);
-      wlen = tr.chrg.cpMax - tr.chrg.cpMin;
-      if (wlen > 0)
+      int counter;
+      char symb;
+      tr.lpstrText = n2e_GetTextRange(tr.chrg.cpMin, tr.chrg.cpMax);
+      counter = 0;
+      while (counter <= wlen)
       {
-        int counter;
-        char symb;
-        //
-        tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-        SciCall_GetTextRange(0, &tr);
-        counter = 0;
-        while (counter <= wlen)
+        ++counter;
+        symb = tr.lpstrText[counter];
+        if (N2E_IS_LITERAL(symb))
         {
-          ++counter;
-          symb = tr.lpstrText[counter];
-          if (N2E_IS_LITERAL(symb))
+          if (!res)
           {
-            if (!res)
-            {
-              res = counter;
-            }
+            res = counter;
           }
-          else
+        }
+        else
+        {
+          if (res)
           {
-            if (res)
+            tr.lpstrText[counter] = '\0';
+            ttf.lpstrText = tr.lpstrText + res;
+            if (next)
             {
-              tr.lpstrText[counter] = '\0';
-              ttf.lpstrText = tr.lpstrText + res;
-              if (next)
-              {
-                tr.chrg.cpMax = cpos + counter;                
-              }
-              else
-              {
-                tr.chrg.cpMin = cpos;
-              }
-              break;
+              tr.chrg.cpMax = cpos + counter;                
             }
+            else
+            {
+              tr.chrg.cpMin = cpos;
+            }
+            break;
           }
         }
       }
     }
-    else
-    {
-      tr.lpstrText = (char*)n2e_Alloc(wlen + 1);
-      SciCall_GetTextRange(0, &tr);
-      ttf.lpstrText = tr.lpstrText;
-      res = 1;
-    }
+  }
+  else
+  {
+    tr.lpstrText = n2e_GetTextRange(tr.chrg.cpMin, tr.chrg.cpMax);
+    ttf.lpstrText = tr.lpstrText;
+    res = 1;
   }
 
   if (res)
@@ -636,13 +615,12 @@ void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
 
   int temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
   if (!temp) goto OUT_OF_UNWRAP;
-  tr_1.lpstrText = (char*)n2e_Alloc(temp + 1);
-  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_1);
+  
+  tr_1.lpstrText = n2e_GetTextRange(tr_1.chrg.cpMin, tr_1.chrg.cpMax);
 
   temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
   if (!temp) goto OUT_OF_UNWRAP;
-  tr_2.lpstrText = (char*)n2e_Alloc(temp + 1);
-  SendMessage(hwnd, SCI_GETTEXTRANGE, 0, (LPARAM)&tr_2);
+  tr_2.lpstrText = n2e_GetTextRange(tr_2.chrg.cpMin, tr_2.chrg.cpMax);
 
   int pos_left = tr_1.chrg.cpMax;
   int pos_right = tr_2.chrg.cpMin;
@@ -1087,11 +1065,9 @@ BOOL n2e_FilteredPasteFromClipboard(const HWND hwnd)
   {
     remove_char(pClip, '\r');
     remove_char(pClip, '\n');
-    const int textLength = n2e_MultiByteToWideChar(pClip, -1, NULL, 0);
-    LPWSTR pWideText = LocalAlloc(LPTR, textLength * 2);
-    n2e_MultiByteToWideChar(pClip, -1, pWideText, textLength);
+    const LPWSTR pWideText = n2e_MultiByteToWideString(pClip);
     SendMessage(hwnd, EM_REPLACESEL, (WPARAM)TRUE, (LPARAM)pWideText);
-    LocalFree(pWideText);
+    n2e_Free(pWideText);
     LocalFree(pClip);
     return TRUE;
   }

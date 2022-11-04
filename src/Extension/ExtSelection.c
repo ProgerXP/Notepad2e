@@ -422,8 +422,7 @@ void n2e_SelectionEditInit()
   }
   if (sel_len > (bEditSelectionWholeWordMode ? 1 : 0))
   {
-    trEditSelection.lpstrText = n2e_Alloc(sel_len + 1);
-    SendMessage(hwndEdit, SCI_GETTEXTRANGE, 0, (LPARAM)&trEditSelection);
+    trEditSelection.lpstrText = n2e_GetTextRange(trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
   }
   else
   {
@@ -483,8 +482,7 @@ void n2e_SelectionHighlightInit()
   sel_len = trEditSelection.chrg.cpMax - trEditSelection.chrg.cpMin;
   if (sel_len > 1)
   {
-    trEditSelection.lpstrText = n2e_Alloc(sel_len + 1);
-    SciCall_GetTextRange(0, &trEditSelection);
+    trEditSelection.lpstrText = n2e_GetTextRange(trEditSelection.chrg.cpMin, trEditSelection.chrg.cpMax);
   }
 }
 

@@ -34,6 +34,7 @@
 #include "resource.h"
 #include "Extension/DPIHelper.h"
 #include "Extension/SciCall.h"
+#include "Extension/SplitterWnd.h"
 #include "Extension/Utils.h"
 
 

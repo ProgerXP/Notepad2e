@@ -178,7 +178,7 @@ BOOL n2e_IsWordChar(const WCHAR ch);
 
 #define N2E_IS_LITERAL(CH) n2e_IsWordChar(CH)
 
-LPCSTR n2e_GetTextRange(const int iStart, const int iEnd);
+LPSTR n2e_GetTextRange(const int iStart, const int iEnd);
 BOOL n2e_SetClipboardText(const HWND hwnd, const wchar_t* text);
 void n2e_UpdateWindowTitle(const HWND hwnd);
 int n2e_GetCurrentShowTitleMenuID();

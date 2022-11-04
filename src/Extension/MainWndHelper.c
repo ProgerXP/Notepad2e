@@ -3,6 +3,7 @@
 #include "MainWndHelper.h"
 #include "CommonUtils.h"
 #include "EditHelper.h"
+#include "EditHelperEx.h"
 #include "Notepad2.h"
 #include "resource.h"
 #include "Scintilla.h"
@@ -97,7 +98,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
     char *pszText = NULL;
     if (n2e_IsRectangularSelection())
     {
-      pszText = LocalAlloc(LPTR, MAX_EXPRESSION_LENGTH + 1);
+      pszText = n2e_Alloc(MAX_EXPRESSION_LENGTH + 1);
       const int iSelections = SciCall_GetSelections();
       for (int i = 0; i < iSelections; ++i)
       {
@@ -112,15 +113,14 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
         {
           break;
         }
-        char *pszTextOnLine = LocalAlloc(LPTR, iCountOnLine + 1);
-        struct TextRange tr = { { posStart, posEnd }, pszTextOnLine };
-        if (SciCall_GetTextRange(0, &tr) > 0)
+        char *pszTextOnLine = n2e_GetTextRange(posStart, posEnd);
+        if (pszTextOnLine)
         {
           lstrcatA(pszText, pszTextOnLine);
           lstrcatA(pszText, "\n");
           iCount += iCountOnLine + 1;
         }
-        LocalFree(pszTextOnLine);
+        n2e_Free(pszTextOnLine);
       }
     }
     else
@@ -130,9 +130,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
       if (((iCount = n2e_GetExpressionTextRange(&iPosStart, &iPosEnd)) > 0) &&
            (iCount <= MAX_EXPRESSION_LENGTH))
       {
-        pszText = LocalAlloc(LPTR, iCount + 1);
-        struct TextRange tr = { { iPosStart, iPosEnd }, pszText };
-        SciCall_GetTextRange(0, &tr);
+        pszText = n2e_GetTextRange(iPosStart, iPosEnd);
       }
     }
 
@@ -202,12 +200,12 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
           }
           wcsncpy_s(expressionValue, expressionValueLength, tchBuffer, expressionValueLength - 1);
         }
-        LocalFree(pszText);
+        n2e_Free(pszText);
         return TRUE;
       }
     }
     
-    LocalFree(pszText);
+    n2e_Free(pszText);
   }
   if (!bValidExpression && (strlen(expressionText) > 0))
   {

@@ -804,14 +804,12 @@ BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount)
   const int iSelLength = iSelEnd - iSelStart;
   if ((iSelLength > 0) && (iSelLength < iCount * 4))
   {
-    LPSTR pSelText = LocalAlloc(LPTR, iSelLength + 1);
-    struct TextRange tr = { { iSelStart, iSelEnd }, pSelText };
-    if ((SciCall_GetTextRange(0, &tr) > 0)
-      && (n2e_MultiByteToWideChar(pSelText, -1, NULL, 0) <= iCount))
+    LPSTR pSelText = n2e_GetTextRange(iSelStart, iSelEnd);
+    if (n2e_MultiByteToWideChar(pSelText, -1, NULL, 0) <= iCount)
     {
       res = (n2e_MultiByteToWideChar(pSelText, -1, buf, iCount) > 0);
     }
-    LocalFree(pSelText);
+    n2e_Free(pSelText);
   }
   return res;
 }
@@ -1310,14 +1308,14 @@ BOOL n2e_IsWordChar(const WCHAR ch)
   return IsCharAlphaNumericW(ch) || (ch == L'_');
 }
 
-LPCSTR n2e_GetTextRange(const int iStart, const int iEnd)
+LPSTR n2e_GetTextRange(const int iStart, const int iEnd)
 {
   struct Sci_TextRange tr = { 
     .chrg = {
       .cpMin = iStart,
       .cpMax = iEnd
     },
-    .lpstrText = (LPCSTR)n2e_Alloc(tr.chrg.cpMax - tr.chrg.cpMin + 1)
+    .lpstrText = (LPSTR)n2e_Alloc(iEnd - iStart + 1)
   };
   SciCall_GetTextRange(0, &tr);
   return tr.lpstrText;

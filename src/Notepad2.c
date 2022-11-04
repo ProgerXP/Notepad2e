@@ -3106,7 +3106,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SciCall_SetAnchor(iWordStart);
           break;
         case SCI_COPY: {
-          const LPCSTR text = n2e_GetTextRange(iWordStart, iWordEnd);
+          const LPSTR text = n2e_GetTextRange(iWordStart, iWordEnd);
           const LPWSTR wtext = n2e_MultiByteToWideString(text);
           n2e_SetClipboardText(hwndEdit, wtext);
           n2e_Free(wtext);
@@ -4575,7 +4575,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_HELP_MANUAL:
-      if (ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e#readme", NULL, NULL, SW_SHOWNORMAL) <= 32)
+      if ((int)ShellExecute(hwnd, L"open", L"https://github.com/ProgerXP/Notepad2e#readme", NULL, NULL, SW_SHOWNORMAL) <= 32)
       {
         SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_HELP_ABOUT, 1), 0);
       }
