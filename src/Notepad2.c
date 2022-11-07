@@ -3717,7 +3717,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
+          iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3746,7 +3746,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         // [2e]: Treat quotes as braces #287
         if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = (int)SendMessage(hwndEdit, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
+          iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -5547,6 +5547,8 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             {
               int iPos;
               char c;
+              BOOL bBraceFound = FALSE;
+              BOOL bBraceHighlighted = FALSE;
               int iEndStyled = (int)SendMessage(hwndFrom, SCI_GETENDSTYLED, 0, 0);
               if (iEndStyled < (int)SendMessage(hwndFrom, SCI_GETLENGTH, 0, 0))
               {
@@ -5559,45 +5561,27 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               // [2e]: Treat quotes as braces #287
               if (StrChrA(n2e_GetBracesList(), c))
               {
-                int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
+                bBraceFound = TRUE;
+                int iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
                 if (iBrace2 != -1)
                 {
                   int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
                   int col2 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iBrace2, 0);
                   SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
+                  bBraceHighlighted = TRUE;
+                }
+              }
+              if (!bBraceHighlighted)
+              {
+                if (!bBraceFound)
+                {
+                  SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
+                  SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
                 else
                 {
                   SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
-                  SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
-                }
-              }
-              // Try one before
-              else
-              {
-                iPos = (int)SendMessage(hwndFrom, SCI_POSITIONBEFORE, iPos, 0);
-                c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
-                // [2e]: Treat quotes as braces #287
-                if (StrChrA(n2e_GetBracesList(), c))
-                {
-                  int iBrace2 = (int)SendMessage(hwndFrom, SCI_BRACEMATCH, iPos, bTreatQuotesAsBraces);
-                  if (iBrace2 != -1)
-                  {
-                    int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
-                    int col2 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iBrace2, 0);
-                    SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, iPos, iBrace2);
-                    SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, min(col1, col2), 0);
-                  }
-                  else
-                  {
-                    SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
-                    SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
-                  }
-                }
-                else
-                {
-                  SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
               }

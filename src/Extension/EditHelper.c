@@ -600,184 +600,34 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
 
 void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
 {
-  struct Sci_TextRange tr_1, tr_2;
-  BOOL found = FALSE;
   const static int max_region_to_scan = 1024;
-  const static int max_brackets_to_skip = 100;
-  const int cpos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  const int len = SendMessage(hwnd, SCI_GETTEXTLENGTH, 0, 0);
-  tr_1.chrg.cpMax = cpos;
-  tr_1.chrg.cpMin = max(0, cpos - max_region_to_scan);
-  tr_1.lpstrText = NULL;
-  tr_2.chrg.cpMin = cpos;
-  tr_2.chrg.cpMax = min(len, cpos + max_region_to_scan);
-  tr_2.lpstrText = NULL;
-
-  int temp = abs(tr_1.chrg.cpMax - tr_1.chrg.cpMin);
-  if (!temp) goto OUT_OF_UNWRAP;
-  
-  tr_1.lpstrText = n2e_GetTextRange(tr_1.chrg.cpMin, tr_1.chrg.cpMax);
-
-  temp = abs(tr_2.chrg.cpMax - tr_2.chrg.cpMin);
-  if (!temp) goto OUT_OF_UNWRAP;
-  tr_2.lpstrText = n2e_GetTextRange(tr_2.chrg.cpMin, tr_2.chrg.cpMax);
-
-  int pos_left = tr_1.chrg.cpMax;
-  int pos_right = tr_2.chrg.cpMin;
-  found = FALSE;
-  if (quote_mode)
+  const auto pos = SciCall_GetCurrentPos();
+  const auto len = SciCall_GetLength();
+  int posStart = -1;
+  int posEnd = -1;
+  int p = pos;
+  do
   {
-    const char* _quotes = "\"'`";
-    char* qchl = NULL;
-    // search left
-    while (1)
+    posStart = SciCall_BraceMatch(p, quote_mode);
+    if (posStart < 0)
     {
-      char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
-      if (lch)
-      {
-        if (qchl = (char*)strchr(_quotes, lch))
-        {
-          N2E_TRACE("Left quote found '%c'", lch);
-          break;
-        }
-      }
-      if (--pos_left <= tr_1.chrg.cpMin)
-      {
-        qchl = NULL;
+      if (p == 0)
         break;
-      }
+      p = SciCall_PositionBefore(p);
     }
+  } while ((p >= 0) && (p >= pos - max_region_to_scan) && (posStart < 0));
 
-    // go right
-    while (qchl)
-    {
-      char rch = tr_2.lpstrText[pos_right - tr_2.chrg.cpMin];
-      if (rch)
-      {
-        if (rch == *qchl)
-        {
-          N2E_TRACE("Right quote found '%c'", rch);
-          break;
-        }
-      }
-      if (++pos_right > tr_2.chrg.cpMax)
-      {
-        qchl = NULL;
-        break;
-      }
-    }
-    found = NULL != qchl;
-  }
-  else
-  {
-    const char* _left_braces = "<{([";
-    const char* _right_braces = ">})]";
-    char* tchl = NULL, *tchr = NULL, *qchl = NULL;
-    int   skipcl = 0, skipcr = 0;
-    int*  skipl = (int*)n2e_Alloc(max_brackets_to_skip * sizeof(int));
+  if (posStart >= 0)
+    posEnd = SciCall_BraceMatch(posStart, quote_mode);
 
-    // search left
-  RESUME_SEARCH:
-    while (1)
-    {
-      char lch = tr_1.lpstrText[pos_left - tr_1.chrg.cpMin - 1];
-      if (lch)
-      {
-        if (tchl = (char*)strchr(_left_braces, lch))
-        {
-          if (skipcl)
-          {
-            int ti = 0;
-            for (; ti < skipcl; ++ti)
-            {
-              if (tchl - _left_braces == skipl[ti])
-              {
-                N2E_TRACE("Skipped braces pair found '%c'", *tchl);
-                skipl[ti] = -1;
-                goto NEXT;
-              }
-            }
-          }
-          N2E_TRACE("Left bracket found '%c'", lch);
-          break;
-        }
-        if (tchl = (char*)strchr(_right_braces, lch))
-        {
-          skipl[skipcl++] = tchl - _right_braces;
-        }
-      }
-    NEXT:
-      if (--pos_left <= tr_1.chrg.cpMin)
-      {
-        tchl = NULL;
-        break;
-      }
-    }
-    // go right
-    while (tchl)
-    {
-      char rch = tr_2.lpstrText[pos_right - tr_2.chrg.cpMin];
-      if (rch)
-      {
-        if (tchr = (char*)strchr(_right_braces, rch))
-        {
-          if (tchr - _right_braces == tchl - _left_braces)
-          {
-            if (skipcr)
-            {
-              N2E_TRACE("Skip right bracket '%c' (%d to skip)", rch, skipcr);
-              --skipcr;
-            }
-            else
-            {
-              N2E_TRACE("Right bracket found '%c'", rch);
-              break;
-            }
-          }
-          else
-          {
-            tchr = NULL;
-            N2E_TRACE("Bad right bracket found '%c'", rch);
-          }
-        }
-        if (tchr = (char*)strchr(_left_braces, rch))
-        {
-          if (tchr == tchl)
-          {
-            ++skipcr;
-          }
-        }
-      }
-      if (++pos_right > tr_2.chrg.cpMax)
-      {
-        tchr = NULL;
-        break;
-      }
-    }
-    if (tchl && !tchr && --pos_left > tr_1.chrg.cpMin)
-    {
-      tchl = NULL;
-      tchr = NULL;
-      skipcr = 0;
-      pos_right = tr_2.chrg.cpMin;
-      goto RESUME_SEARCH;
-    }
-    n2e_Free(skipl);
-    found = tchr && tchl;
-  }
-  // remove
-  if (found)
+  if ((posStart >= 0) && (posEnd >= 0) && (max(posStart, posEnd) >= pos))
   {
-    N2E_TRACE("removing braces OR quotes at %d and %d", pos_left - 1, pos_right);
-    SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-    SendMessage(hwnd, SCI_DELETERANGE, pos_left - 1, 1);
-    SendMessage(hwnd, SCI_DELETERANGE, pos_right - 1 /*remember offset from prev line*/, 1);
-    SendMessage(hwnd, SCI_SETSEL, pos_left - 1, pos_right - 1);
-    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+    SciCall_BeginUndoAction();
+    SciCall_DeleteRange(max(posStart, posEnd), 1);
+    SciCall_DeleteRange(min(posStart, posEnd), 1);
+    SciCall_SetSel(min(posStart, posEnd), max(posStart, posEnd) - 1);
+    SciCall_EndUndoAction();
   }
-OUT_OF_UNWRAP:
-  n2e_Free(tr_1.lpstrText);
-  n2e_Free(tr_2.lpstrText);
 }
 
 void n2e_EscapeHTML(const HWND hwnd)
