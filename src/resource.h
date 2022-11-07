@@ -436,6 +436,7 @@
 #define IDM_TRAY_EXIT                   40601
 #define IDM_HELP_ABOUT_3RD_PARTY        40602
 #define IDM_VIEW_STARTINGLINENUMBER     40603
+#define IDM_VIEW_FIRST_COLUMN_MARGIN    40604
 #define IDT_FILE_NEW                    40700
 #define IDT_FILE_OPEN                   40701
 #define IDT_FILE_BROWSE                 40702

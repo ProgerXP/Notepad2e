@@ -1561,3 +1561,24 @@ LPCSTR n2e_GetBracesList()
 {
   return bTreatQuotesAsBraces ? BRACES_WITH_QUOTES : BRACES;
 }
+
+void n2e_OnMarginClick(const HWND hwnd, const int margin, const int position, int* updated)
+{
+  if (margin == 2)
+  {
+    if (SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0) == position)
+    {
+      const int wordStart = SendMessage(hwnd, SCI_WORDSTARTPOSITION, position, TRUE);
+      const int wordEnd = SendMessage(hwnd, SCI_WORDENDPOSITION, position, FALSE);
+      SendMessage(hwnd, SCI_SETSEL, wordStart, wordEnd);
+    }
+    else if (SendMessage(hwnd, SCI_GETANCHOR, 0, 0) == position)
+    {
+      *updated = 1;
+    }
+    else
+    {
+      SendMessage(hwnd, SCI_SETSEL, position, position);
+    }
+  }
+}

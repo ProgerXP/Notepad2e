@@ -84,3 +84,4 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
 
 LPCSTR n2e_GetBracesList();
 void n2e_UpdateAlwaysOnTopButton();
+void n2e_OnMarginClick(const HWND hwnd, const int margin, const int position, int* updated);

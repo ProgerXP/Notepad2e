@@ -171,6 +171,7 @@ int       iLongLinesLimitG;
 int       iLongLineMode;
 int       iWrapCol = 0;
 BOOL      bShowSelectionMargin;
+BOOL      bShowFirstColumnMargin;
 BOOL      bShowLineNumbers;
 BOOL      bViewWhiteSpace;
 BOOL      bViewEOLs;
@@ -1590,8 +1591,12 @@ void EditInit(HWND hwnd)
   }
   SendMessage(hwnd, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
   // Margins
-  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, 0);
   SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+  // [2e]: Add View > First Column Margin #382
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, bShowFirstColumnMargin ? 16 : 0);
+  SendMessage(hwnd, SCI_SETMARGINSENSITIVEN, 2, TRUE);
+  SendMessage(hwnd, SCI_SETMARGINCURSORN, 2, 1);
+  // [/2e]
   VIEW_COMMAND(UpdateLineNumberWidth);
   // Nonprinting characters
   SendMessage(hwnd, SCI_SETVIEWWS, bViewWhiteSpace ? SCWS_VISIBLEALWAYS : SCWS_INVISIBLE, 0);
@@ -2162,6 +2167,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_AUTOINDENTTEXT, bAutoIndent);
   CheckCmd(hmenu, IDM_VIEW_LINENUMBERS, bShowLineNumbers);
   CheckCmd(hmenu, IDM_VIEW_MARGIN, bShowSelectionMargin);
+  CheckCmd(hmenu, IDM_VIEW_FIRST_COLUMN_MARGIN, bShowFirstColumnMargin);
   CheckCmd(hmenu, IDM_VIEW_SHOWWHITESPACE, bViewWhiteSpace);
   CheckCmd(hmenu, IDM_VIEW_SHOWEOLS, bViewEOLs);
   CheckCmd(hmenu, IDM_VIEW_WORDWRAPSYMBOLS, bShowWordWrapSymbols);
@@ -4134,8 +4140,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_MARGIN:
       bShowSelectionMargin = (bShowSelectionMargin) ? FALSE : TRUE;
-      VIEW_COMMAND(SetMarginWidthN);
+      VIEW_COMMAND(ShowSelectionMargin);
       break;
+
+
+    // [2e]: Add View > First Column Margin #382
+    case IDM_VIEW_FIRST_COLUMN_MARGIN:
+      bShowFirstColumnMargin = (bShowFirstColumnMargin) ? FALSE : TRUE;
+      VIEW_COMMAND(ShowFirstColumnMargin);
+      break;
+    // [/2e]
 
 
     case IDM_VIEW_SHOWWHITESPACE:
@@ -5730,6 +5744,12 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           SetFocus(hwndFrom);
           break;
         // [/2e]
+
+        // [2e]: Add View > First Column Margin #382
+        case SCN_MARGINCLICK:
+          n2e_OnMarginClick(hwndFrom, scn->margin, scn->position, &scn->updated);
+          break;
+        // [/2e]
       }
       n2e_SelectionNotificationHandler(hwndFrom, pnmh->code, scn);
       break;
@@ -5976,6 +5996,9 @@ void LoadSettings()
   bShowSelectionMargin = IniSectionGetInt(pIniSection, L"ShowSelectionMargin", 0);
   if (bShowSelectionMargin) bShowSelectionMargin = 1;
 
+  bShowFirstColumnMargin = IniSectionGetInt(pIniSection, L"ShowFirstColumnMargin", 0);
+  if (bShowFirstColumnMargin) bShowFirstColumnMargin = 1;
+
   bShowLineNumbers = IniSectionGetInt(pIniSection, L"ShowLineNumbers", 1);
   if (bShowLineNumbers) bShowLineNumbers = 1;
 
@@ -6214,6 +6237,7 @@ void SaveSettings(BOOL bSaveSettingsNow)
     IniSectionSetInt(pIniSection, L"LongLinesLimit", iLongLinesLimitG);
     IniSectionSetInt(pIniSection, L"LongLineMode", iLongLineMode);
     IniSectionSetInt(pIniSection, L"ShowSelectionMargin", bShowSelectionMargin);
+    IniSectionSetInt(pIniSection, L"ShowFirstColumnMargin", bShowFirstColumnMargin);
     IniSectionSetInt(pIniSection, L"ShowLineNumbers", bShowLineNumbers);
     IniSectionSetInt(pIniSection, L"ViewWhiteSpace", bViewWhiteSpace);
     IniSectionSetInt(pIniSection, L"ViewEOLs", bViewEOLs);
@@ -7318,9 +7342,14 @@ void SetLongLineSettings(HWND hwnd)
   SendMessage(hwnd, SCI_SETEDGECOLUMN, iLongLinesLimit, 0);
 }
 
-void SetMarginWidthN(HWND hwnd)
+void ShowSelectionMargin(HWND hwnd)
 {
   SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
+}
+
+void ShowFirstColumnMargin(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, (bShowFirstColumnMargin) ? 16 : 0);
 }
 
 void ShowWhiteSpace(HWND hwnd)

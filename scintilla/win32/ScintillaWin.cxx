@@ -374,7 +374,7 @@ class ScintillaWin :
 	void NotifyFocus(bool focus) override;
 	void SetCtrlID(int identifier) override;
 	int GetCtrlID() override;
-	void NotifyParent(SCNotification scn) override;
+	void NotifyParent(SCNotification& scn) override;
 	void NotifyDoubleClick(Point pt, int modifiers) override;
 	CaseFolder *CaseFolderForEncoding() override;
 	std::string CaseMapString(const std::string &s, int caseMapping) override;
@@ -2075,7 +2075,7 @@ int ScintillaWin::GetCtrlID() {
 	return ::GetDlgCtrlID(static_cast<HWND>(wMain.GetID()));
 }
 
-void ScintillaWin::NotifyParent(SCNotification scn) {
+void ScintillaWin::NotifyParent(SCNotification& scn) {
 	scn.nmhdr.hwndFrom = MainHWND();
 	scn.nmhdr.idFrom = GetCtrlID();
 	::SendMessage(::GetParent(MainHWND()), WM_NOTIFY,

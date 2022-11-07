@@ -318,6 +318,7 @@ BEGIN
         MENUITEM "Line &Numbers\tCtrl+Shift+N", IDM_VIEW_LINENUMBERS
         MENUITEM "St&arting Line Number...",    IDM_VIEW_STARTINGLINENUMBER
         MENUITEM "Selection &Margin\tCtrl+Shift+M", IDM_VIEW_MARGIN
+        MENUITEM "Selection Margin: First &Column Margin\tCtrl+Alt+Shift+M", IDM_VIEW_FIRST_COLUMN_MARGIN
         MENUITEM SEPARATOR
         MENUITEM "Zoom &In\tCtrl++",            IDM_VIEW_ZOOMIN
         MENUITEM "Zoom &Out\tCtrl+-",           IDM_VIEW_ZOOMOUT

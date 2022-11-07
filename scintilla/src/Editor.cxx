@@ -2487,6 +2487,14 @@ bool Editor::NotifyMarginClick(Point pt, int modifiers) {
 		scn.position = position;
 		scn.margin = marginClicked;
 		NotifyParent(scn);
+    if (scn.updated)
+    {
+      SetMouseCapture(false);
+      FineTickerCancel(tickScroll);
+      CopySelectionRange(&drag);
+      StartDrag();
+      SetDragPosition(SelectionPosition(position));
+    }
 		return true;
 	} else {
 		return false;
