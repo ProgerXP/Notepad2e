@@ -3765,7 +3765,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iBrace2 = SciCall_PositionBefore(iBrace2);
               iPos = SciCall_PositionAfter(iPos);
             }
-            else
+            else if (iSelEnd == SciCall_GetSelStart())
             {
               iBrace2 = SciCall_PositionAfter(iBrace2);
               iPos = SciCall_PositionBefore(iPos);
@@ -3775,7 +3775,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           if (iBrace2 > iPos)
             SciCall_SetSel(iPos, SciCall_PositionAfter(iBrace2));
           else
-            SciCall_SetSel(iBrace2, SciCall_PositionAfter(iPos));
+            SciCall_SetSel(SciCall_PositionAfter(iPos), iBrace2);
           // [/2e]
         }
       }
