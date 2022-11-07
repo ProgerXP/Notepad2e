@@ -175,7 +175,7 @@ UINT CodePageFromCharSet(UINT);
 
 
 //==== MRU Functions ==========================================================
-#define MRU_MAXITEMS 24
+#define MRU_MAXITEMS  100   // [2e]: Increase MRUs limit to 100 items #447
 #define MRU_NOCASE    1
 #define MRU_UTF8      2
 
