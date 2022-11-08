@@ -2487,7 +2487,13 @@ bool Editor::NotifyMarginClick(Point pt, int modifiers) {
 		scn.position = position;
 		scn.margin = marginClicked;
 		NotifyParent(scn);
-    if (scn.updated)
+    if (scn.updated == 1)
+    {
+      InvalidateWholeSelection();
+      SetMouseCapture(true);
+      FineTickerStart(tickScroll, 100, 10);
+    }
+    else if (scn.updated == 2)
     {
       SetMouseCapture(false);
       FineTickerCancel(tickScroll);

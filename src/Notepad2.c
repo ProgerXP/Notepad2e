@@ -1593,6 +1593,7 @@ void EditInit(HWND hwnd)
   // Margins
   SendMessage(hwnd, SCI_SETMARGINWIDTHN, 1, (bShowSelectionMargin) ? 16 : 0);
   // [2e]: Add View > First Column Margin #382
+  SendMessage(hwnd, SCI_SETMARGINTYPEN, 2, SC_MARGIN_BACK);
   SendMessage(hwnd, SCI_SETMARGINWIDTHN, 2, bShowFirstColumnMargin ? 16 : 0);
   SendMessage(hwnd, SCI_SETMARGINSENSITIVEN, 2, TRUE);
   SendMessage(hwnd, SCI_SETMARGINCURSORN, 2, 1);

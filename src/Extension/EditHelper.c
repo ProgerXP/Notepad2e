@@ -1574,11 +1574,12 @@ void n2e_OnMarginClick(const HWND hwnd, const int margin, const int position, in
     }
     else if (SendMessage(hwnd, SCI_GETANCHOR, 0, 0) == position)
     {
-      *updated = 1;
+      *updated = 2;
     }
     else
     {
       SendMessage(hwnd, SCI_SETSEL, position, position);
+      *updated = 1;
     }
   }
 }
