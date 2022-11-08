@@ -2789,14 +2789,18 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
         --escapedBraceCount;
         bracePosition = -1;
       }
-      else if (bracePosition > lineEndPos)
+      if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
       {
         bracePosition = -1;
         break;
       }
       else if (bracePosition >= 0)
         break;
+      else
+        i = NextPosition(i, direction);
+
     } while ((bracePosition < 0) || (escapedBraceCount > 0));
+
     return bracePosition;
 	}
 	return FindBrace(position, direction, chBrace, chSeek, styBrace, true);
