@@ -5579,7 +5579,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                   SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
-                else
+                else if ((iPos > 0) && (SciCall_GetCharAt(SciCall_PositionBefore(iPos)) != '\\'))
                 {
                   SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);

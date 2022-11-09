@@ -2785,11 +2785,11 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
       bracePosition = FindBrace(i, direction, chBrace, chSeek, styBrace, false);
       if (CharAt(NextPosition(bracePosition, -1)) == '\\')
       {
-        i = NextPosition(bracePosition, direction);
+        i = bracePosition;
         --escapedBraceCount;
         bracePosition = -1;
       }
-      if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
+      else if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
       {
         bracePosition = -1;
         break;
