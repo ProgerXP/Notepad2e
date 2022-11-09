@@ -63,6 +63,7 @@ VOID n2e_Trace(const char *fmt, ...)
     }
     fprintf(n2e_log, "%s\n", buff);
     fflush(n2e_log);
+    // _commit() is important - see #129 and https://jeffpar.github.io/kbarchive/kb/066/Q66052/
     _commit(_fileno(n2e_log));
   }
 }
