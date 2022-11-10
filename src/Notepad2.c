@@ -5559,7 +5559,8 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
               c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
               // [2e]: Treat quotes as braces #287
-              if (StrChrA(n2e_GetBracesList(), c))
+              const BOOL isEscapedChar = (iPos > 0) && (SciCall_GetCharAt(SciCall_PositionBefore(iPos)) == '\\');
+              if (StrChrA(n2e_GetBracesList(), c) && !isEscapedChar)
               {
                 bBraceFound = TRUE;
                 int iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
@@ -5579,7 +5580,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                   SendMessage(hwndFrom, SCI_BRACEHIGHLIGHT, (WPARAM)-1, (LPARAM)-1);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
                 }
-                else if ((iPos > 0) && (SciCall_GetCharAt(SciCall_PositionBefore(iPos)) != '\\'))
+                else if (!isEscapedChar)
                 {
                   SendMessage(hwndFrom, SCI_BRACEBADLIGHT, iPos, 0);
                   SendMessage(hwndFrom, SCI_SETHIGHLIGHTGUIDE, 0, 0);
@@ -7735,8 +7736,8 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
     lstrcpy(tchFile, szCurFile);
 
     fSuccess = FileIO(FALSE, szCurFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, FALSE)
-               // [2e]: Process elevation #166
-               || n2e_ParentProcess_ElevatedFileIO(szCurFile);
+      // [2e]: Process elevation #166
+      || n2e_ParentProcess_ElevatedFileIO(szCurFile);
   }
 
   if (fSuccess)
