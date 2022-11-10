@@ -882,9 +882,18 @@ posRet = model.pdoc->MovePositionOutsideChar(ll->LineStart(subLine + 1) + posLin
 ---
 **Treat quotes as braces #287**
 
+[/scintilla/src/Document.h]
+
+Replace ``FindBrace`` and ``BraceMatch`` declaration:
+
+```
+	int FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept;
+	Sci::Position BraceMatch(Sci::Position position, bool treatQuotesAsBraces) noexcept;
+```
+
 [/scintilla/src/Document.cxx]
 
-Replace ``BraceOpposite()`` and ``BraceMatch()`` using the following code:
+Replace ``BraceOpposite``, ``FindBrace`` and ``BraceMatch`` using the following code:
 
 ```
 static char BraceOpposite(char ch, bool treatQuotesAsBraces) noexcept {
@@ -915,17 +924,14 @@ static char BraceOpposite(char ch, bool treatQuotesAsBraces) noexcept {
 }
 
 // [2e]: Treat quotes as braces #287
-int Document::FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, bool* separatorFound) const noexcept {
+int Document::FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept {
 	int depth = 1;
 	position = NextPosition(position, direction);
 	while ((position >= 0) && (position < LengthNoExcept())) {
 		const char chAtPos = CharAt(position);
 		const int styAtPos = StyleIndexAt(position);
 
-		if (separatorFound && ((chAtPos == '\r') || (chAtPos == '\n') || (chAtPos == '=')))
-			*separatorFound = true;
-
-		if ((position > GetEndStyled()) || (styAtPos == styBrace)) {
+		if ((position > GetEndStyled()) || (!respectStyle || (styAtPos == styBrace))) {
 			if ((chBrace != chSeek) && (chAtPos == chBrace))
 				depth++;
 			if (chAtPos == chSeek)
@@ -955,39 +961,59 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
 	// [2e]: Treat quotes as braces #287
 	else if (treatQuotesAsBraces && (chBrace == '\'' || chBrace == '"' || chBrace == '`'))
 	{
-		bool separatorForPrev = false;
-		bool separatorForNext = false;
-		const auto posPrev = FindBrace(position, -1, chBrace, chSeek, styBrace, &separatorForPrev);
-		const auto posNext = FindBrace(position, 1, chBrace, chSeek, styBrace, &separatorForNext);
-		if (posPrev >= 0 && posNext < 0)
+		const auto lineIndex = LineFromPosition(position);
+		const auto lineStartPos = LineStart(lineIndex);
+		const auto lineEndPos = LineEnd(lineIndex);
+		int braceCount = 0;
+		int escapedBraceCount = 0;
+		int bracePosition = -1;
+		auto i = lineStartPos - 1;
+
+		if (CharAt(NextPosition(position, -1)) == '\\')
+			return -1;
+
+		while (i < position)
 		{
-			return posPrev;
-		}
-		else if (posNext >= 0 && posPrev < 0)
-		{
-			return posNext;
-		}
-		else if (posPrev >= 0 && posNext >= 0)
-		{
-			Sci::Position posNearest, posAlternative;
-			bool separatorForNearest = false;
-			if (position - posPrev < posNext - position - 1)
-			{
-				posNearest = posPrev;
-				separatorForNearest = separatorForPrev;
-				posAlternative = posNext;
-			}
+			bracePosition = FindBrace(i, 1, chBrace, chSeek, styBrace, false);
+			if (bracePosition < 0)
+				break;
+			if ((bracePosition != lineStartPos) && (CharAt(NextPosition(bracePosition, -1)) == '\\'))
+				++escapedBraceCount;
 			else
 			{
-				posNearest = posNext;
-				separatorForNearest = separatorForNext;
-				posAlternative = posPrev;
+				if (bracePosition >= position)
+					break;
+				++braceCount;
 			}
-			return !separatorForNearest ? posNearest : posAlternative;
+			i = bracePosition;
 		}
-		return -1;
+
+		bracePosition = -1;
+		const auto direction = (braceCount % 2 == 0) ? 1 : -1;
+		i = position;
+		do 
+		{
+			bracePosition = FindBrace(i, direction, chBrace, chSeek, styBrace, false);
+			if (CharAt(NextPosition(bracePosition, -1)) == '\\')
+			{
+				i = bracePosition;
+				--escapedBraceCount;
+				bracePosition = -1;
+			}
+			else if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
+			{
+				bracePosition = -1;
+				break;
+			}
+			else if (bracePosition >= 0)
+				break;
+			else
+				i = NextPosition(i, direction);
+		} while ((bracePosition < 0) || (escapedBraceCount > 0));
+
+		return bracePosition;
 	}
-	return FindBrace(position, direction, chBrace, chSeek, styBrace, nullptr);
+	return FindBrace(position, direction, chBrace, chSeek, styBrace, true);
 	// [/2e]
 }
 ```

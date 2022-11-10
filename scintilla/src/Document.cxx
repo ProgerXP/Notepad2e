@@ -2750,58 +2750,57 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
 	// [2e]: Treat quotes as braces #287
 	else if (treatQuotesAsBraces && (chBrace == '\'' || chBrace == '"' || chBrace == '`'))
 	{
-    const auto lineIndex = LineFromPosition(position);
-    const auto lineStartPos = LineStart(lineIndex);
-    const auto lineEndPos = LineEnd(lineIndex);
-    int braceCount = 0;
-    int escapedBraceCount = 0;
-    int bracePosition = -1;
-    auto i = lineStartPos - 1;
+		const auto lineIndex = LineFromPosition(position);
+		const auto lineStartPos = LineStart(lineIndex);
+		const auto lineEndPos = LineEnd(lineIndex);
+		int braceCount = 0;
+		int escapedBraceCount = 0;
+		int bracePosition = -1;
+		auto i = lineStartPos - 1;
 
-    if (CharAt(NextPosition(position, -1)) == '\\')
-      return -1;
+		if (CharAt(NextPosition(position, -1)) == '\\')
+			return -1;
 
-    while (i < position)
-    {
-      bracePosition = FindBrace(i, 1, chBrace, chSeek, styBrace, false);
-      if (bracePosition < 0)
-        break;
-      if ((bracePosition != lineStartPos) && (CharAt(NextPosition(bracePosition, -1)) == '\\'))
-        ++escapedBraceCount;
-      else
-      {
-        if (bracePosition >= position)
-          break;
-        ++braceCount;
-      }
-      i = bracePosition;
-    }
-    
-    bracePosition = -1;
-    const auto direction = (braceCount % 2 == 0) ? 1 : -1;
-    i = position;
-    do 
-    {
-      bracePosition = FindBrace(i, direction, chBrace, chSeek, styBrace, false);
-      if (CharAt(NextPosition(bracePosition, -1)) == '\\')
-      {
-        i = bracePosition;
-        --escapedBraceCount;
-        bracePosition = -1;
-      }
-      else if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
-      {
-        bracePosition = -1;
-        break;
-      }
-      else if (bracePosition >= 0)
-        break;
-      else
-        i = NextPosition(i, direction);
+		while (i < position)
+		{
+			bracePosition = FindBrace(i, 1, chBrace, chSeek, styBrace, false);
+			if (bracePosition < 0)
+				break;
+			if ((bracePosition != lineStartPos) && (CharAt(NextPosition(bracePosition, -1)) == '\\'))
+				++escapedBraceCount;
+			else
+			{
+				if (bracePosition >= position)
+					break;
+				++braceCount;
+			}
+			i = bracePosition;
+		}
 
-    } while ((bracePosition < 0) || (escapedBraceCount > 0));
+		bracePosition = -1;
+		const auto direction = (braceCount % 2 == 0) ? 1 : -1;
+		i = position;
+		do 
+		{
+			bracePosition = FindBrace(i, direction, chBrace, chSeek, styBrace, false);
+			if (CharAt(NextPosition(bracePosition, -1)) == '\\')
+			{
+				i = bracePosition;
+				--escapedBraceCount;
+				bracePosition = -1;
+			}
+			else if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
+			{
+				bracePosition = -1;
+				break;
+			}
+			else if (bracePosition >= 0)
+				break;
+			else
+				i = NextPosition(i, direction);
+		} while ((bracePosition < 0) || (escapedBraceCount > 0));
 
-    return bracePosition;
+		return bracePosition;
 	}
 	return FindBrace(position, direction, chBrace, chSeek, styBrace, true);
 	// [/2e]
