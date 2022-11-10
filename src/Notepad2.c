@@ -7728,6 +7728,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
 
   else
   {
+    // [2e]: Improve File Change Notification for slow medium #409
+    n2e_StopWatchThread();
+
     // [2e]: Junk file name output in the Access Denied message box #412
     lstrcpy(tchFile, szCurFile);
 
