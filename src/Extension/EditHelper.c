@@ -839,6 +839,12 @@ void UpdateCheckboxesImpl(HWND hwnd, const UINT nCtrlID, const BOOL bInitialUpda
 
   switch (nCtrlID)
   {
+    case IDC_FINDWORD:
+      CheckDlgButton(hwnd, IDC_FINDSTART, BST_UNCHECKED);
+      break;
+    case IDC_FINDSTART:
+      CheckDlgButton(hwnd, IDC_FINDWORD, BST_UNCHECKED);
+      break;
     case IDC_FINDREGEXP:
       CheckDlgButton(hwnd, IDC_FINDTRANSFORMBS, BST_UNCHECKED);
       break;
@@ -854,6 +860,10 @@ void UpdateCheckboxesImpl(HWND hwnd, const UINT nCtrlID, const BOOL bInitialUpda
   const BOOL bIsRegexMode = (GetCheckboxState(hwnd, IDC_FINDREGEXP) == BST_CHECKED);
   if (bInitialUpdate || (bRegexModeChanged && bIsRegexMode))
   {
+    if (bInitialUpdate && n2e_IsCheckboxChecked(hwnd, IDC_FINDWORD, FALSE))
+    {
+      CheckDlgButton(hwnd, IDC_FINDSTART, BST_UNCHECKED);
+    }
     SaveCheckboxState(hwnd, IDC_FINDTRANSFORMBS);
     SaveCheckboxState(hwnd, IDC_FINDWORD);
     SaveCheckboxState(hwnd, IDC_FINDSTART);

@@ -5104,6 +5104,18 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           }
           break;
 
+        // [2e]: Find - disable Match whole/beginning of word when Regexp is checked #439
+        case IDC_FINDWORD:
+          n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDWORD);
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
+          break;
+
+        case IDC_FINDSTART:
+          n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDSTART);
+          PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
+          break;
+        // [/2e]
+
         case IDC_FINDREGEXP:
           n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDREGEXP);
           PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);

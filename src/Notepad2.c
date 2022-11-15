@@ -4996,6 +4996,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else
             lstrcpyA(efrData.szFindUTF8, mszSelection);
 
+          // [2e]: Find - disable Match whole/beginning of word when Regexp is checked #439
           efrData.fuFlags &= (~(SCFIND_REGEXP | SCFIND_POSIX | SCFIND_WHOLEWORD | SCFIND_WORDSTART));
           efrData.bTransformBS = FALSE;
 
