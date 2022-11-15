@@ -29,3 +29,4 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd, char* expressionText, const 
 BOOL n2e_IsModalDialogOnTop();
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam);
 void n2e_SetUACIcon(const HMENU hMenu, const UINT nItem);
+HWND n2e_GetTopLevelWindow(const HWND hwnd);

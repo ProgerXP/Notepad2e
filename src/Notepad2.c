@@ -3796,9 +3796,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         if (GetDlgItem(hDlgFindReplace, IDC_REPLACE))
         {
+          const BOOL bMainWindowActive = n2e_GetTopLevelWindow(GetForegroundWindow()) == hwndMain;
           SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOFIND, 1), 0);
           DestroyWindow(hDlgFindReplace);
           hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, FALSE);
+          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+          if (bMainWindowActive)
+            SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
         }
         else
         {
@@ -3909,9 +3913,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       {
         if (!GetDlgItem(hDlgFindReplace, IDC_REPLACE))
         {
+          const BOOL bMainWindowActive = n2e_GetTopLevelWindow(GetForegroundWindow()) == hwndMain;
           SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOREPLACE, 1), 0);
           DestroyWindow(hDlgFindReplace);
           hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, TRUE);
+          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+          if (bMainWindowActive)
+            SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
         }
         else
         {

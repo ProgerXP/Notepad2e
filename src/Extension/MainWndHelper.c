@@ -222,9 +222,14 @@ BOOL n2e_IsModalDialogOnTop()
   return bIsModalDialogOnTop;
 }
 
+HWND n2e_GetTopLevelWindow(const HWND hwnd)
+{
+  return GetAncestor(hwnd, GA_ROOT);
+}
+
 BOOL n2e_IsTopLevelWindow(const HWND hwnd)
 {
-  return hwnd == GetAncestor(hwnd, GA_ROOT);
+  return hwnd == n2e_GetTopLevelWindow(hwnd);
 }
 
 BOOL n2e_IsModalDialog(const HWND hwnd)
