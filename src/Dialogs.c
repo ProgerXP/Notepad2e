@@ -1277,10 +1277,8 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
                 iOpenedItem = i;
               }
             }
-            const int iSelectedItem = ((iCount > 1) && (iOpenedItem >= 0))
-                                      ? (iOpenedItem < iCount - 1)
-                                        ? min(iOpenedItem + 2, iCount - 1)
-                                        : 0
+            const int iSelectedItem = ((iCount > 1) && (iOpenedItem < iCount - 1))
+                                      ? min(iOpenedItem + 2, iCount - 1)
                                       : 0;
             ListView_SetItemState(GetDlgItem(hwnd, IDC_FILEMRU), iSelectedItem, LVIS_FOCUSED | LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
             // [/2e]
