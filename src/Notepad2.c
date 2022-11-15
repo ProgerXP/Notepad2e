@@ -3803,6 +3803,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         else
         {
           SetForegroundWindow(hDlgFindReplace);
+          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
           PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
         }
       }
@@ -3914,6 +3916,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         else
         {
           SetForegroundWindow(hDlgFindReplace);
+          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
           PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
         }
       }

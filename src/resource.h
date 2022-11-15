@@ -174,6 +174,7 @@
 #define IDD_INFOBOX                     126
 #define IDC_SYSLINK4                    126
 #define IDD_INFOBOX2                    127
+#define IDC_INITIALIZE_SEARCH_STRING    127
 #define IDD_INFOBOX3                    128
 #define IDD_ABOUT_3RD_PARTY             129
 #define IDD_STARTINGLINENUMBER          130

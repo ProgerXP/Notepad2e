@@ -1411,3 +1411,34 @@ LPCSTR n2e_GetBracesList()
 {
   return bTreatQuotesAsBraces ? BRACES_WITH_QUOTES : BRACES;
 }
+
+void n2e_InitFindTextFromSelection(HWND hwnd, HWND _hwndEdit, const BOOL bAllowEmptyString)
+{
+  const UINT uCPEdit = (UINT)SendMessage(_hwndEdit, SCI_GETCODEPAGE, 0, 0);
+
+  int cchSelection = (int)SendMessage(_hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
+    (int)SendMessage(_hwndEdit, SCI_GETSELECTIONSTART, 0, 0);
+
+  if ((bAllowEmptyString || (cchSelection > 0)) && (cchSelection <= 500))
+  {
+    cchSelection = (int)SendMessage(_hwndEdit, SCI_GETSELTEXT, 0, 0);
+    char* lpszSelection = GlobalAlloc(GPTR, cchSelection + 2);
+    SendMessage(_hwndEdit, SCI_GETSELTEXT, 0, (LPARAM)lpszSelection);
+
+    // Check lpszSelection and truncate bad chars
+    char* lpsz = StrChrA(lpszSelection, 13);
+    if (lpsz)
+      *lpsz = '\0';
+
+    lpsz = StrChrA(lpszSelection, 10);
+    if (lpsz)
+      *lpsz = '\0';
+
+    lpsz = StrChrA(lpszSelection, 9);
+    if (lpsz)
+      *lpsz = '\0';
+
+    SetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, lpszSelection);
+    GlobalFree(lpszSelection);
+  }
+}

@@ -4893,10 +4893,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         DPI_INIT();
 
-        int cchSelection;
-        char *lpszSelection;
-        char *lpsz;
-
         WCHAR tch[TEXT_BUFFER_LENGTH];
         HMENU hmenu;
 
@@ -4925,31 +4921,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         if (!bSwitchedFindReplace)
         {
-          cchSelection = (int)SendMessage(lpefr->hwnd, SCI_GETSELECTIONEND, 0, 0) -
-                         (int)SendMessage(lpefr->hwnd, SCI_GETSELECTIONSTART, 0, 0);
-
-          if (cchSelection <= 500)
-          {
-            cchSelection = (int)SendMessage(lpefr->hwnd, SCI_GETSELTEXT, 0, 0);
-            lpszSelection = GlobalAlloc(GPTR, cchSelection + 2);
-            SendMessage(lpefr->hwnd, SCI_GETSELTEXT, 0, (LPARAM)lpszSelection);
-
-            // Check lpszSelection and truncate bad chars
-            lpsz = StrChrA(lpszSelection, 13);
-            if (lpsz)
-              *lpsz = '\0';
-
-            lpsz = StrChrA(lpszSelection, 10);
-            if (lpsz)
-              *lpsz = '\0';
-
-            lpsz = StrChrA(lpszSelection, 9);
-            if (lpsz)
-              *lpsz = '\0';
-
-            SetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, lpszSelection);
-            GlobalFree(lpszSelection);
-          }
+          n2e_InitFindTextFromSelection(hwnd, lpefr->hwnd, TRUE);
         }
 
         SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
@@ -5084,6 +5056,15 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
       switch (LOWORD(wParam))
       {
+        // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+        case IDC_INITIALIZE_SEARCH_STRING:
+          {
+            lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+            n2e_InitFindTextFromSelection(hwnd, lpefr->hwnd, FALSE);
+           }
+          break;
+        // [/2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+
 
         case IDC_FINDTEXT:
         case IDC_REPLACETEXT: {
