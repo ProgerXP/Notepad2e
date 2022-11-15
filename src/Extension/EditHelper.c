@@ -860,8 +860,8 @@ void UpdateCheckboxesImpl(HWND hwnd, const UINT nCtrlID, const BOOL bInitialUpda
   }
   if (bRegexModeChanged || bIsRegexMode)
   {
-    UpdateCheckboxState(hwnd, IDC_FINDWORD, !bIsRegexMode, !bIsRegexMode);
-    UpdateCheckboxState(hwnd, IDC_FINDSTART, !bIsRegexMode, !bIsRegexMode);
+    UpdateCheckboxState(hwnd, IDC_FINDWORD, TRUE, !bIsRegexMode);
+    UpdateCheckboxState(hwnd, IDC_FINDSTART, TRUE, !bIsRegexMode);
     if (nCtrlID != IDC_FINDTRANSFORMBS)
     {
       UpdateCheckboxState(hwnd, IDC_FINDTRANSFORMBS, !bIsRegexMode, TRUE);

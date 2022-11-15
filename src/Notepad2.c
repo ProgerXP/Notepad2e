@@ -4996,7 +4996,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else
             lstrcpyA(efrData.szFindUTF8, mszSelection);
 
-          efrData.fuFlags &= (~(SCFIND_REGEXP | SCFIND_POSIX));
+          efrData.fuFlags &= (~(SCFIND_REGEXP | SCFIND_POSIX | SCFIND_WHOLEWORD | SCFIND_WORDSTART));
           efrData.bTransformBS = FALSE;
 
           switch (LOWORD(wParam))
