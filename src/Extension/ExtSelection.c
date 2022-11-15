@@ -298,7 +298,8 @@ int n2e_HighlightWord(LPCSTR word)
     {
       curr_indi = N2E_SELECT_INDICATOR_EDIT;
       iOriginalSelectionLength = wlen;
-      bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax, (iSelectionMode == SM_ALL) ? iMaxSearchDistance : 0, len, search_opt) > 1);
+      bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax,
+        ((iSelectionMode == SM_ALL) && !n2e_IsPageWiseSelectionEditMode()) ? iMaxSearchDistance : 0, len, search_opt) > 1);
       if (!n2e_IsSelectionEditModeOn())
       {
         iSelectionMode = SM_ALL;
@@ -745,8 +746,7 @@ void n2e_SelectionEditStart(const ESelectionMode mode)
 
     const int iEditSelectionCount = n2e_GetEditSelectionCount();
     WCHAR buf[MAX_PATH];
-    wsprintf(buf, L"Editing %d occurrence%s (%s)", iEditSelectionCount,
-              iEditSelectionCount > 1 ? L"s" : L"",
+    wsprintf(buf, L"Editing %d occurrence (%s)", iEditSelectionCount,
               (iSelectionMode == SM_LINE)
                     ? L"on line"
                     : n2e_IsPageWiseSelectionEditMode()
