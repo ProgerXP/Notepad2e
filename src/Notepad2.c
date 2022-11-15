@@ -5180,6 +5180,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Shift+Alt+P to toggle maximize mode #443
+    case CMD_TOGGLEMAXIMIZED:
+      ShowWindow(hwnd, (GetWindowLong(hwnd, GWL_STYLE) & WS_MAXIMIZE) ? SW_RESTORE : SW_MAXIMIZE);
+      break;
+    // [/2e]: Shift+Alt+P to toggle maximize mode #443
+
+
     case CMD_OPENINIFILE:
       if (lstrlen(szIniFile))
       {
