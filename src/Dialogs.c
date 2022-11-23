@@ -25,6 +25,7 @@
 #include <shlwapi.h>
 #include <commdlg.h>
 #include <string.h>
+#include "SciCall.h"
 #include "scintilla.h"
 #include "notepad2.h"
 #include "edit.h"
@@ -35,7 +36,10 @@
 #include "version.h"
 #include "_version.h"
 #include "Extension/Utils.h"
+#include "Extension/CommonUtils.h"
 #include "Extension/DPIHelper.h"
+#include "Extension/EditHelper.h"
+#include "Extension/EditHelperEx.h"
 #include "Extension/MainWndHelper.h"
 
 extern HWND  hwndMain;
@@ -2391,5 +2395,250 @@ INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, 
       return TRUE;
   }
   return FALSE;
+}
+
+// [2e]: New command: Show Outline #432
+typedef struct outlinedlg
+{
+  BOOL bForceGoOutline;
+  int  iLine;
+  int  cxDlg;
+  int  cyDlg;
+
+} OUTLINEDLG, *POUTLINEDLG;
+
+int GetFoldLevel(const int iLine)
+{
+  return SendMessage(hwndEdit, SCI_GETFOLDLEVEL, (WPARAM)iLine, (LPARAM)0) & SC_FOLDLEVELNUMBERMASK;
+}
+
+void Outline_AddToListView(HWND hwnd, int iLineFrom)
+{
+  LVITEM lvi;
+  WCHAR wchBuf[1000];
+
+  ZeroMemory(&lvi, sizeof(LVITEM));
+  lvi.mask = LVIF_PARAM | LVIF_TEXT;
+  lvi.pszText = wchBuf;
+
+  SendMessage(hwndEdit, SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
+  SendMessage(hwndEdit, SCI_SETAUTOMATICFOLD, SC_AUTOMATICFOLD_SHOW | SC_AUTOMATICFOLD_CHANGE, 0);
+  SendMessage(hwndEdit, SCI_FOLDLINE, (WPARAM)iLineFrom, (LPARAM)SC_FOLDACTION_EXPAND);
+  
+  BOOL bContinueSearch = FALSE;
+  int iFoldLevel = -1;
+  while (iLineFrom >= 0)
+  {
+    if (bContinueSearch)
+    {
+      const int iFoldLevelPrev = GetFoldLevel(iLineFrom - 1);
+      iLineFrom = iLineFrom - 1;
+      if (iFoldLevel != iFoldLevelPrev)
+      {
+        bContinueSearch = FALSE;
+        iFoldLevel = iFoldLevelPrev;
+      }
+    }
+    else
+    {
+      iLineFrom = SendMessage(hwndEdit, SCI_GETFOLDPARENT, iLineFrom, 0);
+      iFoldLevel = GetFoldLevel(iLineFrom);
+    }
+
+    if (iLineFrom >= 0)
+    {
+      const LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
+      bContinueSearch = (n2e_CountNonWhitespaces(text) < 10);
+      if (bContinueSearch)
+      {
+        n2e_Free(text);
+        iFoldLevel = GetFoldLevel(iLineFrom);
+        continue;
+      }
+      iFoldLevel = -1;
+
+      const LPWSTR wtext = n2e_MultiByteToWideString(text);
+
+      StrCpyN(wchBuf, _itow(n2e_GetVisibleLineNumber(iLineFrom), wchBuf, 10), COUNTOF(wchBuf));
+      StrCatN(wchBuf, L"  \t", COUNTOF(wchBuf));
+      StrCatN(wchBuf, wtext, COUNTOF(wchBuf));
+      n2e_Free(wtext);
+      n2e_Free(text);
+
+      lvi.iItem = 0;
+      lvi.lParam = (LPARAM)iLineFrom;
+      ListView_InsertItem(hwnd, &lvi);
+    }
+  }
+
+  const int iSelItem = ListView_GetItemCount(hwnd) - 1;
+  ListView_SetSelectionMark(hwnd, iSelItem);
+  ListView_SetItemState(hwnd, iSelItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+  ListView_EnsureVisible(hwnd, iSelItem, FALSE);
+}
+
+BOOL Outline_GetFromListView(HWND hwnd, int *piLine)
+{
+  LVITEM lvi;
+
+  lvi.iItem = ListView_GetNextItem(hwnd, -1, LVNI_ALL | LVNI_SELECTED);
+  lvi.iSubItem = 0;
+  lvi.mask = LVIF_PARAM;
+  if (ListView_GetItem(hwnd, &lvi))
+  {
+    *piLine = (int)lvi.lParam;
+    return (TRUE);
+  }
+  return (FALSE);
+}
+
+INT_PTR CALLBACK ShowOutlineDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
+{
+  static POUTLINEDLG pod;
+  static HWND hwndLV;
+
+  switch (umsg)
+  {
+    DPI_CHANGED_HANDLER();
+
+    case WM_INITDIALOG: {
+        LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
+
+        pod = (POUTLINEDLG)lParam;
+
+        ResizeDlg_Init(hwnd, pod->cxDlg, pod->cyDlg, IDC_RESIZEGRIP4);
+
+        hwndLV = GetDlgItem(hwnd, IDC_OUTLINELIST);
+
+        ListView_SetExtendedListViewStyle(hwndLV, LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_LABELTIP);
+        ListView_InsertColumn(hwndLV, 0, &lvc);
+
+        Outline_AddToListView(hwndLV, pod->iLine);
+
+        ListView_SetColumnWidth(hwndLV, 0, LVSCW_AUTOSIZE_USEHEADER);
+
+        DPI_INIT();
+        CenterDlgInParent(hwnd);
+
+        if (pod->bForceGoOutline)
+        {
+          PostMessage(hwnd, WM_COMMAND, MAKELONG(IDOK, 1), 0);
+        }
+      }
+      return TRUE;
+
+
+    case WM_DESTROY:
+      ResizeDlg_Destroy(hwnd, &pod->cxDlg, &pod->cyDlg);
+      return FALSE;
+
+    case WM_SIZE: {
+        int dx;
+        int dy;
+        HDWP hdwp;
+
+        ResizeDlg_Size(hwnd, lParam, &dx, &dy);
+
+        hdwp = BeginDeferWindowPos(4);
+        hdwp = DeferCtlPos(hdwp, hwnd, IDC_RESIZEGRIP4, dx, dy, SWP_NOSIZE);
+        hdwp = DeferCtlPos(hdwp, hwnd, IDOK, dx, dy, SWP_NOSIZE);
+        hdwp = DeferCtlPos(hdwp, hwnd, IDCANCEL, dx, dy, SWP_NOSIZE);
+        hdwp = DeferCtlPos(hdwp, hwnd, IDC_OUTLINELIST, dx, dy, SWP_NOMOVE);
+        EndDeferWindowPos(hdwp);
+        ListView_SetColumnWidth(GetDlgItem(hwnd, IDC_OUTLINELIST), 0, LVSCW_AUTOSIZE_USEHEADER);
+        DPI_RESIZE();
+      }
+      return TRUE;
+
+
+    case WM_GETMINMAXINFO:
+      ResizeDlg_GetMinMaxInfo(hwnd, lParam);
+      DPI_GETMINMAXINFO();
+      return TRUE;
+
+
+    case WM_NOTIFY: {
+        if (((LPNMHDR)(lParam))->idFrom == IDC_OUTLINELIST)
+        {
+
+          switch (((LPNMHDR)(lParam))->code)
+          {
+
+            case NM_DBLCLK:
+              SendMessage(hwnd, WM_COMMAND, MAKELONG(IDOK, 1), 0);
+              break;
+
+            case LVN_ITEMCHANGED:
+            case LVN_DELETEITEM: {
+                int i = ListView_GetNextItem(hwndLV, -1, LVNI_ALL | LVNI_SELECTED);
+                EnableWindow(GetDlgItem(hwnd, IDOK), i != -1);
+              }
+              break;
+          }
+        }
+      }
+      return TRUE;
+
+
+    case WM_COMMAND:
+
+      switch (LOWORD(wParam))
+      {
+
+        case IDOK:
+          if (Outline_GetFromListView(hwndLV, &pod->iLine))
+            EndDialog(hwnd, IDOK);
+          else
+            PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_OUTLINELIST)), 1);
+          break;
+
+
+        case IDCANCEL:
+          EndDialog(hwnd, IDCANCEL);
+          break;
+
+      }
+
+      return TRUE;
+
+  }
+
+  return FALSE;
+
+}
+
+extern int cxOutlineDlg;
+extern int cyOutlineDlg;
+
+BOOL ShowOutlineDlg(HWND hwnd, int* piLine, const BOOL bForceGoOutline)
+{
+  RECT rcMain;
+  GetWindowRect(hwnd, &rcMain);
+
+  INT_PTR iResult;
+  OUTLINEDLG od;
+
+  od.bForceGoOutline = bForceGoOutline;
+  od.iLine = *piLine;
+  od.cxDlg = max(cyOutlineDlg, max(rcMain.right - rcMain.left - 64, 300));
+  od.cyDlg = cyOutlineDlg;
+
+  iResult = ThemedDialogBoxParam(
+    g_hInstance,
+    MAKEINTRESOURCE(IDD_OUTLINE),
+    hwnd,
+    ShowOutlineDlgProc,
+    (LPARAM)&od);
+
+  cxOutlineDlg = od.cxDlg;
+  cyOutlineDlg = od.cyDlg;
+
+  if (iResult == IDOK)
+  {
+    *piLine = od.iLine;
+    return (TRUE);
+  }
+  else
+    return (FALSE);
 }
 // [/2e]

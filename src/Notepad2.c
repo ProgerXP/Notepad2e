@@ -233,6 +233,8 @@ int     cxFavoritesDlg;
 int     cyFavoritesDlg;
 int     xFindReplaceDlg;
 int     yFindReplaceDlg;
+int     cxOutlineDlg;
+int     cyOutlineDlg;
 
 LPWSTR      lpFileList[32];
 int         cFileList = 0;
@@ -4421,6 +4423,22 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
     // [/2e]
 
+    // [2e]: New command: Show Outline #432
+    case IDM_VIEW_SHOWOUTLINE:
+    case IDM_VIEW_GOABOVE:
+      {
+        int iLine = SciCall_LineFromPosition(SciCall_GetCurrentPos());
+        if (ShowOutlineDlg(hwnd, &iLine, IDM_VIEW_GOABOVE == wCommandID))
+        {
+          const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
+          const auto pos = SciCall_PositionFromLine(iLine) + indentation;
+          SciCall_SetSel(pos, pos);
+          break;
+        }
+      }
+      break;
+    // [/2e]
+
 
     case IDM_VIEW_CHANGENOTIFY:
       if (ChangeNotifyDlg(hwnd))
@@ -6112,6 +6130,14 @@ void LoadSettings()
 
   xFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosX", 0);
   yFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosY", 0);
+
+  // [2e]: New command: Show Outline #432
+  cxOutlineDlg = IniSectionGetInt(pIniSection, L"OutlineDlgSizeX", 300);
+  cxOutlineDlg = max(cxOutlineDlg, 0);
+  cyOutlineDlg = IniSectionGetInt(pIniSection, L"OutlineDlgSizeY", 262);
+  cyOutlineDlg = max(cyOutlineDlg, 0);
+  // [/2e]
+
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
   bStickyWinPos = IniSectionGetInt(pIniSection, L"StickyWindowPosition", 0);
   if (bStickyWinPos) bStickyWinPos = 1;
