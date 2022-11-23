@@ -2105,7 +2105,6 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_CLEARCLIPBOARD, CountClipboardFormats());
   CloseClipboard();
 
-  EnableCmd(hmenu, IDM_EDIT_COLUMNWRAP, i);
   EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i || bExtendedSplitLines);
   EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
   EnableCmd(hmenu, IDM_EDIT_SENTENCECASE, i);
@@ -3340,7 +3339,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           iWrapCol = max(min(iWrapCol, 512), 1);
           BeginWaitCursor();
-          EditWrapToColumn(hwndEdit, iWrapCol);
+          // [2e]: Column Wrap to use improved Split Lines #419
+          if (bExtendedSplitLines)
+            n2e_SplitLines(hwndEdit, iWrapCol, TRUE);
+          else
+            EditWrapToColumn(hwndEdit, iWrapCol);
           EndWaitCursor();
         }
       }
@@ -3352,7 +3355,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [2e]: Change Ctrl+I to perform comment-aware line wrapping #320
       if (bExtendedSplitLines)
       {
-        n2e_SplitLines(hwndEdit);
+        n2e_SplitLines(hwndEdit, iLongLinesLimit, FALSE);
       }
       else
       {

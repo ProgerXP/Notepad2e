@@ -139,10 +139,10 @@ LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encodin
   return ss.result;
 }
 
-void EncodeStrWithCALW(const HWND hwnd)
+void EncodeStrWithCALW(const HWND hwnd, const int iLineSizeLimit)
 {
   StringSource_InitFromHWND(&ss, hwnd);
-  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLongLinesLimit, pLexCurrent->iLexer, MAKEWPARAM(iEOLMode, StringSource_GetSelectionStart(&ss) == StringSource_GetSelectionEnd(&ss)));
+  RecodingAlgorithm_Init(&ra, ERT_CALW, TRUE, iLineSizeLimit, pLexCurrent->iLexer, MAKEWPARAM(iEOLMode, StringSource_GetSelectionStart(&ss) == StringSource_GetSelectionEnd(&ss)));
   Recode_Run(&ra, &ss, -1);
   RecodingAlgorithm_Release(&ra);
 }

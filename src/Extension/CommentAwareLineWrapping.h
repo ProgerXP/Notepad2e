@@ -16,7 +16,7 @@ extern "C" { // C-Declarations
 
   LPCSTR EncodeStringWithCALW(LPCSTR text, const int textLength, const int encoding,
     const int additionalData1, const int additionalData2, const int additionalData3, const int bufferSize, int* pResultSize);
-  void EncodeStrWithCALW(const HWND hwnd);
+  void EncodeStrWithCALW(const HWND hwnd, const int iLineSizeLimit);
 
   struct TPrefixData
   {

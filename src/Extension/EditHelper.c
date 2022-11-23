@@ -41,13 +41,23 @@ extern BOOL bAlwaysOnTop;
 extern int flagAlwaysOnTop;
 extern PEDITLEXER pLexCurrent;
 
-void n2e_SplitLines(const HWND hwnd)
+void n2e_SplitLines(const HWND hwnd, const int iLineSizeLimit, const BOOL bColumnWrap)
 {
   if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
     return;
   }
-  EncodeStrWithCALW(hwnd);
+
+  const BOOL bAdjustSelection = bColumnWrap && (SciCall_GetSelStart() == SciCall_GetSelEnd());
+  if (bAdjustSelection)
+  {
+    SciCall_SetSel(0, SciCall_GetLength());
+  }
+  EncodeStrWithCALW(hwnd, iLineSizeLimit);
+  if (bAdjustSelection)
+  {
+    SciCall_SetSel(0, SciCall_GetLength());
+  }
 }
 
 BOOL n2e_JoinLines_InitSelection()

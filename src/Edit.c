@@ -4002,9 +4002,13 @@ void EditWrapToColumn(HWND hwnd, int nColumn)
   iCurPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
   iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
 
+  // [2e]: Column Wrap to use improved Split Lines #419
   if (iCurPos == iAnchorPos)
-    return;
-
+  {
+    iSelStart = 0;
+    iSelEnd = SciCall_GetLength();
+  }
+  // [/2e]
   else
   {
     iSelStart = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
