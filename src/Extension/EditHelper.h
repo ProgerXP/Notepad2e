@@ -84,4 +84,4 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
 
 LPCSTR n2e_GetBracesList();
 void n2e_UpdateAlwaysOnTopButton();
-void n2e_InitFindTextFromSelection(HWND hwnd, HWND _hwndEdit, const BOOL bAllowEmptyString);
+BOOL n2e_InitTextFromSelection(HWND hwnd, const UINT uiControlID, HWND _hwndEdit, const BOOL bAllowEmptyString);

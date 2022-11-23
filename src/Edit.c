@@ -4921,7 +4921,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         if (!bSwitchedFindReplace)
         {
-          n2e_InitFindTextFromSelection(hwnd, lpefr->hwnd, TRUE);
+          n2e_InitTextFromSelection(hwnd, IDC_FINDTEXT, lpefr->hwnd, TRUE);
         }
 
         SendDlgItemMessage(hwnd, IDC_FINDTEXT, CB_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
@@ -5060,10 +5060,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         case IDC_INITIALIZE_SEARCH_STRING:
           {
             lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-            n2e_InitFindTextFromSelection(hwnd, lpefr->hwnd, FALSE);
+            n2e_InitTextFromSelection(hwnd, IDC_FINDTEXT, lpefr->hwnd, FALSE);
            }
           break;
-        // [/2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+        // [/2e]
 
 
         case IDC_FINDTEXT:
@@ -5355,6 +5355,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           break;
 
         case IDACC_GOTO:
+          // [2e]: Find/Replace - add Go to Go To #259
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_FINDTEXT, lpefr->szFindUTF8, COUNTOF(lpefr->szFindUTF8));
+          // [/2e]
           PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_GOTOLINE, 1), 0);
           break;
 
@@ -6128,9 +6132,7 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         if (!lpgoto || lpgoto->bForceDefaultInit || !strlen(lpgoto->lpefr->szFindUTF8))
         {
           lpgoto->bForceDefaultInit = FALSE;
-          // [2e]: View > St&arting Line Number... #342
-          int iCurLine = n2e_GetVisibleLineNumber((int)SendMessage(hwndEdit, SCI_LINEFROMPOSITION, SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0), 0));
-          SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, TRUE);
+          SendMessage(hwnd, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
         }
         else
         {
@@ -6160,6 +6162,20 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
       switch (LOWORD(wParam))
       {
+        // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+        case IDC_INITIALIZE_SEARCH_STRING:
+          {
+            lpgoto = (LPGOTOPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
+            // [2e]: View > St&arting Line Number... #342
+            if (!n2e_InitTextFromSelection(hwnd, IDC_LINENUM, lpgoto->lpefr->hwnd, FALSE))
+            {
+              int iCurLine = n2e_GetVisibleLineNumber(SciCall_LineFromPosition(SciCall_GetCurrentPos()));
+              SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, TRUE);
+            }
+          }
+          break;
+        // [/2e]
+
 
         // [2e]: Find/Replace - add Go to Go To #259
         case IDACC_FIND:

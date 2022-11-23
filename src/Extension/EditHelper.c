@@ -1422,7 +1422,7 @@ LPCSTR n2e_GetBracesList()
   return bTreatQuotesAsBraces ? BRACES_WITH_QUOTES : BRACES;
 }
 
-void n2e_InitFindTextFromSelection(HWND hwnd, HWND _hwndEdit, const BOOL bAllowEmptyString)
+BOOL n2e_InitTextFromSelection(HWND hwnd, const UINT uiControlID, HWND _hwndEdit, const BOOL bAllowEmptyString)
 {
   const UINT uCPEdit = (UINT)SendMessage(_hwndEdit, SCI_GETCODEPAGE, 0, 0);
 
@@ -1448,7 +1448,10 @@ void n2e_InitFindTextFromSelection(HWND hwnd, HWND _hwndEdit, const BOOL bAllowE
     if (lpsz)
       *lpsz = '\0';
 
-    SetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, lpszSelection);
+    SetDlgItemTextA2W(uCPEdit, hwnd, uiControlID, lpszSelection);
     GlobalFree(lpszSelection);
+
+    return TRUE;
   }
+  return FALSE;
 }
