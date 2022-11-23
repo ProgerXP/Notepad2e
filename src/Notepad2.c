@@ -3044,57 +3044,62 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTWORD: {
-        int iWordStart = SciCall_GetSelStart();
-        int iWordEnd = SciCall_GetSelEnd();
+        const int iSelLength = SciCall_GetSelEnd() - SciCall_GetSelStart();
+        const BOOL bUseCompleteLogic = (iSelLength == 0) || (lParam != 0);
+        const int iPos = SciCall_GetCurrentPos();
+        int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
+        int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
         // [2e]: Always select closest word #205
-        if (iWordEnd - iWordStart <= 0)
+        const int iLine = SciCall_LineFromPosition(iPos);
+        if (iWordStart == iWordEnd)
         {
-          const int iPos = SciCall_GetCurrentPos();
-          const int iLine = SciCall_LineFromPosition(iPos);
-          iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
-          iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
-          if (iWordStart == iWordEnd)
+          // search forward
+          const int iLineEndPos = SciCall_LineEndPosition(iLine);
+          int i = iPos;
+          while ((i < iLineEndPos) && (iWordStart == iWordEnd))
           {
-            // search forward
-            const int iLineEndPos = SciCall_LineEndPosition(iLine);
-            int i = iPos;
+            iWordStart = SciCall_GetWordStartPos(i, TRUE);
+            iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+            i = SciCall_PositionAfter(iWordEnd);
+          }
+        }
+        if (iWordStart == iWordEnd)
+        {
+          // search backward
+          const int iLineStartPos = SciCall_PositionFromLine(iLine);
+          int i = iPos;
+          while ((i > iLineStartPos) && (iWordStart == iWordEnd))
+          {
+            iWordEnd = SciCall_GetWordEndPos(i, TRUE);
+            iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
+            i = SciCall_PositionBefore(iWordStart);
+          }
+        }
+        if (bUseCompleteLogic && (iWordStart == iWordEnd))
+        {
+          // search forward, ignore EOLs
+          const int iLastLine = SciCall_GetLineCount();
+          for (int j = iLine + 1; j < iLastLine; ++j)
+          {
+            int i = SciCall_PositionFromLine(j);
+            int iLineEndPos = SciCall_LineEndPosition(j);
             while ((i < iLineEndPos) && (iWordStart == iWordEnd))
             {
               iWordStart = SciCall_GetWordStartPos(i, TRUE);
               iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
               i = SciCall_PositionAfter(iWordEnd);
             }
+            if (iWordStart != iWordEnd)
+              break;
           }
-          if (iWordStart == iWordEnd)
-          {
-            // search backward
-            const int iLineStartPos = SciCall_PositionFromLine(iLine);
-            int i = iPos;
-            while ((i > iLineStartPos) && (iWordStart == iWordEnd))
-            {
-              iWordEnd = SciCall_GetWordEndPos(i, TRUE);
-              iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
-              i = SciCall_PositionBefore(iWordStart);
-            }
-          }
-          if (iWordStart == iWordEnd)
-          {
-            // search forward, ignore EOLs
-            const int iLastLine = SciCall_GetLineCount();
-            for (int j = iLine + 1; j < iLastLine; ++j)
-            {
-              int i = SciCall_PositionFromLine(j);
-              int iLineEndPos = SciCall_LineEndPosition(j);
-              while ((i < iLineEndPos) && (iWordStart == iWordEnd))
-              {
-                iWordStart = SciCall_GetWordStartPos(i, TRUE);
-                iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
-                i = SciCall_PositionAfter(iWordEnd);
-              }
-              if (iWordStart != iWordEnd)
-                break;
-            }
-          }
+        }
+        if (!bUseCompleteLogic
+          && (iSelLength > 0)
+          && (((iWordStart < iPos) && (iWordEnd < iPos))
+            || (iWordStart > iPos) && (iWordEnd > iPos)))
+        {
+          // skip selection change
+          lParam = SCI_NULL;
         }
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
         switch (lParam)
@@ -3112,6 +3117,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           n2e_Free(wtext);
           n2e_Free(text);
           }
+          break;
+        case SCI_NULL:
           break;
         default:
           SciCall_SetSel(iWordStart, iWordEnd);
