@@ -746,7 +746,7 @@ void n2e_SelectionEditStart(const ESelectionMode mode)
 
     const int iEditSelectionCount = n2e_GetEditSelectionCount();
     WCHAR buf[MAX_PATH];
-    wsprintf(buf, L"Editing %d occurrence (%s)", iEditSelectionCount,
+    wsprintf(buf, L"Editing %d occurrences (%s)", iEditSelectionCount,
               (iSelectionMode == SM_LINE)
                     ? L"on line"
                     : n2e_IsPageWiseSelectionEditMode()
