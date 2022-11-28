@@ -30,3 +30,13 @@ BOOL n2e_IsModalDialogOnTop();
 void n2e_OnActivateMainWindow(const WPARAM wParam, const LPARAM lParam);
 void n2e_SetUACIcon(const HMENU hMenu, const UINT nItem);
 HWND n2e_GetTopLevelWindow(const HWND hwnd);
+BOOL n2e_IsMainWindowActive();
+
+typedef enum
+{
+  Find,
+  Replace,
+  GoTo
+} ETool;
+
+void n2e_RunTool(const ETool tool);

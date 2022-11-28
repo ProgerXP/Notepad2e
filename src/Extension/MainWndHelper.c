@@ -227,6 +227,11 @@ HWND n2e_GetTopLevelWindow(const HWND hwnd)
   return GetAncestor(hwnd, GA_ROOT);
 }
 
+BOOL n2e_IsMainWindowActive()
+{
+  return n2e_GetTopLevelWindow(GetForegroundWindow()) == hwndMain;
+}
+
 BOOL n2e_IsTopLevelWindow(const HWND hwnd)
 {
   return hwnd == n2e_GetTopLevelWindow(hwnd);
@@ -306,4 +311,86 @@ void n2e_SetUACIcon(const HMENU hMenu, const UINT nItem)
     }
   }
   bInitialized = TRUE;
+}
+
+void n2e_RunTool(const ETool tool)
+{
+  extern EDITFINDREPLACE efrData;
+  extern HWND hDlgGotoLine;
+  extern HWND hDlgFindReplace;
+  extern BOOL bSwitchedFindReplace;
+
+  HWND* hwndTools[2] = { &hDlgGotoLine, &hDlgFindReplace };
+
+  BOOL isToolRunning = FALSE;
+  HWND* phwndTool = NULL;
+  UINT uiSwitchToId = 0;
+  switch (tool)
+  {
+  case Find:
+    phwndTool = &hDlgFindReplace;
+    isToolRunning = IsWindow(*phwndTool) && !GetDlgItem(*phwndTool, IDC_REPLACE);
+    uiSwitchToId = IDMSG_SWITCHTOFIND;
+    break;
+  case Replace:
+    phwndTool = &hDlgFindReplace;
+    isToolRunning = IsWindow(*phwndTool) && GetDlgItem(*phwndTool, IDC_REPLACE);
+    uiSwitchToId = IDMSG_SWITCHTOREPLACE;
+    break;
+  case GoTo:
+    phwndTool = &hDlgGotoLine;
+    isToolRunning = IsWindow(*phwndTool);
+    uiSwitchToId = IDMSG_SWITCHTOGOTO;
+    break;
+  }
+
+  const BOOL isMainWindowActive = n2e_IsMainWindowActive();
+  if (isToolRunning)
+  {
+    const HWND hwndTool = *phwndTool;
+    SetForegroundWindow(hwndTool);
+    if (isMainWindowActive)
+      SendMessage(hwndTool, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
+
+    UINT idControl = 0;
+    switch (tool)
+    {
+    case Find:
+    case Replace:
+      idControl = IDC_FINDTEXT;
+      break;
+    case GoTo:
+      idControl = IDC_LINENUM;
+      break;
+    }
+    if (idControl)
+      PostMessage(hwndTool, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwndTool, IDC_FINDTEXT)), 1);
+
+    return;
+  }
+
+  for (int i = 0; i < COUNTOF(hwndTools); ++i)
+  {
+    HWND* lpHwndTool = hwndTools[i];
+    if (lpHwndTool && IsWindow(*lpHwndTool))
+    {
+      SendMessage(*lpHwndTool, WM_COMMAND, MAKELONG(uiSwitchToId, 1), 0);
+      DestroyWindow(*lpHwndTool);
+      break;
+    }
+  }
+
+  bSwitchedFindReplace = !isMainWindowActive;
+  switch (tool)
+  {
+  case Find:
+    *phwndTool = EditFindReplaceDlg(hwndEdit, &efrData, FALSE);
+    break;
+  case Replace:
+    *phwndTool = EditFindReplaceDlg(hwndEdit, &efrData, TRUE);
+    break;
+  case GoTo:
+    *phwndTool = EditLinenumDlg(hwndEdit, &efrData);
+    break;
+  }
 }

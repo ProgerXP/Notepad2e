@@ -58,7 +58,7 @@ extern UINT cpLastFind;
 extern BOOL bReplaceInitialized;
 
 static EDITFINDREPLACE efrSave;
-static BOOL bSwitchedFindReplace = FALSE;
+BOOL bSwitchedFindReplace = FALSE;
 extern int xFindReplaceDlg = 0;
 extern int yFindReplaceDlg = 0;
 
@@ -6122,7 +6122,7 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
 //
 INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
-  LPCGOTOPARAMS lpgoto = NULL;
+  LPCEDITFINDREPLACE lpefr = NULL;
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
@@ -6131,16 +6131,15 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         
         // [2e]: Find/Replace - add Go to Go To #259
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
-        lpgoto = (LPGOTOPARAMS)lParam;
+        lpefr = (LPCEDITFINDREPLACE)lParam;
 
-        if (!lpgoto || lpgoto->bForceDefaultInit || !strlen(lpgoto->lpefr->szFindUTF8))
+        if (!lpefr || !strlen(lpefr->szFindUTF8) || !bSwitchedFindReplace)
         {
-          lpgoto->bForceDefaultInit = FALSE;
           SendMessage(hwnd, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
         }
         else
         {
-          SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpgoto->lpefr->szFindUTF8);
+          SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8);
         }
         // [/2e]
         SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0);
@@ -6153,11 +6152,6 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
           CenterDlgInParent(hwnd);
         else
           SetDlgPos(hwnd, xFindReplaceDlg, yFindReplaceDlg);
-
-        if (bSwitchedFindReplace)
-        {
-          bSwitchedFindReplace = FALSE;
-        }
       }
       return TRUE;
 
@@ -6169,9 +6163,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
         case IDC_INITIALIZE_SEARCH_STRING:
           {
-            lpgoto = (LPGOTOPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
+            lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
             // [2e]: View > St&arting Line Number... #342
-            if (!n2e_InitTextFromSelection(hwnd, IDC_LINENUM, lpgoto->lpefr->hwnd, FALSE))
+            if (!n2e_InitTextFromSelection(hwnd, IDC_LINENUM, lpefr->hwnd, FALSE))
             {
               int iCurLine = n2e_GetVisibleLineNumber(SciCall_LineFromPosition(SciCall_GetCurrentPos()));
               SetDlgItemInt(hwnd, IDC_LINENUM, iCurLine, TRUE);
@@ -6184,8 +6178,8 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
         // [2e]: Find/Replace - add Go to Go To #259
         case IDACC_FIND:
         case IDACC_REPLACE:
-          lpgoto = (LPGOTOPARAMS)GetWindowLongPtr(hwnd, DWLP_USER);
-          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpgoto->lpefr->szFindUTF8, COUNTOF(lpgoto->lpefr->szFindUTF8));
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          GetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8, COUNTOF(lpefr->szFindUTF8));
           PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG((LOWORD(wParam) == IDACC_FIND) ? IDM_EDIT_FIND : IDM_EDIT_REPLACE, 1), 0);
           break;
         // [/2e]
@@ -6314,15 +6308,15 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 //
 //  EditLinenumDlg()
 //
-HWND EditLinenumDlg(HWND hwnd, LPCGOTOPARAMS lpgoto)
+HWND EditLinenumDlg(HWND hwnd, LPCEDITFINDREPLACE lpefr)
 {
 
   HWND hDlg;
   
-  lpgoto->lpefr->hwnd = hwnd;
+  lpefr->hwnd = hwnd;
 
   hDlg = CreateThemedDialogParam(g_hInstance, MAKEINTRESOURCEW(IDD_LINENUM), 
-                                 GetParent(hwnd),  EditLinenumDlgProc, (LPARAM)lpgoto);
+                                 GetParent(hwnd),  EditLinenumDlgProc, (LPARAM)lpefr);
 
   ShowWindow(hDlg, SW_SHOW);
 

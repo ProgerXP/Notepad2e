@@ -280,9 +280,6 @@ EDITFINDREPLACE efrData = { "", "", "", "", 0, 0, 0, 0, 0, 0, SIC_ALWAYS, NULL }
 UINT cpLastFind = 0;
 BOOL bReplaceInitialized = FALSE;
 
-// [2e]: Find/Replace - add Go to Go To #259
-GOTOPARAMS gotoData = { TRUE, &efrData };
-
 extern NP2ENCODING mEncoding[];
 
 int iLineEndings[3] = {
@@ -3793,35 +3790,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_FIND:
-      if (IsWindow(hDlgGotoLine))
-      {
-        SendMessage(hDlgGotoLine, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOFIND, 1), 0);
-        DestroyWindow(hDlgGotoLine);
-      }
-      if (!IsWindow(hDlgFindReplace))
-      {
-        hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, FALSE);
-      }
-      else
-      {
-        if (GetDlgItem(hDlgFindReplace, IDC_REPLACE))
-        {
-          const BOOL bMainWindowActive = n2e_GetTopLevelWindow(GetForegroundWindow()) == hwndMain;
-          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOFIND, 1), 0);
-          DestroyWindow(hDlgFindReplace);
-          hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, FALSE);
-          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
-          if (bMainWindowActive)
-            SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
-        }
-        else
-        {
-          SetForegroundWindow(hDlgFindReplace);
-          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
-          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
-          PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
-        }
-      }
+      // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+      n2e_RunTool(Find);
       break;
 
 
@@ -3910,58 +3880,14 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_REPLACE:
-      if (IsWindow(hDlgGotoLine))
-      {
-        SendMessage(hDlgGotoLine, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOREPLACE, 1), 0);
-        DestroyWindow(hDlgGotoLine);
-      }
-      if (!IsWindow(hDlgFindReplace))
-      {
-        hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, TRUE);
-      }
-      else
-      {
-        if (!GetDlgItem(hDlgFindReplace, IDC_REPLACE))
-        {
-          const BOOL bMainWindowActive = n2e_GetTopLevelWindow(GetForegroundWindow()) == hwndMain;
-          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOREPLACE, 1), 0);
-          DestroyWindow(hDlgFindReplace);
-          hDlgFindReplace = EditFindReplaceDlg(hwndEdit, &efrData, TRUE);
-          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
-          if (bMainWindowActive)
-            SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
-        }
-        else
-        {
-          SetForegroundWindow(hDlgFindReplace);
-          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
-          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
-          PostMessage(hDlgFindReplace, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgFindReplace, IDC_FINDTEXT)), 1);
-        }
-      }
+      // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+      n2e_RunTool(Replace);
       break;
 
 
     case IDM_EDIT_GOTOLINE:
-      {
-        gotoData.bForceDefaultInit = !IsWindow(hDlgFindReplace);
-        if (IsWindow(hDlgFindReplace))
-        {
-          SendMessage(hDlgFindReplace, WM_COMMAND, MAKELONG(IDMSG_SWITCHTOGOTO, 1), 0);
-          DestroyWindow(hDlgFindReplace);
-        }
-        if (!IsWindow(hDlgGotoLine))
-        {
-          hDlgGotoLine = EditLinenumDlg(hwndEdit, &gotoData);
-        }
-        else
-        {
-          SetForegroundWindow(hDlgGotoLine);
-          // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
-          SendMessage(hDlgGotoLine, WM_COMMAND, MAKELONG(IDC_INITIALIZE_SEARCH_STRING, 1), 0);
-          PostMessage(hDlgGotoLine, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hDlgGotoLine, IDC_LINENUM)), 1);
-        }
-      }
+      // [2e]: Set value of Search String when Find/Replace is opened and Ctrl+F/H is used #445
+      n2e_RunTool(GoTo);
       break;
 
 
