@@ -3045,7 +3045,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_SELECTWORD: {
         const int iSelLength = SciCall_GetSelEnd() - SciCall_GetSelStart();
-        const BOOL bUseCompleteLogic = (iSelLength == 0) || (lParam != 0);
+        const BOOL bUseCompleteLogic =
+          (iSelLength == 0) || (lParam != 0) || (SciCall_GetCurrentPos() < SciCall_GetAnchor());
         const int iPos = SciCall_GetCurrentPos();
         int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
         int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
