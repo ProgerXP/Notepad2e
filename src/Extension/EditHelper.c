@@ -154,15 +154,13 @@ BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
 
 extern BOOL bAutoIndent;
 
-LPSTR GetLinePrefix(const HWND hwnd, const int iLine, LPBOOL pbLineEmpty)
+LPSTR GetLinePrefix(const int iLine, LPBOOL pbLineEmpty)
 {
   *pbLineEmpty = TRUE;
-  LPSTR pszPrefix = NULL;
 
-  const int iCurPos = SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-  const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iLine, 0);
-  const int iLinePrefixLength = iCurPos - iLineStart;
-  pszPrefix = n2e_GetTextRange(iLineStart, iCurPos);
+  LPSTR pszPrefix = n2e_GetTextRange(
+    SciCall_PositionFromLine(iLine),
+    SciCall_LineEndPosition(iLine));
 
   for (size_t i = 0; i < strlen(pszPrefix); ++i)
   {
@@ -196,6 +194,26 @@ void InsertNewLineWithPrefix(const HWND hwnd, LPCSTR pszPrefix, const BOOL bInse
   }
 }
 
+LPSTR FindPrefixForNonEmptyLine(const BOOL bSearchForward, int iScanLimit)
+{
+  BOOL bIsEmptyLine = FALSE;
+  const int iLineCount = SciCall_GetLineCount();
+  int iLine = SciCall_LineFromPosition(SciCall_GetCurrentPos());
+  iLine += bSearchForward ? 1 : -1;
+  while ((iScanLimit >= 1)
+    && ((bSearchForward && (iLine < iLineCount)) || (!bSearchForward && (iLine >= 0))))
+  {
+    const int iNonSpaceCharPos = n2e_GetNonSpaceCharPos(iLine, TRUE);
+    if (iNonSpaceCharPos > 0)
+    {
+      return GetLinePrefix(iLine, &bIsEmptyLine);
+    }
+    iLine += bSearchForward ? 1 : -1;
+    --iScanLimit;
+  }
+  return NULL;
+}
+
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
 {
   n2e_SelectionEditStop(hwnd, SES_APPLY);
@@ -205,7 +223,9 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
   const int iCurLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iCurLine, 0);
   SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
   const int iPrevLine = (iCurLine > 0) ? iCurLine - 1 : 0;
+  const int iScanLinesLimit = 5;
   LPSTR pszPrefixText = NULL;
+  LPSTR pszForeignPrefixText = NULL;
   BOOL bIsEmptyPrefix = FALSE;
 
   if (insertAbove)
@@ -213,28 +233,22 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
     const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
     if (bAutoIndent)
     {
-      const int iLineStart = SendMessage(hwnd, SCI_POSITIONFROMLINE, iCurLine, 0);
-      const int iLinePrefixLength = iCurPos - iLineStart;
-      bIsEmptyPrefix = (iLinePrefixLength == 0);
-      if (!bIsEmptyPrefix)
-      {
-        pszPrefixText = GetLinePrefix(hwnd, iCurLine, &bIsEmptyPrefix);
-      }
-      if (bIsEmptyPrefix)
-      {
-        SendMessage(hwnd, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
-        SendMessage(hwnd, SCI_NEWLINE, 0, 0);
-        if (iPrevLine == iCurLine)
-        {
-          const int iNewPrevLineEndPos = SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
-          SendMessage(hwnd, SCI_SETSEL, iNewPrevLineEndPos, iNewPrevLineEndPos);
-        }
-      }
-      else
-      {
-        SendMessage(hwnd, SCI_SETSEL, iPrevLineEndPos, iPrevLineEndPos);
-        InsertNewLineWithPrefix(hwnd, pszPrefixText, (iPrevLine == iCurLine));
-      }
+      pszPrefixText = (n2e_GetNonSpaceCharPos(iCurLine, TRUE) > 0)
+        ? GetLinePrefix(iCurLine, &bIsEmptyPrefix)
+        : NULL;
+      pszForeignPrefixText = FindPrefixForNonEmptyLine(FALSE, iScanLinesLimit);
+      
+      LPSTR pszUsedPrefixText =
+        (pszPrefixText && pszForeignPrefixText)
+          ? (strlen(pszPrefixText) > strlen(pszForeignPrefixText))
+            ? pszPrefixText
+            : pszForeignPrefixText
+          : pszPrefixText
+            ? pszPrefixText
+            : pszForeignPrefixText;
+
+      SciCall_SetSel(iPrevLineEndPos, iPrevLineEndPos);
+      InsertNewLineWithPrefix(hwnd, pszUsedPrefixText, (iPrevLine == iCurLine));
     }
     else
     {
@@ -244,12 +258,24 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
   }
   else
   {
-    const BOOL isLineEnd = (iCurPos == iCurLineEndPos);
-    if (isLineEnd && bAutoIndent)
+    if (bAutoIndent)
     {
-      SendMessage(hwnd, SCI_SETSEL, iCurLineEndPos, iCurLineEndPos);
-      pszPrefixText = GetLinePrefix(hwnd, iCurLine - 1, &bIsEmptyPrefix);
-      InsertNewLineWithPrefix(hwnd, pszPrefixText, FALSE);
+      pszPrefixText = (n2e_GetNonSpaceCharPos(iCurLine, TRUE) > 0)
+        ? GetLinePrefix(iCurLine, &bIsEmptyPrefix)
+        : NULL;
+      pszForeignPrefixText = FindPrefixForNonEmptyLine(TRUE, iScanLinesLimit);
+
+      LPSTR pszUsedPrefixText =
+        (pszPrefixText && pszForeignPrefixText)
+          ? (strlen(pszPrefixText) > strlen(pszForeignPrefixText))
+            ? pszPrefixText
+            : pszForeignPrefixText
+          : pszPrefixText
+            ? pszPrefixText
+            : pszForeignPrefixText;
+
+      SciCall_SetSel(iCurLineEndPos, iCurLineEndPos);
+      InsertNewLineWithPrefix(hwnd, pszUsedPrefixText, FALSE);
     }
     else
     {
@@ -259,6 +285,7 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
   }
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
   n2e_Free(pszPrefixText);
+  n2e_Free(pszForeignPrefixText);
 }
 
 void n2e_AdjustOffset(const int pos)
