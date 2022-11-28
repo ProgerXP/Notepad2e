@@ -2789,7 +2789,7 @@ Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBra
 				--escapedBraceCount;
 				bracePosition = -1;
 			}
-			else if ((bracePosition >= lineEndPos) || (i >= lineEndPos))
+			else if ((bracePosition < lineStartPos) || (bracePosition >= lineEndPos) || (i >= lineEndPos))
 			{
 				bracePosition = -1;
 				break;
