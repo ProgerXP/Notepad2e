@@ -5531,7 +5531,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               {
                 bBraceFound = TRUE;
                 int iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
-                if (iBrace2 != -1)
+                if ((iBrace2 != -1) && (iBrace2 != iPos))
                 {
                   int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
                   int col2 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iBrace2, 0);
