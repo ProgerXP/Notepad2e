@@ -7,7 +7,7 @@
 
 #define ICON_FIND_OK 9
 #define ICON_FIND_FAILED 26
-#define FIND_INFO_INDEX 12
+#define FIND_INFO_INDEX 15
 
 extern BOOL bUsePrefixInOpenDialog;
 extern EHighlightCurrentSelectionMode iHighlightSelection;
