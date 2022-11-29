@@ -3052,58 +3052,58 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
         if ((lParam == 0) || (iSelLength == 0))
         {
-        // [2e]: Always select closest word #205
-        const int iLine = SciCall_LineFromPosition(iPos);
-        if (iWordStart == iWordEnd)
-        {
-          // search forward
-          const int iLineEndPos = SciCall_LineEndPosition(iLine);
-          int i = iPos;
-          while ((i < iLineEndPos) && (iWordStart == iWordEnd))
+          // [2e]: Always select closest word #205
+          const int iLine = SciCall_LineFromPosition(iPos);
+          if (iWordStart == iWordEnd)
           {
-            iWordStart = SciCall_GetWordStartPos(i, TRUE);
-            iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
-            i = SciCall_PositionAfter(iWordEnd);
-          }
-        }
-        if (iWordStart == iWordEnd)
-        {
-          // search backward
-          const int iLineStartPos = SciCall_PositionFromLine(iLine);
-          int i = iPos;
-          while ((i > iLineStartPos) && (iWordStart == iWordEnd))
-          {
-            iWordEnd = SciCall_GetWordEndPos(i, TRUE);
-            iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
-            i = SciCall_PositionBefore(iWordStart);
-          }
-        }
-        if (bUseCompleteLogic && (iWordStart == iWordEnd))
-        {
-          // search forward, ignore EOLs
-          const int iLastLine = SciCall_GetLineCount();
-          for (int j = iLine + 1; j < iLastLine; ++j)
-          {
-            int i = SciCall_PositionFromLine(j);
-            int iLineEndPos = SciCall_LineEndPosition(j);
+            // search forward
+            const int iLineEndPos = SciCall_LineEndPosition(iLine);
+            int i = iPos;
             while ((i < iLineEndPos) && (iWordStart == iWordEnd))
             {
               iWordStart = SciCall_GetWordStartPos(i, TRUE);
               iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
               i = SciCall_PositionAfter(iWordEnd);
             }
-            if (iWordStart != iWordEnd)
-              break;
           }
-        }
-        if (!bUseCompleteLogic
-          && (iSelLength > 0)
-          && (((iWordStart < iPos) && (iWordEnd < iPos))
-            || (iWordStart > iPos) && (iWordEnd > iPos)))
-        {
-          // skip selection change
-          lParam = SCI_NULL;
-        }
+          if (iWordStart == iWordEnd)
+          {
+            // search backward
+            const int iLineStartPos = SciCall_PositionFromLine(iLine);
+            int i = iPos;
+            while ((i > iLineStartPos) && (iWordStart == iWordEnd))
+            {
+              iWordEnd = SciCall_GetWordEndPos(i, TRUE);
+              iWordStart = SciCall_GetWordStartPos(iWordEnd, TRUE);
+              i = SciCall_PositionBefore(iWordStart);
+            }
+          }
+          if (bUseCompleteLogic && (iWordStart == iWordEnd))
+          {
+            // search forward, ignore EOLs
+            const int iLastLine = SciCall_GetLineCount();
+            for (int j = iLine + 1; j < iLastLine; ++j)
+            {
+              int i = SciCall_PositionFromLine(j);
+              int iLineEndPos = SciCall_LineEndPosition(j);
+              while ((i < iLineEndPos) && (iWordStart == iWordEnd))
+              {
+                iWordStart = SciCall_GetWordStartPos(i, TRUE);
+                iWordEnd = SciCall_GetWordEndPos(iWordStart, TRUE);
+                i = SciCall_PositionAfter(iWordEnd);
+              }
+              if (iWordStart != iWordEnd)
+                break;
+            }
+          }
+          if (!bUseCompleteLogic
+            && (iSelLength > 0)
+            && (((iWordStart < iPos) && (iWordEnd < iPos))
+              || (iWordStart > iPos) && (iWordEnd > iPos)))
+          {
+            // skip selection change
+            lParam = SCI_NULL;
+          }
         }
         else
         {
