@@ -3050,6 +3050,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         const int iPos = SciCall_GetCurrentPos();
         int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
         int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
+        if ((lParam == 0) || (iSelLength == 0))
+        {
         // [2e]: Always select closest word #205
         const int iLine = SciCall_LineFromPosition(iPos);
         if (iWordStart == iWordEnd)
@@ -3101,6 +3103,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         {
           // skip selection change
           lParam = SCI_NULL;
+        }
+        }
+        else
+        {
+          iWordStart = SciCall_GetSelStart();
+          iWordEnd = SciCall_GetSelEnd();
         }
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
         switch (lParam)
