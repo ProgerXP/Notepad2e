@@ -3044,13 +3044,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTWORD: {
-        const int iSelLength = SciCall_GetSelEnd() - SciCall_GetSelStart();
+        const int iSelStart = SciCall_GetSelStart();
+        const int iSelEnd = SciCall_GetSelEnd();
+        const int iSelLength = iSelEnd - iSelStart;
+        const int iAnchor = SciCall_GetAnchor();
         const BOOL bUseCompleteLogic =
           (iSelLength == 0) || (lParam != 0) || (SciCall_GetCurrentPos() < SciCall_GetAnchor());
         const int iPos = SciCall_GetCurrentPos();
         int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
         int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
-        if ((lParam == 0) || (iSelLength == 0))
+        if (iSelLength == 0)
         {
           // [2e]: Always select closest word #205
           const int iLine = SciCall_LineFromPosition(iPos);
@@ -3107,31 +3110,36 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-          iWordStart = SciCall_GetSelStart();
-          iWordEnd = SciCall_GetSelEnd();
+          iWordStart = iSelStart;
+          iWordEnd = iSelEnd;
         }
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
+        if (iSelLength == 0)
+        {
+          if (lParam != SCI_CUT)
+            SciCall_SetSkipUIUpdate(1);
+          SciCall_SetSel(iWordStart, iWordEnd);
+        }
         switch (lParam)
         {
         case SCI_CUT:
-          SciCall_SetSel(iWordStart, iWordEnd);
+        case SCI_COPY:
           SendMessage(hwndEdit, lParam, 0, 0);
-          SciCall_SetSel(iWordStart, iWordStart);
-          SciCall_SetAnchor(iWordStart);
-          break;
-        case SCI_COPY: {
-          const LPSTR text = n2e_GetTextRange(iWordStart, iWordEnd);
-          const LPWSTR wtext = n2e_MultiByteToWideString(text);
-          n2e_SetClipboardText(hwndEdit, wtext);
-          n2e_Free(wtext);
-          n2e_Free(text);
-          }
           break;
         case SCI_NULL:
           break;
         default:
           SciCall_SetSel(iWordStart, iWordEnd);
           break;
+        }
+        if (iSelLength == 0)
+        {
+          if ((lParam != 0) && (lParam != SCI_CUT))
+          {
+            SciCall_SetSel(iSelStart, iSelEnd);
+            SciCall_SetAnchor(iAnchor);
+          }
+          SciCall_SetSkipUIUpdate(0);
         }
         // [/2e]
       }
