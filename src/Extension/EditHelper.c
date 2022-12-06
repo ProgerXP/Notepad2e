@@ -1492,3 +1492,8 @@ BOOL n2e_InitTextFromSelection(HWND hwnd, const UINT uiControlID, HWND _hwndEdit
   }
   return FALSE;
 }
+
+BOOL n2e_IsEscapedChar(const int iPos)
+{
+  return SciCall_GetCharAt(SciCall_PositionBefore(iPos)) == '\\';
+}

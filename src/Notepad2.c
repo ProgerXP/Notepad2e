@@ -5528,8 +5528,6 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
             // Brace Match
             if (bMatchBraces)
             {
-              int iPos;
-              char c;
               BOOL bBraceFound = FALSE;
               BOOL bBraceHighlighted = FALSE;
               int iEndStyled = (int)SendMessage(hwndFrom, SCI_GETENDSTYLED, 0, 0);
@@ -5539,10 +5537,16 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 int iEndStyled = (int)SendMessage(hwndFrom, SCI_POSITIONFROMLINE, iLine, 0);
                 SendMessage(hwndFrom, SCI_COLOURISE, iEndStyled, -1);
               }
-              iPos = (int)SendMessage(hwndFrom, SCI_GETCURRENTPOS, 0, 0);
-              c = (char)SendMessage(hwndFrom, SCI_GETCHARAT, iPos, 0);
               // [2e]: Treat quotes as braces #287
-              const BOOL isEscapedChar = (iPos > 0) && (SciCall_GetCharAt(SciCall_PositionBefore(iPos)) == '\\');
+              int iPos = SciCall_GetCurrentPos();
+              char c = SciCall_GetCharAt(iPos);
+              BOOL isEscapedChar = (iPos > 0) && n2e_IsEscapedChar(iPos);
+              if ((!StrChrA(n2e_GetBracesList(), c) || isEscapedChar) && (iPos >= 1))
+              {
+                iPos = SciCall_PositionBefore(iPos);
+                c = SciCall_GetCharAt(iPos);
+                isEscapedChar = (iPos > 1) && n2e_IsEscapedChar(iPos);
+              }              
               if (StrChrA(n2e_GetBracesList(), c) && !isEscapedChar)
               {
                 bBraceFound = TRUE;
