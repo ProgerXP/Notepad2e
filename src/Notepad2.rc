@@ -81,6 +81,7 @@ BEGIN
     POPUP "&File"
     BEGIN
         MENUITEM "New\tCtrl+N",                 IDM_FILE_NEW
+        MENUITEM SEPARATOR
         MENUITEM "Open...\tCtrl+O",             IDM_FILE_OPEN
         MENUITEM "Open Next (&1)",              ID_FILE_OPEN__NEXT
         MENUITEM "Open Previous (&2)",          ID_FILE_OPEN__PREVIOUS
@@ -1556,6 +1557,7 @@ BEGIN
     IDT_SETTINGS_SAVE_ON_EXIT "Save Settings On Exit"
     IDT_BINARY_SAFE_SAVE    "Binary-Safe Save"
     IDM_VIEW_ALWAYSONTOP    "Always On Top"
+    IDM_VIEW_SHOWOUTLINE    "Show Outline"
 END
 
 STRINGTABLE
@@ -1628,6 +1630,7 @@ STRINGTABLE
 BEGIN
     IDS_ERR_LPEG_NOT_CONFIGURED 
                             "lexlua has been disabled because no LPegPath was configured. See the project's homepage for how to set it up:\r\nhttps://github.com/ProgerXP/Notepad2e/#lpeg"
+    IDS_NO_FOLDING          "This line is not part of any block."
 END
 
 STRINGTABLE

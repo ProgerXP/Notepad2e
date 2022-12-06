@@ -60,9 +60,6 @@
     <ClInclude Include="src\Notepad2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\SciCall.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\Styles.h">
       <Filter>Header Files</Filter>
     </ClInclude>

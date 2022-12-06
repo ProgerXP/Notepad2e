@@ -2407,74 +2407,10 @@ typedef struct outlinedlg
 
 } OUTLINEDLG, *POUTLINEDLG;
 
-int GetFoldLevel(const int iLine)
+void Outline_AddToListView(HWND hwndListView, int iLineFrom)
 {
-  return SendMessage(hwndEdit, SCI_GETFOLDLEVEL, (WPARAM)iLine, (LPARAM)0) & SC_FOLDLEVELNUMBERMASK;
-}
-
-void Outline_AddToListView(HWND hwnd, int iLineFrom)
-{
-  LVITEM lvi;
-  WCHAR wchBuf[1000];
-
-  ZeroMemory(&lvi, sizeof(LVITEM));
-  lvi.mask = LVIF_PARAM | LVIF_TEXT;
-  lvi.pszText = wchBuf;
-
-  SendMessage(hwndEdit, SCI_SETPROPERTY, (WPARAM)"fold", (LPARAM)"1");
-  SendMessage(hwndEdit, SCI_SETAUTOMATICFOLD, SC_AUTOMATICFOLD_SHOW | SC_AUTOMATICFOLD_CHANGE, 0);
-  SendMessage(hwndEdit, SCI_FOLDLINE, (WPARAM)iLineFrom, (LPARAM)SC_FOLDACTION_EXPAND);
-  
-  BOOL bContinueSearch = FALSE;
-  int iFoldLevel = -1;
-  while (iLineFrom >= 0)
-  {
-    if (bContinueSearch)
-    {
-      const int iFoldLevelPrev = GetFoldLevel(iLineFrom - 1);
-      iLineFrom = iLineFrom - 1;
-      if (iFoldLevel != iFoldLevelPrev)
-      {
-        bContinueSearch = FALSE;
-        iFoldLevel = iFoldLevelPrev;
-      }
-    }
-    else
-    {
-      iLineFrom = SendMessage(hwndEdit, SCI_GETFOLDPARENT, iLineFrom, 0);
-      iFoldLevel = GetFoldLevel(iLineFrom);
-    }
-
-    if (iLineFrom >= 0)
-    {
-      const LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
-      bContinueSearch = (n2e_CountNonWhitespaces(text) < 10);
-      if (bContinueSearch)
-      {
-        n2e_Free(text);
-        iFoldLevel = GetFoldLevel(iLineFrom);
-        continue;
-      }
-      iFoldLevel = -1;
-
-      const LPWSTR wtext = n2e_MultiByteToWideString(text);
-
-      StrCpyN(wchBuf, _itow(n2e_GetVisibleLineNumber(iLineFrom), wchBuf, 10), COUNTOF(wchBuf));
-      StrCatN(wchBuf, L"  \t", COUNTOF(wchBuf));
-      StrCatN(wchBuf, wtext, COUNTOF(wchBuf));
-      n2e_Free(wtext);
-      n2e_Free(text);
-
-      lvi.iItem = 0;
-      lvi.lParam = (LPARAM)iLineFrom;
-      ListView_InsertItem(hwnd, &lvi);
-    }
-  }
-
-  const int iSelItem = ListView_GetItemCount(hwnd) - 1;
-  ListView_SetSelectionMark(hwnd, iSelItem);
-  ListView_SetItemState(hwnd, iSelItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
-  ListView_EnsureVisible(hwnd, iSelItem, FALSE);
+  n2e_GetPreviousFoldLevels(hwndListView, iLineFrom);
+  n2e_SelectListViewItem(hwndListView, ListView_GetItemCount(hwndListView) - 1);
 }
 
 BOOL Outline_GetFromListView(HWND hwnd, int *piLine)
@@ -2601,6 +2537,18 @@ INT_PTR CALLBACK ShowOutlineDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
 
       return TRUE;
 
+    case WM_SYSCOMMAND:
+      if (wParam == SC_KEYMENU) // [n2e]: handle F10 key
+      {
+        const int iItem = ListView_GetSelectionMark(hwndLV);
+        if (iItem > 0)
+        {
+          SetFocus(hwndLV);
+          n2e_SelectListViewItem(hwndLV, iItem - 1);
+        }
+        return TRUE;
+      }
+      break;
   }
 
   return FALSE;

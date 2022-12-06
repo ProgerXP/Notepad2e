@@ -78,7 +78,7 @@ int       iOpenSaveFilterIndex = 1;
 // [2e] : Use non-proportional font in search/replace dialog #381
 HFONT     hMonospacedFont = NULL;
 
-#define NUMTOOLBITMAPS  33
+#define NUMTOOLBITMAPS  34
 #define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -117,6 +117,7 @@ TBBUTTON  tbbMainWnd[] = { {0, IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0,
     {27, IDT_BINARY_SAFE_SAVE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {19, IDT_EDIT_CLEAR, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {20, IDT_FILE_PRINT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {33, IDM_VIEW_SHOWOUTLINE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {21, IDT_FILE_OPENFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {22, IDT_FILE_ADDTOFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {23, IDT_FILE_OPEN_PREV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -4428,7 +4429,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_VIEW_GOABOVE:
       {
         int iLine = SciCall_LineFromPosition(SciCall_GetCurrentPos());
-        if (ShowOutlineDlg(hwnd, &iLine, IDM_VIEW_GOABOVE == wCommandID))
+        if (!n2e_CheckFoldLevel(iLine))
+        {
+          InfoBox(MBINFO, L"MsgNoFolding", IDS_NO_FOLDING);
+        }
+        else if (wCommandID == IDM_VIEW_GOABOVE)
+        {
+          iLine = n2e_GetPreviousFoldLevels(NULL, iLine);
+          const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
+          const auto pos = SciCall_PositionFromLine(iLine) + indentation;
+          SciCall_SetSel(pos, pos);
+          break;
+        }
+        else if (ShowOutlineDlg(hwnd, &iLine, IDM_VIEW_GOABOVE == wCommandID))
         {
           const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
           const auto pos = SciCall_PositionFromLine(iLine) + indentation;

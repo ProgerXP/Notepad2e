@@ -1,5 +1,6 @@
 #include "EditHelper.h"
 #include <cassert>
+#include <commctrl.h>
 #include "CommonUtils.h"
 #include "CommentAwareLineWrapping.h"
 #include "Dialogs.h"
@@ -1464,4 +1465,98 @@ BOOL n2e_InitTextFromSelection(HWND hwnd, const UINT uiControlID, HWND _hwndEdit
     return TRUE;
   }
   return FALSE;
+}
+
+int n2e_GetFoldLevel(const int iLine)
+{
+  return (SciCall_GetFoldLevel(iLine) & SC_FOLDLEVELNUMBERMASK) - SC_FOLDLEVELBASE;
+}
+
+int n2e_CheckFoldLevel(const int iLine)
+{
+  SciCall_SetProperty("fold", "1");
+  SciCall_SetAutomaticFold(SC_AUTOMATICFOLD_SHOW | SC_AUTOMATICFOLD_CHANGE);
+  SciCall_FoldLine(iLine, SC_FOLDACTION_EXPAND);
+  const auto iLevel = (SciCall_GetFoldLevel(iLine) & SC_FOLDLEVELNUMBERMASK) - SC_FOLDLEVELBASE;
+  SciCall_SetProperty("fold", "0");
+  SciCall_SetAutomaticFold(0);
+  return iLevel > 0;
+}
+
+int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
+{
+  WCHAR wchBuf[1000];
+  LVITEM lvi = { 0 };
+  lvi.mask = LVIF_PARAM | LVIF_TEXT;
+  lvi.pszText = wchBuf;
+
+  SciCall_SetProperty("fold", "1");
+  SciCall_SetAutomaticFold(SC_AUTOMATICFOLD_SHOW | SC_AUTOMATICFOLD_CHANGE);
+  SciCall_FoldLine(iLineFrom, SC_FOLDACTION_EXPAND);
+
+  BOOL bContinueSearch = FALSE;
+  BOOL bStringAdded = FALSE;
+  int iFoldLevel = -1;
+  while (iLineFrom >= 0)
+  {
+    if (bContinueSearch)
+    {
+      iLineFrom = iLineFrom - 1;
+      const int iFoldLevelPrev = n2e_GetFoldLevel(iLineFrom);
+      if (iFoldLevelPrev <= iFoldLevel)
+      {
+        iFoldLevel = iFoldLevelPrev;
+        bContinueSearch = FALSE;
+      }
+      else
+      {
+        continue;
+      }
+    }
+    else
+    {
+      iLineFrom = SciCall_GetFoldParent(iLineFrom);
+      iFoldLevel = n2e_GetFoldLevel(iLineFrom);
+    }
+
+    if (iLineFrom >= 0)
+    {
+      const LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
+      bContinueSearch = (n2e_CountNonWhitespaces(text) < 10)
+        && ((iLineFrom == 0) || (iFoldLevel == n2e_GetFoldLevel(iLineFrom - 1)));
+      if (bContinueSearch)
+      {
+        n2e_Free(text);
+        iFoldLevel = n2e_GetFoldLevel(iLineFrom);
+        continue;
+      }
+      iFoldLevel = -1;
+      if (hwndListView)
+      {
+        const LPWSTR wtext = n2e_MultiByteToWideString(text);
+        StrCpyN(wchBuf, _itow(n2e_GetVisibleLineNumber(iLineFrom), wchBuf, 10), COUNTOF(wchBuf));
+        StrCatN(wchBuf, L"  \t", COUNTOF(wchBuf));
+        StrCatN(wchBuf, wtext, COUNTOF(wchBuf));
+        n2e_Free(wtext);
+        n2e_Free(text);
+        lvi.iItem = 0;
+        lvi.lParam = (LPARAM)iLineFrom;
+        ListView_InsertItem(hwndListView, &lvi);
+      }
+      else
+      {
+        break;
+      }
+    }
+  }
+  SciCall_SetProperty("fold", "0");
+  SciCall_SetAutomaticFold(0);
+  return iLineFrom;
+}
+
+void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem)
+{
+  ListView_SetSelectionMark(hwndListView, iSelItem);
+  ListView_SetItemState(hwndListView, iSelItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
+  ListView_EnsureVisible(hwndListView, iSelItem, FALSE);
 }
