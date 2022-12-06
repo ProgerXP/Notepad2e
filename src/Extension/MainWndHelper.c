@@ -99,6 +99,7 @@ BOOL n2e_FormatEvaluatedExpression(const HWND hwnd,
     if (n2e_IsRectangularSelection())
     {
       pszText = n2e_Alloc(MAX_EXPRESSION_LENGTH + 1);
+      ZeroMemory(pszText, MAX_EXPRESSION_LENGTH + 1);
       const int iSelections = SciCall_GetSelections();
       for (int i = 0; i < iSelections; ++i)
       {
