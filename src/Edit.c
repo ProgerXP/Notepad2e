@@ -6142,8 +6142,6 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
           SetDlgItemTextA2W(CP_UTF8, hwnd, IDC_LINENUM, lpefr->szFindUTF8);
         }
         // [/2e]
-        SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 15, 0);
-        SendDlgItemMessage(hwnd, IDC_COLNUM, EM_LIMITTEXT, 15, 0);
         SendDlgItemMessage(hwnd, IDC_POSNUM, EM_LIMITTEXT, 15, 0);
 
         DPI_INIT();
