@@ -204,7 +204,7 @@ LPSTR FindPrefixForNonEmptyLine(const BOOL bSearchForward, int iScanLimit)
     && ((bSearchForward && (iLine < iLineCount)) || (!bSearchForward && (iLine >= 0))))
   {
     const int iNonSpaceCharPos = n2e_GetNonSpaceCharPos(iLine, TRUE);
-    if (iNonSpaceCharPos > 0)
+    if (iNonSpaceCharPos >= 0)
     {
       return GetLinePrefix(iLine, &bIsEmptyLine);
     }
@@ -233,7 +233,7 @@ void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove)
     const int iPrevLineEndPos = (iPrevLine == iCurLine) ? 0 : SendMessage(hwnd, SCI_GETLINEENDPOSITION, iPrevLine, 0);
     if (bAutoIndent)
     {
-      pszPrefixText = (n2e_GetNonSpaceCharPos(iCurLine, TRUE) > 0)
+      pszPrefixText = (n2e_GetNonSpaceCharPos(iCurLine, TRUE) >= 0)
         ? GetLinePrefix(iCurLine, &bIsEmptyPrefix)
         : NULL;
       pszForeignPrefixText = FindPrefixForNonEmptyLine(FALSE, iScanLinesLimit);
