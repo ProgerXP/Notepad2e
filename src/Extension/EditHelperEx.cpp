@@ -342,5 +342,11 @@ extern "C"
     return 0;
   }
 
+  int n2e_CountNonWhitespaces(LPCSTR text)
+  {
+    std::string s(text);
+    return std::count_if(s.cbegin(), s.cend(), [](const char c) { return !isspace(c); });
+  }
+
 
 }

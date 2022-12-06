@@ -78,7 +78,7 @@ int       iOpenSaveFilterIndex = 1;
 // [2e] : Use non-proportional font in search/replace dialog #381
 HFONT     hMonospacedFont = NULL;
 
-#define NUMTOOLBITMAPS  33
+#define NUMTOOLBITMAPS  34
 #define NUMINITIALTOOLS 29
 
 TBBUTTON  tbbMainWnd[] = {
@@ -100,6 +100,7 @@ TBBUTTON  tbbMainWnd[] = {
     // [2e]: always update FIND_INFO_INDEX to make it match the following item index:
     {ICON_FIND_OK, IDT_EDIT_FIND, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {20, IDT_FILE_PRINT, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+    {33, IDM_VIEW_SHOWOUTLINE, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {0, 0, 0, TBSTYLE_SEP, 0, 0},
     {28, IDT_SPLIT_VERTICALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {29, IDT_SPLIT_HORIZONTALLY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
@@ -124,6 +125,7 @@ TBBUTTON  tbbMainWnd[] = {
     {17, IDT_FILE_SAVEAS, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {18, IDT_FILE_SAVECOPY, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
     {19, IDT_EDIT_CLEAR, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
+
     {22, IDT_FILE_ADDTOFAV, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
 };
 
@@ -237,6 +239,8 @@ int     cxFavoritesDlg;
 int     cyFavoritesDlg;
 int     xFindReplaceDlg;
 int     yFindReplaceDlg;
+int     cxOutlineDlg;
+int     cyOutlineDlg;
 
 LPWSTR      lpFileList[32];
 int         cFileList = 0;
@@ -4368,6 +4372,34 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
     // [/2e]
 
+    // [2e]: New command: Show Outline #432
+    case IDM_VIEW_SHOWOUTLINE:
+    case IDM_VIEW_GOABOVE:
+      {
+        int iLine = SciCall_LineFromPosition(SciCall_GetCurrentPos());
+        if (!n2e_CheckFoldLevel(iLine))
+        {
+          InfoBox(MBINFO, L"MsgNoFolding", IDS_NO_FOLDING);
+        }
+        else if (wCommandID == IDM_VIEW_GOABOVE)
+        {
+          iLine = n2e_GetPreviousFoldLevels(NULL, iLine);
+          const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
+          const auto pos = SciCall_PositionFromLine(iLine) + indentation;
+          SciCall_SetSel(pos, pos);
+          break;
+        }
+        else if (ShowOutlineDlg(hwnd, &iLine, IDM_VIEW_GOABOVE == wCommandID))
+        {
+          const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
+          const auto pos = SciCall_PositionFromLine(iLine) + indentation;
+          SciCall_SetSel(pos, pos);
+          break;
+        }
+      }
+      break;
+    // [/2e]
+
 
     case IDM_VIEW_CHANGENOTIFY:
       if (ChangeNotifyDlg(hwnd))
@@ -6063,6 +6095,14 @@ void LoadSettings()
 
   xFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosX", 0);
   yFindReplaceDlg = IniSectionGetInt(pIniSection, L"FindReplaceDlgPosY", 0);
+
+  // [2e]: New command: Show Outline #432
+  cxOutlineDlg = IniSectionGetInt(pIniSection, L"OutlineDlgSizeX", 300);
+  cxOutlineDlg = max(cxOutlineDlg, 0);
+  cyOutlineDlg = IniSectionGetInt(pIniSection, L"OutlineDlgSizeY", 262);
+  cyOutlineDlg = max(cyOutlineDlg, 0);
+  // [/2e]
+
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
   bStickyWinPos = IniSectionGetInt(pIniSection, L"StickyWindowPosition", 0);
   if (bStickyWinPos) bStickyWinPos = 1;

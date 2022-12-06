@@ -179,6 +179,8 @@ DeclareSciCallR1(GetFoldParent, GETFOLDPARENT, int, int, line);
 DeclareSciCallR1(GetFoldExpanded, GETFOLDEXPANDED, int, int, line);
 DeclareSciCallV1(ToggleFold, TOGGLEFOLD, int, line);
 DeclareSciCallV1(EnsureVisible, ENSUREVISIBLE, int, line);
+DeclareSciCallV1(SetAutomaticFold, SETAUTOMATICFOLD, int, automaticFold);
+DeclareSciCallV2(FoldLine, FOLDLINE, int, line, int, action);
 
 //=============================================================================
 //

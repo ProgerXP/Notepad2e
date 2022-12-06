@@ -5,11 +5,13 @@
 #define IDR_RT_MANIFEST                 1
 #define IDR_ABOUT                       1
 #define ID_FILE_RENAMETO                2
+#define IDD_OUTLINE                     2
 #define ID_SETTINGS_CTRL_WHEEL_SCROLL   3
 #define ID_GREP                         4
 #define ID_UNGREP                       5
 #define ID_FILE_OPENPREVIOUS            6
 #define IDC_SEARCHCOMMENTS              6
+#define IDC_OUTLINELIST                 6
 #define ID_EDIT_UNDO_REDO               8
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
 #define ID_FILE_INVOKESHELLMENU         10
@@ -433,6 +435,8 @@
 #define IDM_VIEW_SAVEBEFORERUNNINGTOOLS_DISABLED 40457
 #define IDM_VIEW_SAVEBEFORERUNNINGTOOLS_ENABLED 40458
 #define IDM_VIEW_SAVEBEFORERUNNINGTOOLS_EXCEPT_NEW_WINDOW 40459
+#define IDM_VIEW_SHOWOUTLINE            40460
+#define IDM_VIEW_GOABOVE                40461
 #define IDM_HELP_ABOUT                  40500
 #define IDM_TRAY_RESTORE                40600
 #define IDM_TRAY_EXIT                   40601
@@ -520,6 +524,7 @@
 #define IDS_ERR_FAILED_CREATE           50046
 #define IDS_ERR_LEXER_FILE_NOT_FOUND    50047
 #define IDS_ERR_LPEG_NOT_CONFIGURED     50048
+#define IDS_NO_FOLDING                  50049
 #define IDS_CMDLINEHELP                 60000
 
 // Next default values for new objects
@@ -527,9 +532,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NO_MFC                     1
-#define _APS_NEXT_RESOURCE_VALUE        2
+#define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         63
-#define _APS_NEXT_CONTROL_VALUE         6
+#define _APS_NEXT_CONTROL_VALUE         7
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
 #endif

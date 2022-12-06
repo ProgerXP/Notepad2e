@@ -47,3 +47,4 @@ BOOL RecodeDlg(HWND, int *);
 BOOL SelectDefLineEndingDlg(HWND, int *);
 INT_PTR InfoBox(int, LPCWSTR, int, ...);
 INT_PTR CALLBACK StartingLineNumberDlgProc(HWND, UINT, WPARAM, LPARAM);
+BOOL ShowOutlineDlg(HWND hwnd, int* piLine, const BOOL bForceGoOutline);
