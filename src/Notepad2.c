@@ -3057,7 +3057,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         const int iPos = SciCall_GetCurrentPos();
         int iWordStart = SciCall_GetWordStartPos(iPos, TRUE);
         int iWordEnd = SciCall_GetWordEndPos(iPos, TRUE);
-        if (iSelLength == 0)
+        if ((lParam == 0) || (iSelLength == 0))
         {
           // [2e]: Always select closest word #205
           const int iLine = SciCall_LineFromPosition(iPos);
@@ -3103,14 +3103,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 break;
             }
           }
-          if (!bUseCompleteLogic
-            && (iSelLength > 0)
-            && (((iWordStart < iPos) && (iWordEnd < iPos))
-              || (iWordStart > iPos) && (iWordEnd > iPos)))
-          {
-            // skip selection change
-            lParam = SCI_NULL;
-          }
         }
         else
         {
@@ -3120,7 +3112,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         // [2e]: Copy/Cut to clipboard commands to work on empty selection (next word) #358
         if (iSelLength == 0)
         {
-          if (lParam != SCI_CUT)
+          if (lParam == SCI_COPY)
             SciCall_SetSkipUIUpdate(1);
           SciCall_SetSel(iWordStart, iWordEnd);
         }
@@ -3138,7 +3130,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         if (iSelLength == 0)
         {
-          if ((lParam != 0) && (lParam != SCI_CUT))
+          if (lParam == SCI_COPY)
           {
             SciCall_SetSel(iSelStart, iSelEnd);
             SciCall_SetAnchor(iAnchor);
@@ -3411,7 +3403,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_CONVERTUPPERCASE:
       BeginWaitCursor();
       // [2e]: Case commands to work on empty selection (next word) #319
-      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
       SendMessage(hwndEdit, SCI_UPPERCASE, 0, 0);
       EndWaitCursor();
       break;
@@ -3420,7 +3412,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_CONVERTLOWERCASE:
       BeginWaitCursor();
       // [2e]: Case commands to work on empty selection (next word) #319
-      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
       SendMessage(hwndEdit, SCI_LOWERCASE, 0, 0);
       EndWaitCursor();
       break;
@@ -3429,7 +3421,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_INVERTCASE:
       BeginWaitCursor();
       // [2e]: Case commands to work on empty selection (next word) #319
-      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
       EditInvertCase(hwndEdit);
       EndWaitCursor();
       break;
@@ -3438,7 +3430,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_TITLECASE:
       BeginWaitCursor();
       // [2e]: Case commands to work on empty selection (next word) #319
-      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+      SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
       EditTitleCase(hwndEdit);
       EndWaitCursor();
       break;
@@ -4945,7 +4937,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           // [2e]: Find Next/Previous must skip first match #424
           if (wCommandID != IDM_EDIT_SAVEFIND)
           {
-            SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), 0);
+            SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
             iSelectionStart = SciCall_GetSelStart();
             iSelectionEnd = SciCall_GetSelEnd();
           }
