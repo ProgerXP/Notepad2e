@@ -1554,8 +1554,8 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
     if (iLineFrom >= 0)
     {
       const LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
-      bContinueSearch = (n2e_CountNonWhitespaces(text) < 10)
-        && ((iLineFrom == 0) || (iFoldLevel == n2e_GetFoldLevel(iLineFrom - 1)));
+      bContinueSearch = (iLineFrom > 0) && (n2e_CountNonWhitespaces(text) < 10)
+        && (iFoldLevel <= n2e_GetFoldLevel(iLineFrom - 1));
       if (bContinueSearch)
       {
         n2e_Free(text);
