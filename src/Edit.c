@@ -5839,6 +5839,9 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
     return FALSE;
   }
 
+  // [2e]: Extremely slow Replace when changing line count #363
+  SciCall_SetSkipUIUpdate(1);
+
   bRegexStartOfLine =
     (lpefr->fuFlags & SCFIND_REGEXP &&
     (szFind2[0] == '^'));
@@ -5937,6 +5940,9 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
 
   if (iCount)
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+
+  // [2e]: Extremely slow Replace when changing line count #363
+  SciCall_SetSkipUIUpdate(0);
 
   // [2e]: Gutter not updated on Replace #206
   VIEW_COMMAND(UpdateLineNumberWidth);

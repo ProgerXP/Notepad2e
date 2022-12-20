@@ -1374,3 +1374,32 @@ Replace code in MarginView::PaintMargin:
 /**View > St&arting Line Number... #342**
 
 ---
+**Extremely slow Replace when changing line count #363**
+
+Add ``if (!skipUIUpdate)`` conditions into ``Editor::NotifyModified``:
+
+[scintilla/src/Editor.cxx]
+
+```
+			// Avoid scrolling of display if change before current display
+			if (mh.position < posTopLine && !CanDeferToLastStep(mh)) {
+				const Sci::Line newTop = Sci::clamp(topLine + mh.linesAdded, static_cast<Sci::Line>(0), MaxScrollPos());
+				if (newTop != topLine) {
+					SetTopLine(newTop);
+					if (!skipUIUpdate)
+  						SetVerticalScrollPos();
+				}
+			}
+```
+
+```
+	if (mh.linesAdded != 0 && !CanDeferToLastStep(mh)) {
+		if (!skipUIUpdate)
+			SetScrollBars();
+	}
+```
+
+
+/**Extremely slow Replace when changing line count #363**
+
+---

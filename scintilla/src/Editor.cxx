@@ -2702,7 +2702,8 @@ void Editor::NotifyModified(Document *, DocModification mh, void *) {
 				const Sci::Line newTop = Sci::clamp(topLine + mh.linesAdded, static_cast<Sci::Line>(0), MaxScrollPos());
 				if (newTop != topLine) {
 					SetTopLine(newTop);
-					SetVerticalScrollPos();
+					if (!skipUIUpdate)
+						SetVerticalScrollPos();
 				}
 			}
 
@@ -2723,7 +2724,8 @@ void Editor::NotifyModified(Document *, DocModification mh, void *) {
 	}
 
 	if (mh.linesAdded != 0 && !CanDeferToLastStep(mh)) {
-		SetScrollBars();
+		if (!skipUIUpdate)
+			SetScrollBars();
 	}
 
 	if ((mh.modificationType & SC_MOD_CHANGEMARKER) || (mh.modificationType & SC_MOD_CHANGEMARGIN)) {
