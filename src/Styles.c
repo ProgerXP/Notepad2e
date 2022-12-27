@@ -1693,6 +1693,9 @@ void Style_SetStyles(HWND hwnd, int iLexer, int iStyle, LPCWSTR lpszStyle)
   // [2e]: Default charset for styles #315
   else if (iLexer == SCLEX_NULL)
     SendMessage(hwnd, SCI_STYLESETCHARACTERSET, iStyle, 0);
+  // [2e]: New command: Show Outline #432
+  else if (iLexer == SCLEX_HTML)
+    SciCall_SetProperty("fold.html", "1");
   // [/2e]
 }
 
