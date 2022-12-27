@@ -326,7 +326,7 @@ BEGIN
         MENUITEM "Reset &Zoom\tCtrl+/",         IDM_VIEW_RESETZOOM
         MENUITEM SEPARATOR
         MENUITEM "Show O&utline\tF10",          IDM_VIEW_SHOWOUTLINE
-        MENUITEM "Go &Above\tShift+F10",        IDM_VIEW_GOABOVE
+        MENUITEM "Go Abo&ve\tShift+F10",        IDM_VIEW_GOABOVE
     END
     POPUP "&Settings"
     BEGIN
