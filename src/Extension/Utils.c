@@ -29,7 +29,6 @@
 
 #define INI_SETTING_HIGHLIGHT_SELECTION L"HighlightSelection"
 #define INI_SETTING_EDIT_SELECTION_SCOPE L"EditSelectionScope"
-#define INI_SETTING_SAVE_ON_LOSE_FOCUS L"SaveOnLoseFocus"
 #define INI_SETTING_WHEEL_SCROLL L"WheelScroll"
 #define INI_SETTING_WHEEL_SCROLL_INTERVAL L"WheelScrollInterval"
 #define INI_SETTING_CLOCK_FORMAT L"ClockFormat"
@@ -505,7 +504,6 @@ void n2e_LoadINI()
 {
   iHighlightSelection = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   bEditSelectionScope = IniGetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
-  iSaveOnLoseFocus = IniGetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   bCtrlWheelScroll = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   iWheelScrollInterval = IniGetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
   IniGetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, L"", wchClockFormat, COUNTOF(wchClockFormat));
@@ -597,7 +595,6 @@ void n2e_SaveINI()
 {
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_SELECTION, iHighlightSelection);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_EDIT_SELECTION_SCOPE, bEditSelectionScope);
-  IniSetInt(N2E_INI_SECTION, INI_SETTING_SAVE_ON_LOSE_FOCUS, iSaveOnLoseFocus);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL, bCtrlWheelScroll);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_WHEEL_SCROLL_INTERVAL, iWheelScrollInterval);
   IniSetString(N2E_INI_SECTION, INI_SETTING_CLOCK_FORMAT, wchClockFormat);
