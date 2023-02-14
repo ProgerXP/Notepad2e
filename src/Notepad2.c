@@ -464,6 +464,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   if (!InitApplication(hInstance))
     return FALSE;
 
+  // [2e]: Upgrade default ToolbarButtons value #457
+  n2e_UpdateToolbarButtons();
+
   // [2e]: DPI awareness #154
   DPIInitialize();
 

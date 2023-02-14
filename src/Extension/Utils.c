@@ -2104,3 +2104,22 @@ int n2e_GetActualLineNumber(const int iVisibleLineIndex)
 {
   return iVisibleLineIndex - iStartingLineNumber;
 }
+
+void n2e_UpdateToolbarButtons()
+{
+  extern WCHAR tchToolbarButtons[512];
+
+  static LPCWSTR s_defaultToolbarConfiguration[] = {
+    L"1 2 3 4 0 5 6 0 7 8 9 0 10 11 0 12 0 13 14 0 15 16 0 17",    // Notepad2
+    L"1 2 3 4 0 5 6 0 7 8 9 0 10 11 0 12 0 13 14 0 15 16 0 26 17", // 2e: R47, R92, R134
+  };
+  for (int i = 0; i< COUNTOF(s_defaultToolbarConfiguration); ++i)
+  {
+    if (_wcsicmp(tchToolbarButtons, s_defaultToolbarConfiguration[i]) == 0)
+    {
+      // reset option, force use default toolbar configuration
+      tchToolbarButtons[0] = 0;
+      break;
+    }
+  }
+}

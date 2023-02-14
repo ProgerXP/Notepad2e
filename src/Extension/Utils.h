@@ -241,3 +241,5 @@ BOOL n2e_IsMinusSign(const wchar_t ch);
 BOOL n2e_EnforceSignedIntegerEdit(HWND hwnd);
 int n2e_GetVisibleLineNumber(const int iLineIndex);
 int n2e_GetActualLineNumber(const int iVisibleLineIndex);
+
+void n2e_UpdateToolbarButtons();
