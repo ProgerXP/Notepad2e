@@ -79,7 +79,7 @@ int       iOpenSaveFilterIndex = 1;
 HFONT     hMonospacedFont = NULL;
 
 #define NUMTOOLBITMAPS  34
-#define NUMINITIALTOOLS 29
+#define NUMINITIALTOOLS 30
 
 TBBUTTON  tbbMainWnd[] = {
     {0,  IDT_FILE_NEW, TBSTATE_ENABLED, TBSTYLE_BUTTON, 0, 0},
