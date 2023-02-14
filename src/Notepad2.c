@@ -320,8 +320,8 @@ WCHAR     g_wchWorkingDirectory[MAX_PATH] = L"";
 //
 // Flags
 //
-int flagNoReuseWindow = 0;
-int flagReuseWindow = 0;
+// [2e]: Make Reuse Window non-global #454
+BOOL flagReuseWindow = FALSE;
 int flagMultiFileArg = 0;
 int flagSingleFileInstance = 0;
 int flagStartAsTrayIcon = 0;
@@ -2187,8 +2187,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   CheckCmd(hmenu, IDM_VIEW_HIGHLIGHTCURRENTSELECTION_EDITWORD, bEditSelectionScope);
   // [/2e]
 
-  i = IniGetInt(L"Settings2", L"ReuseWindow", 0);
-  CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, i);
+  // [2e]: Make Reuse Window non-global #454
+  CheckCmd(hmenu, IDM_VIEW_REUSEWINDOW, flagReuseWindow);
   i = IniGetInt(L"Settings2", L"SingleFileInstance", 0);
   CheckCmd(hmenu, IDM_VIEW_SINGLEFILEINSTANCE, i);
   bStickyWinPos = IniGetInt(L"Settings2", L"StickyWindowPosition", 0);
@@ -4252,10 +4252,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_VIEW_REUSEWINDOW:
-      if (IniGetInt(L"Settings2", L"ReuseWindow", 0))
-        IniSetInt(L"Settings2", L"ReuseWindow", 0);
-      else
-        IniSetInt(L"Settings2", L"ReuseWindow", 1);
+      // [2e]: Make Reuse Window non-global #454
+      flagReuseWindow = !flagReuseWindow;
+      SetProp(hwndMain, L"ReuseWindow", (HANDLE)flagReuseWindow);
       break;
 
 
@@ -6477,8 +6476,10 @@ BOOL ParseCommandLine()
       {
 
         case L'N':
-          flagReuseWindow = 0;
-          flagNoReuseWindow = 1;
+          // [2e]: Make Reuse Window non-global #454
+          flagReuseWindow = FALSE;
+          SetProp(hwndMain, L"ReuseWindow", (HANDLE)flagReuseWindow);
+          // [/2e]
           if (*CharUpper(lp1 + 1) == L'S')
             flagSingleFileInstance = 1;
           else
@@ -6486,8 +6487,10 @@ BOOL ParseCommandLine()
           break;
 
         case L'R':
-          flagReuseWindow = 1;
-          flagNoReuseWindow = 0;
+          // [2e]: Make Reuse Window non-global #454
+          flagReuseWindow = TRUE;
+          SetProp(hwndMain, L"ReuseWindow", (HANDLE)flagReuseWindow);
+          // [/2e]
           if (*CharUpper(lp1 + 1) == L'S')
             flagSingleFileInstance = 1;
           else
@@ -6812,14 +6815,8 @@ void LoadFlags()
 
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
 
-  if (!flagReuseWindow && !flagNoReuseWindow)
-  {
-    if (!IniSectionGetInt(pIniSection, L"ReuseWindow", 0))
-      flagNoReuseWindow = 1;
-
-    if (IniSectionGetInt(pIniSection, L"SingleFileInstance", 0))
-      flagSingleFileInstance = 1;
-  }
+  if (IniSectionGetInt(pIniSection, L"SingleFileInstance", 0))
+    flagSingleFileInstance = 1;
 
   if (flagMultiFileArg == 0)
   {
@@ -7972,7 +7969,9 @@ BOOL CALLBACK EnumWndProc(HWND hwnd, LPARAM lParam)
   WCHAR szClassName[64];
 
   if (GetClassName(hwnd, szClassName, COUNTOF(szClassName)))
-    if (lstrcmpi(szClassName, wchWndClass) == 0)
+    // [2e]: Make Reuse Window non-global #454
+    if ((lstrcmpi(szClassName, wchWndClass) == 0)
+      && (GetProp(hwnd, L"ReuseWindow") || (*(HWND*)lParam == 1)))
     {
       DWORD dwReuseLock = GetDlgItemInt(hwnd, IDC_REUSELOCK, NULL, FALSE);
       if (GetTickCount() - dwReuseLock >= REUSEWINDOWLOCKTIMEOUT)
@@ -8017,7 +8016,7 @@ BOOL ActivatePrevInst()
   HWND hwnd = NULL;
   COPYDATASTRUCT cds;
 
-  if ((flagNoReuseWindow && !flagSingleFileInstance) || flagStartAsTrayIcon || flagNewFromClipboard || flagPasteBoard)
+  if ((!flagReuseWindow && !flagSingleFileInstance) || flagStartAsTrayIcon || flagNewFromClipboard || flagPasteBoard)
     return (FALSE);
 
   if (flagSingleFileInstance && lpFileArg)
@@ -8118,11 +8117,18 @@ BOOL ActivatePrevInst()
     }
   }
 
-  if (flagNoReuseWindow)
+  if (!flagReuseWindow)
     return (FALSE);
 
   hwnd = NULL;
   EnumWindows(EnumWndProc, (LPARAM)&hwnd);
+  // [2e]: Make Reuse Window non-global #454
+  //       Skip ReuseWindow target window property, repeat search
+  if (!hwnd)
+  {
+    hwnd = 1;
+    EnumWindows(EnumWndProc, (LPARAM)&hwnd);
+  }
 
   // Found a window
   if (hwnd != NULL)
