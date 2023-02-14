@@ -5984,14 +5984,16 @@ void LoadSettings()
   bViewEOLs = IniSectionGetInt(pIniSection, L"ViewEOLs", 0);
   if (bViewEOLs) bViewEOLs = 1;
 
-  iDefaultEncoding = IniSectionGetInt(pIniSection, L"DefaultEncoding", 0);
+  // [2e]: Minor changes to Encoding > Default #455
+  iDefaultEncoding = IniSectionGetInt(pIniSection, L"DefaultEncoding", Encoding_MapIniSetting(FALSE, CPI_UTF8));
   iDefaultEncoding = Encoding_MapIniSetting(TRUE, iDefaultEncoding);
   if (!Encoding_IsValid(iDefaultEncoding)) iDefaultEncoding = CPI_DEFAULT;
 
   bSkipUnicodeDetection = IniSectionGetInt(pIniSection, L"SkipUnicodeDetection", 0);
   if (bSkipUnicodeDetection) bSkipUnicodeDetection = 1;
 
-  bLoadASCIIasUTF8 = IniSectionGetInt(pIniSection, L"LoadASCIIasUTF8", 0);
+  // [2e]: Minor changes to Encoding > Default #455
+  bLoadASCIIasUTF8 = IniSectionGetInt(pIniSection, L"LoadASCIIasUTF8", 1);
   if (bLoadASCIIasUTF8) bLoadASCIIasUTF8 = 1;
 
   bNoEncodingTags = IniSectionGetInt(pIniSection, L"NoEncodingTags", 0);
