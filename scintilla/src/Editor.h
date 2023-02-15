@@ -373,7 +373,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	bool WrapOneLine(Surface *surface, Sci::Line lineToWrap);
 	enum class WrapScope {wsAll, wsVisible, wsIdle};
 	bool WrapLines(WrapScope ws);
-	void LinesJoin();
+	void LinesJoin(const bool noSpaceDelimiter);
 	void LinesSplit(int pixelWidth);
 
 	void PaintSelMargin(Surface *surfaceWindow, const PRectangle &rc);

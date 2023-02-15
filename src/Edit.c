@@ -4159,7 +4159,7 @@ void EditWrapToColumn(HWND hwnd, int nColumn)
 //
 //  EditJoinLinesEx()
 //
-void EditJoinLinesEx(HWND hwnd)
+void EditJoinLinesEx(HWND hwnd, BOOL noSpaceDelimiter)
 {
   char* pszText;
   char* pszJoin;
@@ -4235,8 +4235,11 @@ void EditJoinLinesEx(HWND hwnd)
         i++;
       if (!StrChrA("\r\n", pszText[i + 1]) && pszText[i + 1] != 0)
       {
-        pszJoin[cchJoin++] = ' ';
-        bModified = TRUE;
+        if (!noSpaceDelimiter)
+        {
+          pszJoin[cchJoin++] = ' ';
+          bModified = TRUE;
+        }
       }
       else
       {

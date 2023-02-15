@@ -292,6 +292,8 @@
 #define IDM_LINEENDINGS_LF              40201
 #define IDM_LINEENDINGS_CR              40202
 #define IDM_LINEENDINGS_SETDEFAULT      40203
+#define IDM_EDIT_JOINLINES_SKIP_SPACES  40290
+#define IDM_EDIT_JOINLINESEX_SKIP_SPACES 40291
 #define IDM_EDIT_UNDO                   40300
 #define IDM_EDIT_REDO                   40301
 #define IDM_EDIT_CUT                    40302

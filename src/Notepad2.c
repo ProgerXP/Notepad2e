@@ -2127,6 +2127,7 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   EnableCmd(hmenu, IDM_EDIT_SPLITLINES, i || bExtendedSplitLines);
   EnableCmd(hmenu, IDM_EDIT_JOINLINESEX, i);
+  EnableCmd(hmenu, IDM_EDIT_JOINLINESEX_SKIP_SPACES, i);
   EnableCmd(hmenu, IDM_EDIT_SENTENCECASE, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTTABS, i);
   EnableCmd(hmenu, IDM_EDIT_CONVERTSPACES, i);
@@ -3395,21 +3396,23 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_JOINLINES:
+    case IDM_EDIT_JOINLINES_SKIP_SPACES:
       BeginWaitCursor();
       // [2e]: Join Lines/Paragraphs - ignore trailing break #135
       if (n2e_JoinLines_InitSelection())
       {
         SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
-        SendMessage(hwndEdit, SCI_LINESJOIN, 0, 0);
-        EditJoinLinesEx(hwndEdit);
+        SendMessage(hwndEdit, SCI_LINESJOIN, (wCommandID == IDM_EDIT_JOINLINES_SKIP_SPACES), 0);
+        EditJoinLinesEx(hwndEdit, (wCommandID == IDM_EDIT_JOINLINES_SKIP_SPACES));
       }
       EndWaitCursor();
       break;
 
 
     case IDM_EDIT_JOINLINESEX:
+    case IDM_EDIT_JOINLINESEX_SKIP_SPACES:
       BeginWaitCursor();
-      EditJoinLinesEx(hwndEdit);
+      EditJoinLinesEx(hwndEdit, (wCommandID == IDM_EDIT_JOINLINESEX_SKIP_SPACES));
       EndWaitCursor();
       break;
 

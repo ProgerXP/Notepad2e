@@ -1619,7 +1619,7 @@ bool Editor::WrapLines(WrapScope ws) {
 	return wrapOccurred;
 }
 
-void Editor::LinesJoin() {
+void Editor::LinesJoin(const bool noSpaceDelimiter) {
 	if (!RangeContainsProtected(targetRange.start.Position(), targetRange.end.Position())) {
 		UndoGroup ug(pdoc);
 		bool prevNonWS = true;
@@ -1627,7 +1627,7 @@ void Editor::LinesJoin() {
 			if (pdoc->IsPositionInLineEnd(pos)) {
 				targetRange.end.Add(-pdoc->LenChar(pos));
 				pdoc->DelChar(pos);
-				if (prevNonWS) {
+				if (prevNonWS && (!noSpaceDelimiter || pdoc->IsPositionInLineEnd(pos))) {
 					// Ensure at least one space separating previous lines
 					const Sci::Position lengthInserted = pdoc->InsertString(pos, " ", 1);
 					targetRange.end.Add(lengthInserted);
@@ -6853,7 +6853,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 		return trackLineWidth;
 
 	case SCI_LINESJOIN:
-		LinesJoin();
+		LinesJoin(static_cast<bool>(wParam));
 		break;
 
 	case SCI_LINESSPLIT:

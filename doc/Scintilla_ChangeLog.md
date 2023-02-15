@@ -1399,7 +1399,36 @@ Add ``if (!skipUIUpdate)`` conditions into ``Editor::NotifyModified``:
 	}
 ```
 
-
 /**Extremely slow Replace when changing line count #363**
+
+---
+**Join Lines/Paragraphs - Alt modifier to not add space #451**
+
+Add ``noSpaceDelimiter`` option to ``Editor``:
+
+[scintilla/src/Editor.h]
+```
+    void LinesJoin(const bool noSpaceDelimiter);
+```
+
+[scintilla/src/Editor.cxx]
+```
+void Editor::LinesJoin(const bool noSpaceDelimiter) {
+
+...
+
+				if (prevNonWS && (!noSpaceDelimiter || pdoc->IsPositionInLineEnd(pos))) {
+
+...
+
+    case SCI_LINESJOIN:
+        LinesJoin();
+        LinesJoin(static_cast<bool>(wParam));
+        break;
+
+```
+
+
+/**Join Lines/Paragraphs - Alt modifier to not add space #451**
 
 ---
