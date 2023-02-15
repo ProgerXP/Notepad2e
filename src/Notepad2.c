@@ -6825,8 +6825,11 @@ void LoadFlags()
 
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
 
-  if (IniSectionGetInt(pIniSection, L"SingleFileInstance", 0))
-    flagSingleFileInstance = 1;
+  if (reuseWindowMode != RWM_NO)
+  {
+    if (IniSectionGetInt(pIniSection, L"SingleFileInstance", 0))
+      flagSingleFileInstance = 1;
+  }
 
   if (flagMultiFileArg == 0)
   {
@@ -8027,8 +8030,8 @@ BOOL ActivatePrevInst()
   HWND hwnd = NULL;
   COPYDATASTRUCT cds;
 
-  if ((((reuseWindowMode == RWM_NO) || (reuseWindowMode == RWM_NEW)) && !flagSingleFileInstance)
-    || flagStartAsTrayIcon || flagNewFromClipboard || flagPasteBoard)
+  const BOOL flagNoReuseWindow = (reuseWindowMode == RWM_NO) || (reuseWindowMode == RWM_NEW);
+  if ((flagNoReuseWindow && !flagSingleFileInstance) || flagStartAsTrayIcon || flagNewFromClipboard || flagPasteBoard)
     return (FALSE);
 
   if (flagSingleFileInstance && lpFileArg)
@@ -8129,7 +8132,7 @@ BOOL ActivatePrevInst()
     }
   }
 
-  if ((reuseWindowMode == RWM_NO) || (reuseWindowMode == RWM_NEW))
+  if (flagNoReuseWindow)
     return (FALSE);
 
   hwnd = NULL;
