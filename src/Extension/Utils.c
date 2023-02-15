@@ -2129,3 +2129,13 @@ void n2e_UpdateToolbarButtons()
     }
   }
 }
+
+BOOL n2e_GetReuseWindowMode(const HWND hwnd)
+{
+  return GetProp(hwnd, L"ReuseWindow") != 0;
+}
+
+void n2e_SetReuseWindowMode(const HWND hwnd, const BOOL enabled)
+{
+  SetProp(hwnd, L"ReuseWindow", (HANDLE)enabled);
+}

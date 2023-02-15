@@ -243,3 +243,5 @@ int n2e_GetVisibleLineNumber(const int iLineIndex);
 int n2e_GetActualLineNumber(const int iVisibleLineIndex);
 
 void n2e_UpdateToolbarButtons();
+BOOL n2e_GetReuseWindowMode(const HWND hwnd);
+void n2e_SetReuseWindowMode(const HWND hwnd, const BOOL enabled);
