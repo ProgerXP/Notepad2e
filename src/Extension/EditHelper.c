@@ -1529,6 +1529,8 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
   BOOL bContinueSearch = FALSE;
   BOOL bStringAdded = FALSE;
   int iFoldLevel = -1;
+  int iLineToNavigateBackup = -1;
+  int iLineToNavigateBackupLength = 0;
   while (iLineFrom >= 0)
   {
     if (bContinueSearch)
@@ -1553,26 +1555,45 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
 
     if (iLineFrom >= 0)
     {
-      const LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
-      bContinueSearch = (iLineFrom > 0) && (n2e_CountNonWhitespaces(text) < 10)
-        && (iFoldLevel <= n2e_GetFoldLevel(iLineFrom - 1));
+      int iLineToNavigate = iLineFrom;
+      LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
+      const int iLineEffectiveLength = n2e_CountNonWhitespaces(text);
+      const BOOL isInvalidLine = (iLineEffectiveLength < 10);
+      bContinueSearch = (iLineFrom > 0) && isInvalidLine && (iFoldLevel <= n2e_GetFoldLevel(iLineFrom - 1));
       if (bContinueSearch)
       {
         n2e_Free(text);
         iFoldLevel = n2e_GetFoldLevel(iLineFrom);
+        if ((iLineToNavigateBackup < 0) || (iLineEffectiveLength >= iLineToNavigateBackupLength))
+        {
+          iLineToNavigateBackupLength = iLineEffectiveLength;
+          iLineToNavigateBackup = iLineFrom;
+        }
         continue;
       }
+      else if (isInvalidLine && (iLineFrom > 0))
+      {
+        n2e_Free(text);
+        iLineToNavigate = iLineToNavigateBackup;
+        text = n2e_GetTextRange(SciCall_PositionFromLine(iLineToNavigate), SciCall_LineEndPosition(iLineToNavigate));
+        if (!hwndListView)
+        {
+          iLineFrom = iLineToNavigate;
+        }
+      }
       iFoldLevel = -1;
+      iLineToNavigateBackup = -1;
+      iLineToNavigateBackupLength = 0;
       if (hwndListView)
       {
         const LPWSTR wtext = n2e_MultiByteToWideString(text);
-        StrCpyN(wchBuf, _itow(n2e_GetVisibleLineNumber(iLineFrom), wchBuf, 10), COUNTOF(wchBuf));
+        StrCpyN(wchBuf, _itow(n2e_GetVisibleLineNumber(iLineToNavigate), wchBuf, 10), COUNTOF(wchBuf));
         StrCatN(wchBuf, L"  \t", COUNTOF(wchBuf));
         StrCatN(wchBuf, wtext, COUNTOF(wchBuf));
         n2e_Free(wtext);
         n2e_Free(text);
         lvi.iItem = 0;
-        lvi.lParam = (LPARAM)iLineFrom;
+        lvi.lParam = (LPARAM)iLineToNavigate;
         ListView_InsertItem(hwndListView, &lvi);
       }
       else
