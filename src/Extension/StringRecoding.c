@@ -998,11 +998,12 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
       }
     }
     if (bProcessFailed || RecodingAlgorithm_ShouldBreakEncoding(pRA))
-    {
-      ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
+    {      
       break;
     }
   }
+  ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
+
   const int iSelStart = ed.m_tr.m_iSelStart;
   const int iSelEnd = ed.m_tr.m_iSelEnd;
   EncodingSettings_Free(&ed);
