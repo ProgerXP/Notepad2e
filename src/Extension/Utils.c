@@ -1568,7 +1568,7 @@ BOOL n2e_IsEmptyLine(const int iLine)
   return (n2e_GetNonSpaceCharPos(iLine, TRUE) < 0);
 }
 
-int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing)
+int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, const BOOL noSpaceDelimiter, BOOL *pbContinueProcessing)
 {
   int res = iSelEnd;
   if (iSelStart != iSelEnd)
@@ -1598,7 +1598,7 @@ int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbCont
           const int _iSelStart = SciCall_PositionFromLine(iLineStart) + n2e_GetLastNonSpaceCharPos(iLineStart) + 1;
           const int _iSelEnd = SciCall_PositionFromLine(iLine) + n2e_GetFirstNonSpaceCharPos(iLine);
           SciCall_SetSel(_iSelStart, _iSelEnd);
-          SciCall_ReplaceSel(0, " ");
+          SciCall_ReplaceSel(0, noSpaceDelimiter ? "" : " ");
         }
         if (pbContinueProcessing)
         {

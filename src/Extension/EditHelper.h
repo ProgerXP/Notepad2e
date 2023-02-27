@@ -23,7 +23,7 @@ extern WCHAR wchLastHTMLTag[TEXT_BUFFER_LENGTH];
 extern WCHAR wchLastHTMLEndTag[TEXT_BUFFER_LENGTH];
 
 void n2e_SplitLines(const HWND hwnd, const int iLineSizeLimit, const BOOL bColumnWrap);
-BOOL n2e_JoinLines_InitSelection();
+BOOL n2e_JoinLines_InitSelection(const BOOL noSpaceDelimiter);
 void n2e_StripHTMLTags(const HWND hwnd);
 void n2e_JumpToOffset(const HWND hwnd, const int iNewPos);
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove);

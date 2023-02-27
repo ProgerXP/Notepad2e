@@ -208,7 +208,7 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 
 int n2e_GetNonSpaceCharPos(const int iLine, const BOOL bFromLineStart);
 int n2e_JoinParagraphs_GetSelEnd(const int iSelEnd);
-int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, BOOL *pbContinueProcessing);
+int n2e_JoinLines_GetSelEnd(const int iSelStart, const int iSelEnd, const BOOL noSpaceDelimiter, BOOL *pbContinueProcessing);
 
 void n2e_InitAboutText(const HWND hwndRichedit, LPCSTR lpcstrVersion, LPCSTR lpcstrYear, LPCSTR lpcstrBuildDate);
 void n2e_InitAbout3rdPartyText(const HWND hwndRichedit);

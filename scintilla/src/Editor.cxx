@@ -1625,12 +1625,16 @@ void Editor::LinesJoin(const bool noSpaceDelimiter) {
 		bool prevNonWS = true;
 		for (Sci::Position pos = targetRange.start.Position(); pos < targetRange.end.Position(); pos++) {
 			if (pdoc->IsPositionInLineEnd(pos)) {
-				targetRange.end.Add(-pdoc->LenChar(pos));
+				const int lenChar = pdoc->LenChar(pos);
+				targetRange.end.Add(-lenChar);
 				pdoc->DelChar(pos);
 				if (prevNonWS && (!noSpaceDelimiter || pdoc->IsPositionInLineEnd(pos))) {
 					// Ensure at least one space separating previous lines
 					const Sci::Position lengthInserted = pdoc->InsertString(pos, " ", 1);
 					targetRange.end.Add(lengthInserted);
+				}
+				else if (noSpaceDelimiter && (lenChar > 1)) {
+					--pos;
 				}
 			} else {
 				prevNonWS = pdoc->CharAt(pos) != ' ';

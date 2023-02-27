@@ -3398,13 +3398,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_JOINLINES:
     case IDM_EDIT_JOINLINES_SKIP_SPACES:
       BeginWaitCursor();
+      SciCall_BeginUndoAction();
       // [2e]: Join Lines/Paragraphs - ignore trailing break #135
-      if (n2e_JoinLines_InitSelection())
+      if (n2e_JoinLines_InitSelection(wCommandID == IDM_EDIT_JOINLINES_SKIP_SPACES))
       {
         SendMessage(hwndEdit, SCI_TARGETFROMSELECTION, 0, 0);
         SendMessage(hwndEdit, SCI_LINESJOIN, (wCommandID == IDM_EDIT_JOINLINES_SKIP_SPACES), 0);
         EditJoinLinesEx(hwndEdit, (wCommandID == IDM_EDIT_JOINLINES_SKIP_SPACES));
       }
+      SciCall_EndUndoAction();
       EndWaitCursor();
       break;
 

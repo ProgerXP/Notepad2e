@@ -1417,7 +1417,19 @@ void Editor::LinesJoin(const bool noSpaceDelimiter) {
 
 ...
 
+			if (pdoc->IsPositionInLineEnd(pos)) {
+				const int lenChar = pdoc->LenChar(pos);
+				targetRange.end.Add(-lenChar);
+				pdoc->DelChar(pos);
 				if (prevNonWS && (!noSpaceDelimiter || pdoc->IsPositionInLineEnd(pos))) {
+					// Ensure at least one space separating previous lines
+					const Sci::Position lengthInserted = pdoc->InsertString(pos, " ", 1);
+					targetRange.end.Add(lengthInserted);
+				}
+				else if (noSpaceDelimiter && (lenChar > 1)) {
+					--pos;
+				}
+			} else {
 
 ...
 

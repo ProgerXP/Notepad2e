@@ -61,12 +61,12 @@ void n2e_SplitLines(const HWND hwnd, const int iLineSizeLimit, const BOOL bColum
   }
 }
 
-BOOL n2e_JoinLines_InitSelection()
+BOOL n2e_JoinLines_InitSelection(const BOOL noSpaceDelimiter)
 {
   BOOL bContinueProcessing = TRUE;
   const int iSelStart = SciCall_GetSelStart();
   const int iSelEnd = SciCall_GetSelEnd();
-  const int iSelEndNew = n2e_JoinLines_GetSelEnd(iSelStart, iSelEnd, &bContinueProcessing);
+  const int iSelEndNew = n2e_JoinLines_GetSelEnd(iSelStart, iSelEnd, noSpaceDelimiter, &bContinueProcessing);
   if (bContinueProcessing && (iSelEndNew != iSelEnd))
   {
     SciCall_SetSel(iSelStart, iSelEndNew);
