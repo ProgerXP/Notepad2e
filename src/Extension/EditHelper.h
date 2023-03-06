@@ -88,5 +88,6 @@ BOOL n2e_InitTextFromSelection(HWND hwnd, const UINT uiControlID, HWND _hwndEdit
 BOOL n2e_IsEscapedChar(const int iPos);
 int n2e_GetFoldLevel(const int iLine);
 BOOL n2e_CheckFoldLevel(const int iLine);
+int n2e_GetNextFoldLine(const BOOL lookForward, int iLineFrom);
 int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom);
 void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem);

@@ -1515,6 +1515,55 @@ int n2e_CheckFoldLevel(const int iLine)
   return iLevel > 0;
 }
 
+int n2e_GetNextFoldLine(const BOOL lookForward, int iLineFrom)
+{
+  SciCall_SetProperty("fold", "1");
+  SciCall_SetAutomaticFold(SC_AUTOMATICFOLD_SHOW | SC_AUTOMATICFOLD_CHANGE);
+  SciCall_FoldAll(SC_FOLDACTION_EXPAND);
+
+  BOOL bContinueSearch = TRUE;
+  const int iStep = (lookForward ? 1 : -1);
+  int iLineFromBackup = iLineFrom;
+  iLineFrom = (lookForward && (n2e_GetFoldLevel(iLineFrom + iStep) != n2e_GetFoldLevel(iLineFrom))) ? iLineFrom + iStep : iLineFrom;
+  int iFoldLevel = n2e_GetFoldLevel(iLineFrom);
+  const int iLineCount = SciCall_GetLineCount();
+  while ((lookForward && (iLineFrom < iLineCount - 1)) || (!lookForward && (iLineFrom > 0)))
+  {
+    if (bContinueSearch)
+    {
+      iLineFrom = iLineFrom + iStep;
+      const int iFoldLevelNew = n2e_GetFoldLevel(iLineFrom);
+      if (iFoldLevelNew != iFoldLevel)
+      {
+        iFoldLevel = iFoldLevelNew;
+        bContinueSearch = FALSE;
+      }
+      else
+      {
+        continue;
+      }
+    }
+    else
+    {
+      iLineFrom = SciCall_GetFoldParent(iLineFrom);
+      iFoldLevel = n2e_GetFoldLevel(iLineFrom);
+    }
+
+    if (iLineFrom >= 0)
+    {
+      if (lookForward)
+      {
+        iLineFrom -= (iLineFromBackup == iLineFrom - iStep) ? 2 * iStep : iStep;
+      }
+      iFoldLevel = -1;
+      break;
+    }
+  }
+  SciCall_SetProperty("fold", "0");
+  SciCall_SetAutomaticFold(0);
+  return iLineFrom;
+}
+
 int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
 {
   WCHAR wchBuf[1000];
@@ -1559,7 +1608,7 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
       LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
       const int iLineEffectiveLength = n2e_CountNonWhitespaces(text);
       const BOOL isInvalidLine = (iLineEffectiveLength < 10);
-      bContinueSearch = (iLineFrom > 0) && isInvalidLine && (iFoldLevel <= n2e_GetFoldLevel(iLineFrom - 1));
+      bContinueSearch = (iLineFrom > 0) && isInvalidLine && (iFoldLevel >= n2e_GetFoldLevel(iLineFrom - 1));
       if (bContinueSearch)
       {
         n2e_Free(text);

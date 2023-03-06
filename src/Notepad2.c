@@ -4395,15 +4395,35 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           iLine = n2e_GetPreviousFoldLevels(NULL, iLine);
           const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
           const auto pos = SciCall_PositionFromLine(iLine) + indentation;
-          SciCall_SetSel(pos, pos);
+          EditSelectEx(hwndEdit, pos, pos);
           break;
         }
         else if (ShowOutlineDlg(hwnd, &iLine, IDM_VIEW_GOABOVE == wCommandID))
         {
           const auto indentation = SendMessage(hwndEdit, SCI_GETLINEINDENTATION, iLine, 0);
           const auto pos = SciCall_PositionFromLine(iLine) + indentation;
-          SciCall_SetSel(pos, pos);
+          EditSelectEx(hwndEdit, pos, pos);
           break;
+        }
+      }
+      break;
+
+    // [2e]: Alt+[ ] to navigate folding points #441
+    case IDM_NEXT_FOLDING_POINT:
+    case IDM_PREV_FOLDING_POINT:
+    case IDM_SELECT_NEXT_FOLDING_POINT:
+    case IDM_SELECT_PREV_FOLDING_POINT:
+      {
+        int iLine = SciCall_LineFromPosition(SciCall_GetCurrentPos());
+        iLine = n2e_GetNextFoldLine((wCommandID == IDM_NEXT_FOLDING_POINT) || (wCommandID == IDM_SELECT_NEXT_FOLDING_POINT), iLine);
+        const auto pos = SciCall_PositionFromLine(iLine);
+        if ((wCommandID == IDM_NEXT_FOLDING_POINT) || (wCommandID == IDM_PREV_FOLDING_POINT))
+        {
+          EditSelectEx(hwndEdit, pos, pos);
+        }
+        else
+        {
+          EditSelectEx(hwndEdit, SciCall_GetAnchor(), pos);
         }
       }
       break;
