@@ -36,7 +36,7 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
 BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos);
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd);
 BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next);
-void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode);
+void n2e_UnwrapSelection(const HWND hwnd, const int unwrapMode);
 void n2e_EscapeHTML(const HWND hwnd);
 void n2e_UpdateFindIcon(const BOOL findOK);
 void n2e_UpdateFindIconAndFlashWindow(const BOOL findOK);

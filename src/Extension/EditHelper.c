@@ -636,7 +636,7 @@ BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next)
   return TRUE;
 }
 
-void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
+void n2e_UnwrapSelection(const HWND hwnd, const int unwrapMode)
 {
   const static int max_region_to_scan = 1024;
   const auto pos = SciCall_GetCurrentPos();
@@ -646,7 +646,7 @@ void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
   int p = pos;
   do
   {
-    posStart = SciCall_BraceMatch(p, quote_mode);
+    posStart = SciCall_BraceMatch(p, MAKEWPARAM(unwrapMode, 1));
     if (posStart < 0)
     {
       if (p == 0)
@@ -656,7 +656,7 @@ void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
   } while ((p >= 0) && (p >= pos - max_region_to_scan) && (posStart < 0));
 
   if (posStart >= 0)
-    posEnd = SciCall_BraceMatch(posStart, quote_mode);
+    posEnd = SciCall_BraceMatch(posStart, MAKEWPARAM(unwrapMode, 1));
 
   if ((posStart >= 0) && (posEnd >= 0) && (max(posStart, posEnd) >= pos))
   {

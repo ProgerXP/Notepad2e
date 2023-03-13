@@ -7744,7 +7744,12 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_BRACEMATCH:
 		// wParam is position of char to find brace for,
 		// lParam is maximum amount of text to restyle to find it
-		return pdoc->BraceMatch(static_cast<Sci::Position>(wParam), lParam);
+#define LOWORD(l)           ((unsigned short)(((unsigned long)(l)) & 0xffff))
+#define HIWORD(l)           ((unsigned short)((((unsigned long)(l)) >> 16) & 0xffff))
+#define LOBYTE(w)           ((unsigned char)(((unsigned long)(w)) & 0xff))
+#define HIBYTE(w)           ((unsigned char)((((unsigned long)(w)) >> 8) & 0xff))
+
+		return pdoc->BraceMatch(static_cast<Sci::Position>(wParam), static_cast<Scintilla::BraceMatchMode>(LOWORD(lParam)), LOBYTE(HIWORD(lParam)), HIBYTE(HIWORD(lParam)));
 
 	case SCI_GETVIEWEOL:
 		return vs.viewEOL;

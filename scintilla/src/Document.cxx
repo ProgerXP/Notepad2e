@@ -2685,29 +2685,45 @@ Sci::Position Document::ExtendStyleRange(Sci::Position pos, int delta, bool sing
 	return pos;
 }
 
-static char BraceOpposite(char ch, bool treatQuotesAsBraces) noexcept {
+static char braceOpposite(const char ch, const BraceMatchMode bracesMatchMode, const bool isBrace, const char chExpected) noexcept {
+  switch (bracesMatchMode) {
+  case BraceMatchMode::bracesOnly:
+    if (isBrace)
+      return chExpected;
+    break;
+  case BraceMatchMode::bracesAndQoutes:
+    return chExpected;
+  case BraceMatchMode::quotesOnly:
+    if (!isBrace)
+      return chExpected;
+    break;
+  }
+  return '\0';
+}
+
+static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode) noexcept {
 	switch (ch) {
 	case '(':
-		return ')';
+		return braceOpposite(ch, bracesMatchMode, true, ')');
 	case ')':
-		return '(';
+    return braceOpposite(ch, bracesMatchMode, true, '(');
 	case '[':
-		return ']';
+    return braceOpposite(ch, bracesMatchMode, true, ']');
 	case ']':
-		return '[';
+    return braceOpposite(ch, bracesMatchMode, true, '[');
 	case '{':
-		return '}';
+    return braceOpposite(ch, bracesMatchMode, true, '}');
 	case '}':
-		return '{';
+    return braceOpposite(ch, bracesMatchMode, true, '{');
 	case '<':
-		return '>';
+    return braceOpposite(ch, bracesMatchMode, true, '>');
 	case '>':
-		return '<';
+    return braceOpposite(ch, bracesMatchMode, true, '<');
+  case '\'':
+  case '"':
+  case '`':
+    return braceOpposite(ch, bracesMatchMode, false, ch);
 	default:
-		// [2e]: Treat quotes as braces #287
-		if (treatQuotesAsBraces && (ch == '\'' || ch == '"' || ch == '`'))
-			return ch;
-
 		return '\0';
 	}
 }
@@ -2738,21 +2754,52 @@ int Document::FindBrace(Sci::Position position, const int direction, const char 
 // [/2e]
 
 // TODO: should be able to extend styled region to find matching brace
-Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBraces) noexcept {
-	const char chBrace = CharAt(position);
-	const char chSeek = BraceOpposite(chBrace, treatQuotesAsBraces);
-	if (chSeek == '\0')
-		return - 1;
+Sci::Position Document::BraceMatch(Sci::Position position, const BraceMatchMode bracesMatchMode, const bool findNearestBrace, const bool lookForwardBrace) noexcept {
+	char chBrace = CharAt(position);
+	char chSeek = BraceOpposite(chBrace, bracesMatchMode);
+  if (chSeek == '\0')
+  {
+    if (findNearestBrace)
+    {
+//       if (lookForwardBrace)
+//       {
+//         const auto lineIndex = LineFromPosition(position);
+//         const auto lineEndPosition = LineEnd(lineIndex);
+//         while ((position < lineEndPosition) && (chSeek == '\0'))
+//         {
+//           position = NextPosition(position, 1);
+//           chBrace = CharAt(position);
+//           chSeek = BraceOpposite(chBrace, bracesMatchMode);
+//         }
+//       }
+//       else
+      {
+        const auto lineIndex = LineFromPosition(position);
+        const auto lineStartPos = LineStart(lineIndex);
+        while ((position >= lineStartPos + 1) && (chSeek == '\0'))
+        {
+          position = NextPosition(position, -1);
+          chBrace = CharAt(position);
+          chSeek = BraceOpposite(chBrace, bracesMatchMode);
+        }
+      }
+      if (chSeek != '\0')
+        return position;
+    }
+    if (chSeek == '\0')
+      return -1;
+  }
+
 	const int styBrace = StyleIndexAt(position);
 	int direction = -1;
 	if (chBrace == '(' || chBrace == '[' || chBrace == '{' || chBrace == '<')
 		direction = 1;
 	// [2e]: Treat quotes as braces #287
-	else if (treatQuotesAsBraces && (chBrace == '\'' || chBrace == '"' || chBrace == '`'))
+	else if ((bracesMatchMode != BraceMatchMode::bracesOnly) && (chBrace == '\'' || chBrace == '"' || chBrace == '`'))
 	{
 		const auto lineIndex = LineFromPosition(position);
 		const auto lineStartPos = LineStart(lineIndex);
-		const auto lineEndPos = LineEnd(lineIndex);
+    const auto lineEndPos = Length();
 		int braceCount = 0;
 		int escapedBraceCount = 0;
 		int bracePosition = -1;

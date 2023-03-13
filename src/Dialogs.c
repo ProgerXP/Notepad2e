@@ -17,6 +17,19 @@
 *
 *
 ******************************************************************************/
+//"a| 'b' c"
+//Ctrl+Shift+4 = [a 'b' c]
+//
+//"a b"
+//Ctrl+Shift+B = "a[ b]" (правильно)
+//Ctrl+Shift+B = ["a b"] (почему?)
+
+//document  ctrl+b    shift+ctrl+b
+//a|(bc)d   a(bc)|d   a[(bc)|]d
+//a(bc)d   a(bc|)d   a([bc|])d
+//a(bc|)d   a(|bc)d   a([|bc])d
+//a(bc)|d   a|(bc)d   a[|(bc)]d
+
 #define _WIN32_WINNT 0x501
 #include <windows.h>
 #include <commctrl.h>

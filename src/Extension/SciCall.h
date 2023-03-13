@@ -119,7 +119,7 @@ DeclareSciCallR2(PointXFromPosition, POINTXFROMPOSITION, int, int, unused, int, 
 DeclareSciCallR2(PointYFromPosition, POINTYFROMPOSITION, int, int, unused, int, position);
 DeclareSciCallR0(GetFirstVisibleLine, GETFIRSTVISIBLELINE, int);
 DeclareSciCallR1(DocLineFromVisible, DOCLINEFROMVISIBLE, int, int, displayLine);
-DeclareSciCallV2(BraceMatch, BRACEMATCH, int, pos, BOOL, treatQuoteAsBraces);
+DeclareSciCallV2(BraceMatch, BRACEMATCH, int, pos, unsigned int, bracesMatchMode);
 
 DeclareSciCallV0(ChooseCaretX, CHOOSECARETX);
 

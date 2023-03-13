@@ -3747,20 +3747,15 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_FINDMATCHINGBRACE: {
-        int iBrace2 = -1;
-        int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-        char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
         // [2e]: Treat quotes as braces #287
-        if (!StrChrA(n2e_GetBracesList(), c))
+        int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+        int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+        int iBraceAtPos = (iBrace2 == iPos);
+        if (iBraceAtPos)
         {
-          iPos = (int)SendMessage(hwndEdit, SCI_POSITIONBEFORE, iPos, 0);
-          c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-          iBraceAtPos = 0;
+          iBrace2 = iBrace1;
         }
-        // [2e]: Treat quotes as braces #287
-        if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3776,7 +3771,6 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELTOMATCHINGBRACE: {
-        int iBrace2 = -1;
         int iBraceAtPos = 1;
         int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
         char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
@@ -3788,8 +3782,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           iBraceAtPos = 0;
         }
         // [2e]: Treat quotes as braces #287
-        if (StrChrA(n2e_GetBracesList(), c))
-          iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
+        int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+        int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+      /*
+      int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+        // [2e]: Treat quotes as braces #287
+        int _iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+        int _iBrace2 = SciCall_BraceMatch(_iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+        int iBrace1 = min(_iBrace1, _iBrace2);
+        int iBrace2 = max(_iBrace1, _iBrace2);
+        int iBraceAtPos = StrChrA(n2e_GetBracesList(), SciCall_GetCharAt(iPos));*/
+
         if (iBrace2 != -1)
         {
           // [2e]: Find/Select To Matching Brace - depend on caret location #293
@@ -3801,7 +3804,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             const int iSelEnd = SciCall_GetSelEnd();
             if (iBrace2 == iSelEnd)
             {
-              // no additional setup required, do nothing
+              iPos = iBrace1;
             }
             else if (iBrace2 > iPos)
             {
@@ -5077,12 +5080,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Ctrl+Shift+3 - unwrap brackets #39
     case ID_BLOCK_UNWRAPSELECTION:
-      n2e_UnwrapSelection(hwndEdit, FALSE);
+      n2e_UnwrapSelection(hwndEdit, 0);
       break;
 
 
     case ID_BLOCK_UNWRAPQUOTES:
-      n2e_UnwrapSelection(hwndEdit, TRUE);
+      n2e_UnwrapSelection(hwndEdit, 1);
       break;
     // [/2e]
 
@@ -5611,7 +5614,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
               if (StrChrA(n2e_GetBracesList(), c) && !isEscapedChar)
               {
                 bBraceFound = TRUE;
-                int iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces);
+                int iBrace2 = SciCall_BraceMatch(iPos, bTreatQuotesAsBraces ? 2 : 0);
                 if ((iBrace2 != -1) && (iBrace2 != iPos))
                 {
                   int col1 = (int)SendMessage(hwndFrom, SCI_GETCOLUMN, iPos, 0);
