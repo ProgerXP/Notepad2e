@@ -658,7 +658,7 @@ void n2e_UnwrapSelection(const HWND hwnd, const int unwrapMode)
   if (posStart >= 0)
     posEnd = SciCall_BraceMatch(posStart, MAKEWPARAM(unwrapMode, 1));
 
-  if ((posStart >= 0) && (posEnd >= 0) && (max(posStart, posEnd) >= pos))
+  if ((posStart >= 0) && (posEnd >= 0))
   {
     SciCall_BeginUndoAction();
     SciCall_DeleteRange(max(posStart, posEnd), 1);
@@ -1661,4 +1661,24 @@ void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem)
   ListView_SetSelectionMark(hwndListView, iSelItem);
   ListView_SetItemState(hwndListView, iSelItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
   ListView_EnsureVisible(hwndListView, iSelItem, FALSE);
+}
+
+void n2e_FindMatchingBraceProc()
+{
+  int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
+  int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+  int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
+  int iBraceAtPos = (iBrace2 == iPos);
+  if (iBraceAtPos)
+  {
+    iBrace2 = iBrace1;
+  }
+  if (iBrace2 != -1)
+  {
+    if (iBraceAtPos && (iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT))
+    {
+      iBrace2 = SciCall_PositionAfter(iBrace2);
+    }
+    SciCall_GotoPos(iBrace2);
+  }
 }

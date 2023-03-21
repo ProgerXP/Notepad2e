@@ -2799,7 +2799,7 @@ Sci::Position Document::BraceMatch(Sci::Position position, const BraceMatchMode 
 	{
 		const auto lineIndex = LineFromPosition(position);
 		const auto lineStartPos = LineStart(lineIndex);
-    const auto lineEndPos = Length();
+		const auto lineEndPos = LineEnd(lineIndex);
 		int braceCount = 0;
 		int escapedBraceCount = 0;
 		int bracePosition = -1;

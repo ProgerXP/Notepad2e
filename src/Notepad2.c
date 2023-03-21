@@ -3746,84 +3746,18 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     // [/2e]
 
 
-    case IDM_EDIT_FINDMATCHINGBRACE: {
-        int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-        // [2e]: Treat quotes as braces #287
-        int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-        int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-        int iBraceAtPos = (iBrace2 == iPos);
-        if (iBraceAtPos)
-        {
-          iBrace2 = iBrace1;
-        }
-        if (iBrace2 != -1)
-        {
-          // [2e]: Find/Select To Matching Brace - depend on caret location #293
-          if (iBraceAtPos && (iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT))
-          {
-            iBrace2 = SendMessage(hwndEdit, SCI_POSITIONAFTER, iBrace2, 0);
-          }
-          // [/2e]
-          SendMessage(hwndEdit, SCI_GOTOPOS, (WPARAM)iBrace2, 0);
-        }
-      }
+    case IDM_EDIT_FINDMATCHINGBRACE:
+      // [2e]: Find/Select To Matching Brace - depend on caret location #293
+      n2e_FindMatchingBraceProc();
       break;
 
 
     case IDM_EDIT_SELTOMATCHINGBRACE: {
-        int iBraceAtPos = 1;
-        int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-        char c = (char)SendMessage(hwndEdit, SCI_GETCHARAT, iPos, 0);
-        // [2e]: Treat quotes as braces #287
-        if (!StrChrA(n2e_GetBracesList(), c))
-        {
-          iPos = SciCall_PositionBefore(iPos);
-          c = SciCall_GetCharAt(iPos);
-          iBraceAtPos = 0;
-        }
-        // [2e]: Treat quotes as braces #287
-        int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-        int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-      /*
-      int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-        // [2e]: Treat quotes as braces #287
-        int _iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-        int _iBrace2 = SciCall_BraceMatch(_iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-        int iBrace1 = min(_iBrace1, _iBrace2);
-        int iBrace2 = max(_iBrace1, _iBrace2);
-        int iBraceAtPos = StrChrA(n2e_GetBracesList(), SciCall_GetCharAt(iPos));*/
-
-        if (iBrace2 != -1)
-        {
-          // [2e]: Find/Select To Matching Brace - depend on caret location #293
-          if ((iBraceAtPos != (iBrace2 > iPos))
-            && ((iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT)
-             || (iFindSelectToMatchingBraceMode == FSM_IMPROVED_SELECT)))
-          {
-            // [2e]: Select To Matching Brace to include brackets #367
-            const int iSelEnd = SciCall_GetSelEnd();
-            if (iBrace2 == iSelEnd)
-            {
-              iPos = iBrace1;
-            }
-            else if (iBrace2 > iPos)
-            {
-              iBrace2 = SciCall_PositionBefore(iBrace2);
-              iPos = SciCall_PositionAfter(iPos);
-            }
-            else if (iSelEnd == SciCall_GetSelStart())
-            {
-              iBrace2 = SciCall_PositionAfter(iBrace2);
-              iPos = SciCall_PositionBefore(iPos);
-            }
-          }
-          // [2e]: Find/Select To Matching Brace - depend on caret location #293
-          if (iBrace2 > iPos)
-            SciCall_SetSel(iPos, SciCall_PositionAfter(iBrace2));
-          else
-            SciCall_SetSel(SciCall_PositionAfter(iPos), iBrace2);
-          // [/2e]
-        }
+      // [2e]: Find/Select To Matching Brace - depend on caret location #293
+      const int iPos = SciCall_GetCurrentPos();
+      n2e_FindMatchingBraceProc();
+      SciCall_SetSel(iPos, SciCall_GetCurrentPos());
+      // [/2e]
       }
       break;
 
