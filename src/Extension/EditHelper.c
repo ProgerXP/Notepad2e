@@ -1663,22 +1663,47 @@ void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem)
   ListView_EnsureVisible(hwndListView, iSelItem, FALSE);
 }
 
-void n2e_FindMatchingBraceProc()
+void n2e_FindMatchingBraceProc(int* piBrace1, int* piBrace2)
 {
   int iPos = (int)SendMessage(hwndEdit, SCI_GETCURRENTPOS, 0, 0);
-  int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-  int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, bTreatQuotesAsBraces ? 1 : 0));
-  int iBraceAtPos = (iBrace2 == iPos);
-  if (iBraceAtPos)
+  int iBrace1 = SciCall_BraceMatch(iPos, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, 1));
+  int iBrace2 = SciCall_BraceMatch(iBrace1, MAKEWPARAM(bTreatQuotesAsBraces ? 2 : 0, 1));
+  
+  if (piBrace1)
+    *piBrace1 = iBrace1;
+  if (piBrace2)
+    *piBrace2 = iBrace2;
+
+  const BOOL isBrace1AtPos = (iBrace1 == iPos);
+  const BOOL isBrace1BeforePos = (iBrace1 == SciCall_PositionBefore(iPos));
+  const BOOL isBrace2AtPos = (iBrace2 == iPos);
+  const BOOL isBrace2BeforePos = (iBrace2 == SciCall_PositionBefore(iPos));
+  if (isBrace1AtPos || isBrace1BeforePos)
+  {
+    iBrace1 = iBrace2;
+  }
+  if (isBrace2AtPos || isBrace2BeforePos)
   {
     iBrace2 = iBrace1;
   }
   if (iBrace2 != -1)
   {
-    if (iBraceAtPos && (iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT))
+    if (iFindSelectToMatchingBraceMode == FSM_IMPROVED_FIND_SELECT)
     {
-      iBrace2 = SciCall_PositionAfter(iBrace2);
+      if (isBrace1AtPos)
+      {
+        iBrace1 = SciCall_PositionAfter(iBrace1);
+      }
+      if (isBrace2AtPos)
+      {
+        iBrace2 = SciCall_PositionAfter(iBrace2);
+      }
     }
-    SciCall_GotoPos(iBrace2);
+    if (isBrace1AtPos || isBrace1BeforePos)
+      SciCall_GotoPos(iBrace1);
+    else if (isBrace2AtPos || isBrace2BeforePos || (piBrace1 && piBrace2))
+      SciCall_GotoPos(iBrace2);
+    else
+      SciCall_GotoPos(SciCall_PositionAfter(iBrace1));
   }
 }

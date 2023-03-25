@@ -17,6 +17,7 @@
 #include <vector>
 #include <forward_list>
 #include <algorithm>
+#include <map>
 #include <memory>
 #include <chrono>
 
@@ -2685,6 +2686,8 @@ Sci::Position Document::ExtendStyleRange(Sci::Position pos, int delta, bool sing
 	return pos;
 }
 
+const char CHAR_EMPTY = '\0';
+
 static char braceOpposite(const char ch, const BraceMatchMode bracesMatchMode, const bool isBrace, const char chExpected) noexcept {
   switch (bracesMatchMode) {
   case BraceMatchMode::bracesOnly:
@@ -2698,38 +2701,63 @@ static char braceOpposite(const char ch, const BraceMatchMode bracesMatchMode, c
       return chExpected;
     break;
   }
-  return '\0';
+  return CHAR_EMPTY;
 }
 
-static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode) noexcept {
+std::map<char, int> g_mapBraces;
+
+bool checkBrace(const char chToCheck, int& openingBraceCount)
+{
+  if (g_mapBraces.find(chToCheck) != g_mapBraces.end())
+  {
+    --g_mapBraces[chToCheck];
+    --openingBraceCount;
+    if (g_mapBraces[chToCheck] == 0)
+      g_mapBraces.erase(chToCheck);
+    return openingBraceCount == 0;
+  }
+  return true;
+}
+
+const char* c_lpcstrOpeningBraces = "([{<";
+const char* c_lpcstrClosingBraces = ")]}>";
+
+static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode, const bool openingBraceOnly, int& openingBraceCount) noexcept {
+  if ((strchr(c_lpcstrOpeningBraces, ch)) && !checkBrace(ch, openingBraceCount))
+      return CHAR_EMPTY;
+
+  if (const auto ptr = strchr(c_lpcstrClosingBraces, ch))
+    ++g_mapBraces[c_lpcstrOpeningBraces[ptr - c_lpcstrClosingBraces]];
+
 	switch (ch) {
 	case '(':
-		return braceOpposite(ch, bracesMatchMode, true, ')');
+		return openingBraceOnly ? ch : braceOpposite(ch, bracesMatchMode, true, ')');
 	case ')':
-    return braceOpposite(ch, bracesMatchMode, true, '(');
+    return openingBraceOnly ? CHAR_EMPTY : braceOpposite(ch, bracesMatchMode, true, '(');
 	case '[':
-    return braceOpposite(ch, bracesMatchMode, true, ']');
+    return openingBraceOnly ? ch : braceOpposite(ch, bracesMatchMode, true, ']');
 	case ']':
-    return braceOpposite(ch, bracesMatchMode, true, '[');
+    return openingBraceOnly ? CHAR_EMPTY : braceOpposite(ch, bracesMatchMode, true, '[');
 	case '{':
-    return braceOpposite(ch, bracesMatchMode, true, '}');
+    return openingBraceOnly ? ch : braceOpposite(ch, bracesMatchMode, true, '}');
 	case '}':
-    return braceOpposite(ch, bracesMatchMode, true, '{');
+    return openingBraceOnly ? CHAR_EMPTY : braceOpposite(ch, bracesMatchMode, true, '{');
 	case '<':
     return braceOpposite(ch, bracesMatchMode, true, '>');
 	case '>':
-    return braceOpposite(ch, bracesMatchMode, true, '<');
+    return openingBraceOnly ? CHAR_EMPTY : braceOpposite(ch, bracesMatchMode, true, '<');
   case '\'':
   case '"':
   case '`':
     return braceOpposite(ch, bracesMatchMode, false, ch);
 	default:
-		return '\0';
+		return CHAR_EMPTY;
 	}
 }
 
 // [2e]: Treat quotes as braces #287
 int Document::FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept {
+  g_mapBraces.clear();
 	int depth = 1;
 	position = NextPosition(position, direction);
 	while ((position >= 0) && (position < LengthNoExcept())) {
@@ -2755,33 +2783,28 @@ int Document::FindBrace(Sci::Position position, const int direction, const char 
 
 // TODO: should be able to extend styled region to find matching brace
 Sci::Position Document::BraceMatch(Sci::Position position, const BraceMatchMode bracesMatchMode, const bool findNearestBrace, const bool lookForwardBrace) noexcept {
+  int openingBraceCount = 0;
 	char chBrace = CharAt(position);
-	char chSeek = BraceOpposite(chBrace, bracesMatchMode);
+	char chSeek = BraceOpposite(chBrace, bracesMatchMode, false, openingBraceCount);
   if (chSeek == '\0')
   {
     if (findNearestBrace)
     {
-//       if (lookForwardBrace)
-//       {
-//         const auto lineIndex = LineFromPosition(position);
-//         const auto lineEndPosition = LineEnd(lineIndex);
-//         while ((position < lineEndPosition) && (chSeek == '\0'))
-//         {
-//           position = NextPosition(position, 1);
-//           chBrace = CharAt(position);
-//           chSeek = BraceOpposite(chBrace, bracesMatchMode);
-//         }
-//       }
-//       else
+      const auto lineIndex = LineFromPosition(position);
+      const auto lineStartPos = LineStart(lineIndex);
+      auto pos = position;
+      while ((position >= lineStartPos + 1) && (chSeek == '\0'))
       {
-        const auto lineIndex = LineFromPosition(position);
-        const auto lineStartPos = LineStart(lineIndex);
-        while ((position >= lineStartPos + 1) && (chSeek == '\0'))
-        {
-          position = NextPosition(position, -1);
-          chBrace = CharAt(position);
-          chSeek = BraceOpposite(chBrace, bracesMatchMode);
-        }
+        position = NextPosition(position, -1);
+        if (strchr(c_lpcstrOpeningBraces, CharAt(position)))
+          ++openingBraceCount;
+      }
+      position = pos;
+      while ((position >= lineStartPos + 1) && (chSeek == '\0'))
+      {
+        position = NextPosition(position, -1);
+        chBrace = CharAt(position);
+        chSeek = BraceOpposite(chBrace, bracesMatchMode, true, openingBraceCount);
       }
       if (chSeek != '\0')
         return position;

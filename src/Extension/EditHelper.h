@@ -92,4 +92,4 @@ int n2e_GetNextFoldLine(const BOOL lookForward, int iLineFrom);
 int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom);
 void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem);
 
-void n2e_FindMatchingBraceProc();
+void n2e_FindMatchingBraceProc(int* piBrace1, int* piBrace2);

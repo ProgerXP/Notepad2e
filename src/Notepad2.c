@@ -3748,15 +3748,27 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_FINDMATCHINGBRACE:
       // [2e]: Find/Select To Matching Brace - depend on caret location #293
-      n2e_FindMatchingBraceProc();
+      n2e_FindMatchingBraceProc(NULL, NULL);
       break;
 
 
     case IDM_EDIT_SELTOMATCHINGBRACE: {
       // [2e]: Find/Select To Matching Brace - depend on caret location #293
+      const int iSelStart = SciCall_GetSelStart();
+      const int iSelEnd = SciCall_GetSelEnd();
+      int iBrace1 = 0;
+      int iBrace2 = 0;
       const int iPos = SciCall_GetCurrentPos();
-      n2e_FindMatchingBraceProc();
-      SciCall_SetSel(iPos, SciCall_GetCurrentPos());
+      n2e_FindMatchingBraceProc(&iBrace1, &iBrace2);
+      if (((iBrace1 == SciCall_PositionBefore(iSelStart)) && (iBrace2 == iPos))
+        || ((iBrace2 == iSelEnd) && (iBrace1 == SciCall_PositionBefore(iPos))))
+      {
+        SciCall_SetSel(iBrace1, SciCall_PositionAfter(iBrace2));
+      }
+      else
+      {
+        SciCall_SetSel(iPos, SciCall_GetCurrentPos());
+      }
       // [/2e]
       }
       break;
