@@ -191,6 +191,7 @@ typedef struct _mrulist
 LPMRULIST MRU_Create(LPCWSTR, int, int);
 BOOL      MRU_Destroy(LPMRULIST);
 BOOL      MRU_Add(LPMRULIST, LPCWSTR);
+BOOL      MRU_AddA(LPMRULIST, LPCSTR);
 BOOL      MRU_AddFile(LPMRULIST, LPCWSTR, BOOL, BOOL);
 BOOL      MRU_Delete(LPMRULIST, int);
 BOOL      MRU_DeleteFileFromStore(LPMRULIST, LPCWSTR);

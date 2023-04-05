@@ -1884,16 +1884,6 @@ void n2e_ToolTipTrackActivate(const HWND hwndToolTip, const BOOL bActivate, LPVO
   SendMessage(hwndToolTip, TTM_TRACKACTIVATE, bActivate, (LPARAM)lpToolInfo);
 }
 
-BOOL n2e_FindMRUAdd(LPCSTR pszNew)
-{
-  const int iLength = lstrlenA(pszNew) + 1;
-  LPVOID lpwszNew = n2e_Alloc(iLength * sizeof(WCHAR));
-  MultiByteToWideChar(CP_UTF8, 0, pszNew, iLength, lpwszNew, iLength);
-  const BOOL res = MRU_Add(mruFind, lpwszNew);
-  n2e_Free(lpwszNew);
-  return res;
-}
-
 void n2e_StrTrimA(LPSTR* psz, LPCSTR pszTrimChars)
 {
   while (**psz && strchr(pszTrimChars, (unsigned char)**psz))

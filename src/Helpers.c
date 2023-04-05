@@ -30,6 +30,8 @@
 #include "scintilla.h"
 #include "helpers.h"
 #include "resource.h"
+#include "Extension/CommonUtils.h"
+#include "Extension/EditHelper.h"
 #include "Extension/Utils.h"
 
 
@@ -1714,6 +1716,16 @@ BOOL MRU_Add(LPMRULIST pmru, LPCWSTR pszNew)
   pmru->pszItems[0] = StrDup(pszNew);
   return (1);
 }
+
+// [2e]: Always save Find strings to MRU #440
+BOOL MRU_AddA(LPMRULIST pmru, LPCSTR szNew)
+{
+  const LPWSTR pszNew = n2e_MultiByteToWideString(szNew);
+  const BOOL res = MRU_Add(pmru, pszNew);
+  n2e_Free(pszNew);
+  return res;
+}
+// [/2e]
 
 BOOL MRU_AddFile(LPMRULIST pmru, LPCWSTR pszFile, BOOL bRelativePath, BOOL bUnexpandMyDocs)
 {

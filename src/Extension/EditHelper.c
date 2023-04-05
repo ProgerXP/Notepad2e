@@ -41,6 +41,7 @@ extern int iOpenSaveFilterIndex;
 extern BOOL bAlwaysOnTop;
 extern int flagAlwaysOnTop;
 extern PEDITLEXER pLexCurrent;
+extern LPMRULIST mruFind;
 
 void n2e_SplitLines(const HWND hwnd, const int iLineSizeLimit, const BOOL bColumnWrap)
 {
@@ -364,6 +365,9 @@ BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
 
 int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf)
 {
+  // [2e]: Always save Find strings to MRU #440
+  MRU_AddA(mruFind, pttf->lpstrText);
+
   int iPos = -1;
   BOOL bContinueSearch = TRUE;
   while (bContinueSearch)
@@ -494,7 +498,6 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
   if (res)
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
-    n2e_FindMRUAdd(ttf.lpstrText);
     lstrcpyA(lpefr->szFind, ttf.lpstrText);
     lstrcpyA(lpefr->szFindUTF8, ttf.lpstrText);
     if (next)
