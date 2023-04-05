@@ -1010,7 +1010,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,73,24,50,14
 END
 
-IDD_MODIFYLINES DIALOGEX 0, 0, 182, 110
+IDD_MODIFYLINES DIALOGEX 0, 0, 182, 117
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Modify Lines"
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -1030,6 +1030,8 @@ BEGIN
     CONTROL         "$(I)",204,"SysLink",0x0,7,92,13,8
     CONTROL         "$(0I)",205,"SysLink",0x0,30,92,17,8
     LTEXT           "Continuous number (zero-based).",IDC_STATIC,57,92,118,8
+    CONTROL         "$(W)",206,"SysLink",0x0,7,102,17,8
+    LTEXT           "Whole line contents.",IDC_STATIC,57,102,118,8
 END
 
 IDD_INSERTTAG DIALOGEX 0, 0, 182, 70
@@ -1374,7 +1376,11 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 175
         TOPMARGIN, 7
-        BOTTOMMARGIN, 103
+        BOTTOMMARGIN, 110
+        HORZGUIDE, 80
+        HORZGUIDE, 90
+        HORZGUIDE, 100
+        HORZGUIDE, 110
     END
 
     IDD_INSERTTAG, DIALOG

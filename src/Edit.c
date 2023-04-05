@@ -33,6 +33,7 @@
 #include "dialogs.h"
 #include "helpers.h"
 #include "resource.h"
+#include "Extension/CommonUtils.h"
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/ExtSelection.h"
@@ -2910,6 +2911,9 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
     {
       int iPos;
 
+      // [2e]: Add $(W) variable to Modify Lines #462
+      LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLine), SciCall_LineEndPosition(iLine));
+
       if (lstrlen(pwszPrefix))
       {
         char mszInsert[TEXT_BUFFER_LENGTH];
@@ -2920,7 +2924,8 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
         n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
           chPrefixAbsFormat, chPrefixAbsZeroFormat,
           chPrefixRelFormat, chPrefixRelZeroFormat,
-          chPrefixRel0Format, chPrefixRel0ZeroFormat);
+          chPrefixRel0Format, chPrefixRel0ZeroFormat,
+          text);
 
         iPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
@@ -2938,13 +2943,16 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
         n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
           chPrefixAbsFormat, chPrefixAbsZeroFormat,
           chPrefixRelFormat, chPrefixRelZeroFormat,
-          chPrefixRel0Format, chPrefixRel0ZeroFormat);
+          chPrefixRel0Format, chPrefixRel0ZeroFormat,
+          text);
 
         iPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
         SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
         SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
       }
+
+      n2e_Free(text);
     }
     SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 
@@ -6352,9 +6360,9 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 
   // [2e]: Modify Lines - use Syslink #289
   const DWORD iMinLinkID = 200;
-  const DWORD iMaxLinkID = 205;
+  const DWORD iMaxLinkID = 206;
   const LPCWSTR lpcwstrNumberFormats[] = {
-    L"$(L)", L"$(0L)", L"$(N)", L"$(0N)", L"$(I)", L"$(0I)"
+    L"$(L)", L"$(0L)", L"$(N)", L"$(0N)", L"$(I)", L"$(0I)", L"$(W)"
   };
   static DWORD dwFocusID = 0;
   // [/2e]

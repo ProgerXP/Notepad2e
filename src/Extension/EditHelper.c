@@ -1444,7 +1444,8 @@ BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
 LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex, const int iDocumentLineIndex,
   LPCSTR lpPrefixAbsFormat, LPCSTR lpPrefixAbsZeroFormat,
   LPCSTR lpPrefixRelFormat, LPCSTR lpPrefixRelZeroFormat,
-  LPCSTR lpPrefixRel0Format, LPCSTR lpPrefixRel0ZeroFormat)
+  LPCSTR lpPrefixRel0Format, LPCSTR lpPrefixRel0ZeroFormat,
+  LPCSTR lpTextLine)
 {
   n2e_ReplaceSubstringFormat(&buf[0], "$(L)", lpPrefixAbsFormat, iDocumentLineIndex);
   n2e_ReplaceSubstringFormat(&buf[0], "$(0L)", lpPrefixAbsZeroFormat, iDocumentLineIndex);
@@ -1452,6 +1453,7 @@ LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex,
   n2e_ReplaceSubstringFormat(&buf[0], "$(0N)", lpPrefixRelZeroFormat, iLineIndex - iLineStart + 1);
   n2e_ReplaceSubstringFormat(&buf[0], "$(I)", lpPrefixRel0Format, iLineIndex - iLineStart);
   n2e_ReplaceSubstringFormat(&buf[0], "$(0I)", lpPrefixRel0ZeroFormat, iLineIndex - iLineStart);
+  n2e_ReplaceSubstring(&buf[0], "$(W)", lpTextLine);
   return buf;
 }
 
