@@ -19,11 +19,12 @@
 ******************************************************************************/
 //'a"a"a|_'
 //"a ' b' c"
-//Ctrl+Shift+4 = [a 'b ' c]
+//Ctrl+Shift+4 = [a 'b "test-string "   asd asd asdas d[ wqe qwe qwe ]   ' c]
 //a ' b' c
 //(  [](f< {as dasdas}  ><asd.>)f)
 // ([]a |b)
 //"a b"
+// 'a'
 //Ctrl+Shift+B = "a[ b]" (правильно)
 //Ctrl+Shift+B = ["a b"] (почему?)
 

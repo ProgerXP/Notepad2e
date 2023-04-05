@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cmath>
 
+#include <queue>
 #include <stdexcept>
 #include <string>
 #include <vector>
@@ -2704,30 +2705,118 @@ static char braceOpposite(const char ch, const BraceMatchMode bracesMatchMode, c
   return CHAR_EMPTY;
 }
 
-std::map<char, int> g_mapBraces;
-
-bool checkBrace(const char chToCheck, int& openingBraceCount)
-{
-  if (g_mapBraces.find(chToCheck) != g_mapBraces.end())
-  {
-    --g_mapBraces[chToCheck];
-    --openingBraceCount;
-    if (g_mapBraces[chToCheck] == 0)
-      g_mapBraces.erase(chToCheck);
-    return openingBraceCount == 0;
-  }
-  return true;
-}
-
 const char* c_lpcstrOpeningBraces = "([{<";
 const char* c_lpcstrClosingBraces = ")]}>";
+const char* c_lpcstrQuotes = "'\"`";
 
-static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode, const bool openingBraceOnly, int& openingBraceCount) noexcept {
-  if ((strchr(c_lpcstrOpeningBraces, ch)) && !checkBrace(ch, openingBraceCount))
-      return CHAR_EMPTY;
+static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode, const bool openingBraceOnly, const bool processChar) noexcept;
 
-  if (const auto ptr = strchr(c_lpcstrClosingBraces, ch))
-    ++g_mapBraces[c_lpcstrOpeningBraces[ptr - c_lpcstrClosingBraces]];
+class CBraceCounter
+{
+public:
+  template<typename T, typename Container = std::deque<T> >
+  class iterable_queue : public std::queue<T, Container>
+  {
+  public:
+    typedef typename Container::iterator iterator;
+    typedef typename Container::const_iterator const_iterator;
+
+    iterator begin() { return this->c.begin(); }
+    iterator end() { return this->c.end(); }
+    const_iterator begin() const { return this->c.begin(); }
+    const_iterator end() const { return this->c.end(); }
+  };
+
+  bool checkBrace(const char chToCheck, const bool isClosingBrace)
+  {
+    if (m_queueBraces.size() == 0)
+      return true;
+
+    if (m_queueBraces.front().first == chToCheck)
+    {
+      const bool isCurrentBraceClosed = m_queueBraces.front().second;
+
+      m_queueBraces.pop();
+
+      auto isClosedBrace = isCurrentBraceClosed || updateIfBraceExists(BraceOpposite(chToCheck, m_bracesMatchMode, false, false));
+      if (m_queueBraces.size() == 0)
+        isClosedBrace = false;
+      return ((((m_bracesMatchMode != quotesOnly) && strchr(c_lpcstrOpeningBraces, chToCheck))
+        || ((m_bracesMatchMode != bracesOnly) && strchr(c_lpcstrQuotes, chToCheck)))
+        && !isClosedBrace);
+    }
+    return true;
+  }
+  bool updateIfBraceExists(const char ch)
+  {
+    auto it = std::find(m_queueBraces.begin(), m_queueBraces.end(), std::pair<char, bool>(ch, false));
+    if (it != m_queueBraces.end())
+    {
+      it->second = true;
+      return true;
+    }
+    return false;
+  }
+  void countBrace(const char ch)
+  {
+    if (m_bracesMatchMode != quotesOnly)
+    {
+      if (const auto ptr = strchr(c_lpcstrOpeningBraces, ch))
+      {
+        m_queueBraces.emplace(std::pair<char, bool>(ch, false));
+      }
+      else if (const auto ptr = strchr(c_lpcstrClosingBraces, ch))
+      {
+        m_queueBraces.emplace(std::pair<char, bool>(ch, m_firstCheck && (m_queueBraces.size() == 0)));
+        //updateClosedBrace(BraceOpposite(ch, m_bracesMatchMode, false, false));
+      }
+    }
+    if (m_bracesMatchMode != bracesOnly)
+    {
+      if (const auto ptr = strchr(c_lpcstrQuotes, ch))
+      {
+        m_queueBraces.emplace(std::pair<char, bool>(ch, false));
+        //updateClosedBrace(BraceOpposite(ch, m_bracesMatchMode, false, false));
+      }
+    }
+    m_firstCheck = false;
+    return;
+  }
+
+  char processBrace(const BraceMatchMode bracesMatchMode, const char ch)
+  {
+    if (bracesMatchMode != quotesOnly)
+    {
+      if ((strchr(c_lpcstrOpeningBraces, ch)) && !checkBrace(ch, false))
+        return CHAR_EMPTY;
+      else if ((strchr(c_lpcstrClosingBraces, ch)) && !checkBrace(ch, true))
+        return CHAR_EMPTY;
+    }
+    if (bracesMatchMode != bracesOnly)
+    {
+      if ((strchr(c_lpcstrQuotes, ch)) && !checkBrace(ch, true))
+        return CHAR_EMPTY;
+    }
+    return ch;
+  }
+  void reset(BraceMatchMode bracesMatchMode)
+  {
+    m_bracesMatchMode = bracesMatchMode;
+    m_firstCheck = true;
+    m_queueBraces.swap(std::queue<std::pair<char, bool>>());
+  }
+private:
+  bool m_firstCheck = true;
+  BraceMatchMode m_bracesMatchMode = BraceMatchMode::bracesAndQoutes;
+  iterable_queue<std::pair<char, bool>> m_queueBraces;
+};
+
+CBraceCounter g_braceCounter;
+
+static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode, const bool openingBraceOnly, const bool processChar) noexcept {
+
+  if (processChar)
+    ch = g_braceCounter.processBrace(bracesMatchMode, ch);
 
 	switch (ch) {
 	case '(':
@@ -2757,7 +2846,7 @@ static char BraceOpposite(char ch, const BraceMatchMode bracesMatchMode, const b
 
 // [2e]: Treat quotes as braces #287
 int Document::FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept {
-  g_mapBraces.clear();
+  //g_braceCounter.reset();
 	int depth = 1;
 	position = NextPosition(position, direction);
 	while ((position >= 0) && (position < LengthNoExcept())) {
@@ -2783,9 +2872,9 @@ int Document::FindBrace(Sci::Position position, const int direction, const char 
 
 // TODO: should be able to extend styled region to find matching brace
 Sci::Position Document::BraceMatch(Sci::Position position, const BraceMatchMode bracesMatchMode, const bool findNearestBrace, const bool lookForwardBrace) noexcept {
-  int openingBraceCount = 0;
+  g_braceCounter.reset(bracesMatchMode);
 	char chBrace = CharAt(position);
-	char chSeek = BraceOpposite(chBrace, bracesMatchMode, false, openingBraceCount);
+	char chSeek = BraceOpposite(chBrace, bracesMatchMode, false, true);
   if (chSeek == '\0')
   {
     if (findNearestBrace)
@@ -2796,15 +2885,14 @@ Sci::Position Document::BraceMatch(Sci::Position position, const BraceMatchMode 
       while ((position >= lineStartPos + 1) && (chSeek == '\0'))
       {
         position = NextPosition(position, -1);
-        if (strchr(c_lpcstrOpeningBraces, CharAt(position)))
-          ++openingBraceCount;
+        g_braceCounter.countBrace(CharAt(position));
       }
       position = pos;
       while ((position >= lineStartPos + 1) && (chSeek == '\0'))
       {
         position = NextPosition(position, -1);
         chBrace = CharAt(position);
-        chSeek = BraceOpposite(chBrace, bracesMatchMode, true, openingBraceCount);
+        chSeek = BraceOpposite(chBrace, bracesMatchMode, true, true);
       }
       if (chSeek != '\0')
         return position;
