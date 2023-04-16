@@ -306,20 +306,24 @@ void n2e_JumpToOffset(const HWND hwnd, const int iNewPos)
 
 BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
 {
-  return pStyle && (StrStrI(pStyle->pszName, L"comment") != NULL);
+  return pStyle && (pStyle->i64Style != -1) && (StrStrI(pStyle->pszName, L"comment") != NULL);
 }
 
 PEDITSTYLE n2e_GetStyleById(const int iStyle)
 {
   PEDITSTYLE pStyle = pLexCurrent->Styles;
   int i = 0;
-  while (pStyle && (pStyle->iStyle >= 0))
+  while (pStyle && (pStyle->i64Style != -1))
   {
-    if (((iStyle == 0) && pStyle->iStyle == iStyle)
-      || (MULTI_STYLE_STYLE1(pStyle->iStyle) == iStyle)
-      || (MULTI_STYLE_STYLE2(pStyle->iStyle) == iStyle)
-      || (MULTI_STYLE_STYLE3(pStyle->iStyle) == iStyle)
-      || (MULTI_STYLE_STYLE4(pStyle->iStyle) == iStyle))
+    if (((iStyle == 0) && pStyle->i64Style == iStyle)
+      || (MULTI_STYLE_STYLE1(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE2(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE3(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE4(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE5(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE6(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE7(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE8(pStyle->i64Style) == iStyle))
       break;
 
     pStyle = &pLexCurrent->Styles[++i];
@@ -343,7 +347,7 @@ BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const 
   const HWND _hwnd = hwnd ? hwnd : hwndEdit;
   const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, iTestPos, 0);
   const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
-  return (pStyle
+  return (pStyle && (pStyle->i64Style != -1)
             && (StrStrI(pStyle->pszName, L"comment") != NULL)
             && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle));
     //|| (SciCall_GetLength() == iTestPos);
@@ -353,7 +357,7 @@ BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
 {
   PEDITSTYLE pStyle = pLexCurrent->Styles;
   int i = 0;
-  while (pStyle && (pStyle->iStyle >= 0))
+  while (pStyle && (pStyle->i64Style != -1))
   {
     if (n2e_IsCommentStyle(pStyle))
       return TRUE;

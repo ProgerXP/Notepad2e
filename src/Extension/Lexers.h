@@ -3,11 +3,17 @@
 #include "SciLexer.h"
 #include "Scintilla.h"
 
-#define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24))
-#define MULTI_STYLE_STYLE1(s) (s & 0xFF)
-#define MULTI_STYLE_STYLE2(s) ((s >> 8) & 0xFF)
-#define MULTI_STYLE_STYLE3(s) ((s >> 16) & 0xFF)
-#define MULTI_STYLE_STYLE4(s) ((s >> 24) & 0xFF)
+#define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24)|(ULONG64)0)
+#define MULTI_STYLE2(a,b,c,d,e,f,g,h) ((a)|(b<<8)|(c<<16)|(d<<24)|((ULONG64)e<<32)|((ULONG64)f<<40)|((ULONG64)g<<48)|((ULONG64)h<<56))
+#define MULTI_STYLE_STYLEX(s,x) ((s >> x) & 0xFF)
+#define MULTI_STYLE_STYLE1(s) MULTI_STYLE_STYLEX(s,0)
+#define MULTI_STYLE_STYLE2(s) MULTI_STYLE_STYLEX(s,8)
+#define MULTI_STYLE_STYLE3(s) MULTI_STYLE_STYLEX(s,16)
+#define MULTI_STYLE_STYLE4(s) MULTI_STYLE_STYLEX(s,24)
+#define MULTI_STYLE_STYLE5(s) MULTI_STYLE_STYLEX(s,32)
+#define MULTI_STYLE_STYLE6(s) MULTI_STYLE_STYLEX(s,40)
+#define MULTI_STYLE_STYLE7(s) MULTI_STYLE_STYLEX(s,48)
+#define MULTI_STYLE_STYLE8(s) MULTI_STYLE_STYLEX(s,56)
 
 #define NULL_COMMENT   FALSE, "", "", "", L"", L"", L""
 #define ASM_COMMENT    TRUE, ";", "", "", L";", L"", L""
@@ -41,8 +47,8 @@ typedef struct _editstyle
 {
   union
   {
-    INT32 iStyle;
-    UINT8 iStyle8[4];
+    INT64 i64Style;
+    UINT8 iStyle8[8];
   };
   int rid;
   WCHAR* pszName;

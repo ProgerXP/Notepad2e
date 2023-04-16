@@ -126,7 +126,7 @@ void Style_Load()
       lstrcpyn(pLexArray[iLexer]->szExtensions, pLexArray[iLexer]->pszDefExt,
                COUNTOF(pLexArray[iLexer]->szExtensions));
     i = 0;
-    while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+    while (pLexArray[iLexer]->Styles[i].i64Style != -1)
     {
       IniSectionGetString(pIniSection, pLexArray[iLexer]->Styles[i].pszName,
                           pLexArray[iLexer]->Styles[i].pszDefault,
@@ -188,7 +188,7 @@ void Style_Save()
   {
     IniSectionSetString(pIniSection, L"FileNameExtensions", pLexArray[iLexer]->szExtensions);
     i = 0;
-    while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+    while (pLexArray[iLexer]->Styles[i].i64Style != -1)
     {
       IniSectionSetString(pIniSection, pLexArray[iLexer]->Styles[i].pszName, pLexArray[iLexer]->Styles[i].szValue);
       i++;
@@ -237,7 +237,7 @@ BOOL Style_Import(HWND hwnd)
           lstrcpyn(pLexArray[iLexer]->szExtensions, pLexArray[iLexer]->pszDefExt,
                    COUNTOF(pLexArray[iLexer]->szExtensions));
         i = 0;
-        while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+        while (pLexArray[iLexer]->Styles[i].i64Style != -1)
         {
           IniSectionGetString(pIniSection, pLexArray[iLexer]->Styles[i].pszName,
                               pLexArray[iLexer]->Styles[i].pszDefault,
@@ -286,7 +286,7 @@ BOOL Style_Export(HWND hwnd)
     {
       IniSectionSetString(pIniSection, L"FileNameExtensions", pLexArray[iLexer]->szExtensions);
       i = 0;
-      while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+      while (pLexArray[iLexer]->Styles[i].i64Style != -1)
       {
         IniSectionSetString(pIniSection, pLexArray[iLexer]->Styles[i].pszName, pLexArray[iLexer]->Styles[i].szValue);
         i++;
@@ -420,7 +420,7 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   SendMessage(hwnd, SCI_STYLERESETDEFAULT, 0, 0);
   SendMessage(hwnd, SCI_STYLESETCHARACTERSET, STYLE_DEFAULT, (LPARAM)iDefaultCharSet);
   iBaseFontSize = 10;
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[0 + iIdx].iStyle, lexDefault.Styles[0 + iIdx].szValue); // default
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[0 + iIdx].i64Style), lexDefault.Styles[0 + iIdx].szValue); // default
   Style_StrGetSize(lexDefault.Styles[0 + iIdx].szValue, &iBaseFontSize);                  // base size
 
   if (!Style_StrGetColor(TRUE, lexDefault.Styles[0 + iIdx].szValue, &iValue))
@@ -429,7 +429,7 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     SendMessage(hwnd, SCI_STYLESETBACK, STYLE_DEFAULT, (LPARAM)GetSysColor(COLOR_WINDOW));    // default window color
 
   if (pLexNew->iLexer != SCLEX_NULL)
-    Style_SetStyles(hwnd, pLexNew->iLexer, pLexNew->Styles[0].iStyle, pLexNew->Styles[0].szValue);    // lexer default
+    Style_SetStyles(hwnd, pLexNew->iLexer, MULTI_STYLE_STYLE1(pLexNew->Styles[0].i64Style), pLexNew->Styles[0].szValue);    // lexer default
   SendMessage(hwnd, SCI_STYLECLEARALL, 0, 0);
 
   // [2e]: Lua LPeg Lexers #251
@@ -441,11 +441,11 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
 #endif
   // [/2e]
 
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[1 + iIdx].iStyle, lexDefault.Styles[1 + iIdx].szValue); // linenumber
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[2 + iIdx].iStyle, lexDefault.Styles[2 + iIdx].szValue); // brace light
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[3 + iIdx].iStyle, lexDefault.Styles[3 + iIdx].szValue); // brace bad
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[4 + iIdx].iStyle, lexDefault.Styles[4 + iIdx].szValue);    // control char
-  Style_SetStyles(hwnd, lexDefault.iLexer, lexDefault.Styles[5 + iIdx].iStyle, lexDefault.Styles[5 + iIdx].szValue); // indent guide
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[1 + iIdx].i64Style), lexDefault.Styles[1 + iIdx].szValue); // linenumber
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[2 + iIdx].i64Style), lexDefault.Styles[2 + iIdx].szValue); // brace light
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[3 + iIdx].i64Style), lexDefault.Styles[3 + iIdx].szValue); // brace bad
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[4 + iIdx].i64Style), lexDefault.Styles[4 + iIdx].szValue); // control char
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[5 + iIdx].i64Style), lexDefault.Styles[5 + iIdx].szValue); // indent guide
 
   // More default values...
   if (Style_StrGetColor(TRUE, lexDefault.Styles[6 + iIdx].szValue, &rgb))
@@ -641,9 +641,9 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   {
     int j;
     i = 1;
-    while (pLexNew->Styles[i].iStyle != -1)
+    while (pLexNew->Styles[i].i64Style != -1)
     {
-      for (j = 0; j < 4 && (pLexNew->Styles[i].iStyle8[j] != 0 || j == 0); ++j)
+      for (j = 0; j < 8 && (pLexNew->Styles[i].iStyle8[j] != 0 || j == 0); ++j)
         Style_SetStyles(hwnd, pLexNew->iLexer, pLexNew->Styles[i].iStyle8[j], pLexNew->Styles[i].szValue);
 
       if (pLexNew->iLexer == SCLEX_HTML && pLexNew->Styles[i].iStyle8[0] == SCE_HPHP_DEFAULT)
@@ -733,13 +733,6 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
            Style_SetStyles(hwnd, pLexNew->iLexer, iRelated[j], pLexNew->Styles[i].szValue);
       }
 
-      if (pLexNew->iLexer == SCLEX_CPP && pLexNew->Styles[i].iStyle8[0] == SCE_C_COMMENT)
-      {
-        int iRelated[] = { SCE_C_COMMENTLINE, SCE_C_COMMENTDOC, SCE_C_COMMENTLINEDOC, SCE_C_COMMENTDOCKEYWORD, SCE_C_COMMENTDOCKEYWORDERROR };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-          Style_SetStyles(hwnd, pLexNew->iLexer, iRelated[j], pLexNew->Styles[i].szValue);
-      }
-
       // [2e]: Highlight JS templates #207
       if (pLexNew->iLexer == SCLEX_CPP && pLexNew->rid == 63010 && pLexNew->Styles[i].iStyle8[0] == SCE_C_STRING)
       {
@@ -747,12 +740,6 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
       }
       // [/2e]
 
-      if (pLexNew->iLexer == SCLEX_SQL && pLexNew->Styles[i].iStyle8[0] == SCE_SQL_COMMENT)
-      {
-        int iRelated[] = { SCE_SQL_COMMENTLINE, SCE_SQL_COMMENTDOC, SCE_SQL_COMMENTLINEDOC, SCE_SQL_COMMENTDOCKEYWORD, SCE_SQL_COMMENTDOCKEYWORDERROR };
-        for (j = 0; j < COUNTOF(iRelated); j++)
-          Style_SetStyles(hwnd, pLexNew->iLexer, iRelated[j], pLexNew->Styles[i].szValue);
-      }
       i++;
     }
   }
@@ -1818,7 +1805,7 @@ void Style_AddLexerToTreeView(HWND hwnd, PEDITLEXER plex)
 
   tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
 
-  while (plex->Styles[i].iStyle != -1)
+  while (plex->Styles[i].i64Style != -1)
   {
     if (GetString(plex->Styles[i].rid, tch, COUNTOF(tch)))
       tvis.item.pszText = tch;
@@ -2288,7 +2275,7 @@ void Style_ConfigDlg(HWND hwnd)
   {
     StyleBackup[c++] = StrDup(pLexArray[iLexer]->szExtensions);
     i = 0;
-    while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+    while (pLexArray[iLexer]->Styles[i].i64Style != -1)
     {
       StyleBackup[c++] = StrDup(pLexArray[iLexer]->Styles[i].szValue);
       i++;
@@ -2307,7 +2294,7 @@ void Style_ConfigDlg(HWND hwnd)
     {
       lstrcpy(pLexArray[iLexer]->szExtensions, StyleBackup[c++]);
       i = 0;
-      while (pLexArray[iLexer]->Styles[i].iStyle != -1)
+      while (pLexArray[iLexer]->Styles[i].i64Style != -1)
       {
         lstrcpy(pLexArray[iLexer]->Styles[i].szValue, StyleBackup[c++]);
         i++;
