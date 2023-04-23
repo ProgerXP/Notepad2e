@@ -5161,9 +5161,10 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         case IDACC_SELECTNEXTREPLACE:
         case IDACC_SELECTPREVREPLACE:
           {
-            const BOOL selectNext = (LOWORD(wParam) == IDACC_SELECTNEXTSEARCH) || (LOWORD(wParam) == IDACC_SELECTNEXTREPLACE);
+            const UINT uiCmdID = LOWORD(wParam);
+            const BOOL selectNext = (uiCmdID == IDACC_SELECTNEXTSEARCH) || (uiCmdID == IDACC_SELECTNEXTREPLACE);
             const HWND hwndCombo = GetDlgItem(hwnd,
-              ((LOWORD(wParam) == IDACC_SELECTNEXTSEARCH) || (LOWORD(wParam) == IDACC_SELECTPREVSEARCH)) ? IDC_FINDTEXT : IDC_REPLACETEXT);
+              ((uiCmdID == IDACC_SELECTNEXTSEARCH) || (uiCmdID == IDACC_SELECTPREVSEARCH)) ? IDC_FINDTEXT : IDC_REPLACETEXT);
             int iCurSel = ComboBox_GetCurSel(hwndCombo);
             iCurSel = selectNext
               ? (iCurSel == -1)
