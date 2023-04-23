@@ -192,6 +192,10 @@
 #define IDACC_SELTOPREV                 209
 #define IDACC_BACK                      210
 #define IDACC_GOTO                      211
+#define IDACC_SELECTNEXTSEARCH          212
+#define IDACC_SELECTPREVSEARCH          213
+#define IDACC_SELECTNEXTREPLACE         214
+#define IDACC_SELECTPREVREPLACE         215
 #define IDS_APPTITLE                    10000
 #define IDS_APPTITLE_ELEVATED           10001
 #define IDS_APPTITLE_PASTEBOARD         10002

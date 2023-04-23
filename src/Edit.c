@@ -19,6 +19,7 @@
 ******************************************************************************/
 #define _WIN32_WINNT 0x501
 #include <windows.h>
+#include <windowsX.h>
 #include <shlwapi.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -5050,6 +5051,19 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           {
             n2e_ToolTipAddControl(hwndToolTip, GetDlgItem(hwnd, IDC_REPLACE), L"Select match or replace and go to next (F4)");
           }
+          // [2e]: Add hotkeys to cycle MRUs in Find/Replace #434
+          const HWND hwndFindText = GetDlgItem(hwnd, IDC_FINDTEXT);
+          const HWND hwndReplaceText = GetDlgItem(hwnd, IDC_REPLACETEXT);
+          LPTSTR lpszFindToolTip = L"Select next (Ctrl+N), previous (with Shift)";
+          n2e_ToolTipAddControl(hwndToolTip, hwndFindText, lpszFindToolTip);
+          n2e_ToolTipAddControl(hwndToolTip, FindWindowEx(hwndFindText, NULL, WC_EDIT, NULL), lpszFindToolTip);
+          if (hwndReplaceText)
+          {
+            LPTSTR lpszReplaceToolTip = L"Select next (Ctrl+H), previous (with Shift)";
+            n2e_ToolTipAddControl(hwndToolTip, hwndReplaceText, lpszReplaceToolTip);
+            n2e_ToolTipAddControl(hwndToolTip, FindWindowEx(hwndReplaceText, NULL, WC_EDIT, NULL), lpszReplaceToolTip
+            );
+          }
         }
         // [/2e]
       }
@@ -5140,6 +5154,29 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           n2e_EditFindReplaceUpdateCheckboxes(hwnd, IDC_FINDTRANSFORMBS);
           PostMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_FINDTEXT, 1), 0);
           break;
+
+        // [2e]: Add hotkeys to cycle MRUs in Find/Replace #434
+        case IDACC_SELECTNEXTSEARCH:
+        case IDACC_SELECTPREVSEARCH:
+        case IDACC_SELECTNEXTREPLACE:
+        case IDACC_SELECTPREVREPLACE:
+          {
+            const BOOL selectNext = (LOWORD(wParam) == IDACC_SELECTNEXTSEARCH) || (LOWORD(wParam) == IDACC_SELECTNEXTREPLACE);
+            const HWND hwndCombo = GetDlgItem(hwnd,
+              ((LOWORD(wParam) == IDACC_SELECTNEXTSEARCH) || (LOWORD(wParam) == IDACC_SELECTPREVSEARCH)) ? IDC_FINDTEXT : IDC_REPLACETEXT);
+            int iCurSel = ComboBox_GetCurSel(hwndCombo);
+            iCurSel = selectNext
+              ? (iCurSel == -1)
+                ? 0
+                : ((iCurSel >= 0) && (iCurSel < ComboBox_GetCount(hwndCombo) - 1)) ? iCurSel + 1 : iCurSel
+              : (iCurSel == -1)
+                ? ComboBox_GetCount(hwndCombo) - 1
+                : (iCurSel > 0) ? iCurSel - 1 : iCurSel;
+            ComboBox_SetCurSel(hwndCombo, iCurSel);
+            SetFocus(hwndCombo);
+          }
+          break;
+        // [/2e]
 
         case IDOK:
         case IDC_FINDPREV:
@@ -5366,7 +5403,11 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           break;
 
         case IDACC_REPLACE:
-          PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
+          if (GetDlgItem(hwnd, IDC_REPLACETEXT))
+            // [2e]: Add hotkeys to cycle MRUs in Find / Replace #434
+            PostMessage(hwnd, WM_COMMAND, MAKELONG(IDACC_SELECTNEXTREPLACE, 1), 0);
+          else
+            PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
           break;
 
         case IDACC_GOTO:
