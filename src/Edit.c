@@ -219,6 +219,15 @@ HWND EditCreate(HWND hwndParent)
   SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_DELETE + (SCMOD_ALT << 16)), SCI_ALTDELWORDRIGHT);
   // [/2e]
 
+  // [2e]: Shift/Ctrl+Alt+Left/Right to navigate word start/end #436
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_LEFT + ((SCMOD_CTRL | SCMOD_ALT) << 16)), SCI_ALTWORDLEFT2);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_RIGHT + ((SCMOD_CTRL | SCMOD_ALT) << 16)), SCI_ALTWORDRIGHT2);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_LEFT + ((SCMOD_CTRL | SCMOD_ALT | SCMOD_SHIFT) << 16)), SCI_ALTWORDLEFTEXTEND2);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_RIGHT + ((SCMOD_CTRL | SCMOD_ALT | SCMOD_SHIFT) << 16)), SCI_ALTWORDRIGHTEXTEND2);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_BACK + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), SCI_ALTDELWORDLEFT2);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_DELETE + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), SCI_ALTDELWORDRIGHT2);
+  // [/2e]
+
   // Init default values for printing
   EditPrintInit();
 

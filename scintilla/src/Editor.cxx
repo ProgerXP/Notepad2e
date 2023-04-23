@@ -3411,7 +3411,7 @@ Sci::Position Editor::LineEndWrapPosition(Sci::Position position) {
 		return endPos;
 }
 
-static bool IsAltWordMessage(unsigned int iMessage) noexcept {
+static int AltWordNavigationMode(unsigned int iMessage) noexcept {
 	switch (iMessage) {
 	case SCI_ALTWORDLEFT:
 	case SCI_ALTWORDLEFTEXTEND:
@@ -3419,9 +3419,16 @@ static bool IsAltWordMessage(unsigned int iMessage) noexcept {
 	case SCI_ALTWORDRIGHTEXTEND:
 	case SCI_ALTDELWORDLEFT:
 	case SCI_ALTDELWORDRIGHT:
-		return true;
+		return 1;
+	case SCI_ALTWORDLEFT2:
+	case SCI_ALTWORDLEFTEXTEND2:
+	case SCI_ALTDELWORDLEFT2:
+	case SCI_ALTWORDRIGHT2:
+	case SCI_ALTWORDRIGHTEXTEND2:
+	case SCI_ALTDELWORDRIGHT2:
+		return 2;
 	default:
-		return false;
+		return 0;
 	}
 }
 
@@ -3529,14 +3536,18 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 			case SCI_WORDLEFT:
 			case SCI_WORDLEFTEXTEND:
 			case SCI_ALTWORDLEFT:
+			case SCI_ALTWORDLEFT2:
 			case SCI_ALTWORDLEFTEXTEND:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, IsAltWordMessage(iMessage)));
+			case SCI_ALTWORDLEFTEXTEND2:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, AltWordNavigationMode(iMessage)));
 				break;
 			case SCI_WORDRIGHT:
 			case SCI_WORDRIGHTEXTEND:
 			case SCI_ALTWORDRIGHT:
+			case SCI_ALTWORDRIGHT2:
 			case SCI_ALTWORDRIGHTEXTEND:
-				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, IsAltWordMessage(iMessage)));
+			case SCI_ALTWORDRIGHTEXTEND2:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, AltWordNavigationMode(iMessage)));
 				break;
 			case SCI_WORDLEFTEND:
 			case SCI_WORDLEFTENDEXTEND:
@@ -3617,8 +3628,10 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 
 			case SCI_WORDLEFT:
 			case SCI_ALTWORDLEFT:
+			case SCI_ALTWORDLEFT2:
 			case SCI_WORDRIGHT:
 			case SCI_ALTWORDRIGHT:
+			case SCI_ALTWORDRIGHT2:
 			case SCI_WORDLEFTEND:
 			case SCI_WORDRIGHTEND:
 			case SCI_WORDPARTLEFT:
@@ -3639,8 +3652,10 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 			case SCI_CHARRIGHTEXTEND:
 			case SCI_WORDLEFTEXTEND:
 			case SCI_ALTWORDLEFTEXTEND:
+			case SCI_ALTWORDLEFTEXTEND2:
 			case SCI_WORDRIGHTEXTEND:
 			case SCI_ALTWORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHTEXTEND2:
 			case SCI_WORDLEFTENDEXTEND:
 			case SCI_WORDRIGHTENDEXTEND:
 			case SCI_WORDPARTLEFTEXTEND:
@@ -3684,7 +3699,7 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 
 	// Rightwards and leftwards deletions differ in treatment of virtual space.
 	// Clear virtual space for leftwards, realise for rightwards.
-	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT);
+	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT) || (iMessage == SCI_ALTDELWORDLEFT2);
 
 	if (!additionalSelectionTyping) {
 		InvalidateWholeSelection();
@@ -3698,7 +3713,7 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 			// Delete to the left so first clear the virtual space.
 			sel.Range(r).ClearVirtualSpace();
 		} else {
-			if (iMessage != SCI_ALTDELWORDRIGHT)
+			if ((iMessage != SCI_ALTDELWORDRIGHT) && (iMessage != SCI_ALTDELWORDRIGHT2))
 				// Delete to the right so first realise the virtual space.
 				sel.Range(r) = SelectionRange(
 					RealizeVirtualSpace(sel.Range(r).caret));
@@ -3708,25 +3723,27 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 		switch (iMessage) {
 		case SCI_DELWORDLEFT:
 			rangeDelete = Range(
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, false),
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, AltWordNavigationMode(iMessage)),
 				sel.Range(r).caret.Position());
 			break;
 		case SCI_ALTDELWORDLEFT:
+		case SCI_ALTDELWORDLEFT2:
 			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
 				rangeDelete = Range(
 					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
 					std::max(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()));
 			else
 				rangeDelete = Range(
-					pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, true),
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, AltWordNavigationMode(iMessage)),
 					sel.Range(r).caret.Position());
 			break;
 		case SCI_DELWORDRIGHT:
 			rangeDelete = Range(
 				sel.Range(r).caret.Position(),
-				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, false));
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, AltWordNavigationMode(iMessage)));
 			break;
 		case SCI_ALTDELWORDRIGHT:
+		case SCI_ALTDELWORDRIGHT2:
 			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
 				rangeDelete = Range(
 					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
@@ -3734,12 +3751,12 @@ int Editor::DelWordOrLine(unsigned int iMessage) {
 			else
 				rangeDelete = Range(
 					sel.Range(r).caret.Position(),
-					pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, true));
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, AltWordNavigationMode(iMessage)));
 			break;
 		case SCI_DELWORDRIGHTEND:
 			rangeDelete = Range(
 				sel.Range(r).caret.Position(),
-				pdoc->NextWordEnd(sel.Range(r).caret.Position(), 1));
+				pdoc->NextWordEnd(sel.Range(r).caret.Position(), AltWordNavigationMode(iMessage)));
 			break;
 		case SCI_DELLINELEFT:
 			rangeDelete = Range(
@@ -3818,12 +3835,16 @@ int Editor::KeyCommand(unsigned int iMessage) {
 	case SCI_CHARRIGHTRECTEXTEND:
 	case SCI_WORDLEFT:
 	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFT2:
 	case SCI_WORDLEFTEXTEND:
 	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND2:
 	case SCI_WORDRIGHT:
 	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHT2:
 	case SCI_WORDRIGHTEXTEND:
 	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND2:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:
 	case SCI_WORDRIGHTEND:
@@ -3970,8 +3991,10 @@ int Editor::KeyCommand(unsigned int iMessage) {
 
 	case SCI_DELWORDLEFT:
 	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDLEFT2:
 	case SCI_DELWORDRIGHT:
 	case SCI_ALTDELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT2:
 	case SCI_DELWORDRIGHTEND:
 	case SCI_DELLINELEFT:
 	case SCI_DELLINERIGHT:
@@ -7632,12 +7655,16 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_CHARRIGHTEXTEND:
 	case SCI_WORDLEFT:
 	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFT2:
 	case SCI_WORDLEFTEXTEND:
 	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND2:
 	case SCI_WORDRIGHT:
 	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHT2:
 	case SCI_WORDRIGHTEXTEND:
 	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND2:
 	case SCI_WORDLEFTEND:
 	case SCI_WORDLEFTENDEXTEND:
 	case SCI_WORDRIGHTEND:
@@ -7683,8 +7710,10 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	case SCI_ZOOMOUT:
 	case SCI_DELWORDLEFT:
 	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDLEFT2:
 	case SCI_DELWORDRIGHT:
 	case SCI_ALTDELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT2:
 	case SCI_DELWORDRIGHTEND:
 	case SCI_DELLINELEFT:
 	case SCI_DELLINERIGHT:

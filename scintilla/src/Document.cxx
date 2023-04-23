@@ -1818,10 +1818,10 @@ Sci::Position Document::ExtendWordSelect(Sci::Position pos, int delta, bool only
  * additional movement to transit white space.
  * Used by cursor movement by word commands.
  */
-Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlternativeNavigation) const {
+Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternativeNavigationMode) const {
 	if (delta < 0) {
 		// [2e]: ctrl+arrow behavior toggle #89
-		switch (CalcWordNavigationMode(useAlternativeNavigation))
+		switch (CalcWordNavigationMode(alternativeNavigationMode))
 		{
 		case 0:
 			// standard navigation
@@ -1877,6 +1877,25 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlte
 				}
 			}
 			break;
+		case 2:
+			// [2e]: Shift/Ctrl+Alt+Left/Right to navigate word start/end #436
+			{
+				if (pos > 0)
+				{
+					pos--;
+				}
+				CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+				while (pos > 0)
+				{
+					CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+					if (((ccPrev == CharClassify::ccWord) || (ccPrev == CharClassify::ccPunctuation))
+						&& ((ccCurrent != CharClassify::ccWord) && (ccCurrent != CharClassify::ccPunctuation)))						
+						break;
+					pos--;
+					ccCurrent = ccPrev;
+				}
+			}
+			break;
 			// [/2e]
 		default:
 			// not implemented
@@ -1885,7 +1904,7 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlte
 		}
 	} else {
 		// [2e]: ctrl+arrow behavior toggle #89
-		switch (CalcWordNavigationMode(useAlternativeNavigation))
+		switch (CalcWordNavigationMode(alternativeNavigationMode))
 		{
 		case 0:
 			// standard navigation
@@ -1937,6 +1956,23 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, bool useAlte
 						pos++;
 						ccPrev = ccCurrent;
 					}
+				}
+			}
+			break;
+		case 2:
+			// [2e]: Shift/Ctrl+Alt+Left/Right to navigate word start/end #436
+			{
+				pos++;
+				assert(pos > 0);
+				CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+				while (pos < Length())
+				{
+					CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+					if ((ccCurrent != CharClassify::ccWord) && (ccCurrent != CharClassify::ccPunctuation)
+						&& ((ccPrev == CharClassify::ccWord) || (ccPrev == CharClassify::ccPunctuation)))
+						break;
+					pos++;
+					ccPrev = ccCurrent;
 				}
 			}
 			break;
@@ -2813,12 +2849,12 @@ void Document::SetWordNavigationMode(const int iMode)
 }
 
 // [2e]: Alt + Arrow to invert accelerated mode for single navigation #323
-int Document::CalcWordNavigationMode(const bool invertMode) const
+int Document::CalcWordNavigationMode(const int navigationMode) const
 {
-	if (!invertMode)
+	if (navigationMode == 0)
 		return wordNavigationMode;
 
-	return (wordNavigationMode != 0) ? 0 : 1;
+	return navigationMode;
 }
 
 // [2e]: View > St&arting Line Number... #342

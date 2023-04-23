@@ -1444,3 +1444,270 @@ void Editor::LinesJoin(const bool noSpaceDelimiter) {
 /**Join Lines/Paragraphs - Alt modifier to not add space #451**
 
 ---
+**Shift/Ctrl+Alt+Left/Right to navigate word start/end #436**
+
+Add new commands:
+
+[Scintilla/include/Scintilla.h]:
+```
+#define SCI_ALTWORDLEFT2 9008
+#define SCI_ALTWORDLEFTEXTEND2 9009
+#define SCI_ALTWORDRIGHT2 9010
+#define SCI_ALTWORDRIGHTEXTEND2 9011
+#define SCI_ALTDELWORDLEFT2 9012
+#define SCI_ALTDELWORDRIGHT2 9013
+```
+[/Scintilla/include/Scintilla.h]
+
+[Scintilla/src/Document.h]:
+
+Update methods declaration:
+```
+    Sci::Position NextWordStart(Sci::Position pos, int delta, int alternativeNavigationMode) const;
+...
+    int CalcWordNavigationMode(const int navigationMode) const;
+```
+[Scintilla/src/Document.h]
+
+[Scintilla/src/Document.cxx]:
+
+Update ``Document::NextWordStart`` implementation:
+```
+Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternativeNavigationMode) const {
+	if (delta < 0) {
+		// [2e]: ctrl+arrow behavior toggle #89
+		switch (CalcWordNavigationMode(alternativeNavigationMode))
+...
+        case 2:
+            // [2e]: Shift/Ctrl+Alt+Left/Right to navigate word start/end #436
+            {
+                if (pos > 0)
+                {
+                    pos--;
+                }
+                CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+                while (pos > 0)
+                {
+                    CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+                    if (((ccPrev == CharClassify::ccWord) || (ccPrev == CharClassify::ccPunctuation))
+                        && ((ccCurrent != CharClassify::ccWord) && (ccCurrent != CharClassify::ccPunctuation)))                        
+                        break;
+                    pos--;
+                    ccCurrent = ccPrev;
+                }
+            }
+            break;
+...
+    } else {
+        // [2e]: ctrl+arrow behavior toggle #89
+        switch (CalcWordNavigationMode(alternativeNavigationMode))
+...
+        case 2:
+            // [2e]: Shift/Ctrl+Alt+Left/Right to navigate word start/end #436
+            {
+                pos++;
+                assert(pos > 0);
+                CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+                while (pos < Length())
+                {
+                    CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
+                    if ((ccCurrent != CharClassify::ccWord) && (ccCurrent != CharClassify::ccPunctuation)
+                        && ((ccPrev == CharClassify::ccWord) || (ccPrev == CharClassify::ccPunctuation)))
+                        break;
+                    pos++;
+                    ccPrev = ccCurrent;
+                }
+            }
+            break;
+```
+Update ``Document::CalcWordNavigationMode``:
+```
+int Document::CalcWordNavigationMode(const int navigationMode) const
+{
+	if (navigationMode == 0)
+		return wordNavigationMode;
+
+	return navigationMode;
+}
+```
+
+[/Scintilla/src/Document.cxx]:
+
+[Scintilla/src/Editor.cxx]:
+Replace ``IsAltWordMessage()`` with ``AltWordNavigationMode()``:
+```
+static int AltWordNavigationMode(unsigned int iMessage) noexcept {
+	switch (iMessage) {
+	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDRIGHT:
+		return 1;
+	case SCI_ALTWORDLEFT2:
+	case SCI_ALTWORDLEFTEXTEND2:
+	case SCI_ALTDELWORDLEFT2:
+	case SCI_ALTWORDRIGHT2:
+	case SCI_ALTWORDRIGHTEXTEND2:
+	case SCI_ALTDELWORDRIGHT2:
+		return 2;
+	default:
+		return 0;
+	}
+}
+```
+
+
+Update  ``int Editor::HorizontalMove(unsigned int iMessage)``:
+```
+			case SCI_WORDLEFT:
+			case SCI_WORDLEFTEXTEND:
+			case SCI_ALTWORDLEFT:
+			case SCI_ALTWORDLEFT2:
+			case SCI_ALTWORDLEFTEXTEND:
+			case SCI_ALTWORDLEFTEXTEND2:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), -1, AltWordNavigationMode(iMessage)));
+				break;
+			case SCI_WORDRIGHT:
+			case SCI_WORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHT:
+			case SCI_ALTWORDRIGHT2:
+			case SCI_ALTWORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHTEXTEND2:
+				spCaret = SelectionPosition(pdoc->NextWordStart(spCaret.Position(), 1, AltWordNavigationMode(iMessage)));
+				break;
+...
+
+			case SCI_WORDLEFT:
+			case SCI_ALTWORDLEFT:
+			case SCI_ALTWORDLEFT2:
+			case SCI_WORDRIGHT:
+			case SCI_ALTWORDRIGHT:
+			case SCI_ALTWORDRIGHT2:
+...
+
+			case SCI_CHARLEFTEXTEND:
+			case SCI_CHARRIGHTEXTEND:
+			case SCI_WORDLEFTEXTEND:
+			case SCI_ALTWORDLEFTEXTEND:
+			case SCI_ALTWORDLEFTEXTEND2:
+			case SCI_WORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHTEXTEND:
+			case SCI_ALTWORDRIGHTEXTEND2:
+
+```
+
+Update ``int Editor::DelWordOrLine(unsigned int iMessage)``:
+```
+	const bool leftwards = (iMessage == SCI_DELWORDLEFT) || (iMessage == SCI_DELLINELEFT) || (iMessage == SCI_ALTDELWORDLEFT) || (iMessage == SCI_ALTDELWORDLEFT2);
+
+	if (!additionalSelectionTyping) {
+		InvalidateWholeSelection();
+		sel.DropAdditionalRanges();
+	}
+
+	UndoGroup ug0(pdoc, (sel.Count() > 1) || !leftwards);
+
+	for (size_t r = 0; r < sel.Count(); r++) {
+		if (leftwards) {
+			// Delete to the left so first clear the virtual space.
+			sel.Range(r).ClearVirtualSpace();
+		} else {
+			if ((iMessage != SCI_ALTDELWORDRIGHT) && (iMessage != SCI_ALTDELWORDRIGHT2))
+				// Delete to the right so first realise the virtual space.
+				sel.Range(r) = SelectionRange(
+					RealizeVirtualSpace(sel.Range(r).caret));
+		}
+
+		Range rangeDelete;
+		switch (iMessage) {
+		case SCI_DELWORDLEFT:
+			rangeDelete = Range(
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, AltWordNavigationMode(iMessage)),
+				sel.Range(r).caret.Position());
+			break;
+		case SCI_ALTDELWORDLEFT:
+		case SCI_ALTDELWORDLEFT2:
+			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
+				rangeDelete = Range(
+					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
+					std::max(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()));
+			else
+				rangeDelete = Range(
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), -1, AltWordNavigationMode(iMessage)),
+					sel.Range(r).caret.Position());
+			break;
+		case SCI_DELWORDRIGHT:
+			rangeDelete = Range(
+				sel.Range(r).caret.Position(),
+				pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, AltWordNavigationMode(iMessage)));
+			break;
+		case SCI_ALTDELWORDRIGHT:
+		case SCI_ALTDELWORDRIGHT2:
+			if (sel.Range(r).anchor.Position() != sel.Range(r).caret.Position())
+				rangeDelete = Range(
+					std::min(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()),
+					std::max(sel.Range(r).anchor.Position(), sel.Range(r).caret.Position()));
+			else
+				rangeDelete = Range(
+					sel.Range(r).caret.Position(),
+					pdoc->NextWordStart(sel.Range(r).caret.Position(), 1, AltWordNavigationMode(iMessage)));
+			break;
+		case SCI_DELWORDRIGHTEND:
+			rangeDelete = Range(
+				sel.Range(r).caret.Position(),
+				pdoc->NextWordEnd(sel.Range(r).caret.Position(), AltWordNavigationMode(iMessage)));
+			break;
+
+```
+Update ``int Editor::KeyCommand(unsigned int iMessage)``:
+```
+	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFT2:
+	case SCI_WORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND2:
+	case SCI_WORDRIGHT:
+	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHT2:
+	case SCI_WORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND2:
+...
+	case SCI_DELWORDLEFT:
+	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDLEFT2:
+	case SCI_DELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT2:
+```
+
+Update ``sptr_t Editor::WndProc()``:
+```
+...
+	case SCI_ALTWORDLEFT:
+	case SCI_ALTWORDLEFT2:
+	case SCI_WORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND:
+	case SCI_ALTWORDLEFTEXTEND2:
+	case SCI_WORDRIGHT:
+	case SCI_ALTWORDRIGHT:
+	case SCI_ALTWORDRIGHT2:
+	case SCI_WORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND:
+	case SCI_ALTWORDRIGHTEXTEND2:
+...
+	case SCI_ALTDELWORDLEFT:
+	case SCI_ALTDELWORDLEFT2:
+	case SCI_DELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT:
+	case SCI_ALTDELWORDRIGHT2:
+```
+
+[/Scintilla/src/Editor.cxx]:
+
+
+/**Shift/Ctrl+Alt+Left/Right to navigate word start/end #436**
+
+---
