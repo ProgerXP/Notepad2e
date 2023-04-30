@@ -5476,6 +5476,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         PostMessage(hwnd, WM_COMMAND, MAKELONG(IDACC_RESETPOS, 0), 0);
         return TRUE;
       }
+      // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+      else
+        SYSCOMMAND_ALT_HANDLER_IMPL(wParam)
       else
         return FALSE;
 
@@ -6195,6 +6198,9 @@ INT_PTR CALLBACK EditLinenumDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         
         // [2e]: Find/Replace - add Go to Go To #259
@@ -6422,6 +6428,9 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
 
         // [2e]: Modify Lines - use Syslink #289
@@ -6540,6 +6549,9 @@ INT_PTR CALLBACK EditAlignDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         piAlignMode = (int *)lParam;
         CheckRadioButton(hwnd, 100, 104, *piAlignMode + 100);
@@ -6630,6 +6642,9 @@ INT_PTR CALLBACK EditEncloseSelectionDlgProc(HWND hwnd, UINT umsg, WPARAM wParam
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
 
@@ -6847,6 +6862,9 @@ INT_PTR CALLBACK EditInsertTagDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         pdata = (PTAGSDATA)lParam;
         // [2e]: Remove input length limit in dialogs #408: leave free space(-4) for </..>
@@ -6920,6 +6938,9 @@ INT_PTR CALLBACK EditSortDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         piSortFlags = (int *)lParam;

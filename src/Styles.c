@@ -1860,6 +1860,9 @@ INT_PTR CALLBACK Style_ConfigDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         int i;
         SHFILEINFO shfi;
@@ -2338,6 +2341,9 @@ INT_PTR CALLBACK Style_SelectLexerDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         int i;

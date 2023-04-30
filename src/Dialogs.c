@@ -236,6 +236,9 @@ INT_PTR CALLBACK AboutDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     // [2e]: Updated with Notepad 2e info
     case WM_INITDIALOG: {
         // [2e]: Boost regex and Cyrillic #162 (ICU build)
@@ -317,6 +320,9 @@ INT_PTR CALLBACK About3rdPartyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARA
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
       n2e_InitAbout3rdPartyText(GetDlgItem(hwnd, IDC_RICHEDIT));
       DPI_INIT();
@@ -361,6 +367,9 @@ INT_PTR CALLBACK RunDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         MakeBitmapButton(hwnd, IDC_SEARCHEXE, g_hInstance, IDB_OPEN);
@@ -525,6 +534,9 @@ INT_PTR CALLBACK OpenWithDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -722,6 +734,9 @@ INT_PTR CALLBACK FavoritesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lP
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
 
@@ -885,6 +900,9 @@ INT_PTR CALLBACK AddToFavDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPa
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     // [2e]: Add to Favorites - selection mode #249
     PTADDFAVPARAMS lpParams = NULL;
@@ -1122,6 +1140,9 @@ INT_PTR CALLBACK FileMRUDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         SHFILEINFO shfi;
@@ -1383,6 +1404,9 @@ INT_PTR CALLBACK ChangeNotifyDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG:
       CheckRadioButton(hwnd, 100, 102, 100 + iFileWatchingMode);
       if (bResetFileWatching)
@@ -1451,6 +1475,9 @@ INT_PTR CALLBACK ColumnWrapDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM l
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
 
@@ -1549,6 +1576,9 @@ INT_PTR CALLBACK WordWrapSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LP
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
 
@@ -1770,6 +1800,9 @@ INT_PTR CALLBACK TabSettingsDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM 
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
 
         SetDlgItemInt(hwnd, 100, iTabWidth, FALSE);
@@ -1881,6 +1914,9 @@ INT_PTR CALLBACK SelectDefEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, L
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+    
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         HBITMAP hbmp;
@@ -1980,6 +2016,9 @@ INT_PTR CALLBACK SelectEncodingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPAR
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         LVCOLUMN lvc = { LVCF_FMT | LVCF_TEXT, LVCFMT_LEFT, 0, L"", -1, 0, 0, 0 };
@@ -2182,6 +2221,9 @@ INT_PTR CALLBACK SelectDefLineEndingDlgProc(HWND hwnd, UINT umsg, WPARAM wParam,
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG: {
         int i;
         WCHAR wch[128];
@@ -2272,6 +2314,9 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
   {
     DPI_CHANGED_HANDLER();
 
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+
     case WM_INITDIALOG:
       lpib = (LPINFOBOX)lParam;
       SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
@@ -2357,6 +2402,9 @@ INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, 
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
+
+    // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG: {
         DPI_INIT();

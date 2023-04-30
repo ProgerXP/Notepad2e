@@ -244,3 +244,6 @@ int n2e_GetActualLineNumber(const int iVisibleLineIndex);
 void n2e_UpdateToolbarButtons();
 BOOL n2e_GetReuseWindowMode(const HWND hwnd);
 void n2e_SetReuseWindowMode(const HWND hwnd, const BOOL enabled);
+
+#define SYSCOMMAND_ALT_HANDLER_IMPL(param) if (param == SC_KEYMENU) { return TRUE; }
+#define SYSCOMMAND_ALT_HANDLER(command, param) case WM_SYSCOMMAND: SYSCOMMAND_ALT_HANDLER_IMPL(param);
