@@ -2129,3 +2129,28 @@ void n2e_SetReuseWindowMode(const HWND hwnd, const BOOL enabled)
 {
   SetProp(hwnd, L"ReuseWindow", (HANDLE)enabled);
 }
+
+int n2e_GetCaretSlop()
+{
+  const int linesOnScreen = SciCall_GetLinesOnScreen();
+  int yCaretSlop = 5;
+  switch (iScrollYCaretPolicy)
+  {
+  case SCP_LEGACY:
+  default:
+    break;
+  case SCP_THIRD:
+    yCaretSlop = linesOnScreen / 3;
+    break;
+  case SCP_HALF:
+    yCaretSlop = linesOnScreen / 2;
+    break;
+  }
+  return yCaretSlop;
+}
+
+int n2e_GetAltPageLine(const BOOL topLine)
+{
+  const int iFirstVisibleLine = SciCall_GetFirstVisibleLine();
+  return topLine ? iFirstVisibleLine + n2e_GetCaretSlop() : iFirstVisibleLine + SciCall_GetLinesOnScreen() - n2e_GetCaretSlop() - 1;
+}

@@ -262,6 +262,8 @@
 #define CMD_HSPLIT_VIEW                 20038
 #define CMD_VSPLIT_VIEW                 20039
 #define CMD_TOGGLEMAXIMIZED             20040
+#define CMD_ALTPAGEUP                   20041
+#define CMD_ALTPAGEDOWN                 20042
 #define IDM_FILE_NEW                    40000
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_REVERT                 40002

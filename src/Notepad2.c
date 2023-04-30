@@ -5533,6 +5533,13 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       n2e_SplitView(wCommandID == CMD_HSPLIT_VIEW);
       break;
     // [/2e]
+
+    // [2e]: Alt+PageUp/PageDown to move caret to page top/bottom #433
+    case CMD_ALTPAGEUP:
+    case CMD_ALTPAGEDOWN:
+      SciCall_GotoLine(n2e_GetAltPageLine(wCommandID == CMD_ALTPAGEUP));
+      break;
+    // [/2e]
   }
   return (0);
 }

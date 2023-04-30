@@ -4752,26 +4752,11 @@ void EditJumpTo(HWND hwnd, int iNewLine, int iNewCol)
 void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
 {
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
-  // [2e]: ScrollYCaretPolicy ini-option
-  const int linesOnScreen = SendMessage(hwnd, SCI_LINESONSCREEN, 0, 0);
-  int yCaretSlop = 5;
   // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
   if (!(n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()))
   {
-    switch (iScrollYCaretPolicy)
-    {
-      case SCP_LEGACY:
-      default:
-        // legacy Notepad2 behavior
-        break;
-      case SCP_THIRD:
-        yCaretSlop = linesOnScreen / 3;
-        break;
-      case SCP_HALF:
-        yCaretSlop = linesOnScreen / 2;
-        break;
-    }
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, yCaretSlop);
+    // [2e]: ScrollYCaretPolicy ini-option
+    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, n2e_GetCaretSlop());
   }
   SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);
   SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
