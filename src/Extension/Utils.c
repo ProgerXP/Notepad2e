@@ -2152,5 +2152,5 @@ int n2e_GetCaretSlop()
 int n2e_GetAltPageLine(const BOOL topLine)
 {
   const int iFirstVisibleLine = SciCall_GetFirstVisibleLine();
-  return topLine ? iFirstVisibleLine + n2e_GetCaretSlop() : iFirstVisibleLine + SciCall_GetLinesOnScreen() - n2e_GetCaretSlop() - 1;
+  return SciCall_DocLineFromVisible(topLine ? iFirstVisibleLine + n2e_GetCaretSlop() : iFirstVisibleLine + SciCall_GetLinesOnScreen() - n2e_GetCaretSlop() - 1);
 }
