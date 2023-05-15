@@ -113,6 +113,7 @@ void n2e_EditSelectionInit(const HWND hwnd,
 void n2e_EditInit(const HWND hwnd)
 {
   hwndToolTipEdit = n2e_ToolTipCreate(hwnd);
+  SetWindowLongPtr(hwndToolTipEdit, GWL_EXSTYLE, GetWindowLongPtr(hwndToolTipEdit, GWL_EXSTYLE) | WS_EX_TRANSPARENT);    
 
   tiEditSelection.cbSize = sizeof(tiEditSelection);
   tiEditSelection.hwnd = hwnd;
