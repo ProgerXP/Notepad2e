@@ -228,6 +228,11 @@ HWND EditCreate(HWND hwndParent)
   SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_DELETE + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), SCI_ALTDELWORDRIGHT2);
   // [/2e]
 
+  // [2e]: Alt+PageUp/PageDown to move caret to page top/bottom #433
+  SendMessage(hwnd, SCI_CLEARCMDKEY, (SCK_NEXT + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), 0);
+  SendMessage(hwnd, SCI_CLEARCMDKEY, (SCK_PRIOR + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), 0);
+  // [/2e]
+
   // Init default values for printing
   EditPrintInit();
 

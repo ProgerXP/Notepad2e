@@ -264,6 +264,8 @@
 #define CMD_TOGGLEMAXIMIZED             20040
 #define CMD_ALTPAGEUP                   20041
 #define CMD_ALTPAGEDOWN                 20042
+#define CMD_ALTSHIFTPAGEUP              20043
+#define CMD_ALTSHIFTPAGEDOWN            20044
 #define IDM_FILE_NEW                    40000
 #define IDM_FILE_OPEN                   40001
 #define IDM_FILE_REVERT                 40002

@@ -5539,6 +5539,11 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case CMD_ALTPAGEDOWN:
       SciCall_GotoLine(n2e_GetAltPageLine(wCommandID == CMD_ALTPAGEUP));
       break;
+
+    case CMD_ALTSHIFTPAGEUP:
+    case CMD_ALTSHIFTPAGEDOWN:
+      SciCall_SetSel(SciCall_GetAnchor(), SciCall_PositionFromLine(n2e_GetAltPageLine(wCommandID == CMD_ALTSHIFTPAGEUP)));
+      break;
     // [/2e]
   }
   return (0);
