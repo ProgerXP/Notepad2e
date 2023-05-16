@@ -1851,9 +1851,8 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternat
 					pos--;
 				}
 				bool stopAtCurrentNewLine = false;
-				while ((pos >= 0) &&
-					((WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccSpace)
-					&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccNewLine)))
+				while ((pos > 0)
+					&& (WordCharacterClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
 				{
 					pos--;
 					stopAtCurrentNewLine = true;
@@ -1868,8 +1867,8 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternat
 					while (pos > 0)
 					{
 						CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
-						if (((ccPrev == CharClassify::ccSpace) || (ccPrev == CharClassify::ccNewLine))
-							&& (ccCurrent != CharClassify::ccSpace))
+						if (((ccCurrent == CharClassify::ccNewLine) && (ccPrev != CharClassify::ccNewLine))
+							|| ((ccPrev != CharClassify::ccWord)  && (ccCurrent == CharClassify::ccWord)))
 							break;
 						pos--;
 						ccCurrent = ccPrev;
@@ -1937,7 +1936,9 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternat
 				}
 				if (stopAtCurrentNewLine)
 				{
-					while ((pos < Length()) && (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccWord))
+					while ((pos < Length())
+						&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccWord)
+						&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccNewLine))
 					{
 						pos++;
 					}
