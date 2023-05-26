@@ -233,6 +233,16 @@ int n2e_HighlightWord(LPCSTR word)
   int res = 0;
   int cnt = 0;
   const int views = n2e_ScintillaWindowsCount();
+  HWND *hwndViews = n2e_Alloc(sizeof(HWND) * views);
+  int j = 0;
+  hwndViews[j++] = hwndEdit;
+  for (int i = 0; i < views; i++)
+  {
+    const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+    if (hwnd == hwndEdit)
+      continue;
+    hwndViews[j++] = hwnd;
+  }
   Range* ranges = n2e_Alloc(sizeof(Range) * views);
   int len, curr;
   int old;
@@ -252,15 +262,19 @@ int n2e_HighlightWord(LPCSTR word)
   switch (iSelectionMode)
   {
   case SM_LINE:
-    ranges[0].lstart = SciCall_LineFromPosition(curr);
-    ranges[0].lrange = 0;
+    for (int i = 0; i < views; ++i)
+    {
+      const HWND hwnd = hwndViews[i];
+      ranges[i].lstart = SciCallEx_LineFromPosition(hwnd, curr);
+      ranges[i].lrange = 0;
+    }
     break;
   case SM_ALL:
   case SM_INVERSED_ALL:
     for (int i = 0; i < views; ++i)
     {
-      const HWND hwnd = n2e_ScintillaWindowByIndex(i);
-      if (bEditSelectionInit && (bEditSelectionScope == (iSelectionMode == SM_ALL)))
+      const HWND hwnd = hwndViews[i];
+      if (bEditSelectionInit && (hwnd == hwndEdit) && (bEditSelectionScope == (iSelectionMode == SM_ALL)))
       {
         ranges[i].lstart = 0;
         ranges[i].lrange = SciCallEx_GetLineCount(hwnd);
@@ -289,17 +303,17 @@ int n2e_HighlightWord(LPCSTR word)
   {
     const int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     const int wlen = strlen(word);
-
     ttf.lpstrText = (LPSTR)word;
+    int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
+
     for (int i = 0; i < views; i++)
     {
-      const HWND hwnd = n2e_ScintillaWindowByIndex(i);
+      const HWND hwnd = hwndViews[i];
       Range* pRange = &ranges[i];
       ttf.chrg.cpMin = SciCallEx_PositionFromLine(hwnd, pRange->lstart);
       ttf.chrg.cpMax = SciCallEx_LineEndPosition(hwnd, pRange->lstart + pRange->lrange) + 1;
 
-      int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
-      if (bEditSelectionInit)
+      if ((hwnd == hwndEdit) && bEditSelectionInit)
       {
         n2e_ClearEditSelections();
         if (pEditSelectionOriginalWord)
@@ -314,10 +328,6 @@ int n2e_HighlightWord(LPCSTR word)
           pEditSelectionOriginalWord = n2e_Alloc(wlen + 1);
         }
         strcpy(pEditSelectionOriginalWord, word);
-      }
-
-      if (bEditSelectionInit)
-      {
         curr_indi = N2E_SELECT_INDICATOR_EDIT;
         iOriginalSelectionLength = wlen;
         bEditSelection = (n2e_GetMatchVisibleCount(2, word, wlen, ttf.chrg.cpMin, ttf.chrg.cpMax,
@@ -328,46 +338,49 @@ int n2e_HighlightWord(LPCSTR word)
         }
       }
 
-      if (!bEditSelectionInit || !n2e_IsSelectionEditModeOn())
+      if (hwnd == hwndEdit)
       {
-        int cpMin = ttf.chrg.cpMin;
-        int cpMax = ttf.chrg.cpMax;
-        if (iSelectionMode == SM_ALL)
+        if (!bEditSelectionInit || !n2e_IsSelectionEditModeOn())
         {
-          int cpMin2 = cpMin;
-          int cpMax2 = cpMax;
-          int iSearchDistance = iMaxSearchDistance;
-          if (SciCall_GetLinesOnScreen() < SciCall_GetLineCount())
+          int cpMin = ttf.chrg.cpMin;
+          int cpMax = ttf.chrg.cpMax;
+          if (iSelectionMode == SM_ALL)
           {
-            cpMin2 = 0;
-            cpMax2 = SendMessage(hwndEdit, SCI_GETLINEENDPOSITION, SciCall_GetLineCount(), 0) + 1;
-            iSearchDistance = 0;
-          }
+            int cpMin2 = cpMin;
+            int cpMax2 = cpMax;
+            int iSearchDistance = iMaxSearchDistance;
+            if (SciCallEx_GetLinesOnScreen(hwnd) < SciCallEx_GetLineCount(hwnd))
+            {
+              cpMin2 = 0;
+              cpMax2 = cpMax2 = SciCallEx_LineEndPosition(hwnd, SciCallEx_GetLineCount(hwnd)) + 1;
+              iSearchDistance = 0;
+            }
 
-          const int iCount = n2e_GetMatchVisibleCount(255, word, wlen, cpMin, cpMax, 0, len, search_opt);
-          const int iCount2 = n2e_GetMatchVisibleCount(iCount + 1, word, wlen, cpMin2, cpMax2, iSearchDistance, len, search_opt);
-          curr_indi = ((iCount == 1) && (iCount == iCount2))
-            ? N2E_SELECT_INDICATOR_SINGLE
-            : (iCount2 > iCount)
-            ? N2E_SELECT_INDICATOR
-            : N2E_SELECT_INDICATOR_PAGE;
-        }
-        else
-        {
-          int nextPos = n2e_GetWordEnd(word, wlen, cpMin, cpMax, 0, len, search_opt);
-          if (nextPos > 0)
-          {
-            nextPos = n2e_GetWordEnd(word, wlen, nextPos + wlen, cpMax, 0, len, search_opt);
+            const int iCount = n2e_GetMatchVisibleCount(255, word, wlen, cpMin, cpMax, 0, len, search_opt);
+            const int iCount2 = n2e_GetMatchVisibleCount(iCount + 1, word, wlen, cpMin2, cpMax2, iSearchDistance, len, search_opt);
+            curr_indi = ((iCount == 1) && (iCount == iCount2))
+              ? N2E_SELECT_INDICATOR_SINGLE
+              : (iCount2 > iCount)
+              ? N2E_SELECT_INDICATOR
+              : N2E_SELECT_INDICATOR_PAGE;
           }
-          if (nextPos > 0)
+          else
           {
-            cpMin = nextPos + wlen;
+            int nextPos = n2e_GetWordEnd(word, wlen, cpMin, cpMax, 0, len, search_opt);
+            if (nextPos > 0)
+            {
+              nextPos = n2e_GetWordEnd(word, wlen, nextPos + wlen, cpMax, 0, len, search_opt);
+            }
+            if (nextPos > 0)
+            {
+              cpMin = nextPos + wlen;
+            }
+            const int iCount = n2e_GetMatchVisibleCount(2, word, wlen, cpMin, cpMax, 0, len, search_opt);
+            curr_indi = (iCount > 0) ? N2E_SELECT_INDICATOR_SINGLE : N2E_SELECT_INDICATOR_PAGE;
           }
-          const int iCount = n2e_GetMatchVisibleCount(2, word, wlen, cpMin, cpMax, 0, len, search_opt);
-          curr_indi = (iCount > 0) ? N2E_SELECT_INDICATOR_SINGLE : N2E_SELECT_INDICATOR_PAGE;
         }
 
-        SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, curr_indi, 0);
+        SendMessage(hwnd, SCI_SETINDICATORCURRENT, curr_indi, 0);
 
         if (bEditSelectionInit && !n2e_IsSelectionEditModeOn())
         {
@@ -379,7 +392,7 @@ int n2e_HighlightWord(LPCSTR word)
         res = SciCall_FindText(search_opt, &ttf);
         if (-1 != res)
         {
-          if (bEditSelectionInit && (hwnd == hwndEdit))
+          if ((hwnd == hwndEdit) && bEditSelectionInit)
           {
             int line = SciCall_LineFromPosition(ttf.chrgText.cpMax);
             if (ttf.chrgText.cpMin < trEditSelection.chrg.cpMin && ttf.chrgText.cpMax > trEditSelection.chrg.cpMin)
@@ -407,7 +420,7 @@ int n2e_HighlightWord(LPCSTR word)
               break;
             }
           }
-          SendMessage(hwndEdit, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, ttf.chrgText.cpMax - ttf.chrgText.cpMin);
+          SendMessage(hwnd, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, ttf.chrgText.cpMax - ttf.chrgText.cpMin);
           cnt++;
           ttf.chrg.cpMin = ttf.chrgText.cpMax;
         }
@@ -418,8 +431,9 @@ int n2e_HighlightWord(LPCSTR word)
       }
     }
   }
-  n2e_Free(ranges);
   SendMessage(hwndEdit, SCI_SETINDICATORCURRENT, old, 0);
+  n2e_Free(hwndViews);
+  n2e_Free(ranges);
   return cnt;
 }
 
