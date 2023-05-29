@@ -356,7 +356,7 @@ int n2e_HighlightWord(LPCSTR word)
               iSearchDistance = 0;
             }
 
-            const int iCount = n2e_GetMatchVisibleCount(255, word, wlen, cpMin, cpMax, 0, len, search_opt);
+            const int iCount = max(1, n2e_GetMatchVisibleCount(255, word, wlen, cpMin, cpMax, 0, len, search_opt));
             const int iCount2 = n2e_GetMatchVisibleCount(iCount + 1, word, wlen, cpMin2, cpMax2, iSearchDistance, len, search_opt);
             curr_indi = ((iCount == 1) && (iCount == iCount2))
               ? N2E_SELECT_INDICATOR_SINGLE
