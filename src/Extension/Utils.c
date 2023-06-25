@@ -209,13 +209,31 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
   extern BOOL fSelectEx;
   extern int iSelectExMode;
   extern int posSelectExStart;
+  extern HACCEL hAccFindReplace;
+  extern HWND hDlgFindReplace;
+  MSG msg = { hwnd, uMsg, wParam, lParam };
+
+  static BOOL bSkipNextChar = FALSE;
 
   switch (uMsg)
   {
     SET_CURSOR_HANDLER();
 
+    case WM_CHAR:
+      if (bSkipNextChar)
+      {
+        bSkipNextChar = FALSE;
+        return 0;
+      }
+      break;
+
     case WM_KEYDOWN:
       n2e_OnMouseVanishEvent(FALSE);
+      if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg))
+      {
+        bSkipNextChar = TRUE;
+        return 0;
+      }
       if (fSelectEx)
       {
         n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
@@ -236,6 +254,11 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
       break;
 
     case WM_SYSKEYDOWN:
+      if (TranslateAccelerator(hDlgFindReplace, hAccFindReplace, &msg))
+      {
+        bSkipNextChar = TRUE;
+        return 0;
+      }
       {
         const int res = n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
         // Skip the following WM_SYSCHAR to prevent default beeping when processing Alt+Backspace hotkey

@@ -4900,6 +4900,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
   static UINT uCPEdit;
 
+  // [2e]: Hotkeys emitting control characters if a dialog is visible #467
+  static HWND hwndModalPrompt = NULL;
+
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
@@ -4910,6 +4913,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         WCHAR tch[TEXT_BUFFER_LENGTH];
         HMENU hmenu;
+
+        // [2e]: Hotkeys emitting control characters if a dialog is visible #467
+        hwndModalPrompt = NULL;
 
         SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
         lpefr = (LPEDITFINDREPLACE)lParam;
@@ -5073,12 +5079,26 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
     case WM_ACTIVATE:
       if (wParam != WA_INACTIVE)
       {
-        lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
-        lpefr->hwnd = hwndEdit;
+        // [2e]: Hotkeys emitting control characters if a dialog is visible #467
+        if (hwndModalPrompt && !IsWindowEnabled(hwnd))
+        {
+          SetForegroundWindow(hwndModalPrompt);
+        }
+        // [/2e]
+        else
+        {
+          hwndModalPrompt = NULL;
+          lpefr = (LPEDITFINDREPLACE)GetWindowLongPtr(hwnd, DWLP_USER);
+          lpefr->hwnd = hwndEdit;
+        }
       }
+      // [2e]: Hotkeys emitting control characters if a dialog is visible #467
+      else if (!IsWindowEnabled(hwnd))
+      {
+        hwndModalPrompt = (HWND)lParam;
+      }
+      // [/2e]
       break;
-    // [/2e]
-
 
     case WM_COMMAND:
 
@@ -5404,8 +5424,14 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
         case IDACC_REPLACE:
           if (GetDlgItem(hwnd, IDC_REPLACETEXT))
+          {
+            // [2e]: Hotkeys emitting control characters if a dialog is visible #467
+            if (hwndModalPrompt && !IsWindowEnabled(hwnd))
+              SetForegroundWindow(hwndModalPrompt);
             // [2e]: Add hotkeys to cycle MRUs in Find / Replace #434
-            PostMessage(hwnd, WM_COMMAND, MAKELONG(IDACC_SELECTNEXTREPLACE, 1), 0);
+            else
+              PostMessage(hwnd, WM_COMMAND, MAKELONG(IDACC_SELECTNEXTREPLACE, 1), 0);
+          }
           else
             PostMessage(GetParent(hwnd), WM_COMMAND, MAKELONG(IDM_EDIT_REPLACE, 1), 0);
           break;
@@ -5469,8 +5495,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
       // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
       else
         SYSCOMMAND_ALT_HANDLER_IMPL(wParam)
-      else
-        return FALSE;
 
 
     case WM_NOTIFY: {

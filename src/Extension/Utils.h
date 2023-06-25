@@ -248,5 +248,5 @@ void n2e_SetReuseWindowMode(const HWND hwnd, const BOOL enabled);
 int n2e_GetCaretSlop();
 int n2e_GetAltPageLine(const BOOL topLine);
 
-#define SYSCOMMAND_ALT_HANDLER_IMPL(param) if (param == SC_KEYMENU) { return TRUE; }
+#define SYSCOMMAND_ALT_HANDLER_IMPL(param) return (param == SC_KEYMENU);
 #define SYSCOMMAND_ALT_HANDLER(command, param) case WM_SYSCOMMAND: SYSCOMMAND_ALT_HANDLER_IMPL(param);
