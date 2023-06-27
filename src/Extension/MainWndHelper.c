@@ -67,7 +67,14 @@ void n2e_OnPaneSizeClick(const HWND hwnd, const BOOL bLeftClick)
   }
   else
   {
-    n2e_CopyEvaluatedExpressionToClipboard();
+    if (!n2e_CopyEvaluatedExpressionToClipboard())
+    {
+      WCHAR wchValue[MAX_EXPRESSION_LENGTH] = { 0 };
+      _itow_s(SciCall_GetLength(), wchValue, COUNTOF(wchValue), 10);
+      if (flagPasteBoard)
+        bLastCopyFromMe = TRUE;
+      n2e_SetClipboardText(hwndMain, wchValue);
+    }
   }
 }
 

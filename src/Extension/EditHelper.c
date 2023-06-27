@@ -1408,7 +1408,7 @@ int n2e_GetExpressionTextRange(int* piStart, int* piEnd)
   return *piEnd - *piStart;
 }
 
-void n2e_CopyEvaluatedExpressionToClipboard()
+BOOL n2e_CopyEvaluatedExpressionToClipboard()
 {
   const int iEvaluateMathExpressionOrigin = iEvaluateMathExpression;
   iEvaluateMathExpression = EEM_LINE;
@@ -1421,8 +1421,10 @@ void n2e_CopyEvaluatedExpressionToClipboard()
     if (flagPasteBoard)
       bLastCopyFromMe = TRUE;
     n2e_SetClipboardText(hwndMain, arrwchValue);
+    return TRUE;
   }
   iEvaluateMathExpression = iEvaluateMathExpressionOrigin;
+  return FALSE;
 }
 
 BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
