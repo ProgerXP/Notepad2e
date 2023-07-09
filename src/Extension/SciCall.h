@@ -39,7 +39,8 @@ __forceinline HANDLE GetScintillaHandle(HWND hwnd)
 //
 //
 LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
-#define SciCall(m, w, l) Scintilla_DirectFunction(GetScintillaHandle(hwndEdit), m, w, l)
+#define SciCallEx(hwnd, m, w, l) Scintilla_DirectFunction(GetScintillaHandle(hwnd), m, w, l)
+#define SciCall(m, w, l) SciCallEx(hwndEdit, m, w, l)
 
 //=============================================================================
 //
@@ -53,26 +54,44 @@ LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
 #define DeclareSciCallR0(fn, msg, ret)                             \
 __forceinline ret SciCall_##fn() {                                 \
   return((ret)SciCall(SCI_##msg, 0, 0));                           \
+}                                                                  \
+__forceinline ret SciCallEx_##fn(const HWND hwnd) {                \
+  return((ret)SciCallEx(hwnd, SCI_##msg, 0, 0));                   \
 }
 #define DeclareSciCallR1(fn, msg, ret, type1, var1)                \
 __forceinline ret SciCall_##fn(type1 var1) {                       \
   return((ret)SciCall(SCI_##msg, (WPARAM)(var1), 0));              \
+}                                                                  \
+__forceinline ret SciCallEx_##fn(const HWND hwnd, type1 var1) {    \
+  return((ret)SciCallEx(hwnd, SCI_##msg, (WPARAM)(var1), 0));      \
 }
 #define DeclareSciCallR2(fn, msg, ret, type1, var1, type2, var2)   \
 __forceinline ret SciCall_##fn(type1 var1, type2 var2) {           \
   return((ret)SciCall(SCI_##msg, (WPARAM)(var1), (LPARAM)(var2))); \
+}                                                                  \
+__forceinline ret SciCallEx_##fn(const HWND hwnd, type1 var1, type2 var2) { \
+  return((ret)SciCallEx(hwnd, SCI_##msg, (WPARAM)(var1), (LPARAM)(var2))); \
 }
 #define DeclareSciCallV0(fn, msg)                                  \
 __forceinline LRESULT SciCall_##fn() {                             \
   return(SciCall(SCI_##msg, 0, 0));                                \
+}                                                                  \
+__forceinline LRESULT SciCallEx_##fn(const HWND hwnd) {            \
+  return(SciCallEx(hwnd, SCI_##msg, 0, 0));                        \
 }
 #define DeclareSciCallV1(fn, msg, type1, var1)                     \
 __forceinline LRESULT SciCall_##fn(type1 var1) {                   \
   return(SciCall(SCI_##msg, (WPARAM)(var1), 0));                   \
+}                                                                  \
+__forceinline LRESULT SciCallEx_##fn(const HWND hwnd, type1 var1) {\
+  return(SciCallEx(hwnd, SCI_##msg, (WPARAM)(var1), 0));           \
 }
 #define DeclareSciCallV2(fn, msg, type1, var1, type2, var2)        \
 __forceinline LRESULT SciCall_##fn(type1 var1, type2 var2) {       \
   return(SciCall(SCI_##msg, (WPARAM)(var1), (LPARAM)(var2)));      \
+}                                                                  \
+__forceinline LRESULT SciCallEx_##fn(const HWND hwnd, type1 var1, type2 var2) {  \
+  return(SciCallEx(hwnd, SCI_##msg, (WPARAM)(var1), (LPARAM)(var2)));            \
 }
 
 //=============================================================================
