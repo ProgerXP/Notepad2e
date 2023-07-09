@@ -5677,9 +5677,7 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
                   }
                   if (*pLineBuf)
                   {
-                    SendMessage(hwndFrom, SCI_BEGINUNDOACTION, 0, 0);
                     SendMessage(hwndFrom, SCI_ADDTEXT, lstrlenA(pLineBuf), (LPARAM)pLineBuf);
-                    SendMessage(hwndFrom, SCI_ENDUNDOACTION, 0, 0);
                   }
                   GlobalFree(pLineBuf);
                 }
