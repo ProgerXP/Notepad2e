@@ -2383,7 +2383,12 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
   else if (iType == MBOKCANCEL)
     idDlg = IDD_INFOBOX3;
 
-  if (!(hwnd = GetFocus()))
+  if (hwnd = GetFocus())
+  {
+    while ((GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD) == WS_CHILD)
+      hwnd = GetParent(hwnd);
+  }
+  else
     hwnd = hwndMain;
 
   MessageBeep(MB_ICONEXCLAMATION);

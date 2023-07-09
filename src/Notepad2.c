@@ -357,6 +357,7 @@ int flagQuietCreate = 0;
 int flagUseSystemMRU = 0;
 int flagRelaunchElevated = 0;
 int flagDisplayHelp = 0;
+HACCEL hAccFindReplace;
 
 
 //=============================================================================
@@ -370,7 +371,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
   MSG msg;
   HWND hwnd;
   HACCEL hAccMain;
-  HACCEL hAccFindReplace;
   INITCOMMONCONTROLSEX icex;
   WCHAR wchWorkingDirectory[MAX_PATH];
 
