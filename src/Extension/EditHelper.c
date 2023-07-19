@@ -463,27 +463,26 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
       counter = 0;
       while (counter <= wlen)
       {
-        //++counter;
+        const int c = counter;
         counter = SciCall_PositionAfter(cpos + counter) - cpos;
-        // #TODO
-        const BOOL isPlainChar = (SciCall_PositionAfter(cpos + counter) - cpos == counter + 1);
-        symb = tr.lpstrText[counter];
-        if (!isPlainChar || N2E_IS_LITERAL(symb))
+        const BOOL isPlainChar = (counter == c + 1);
+        symb = tr.lpstrText[c];
+        if ((counter != c) && (!isPlainChar || N2E_IS_LITERAL(symb)))
         {
-          if (!res)
+          if (res == 0)
           {
-            res = counter;
+            res = c;
           }
         }
         else
         {
           if (res)
           {
-            tr.lpstrText[counter] = '\0';
+            tr.lpstrText[c] = '\0';
             ttf.lpstrText = tr.lpstrText + res;
             if (next)
             {
-              tr.chrg.cpMax = cpos + counter;                
+              tr.chrg.cpMax = cpos + c;                
             }
             else
             {
