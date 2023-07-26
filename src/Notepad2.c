@@ -4965,6 +4965,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_EDIT_SAVEFIND: {
         // [2e]: Save Find Text (Alt+F3) - remove selection #321
         const int iAnchor = SciCall_GetAnchor();
+        const int iCursor = SciCall_GetCurrentPos();
         int iSelectionStart = SciCall_GetSelStart();
         int iSelectionEnd = SciCall_GetSelEnd();
         // [/2e]
@@ -4972,18 +4973,17 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (cchSelection == 0)
         {
           // [2e]: Find Next/Previous must skip first match #424
-          if (wCommandID != IDM_EDIT_SAVEFIND)
-          {
-            SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
-            iSelectionStart = SciCall_GetSelStart();
-            iSelectionEnd = SciCall_GetSelEnd();
-          }
+          SendMessage(hwnd, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
+          iSelectionStart = SciCall_GetSelStart();
+          iSelectionEnd = SciCall_GetSelEnd();
+
           // [2e]: Save Find Text (Alt+F3) - remove selection #321
-          else
+          if (wCommandID == IDM_EDIT_SAVEFIND)
           {
             const int iPos = SciCall_GetCurrentPos();
             iSelectionStart = SciCall_GetWordStartPos(iPos, TRUE);
             iSelectionEnd = SciCall_GetWordEndPos(iPos, TRUE);
+            SciCall_SetSel(iAnchor, iCursor);
           }
           cchSelection = iSelectionEnd - iSelectionStart;
           // [/2e]
