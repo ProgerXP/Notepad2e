@@ -465,8 +465,10 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
       {
         const int c = counter;
         counter = SciCall_PositionAfter(cpos + counter) - cpos;
-        const BOOL isPlainChar = (counter == c + 1);
         symb = tr.lpstrText[c];
+        if (IsEOLChar(symb))
+          counter = c + 1;
+        const BOOL isPlainChar = (counter == c + 1);
         if ((counter != c) && (!isPlainChar || N2E_IS_LITERAL(symb)))
         {
           if (res == 0)
@@ -488,6 +490,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
             {
               tr.chrg.cpMin = cpos;
             }
+            ++res;
             break;
           }
         }
@@ -501,13 +504,13 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
     res = 1;
   }
 
-  if (res)
+  if (res && ttf.lpstrText)
   {
     N2E_TRACE("search for '%s' ", ttf.lpstrText);
     lstrcpyA(lpefr->szFind, ttf.lpstrText);
     lstrcpyA(lpefr->szFindUTF8, ttf.lpstrText);
     const auto wordLength = strlen(ttf.lpstrText);
-    const int originalWordPos = next ? tr.chrg.cpMax - wordLength : tr.chrg.cpMin + wordLength;
+    const int originalWordPos = tr.chrg.cpMin + res - 1;
 
     if (next)
     {
