@@ -63,7 +63,7 @@ int MsgBox(int iType, UINT uIdMsg, ...)
 {
   WCHAR szText[1024];
   WCHAR szBuf[1024];
-  WCHAR szTitle[64];
+  WCHAR szTitle[MAX_PATH];  // [2e]: InfoBox improvements #386
   int iIcon = 0;
   HWND hwnd;
   if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
@@ -94,7 +94,8 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       StrCatBuff(szText, L".", COUNTOF(szText));
   }
 
-  GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
+  // [2e]: InfoBox improvements #386
+  GetWindowText(hwndMain, szTitle, COUNTOF(szTitle));
 
   switch (iType)
   {
@@ -2293,46 +2294,20 @@ BOOL SelectDefLineEndingDlg(HWND hwnd, int *iOption)
 
 }
 
-// [2e]: InfoBox improvements #386
-LRESULT CALLBACK DlgInfoBoxWindowProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-  switch (message)
-  {
-  case WM_CREATE:
-    break;
-  case WM_GETDLGCODE:
-  case WM_CHAR:
-  case WM_SYSCHAR:
-  case WM_KEYDOWN:
-  case WM_SYSCOMMAND:
-    return DLGC_WANTALLKEYS;
-  default:
-    break;
-
-  }
-  if (message == WM_KEYDOWN)
-  {
-    int key = (int)wParam;
-    if (key == 0)
-    {
-      key;
-    }
-  }
-
-  return n2e_CallOriginalWindowProc(hWnd, message, wParam, lParam);
-}
-
 //=============================================================================
 //
 //  InfoBoxDlgProc()
 //
 //
+
 typedef struct _infobox
 {
   int    iType;           // [2e]: InfoBox improvements #386
   LPWSTR lpstrMessage;
   LPWSTR lpstrSetting;
   BOOL   bDisableCheckBox;
+  BOOL   bIsMsgFindWrap1;
+  BOOL   bIsMsgFindWrap2;
 } INFOBOX, *LPINFOBOX;
 
 INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
@@ -2340,9 +2315,10 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
   LPINFOBOX lpib;
 
   // [2e]: InfoBox improvements #386
-  static BOOL bSkipNextChar = FALSE;
-  extern HACCEL hAccMsgBox;
-  MSG msg = { hwnd, umsg, wParam, lParam };
+  const int KEYBOARD_REQUEST_TIMERID = 1234;
+  static UINT_PTR uiKeyboardTimer = 0;
+  static HWND s_hwndButton1 = NULL;
+  static HWND s_hwndButton2 = NULL;
   // [/2e]
 
   switch (umsg)
@@ -2350,10 +2326,9 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
     DPI_CHANGED_HANDLER();
 
     // [2e]: Ignore Alt keypress in Find/Replace/Go To #426
-    //SYSCOMMAND_ALT_HANDLER(umsg, wParam);
+    SYSCOMMAND_ALT_HANDLER(umsg, wParam);
 
     case WM_INITDIALOG:
-      n2e_SubclassWindow(hwnd, DlgInfoBoxWindowProc);
       lpib = (LPINFOBOX)lParam;
       SetWindowLongPtr(hwnd, DWLP_USER, (LONG_PTR)lParam);
       SendDlgItemMessage(hwnd, IDC_INFOBOXICON, STM_SETICON,
@@ -2363,32 +2338,45 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
       LocalFree(lpib->lpstrMessage);
       // [2e]: InfoBox improvements #386
-      const HWND hwndButton1 = GetDlgItem(hwnd, IDC_BUTTON1);
-      const HWND hwndButton2 = GetDlgItem(hwnd, IDC_BUTTON2);
+      WCHAR wchCaption[MAX_PATH];
+      GetWindowText(hwndMain, wchCaption, MAX_PATH);
+      SetWindowText(hwnd, wchCaption);
+      s_hwndButton1 = GetDlgItem(hwnd, IDC_BUTTON1);
+      s_hwndButton2 = GetDlgItem(hwnd, IDC_BUTTON2);
       switch (lpib->iType)
       {
       case MBYESNO:
-        SetWindowLongPtr(hwndButton1, GWL_ID, IDYES);
-        SetWindowText(hwndButton1, L"&Yes");
-        SetWindowLongPtr(hwndButton2, GWL_ID, IDNO);
-        SetWindowText(hwndButton2, L"&No");
+        SetWindowLongPtr(s_hwndButton1, GWL_ID, IDYES);
+        SetWindowText(s_hwndButton1, L"&Yes");
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDNO);
+        SetWindowText(s_hwndButton2, L"&No");
         break;
       case MBOKCANCEL:
-        SetWindowLongPtr(hwndButton1, GWL_ID, IDOK);
-        SetWindowLongPtr(hwndButton2, GWL_ID, IDCANCEL);
+        SetWindowLongPtr(s_hwndButton1, GWL_ID, IDOK);
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDCANCEL);
         break;
       case MBINFO:
-        ShowWindow(hwndButton1, SW_HIDE);
-        SetWindowLongPtr(hwndButton2, GWL_ID, IDOK);
-        SetWindowText(hwndButton2, L"&OK");
+        ShowWindow(s_hwndButton1, SW_HIDE);
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDOK);
+        SetWindowText(s_hwndButton2, L"&OK");
         break;
       }
+      uiKeyboardTimer = SetTimer(hwnd, KEYBOARD_REQUEST_TIMERID, 50, NULL);
       if (!lpib->bDisableCheckBox)
       {
         RECT rect = {0};
         GetWindowRect(hwnd, &rect);
         SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top - 60, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
       }
+      lpib->bIsMsgFindWrap1 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap1") == 0);
+      lpib->bIsMsgFindWrap2 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap2") == 0);
+      BYTE keyStates[256] = { 0 };
+      GetKeyboardState(keyStates);
+      keyStates[VK_F2] = 0;
+      keyStates[VK_F3] = 0;
+      keyStates[VK_F4] = 0;
+      keyStates[VK_F7] = 0;
+      SetKeyboardState(keyStates);
       // [/2e]
       DPI_INIT();
       CenterDlgInParent(hwnd);
@@ -2406,45 +2394,41 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
             IniSetInt(L"Suppressed Messages", lpib->lpstrSetting, 1);
           EndDialog(hwnd, LOWORD(wParam));
           break;
-        case IDM_VIEW_SAVESETTINGSNOW:
-          if (!IsWindowEnabled(GetDlgItem(hwnd, IDC_INFOBOXCHECK)))
-          {
-            MsgCommand(hwnd, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
-            EndDialog(hwnd, IDCANCEL);
-          }
-          break;
       }
       return TRUE;
 
     // [2e]: InfoBox improvements #386
-    case WM_GETDLGCODE:
-      SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DLGC_WANTALLKEYS);
-      return TRUE;
-
-    case WM_CHAR:
-      if (bSkipNextChar)
+    case WM_TIMER:
+      lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
+      if (wParam == KEYBOARD_REQUEST_TIMERID)
       {
-        bSkipNextChar = FALSE;
-        return TRUE;
+        if (lpib->bDisableCheckBox && IsWindowEnabled(GetDlgItem(hwnd, IDC_INFOBOXCHECK)) && HIBYTE(GetKeyState(VK_F7)))
+        {
+          EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+          MsgCommand(hwnd, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
+          return TRUE;
+        }
+        if (lpib->bIsMsgFindWrap1 || lpib->bIsMsgFindWrap2)
+        {
+          const BOOL bF2 = HIBYTE(GetKeyState(VK_F2));
+          const BOOL bF3 = HIBYTE(GetKeyState(VK_F3));
+          const BOOL bF4 = HIBYTE(GetKeyState(VK_F4));
+          const BOOL bShift = HIBYTE(GetKeyState(VK_SHIFT));
+          if (bF2 || bF3 || bF4)
+          {
+            // #TODO: check?
+            if ((lpib->bIsMsgFindWrap1 && bF3 && !bShift)
+              || (lpib->bIsMsgFindWrap2 && bF3 && bShift)
+              || bF2 || bF4)
+              EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+            else
+              EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            return TRUE;
+          }
+        }
       }
+
       return FALSE;
-
-    case WM_KEYDOWN:
-      if (TranslateAccelerator(hwnd, hAccMsgBox, &msg))
-      {
-        bSkipNextChar = TRUE;
-        return TRUE;
-      }
-      return FALSE;
-
-    case WM_SYSKEYDOWN:
-      if (TranslateAccelerator(hwnd, hAccMsgBox, &msg))
-      {
-        bSkipNextChar = TRUE;
-        return TRUE;
-      }
-      //SYSCOMMAND_ALT_HANDLER_IMPL(wParam);
-      return TRUE;
     // [/2e]
   }
   return FALSE;
