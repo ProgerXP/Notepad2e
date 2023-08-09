@@ -2316,7 +2316,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
 
   // [2e]: InfoBox improvements #386
   const int KEYBOARD_REQUEST_TIMERID = 1234;
-  static UINT_PTR uiKeyboardTimer = 0;
+  static UINT_PTR s_uiKeyboardTimer = 0;
   static HWND s_hwndButton1 = NULL;
   static HWND s_hwndButton2 = NULL;
   // [/2e]
@@ -2361,7 +2361,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         SetWindowText(s_hwndButton2, L"&OK");
         break;
       }
-      uiKeyboardTimer = SetTimer(hwnd, KEYBOARD_REQUEST_TIMERID, 50, NULL);
+      s_uiKeyboardTimer = SetTimer(hwnd, KEYBOARD_REQUEST_TIMERID, 50, NULL);
       if (!lpib->bDisableCheckBox)
       {
         RECT rect = {0};
@@ -2402,24 +2402,25 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
       if (wParam == KEYBOARD_REQUEST_TIMERID)
       {
-        if (lpib->bDisableCheckBox && IsWindowEnabled(GetDlgItem(hwnd, IDC_INFOBOXCHECK)) && HIBYTE(GetKeyState(VK_F7)))
+        if (lpib->bDisableCheckBox && HIBYTE(GetKeyState(VK_F7)))
         {
+          KillTimer(NULL, s_uiKeyboardTimer);
           EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
-          MsgCommand(hwnd, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
+          PostMessage(hwndMain, WM_COMMAND, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
           return TRUE;
         }
         if (lpib->bIsMsgFindWrap1 || lpib->bIsMsgFindWrap2)
         {
-          const BOOL bF2 = HIBYTE(GetKeyState(VK_F2));
           const BOOL bF3 = HIBYTE(GetKeyState(VK_F3));
           const BOOL bF4 = HIBYTE(GetKeyState(VK_F4));
           const BOOL bShift = HIBYTE(GetKeyState(VK_SHIFT));
-          if (bF2 || bF3 || bF4)
+          if (bF3 || bF4)
           {
+            KillTimer(NULL, s_uiKeyboardTimer);
             // #TODO: check?
             if ((lpib->bIsMsgFindWrap1 && bF3 && !bShift)
               || (lpib->bIsMsgFindWrap2 && bF3 && bShift)
-              || bF2 || bF4)
+              || bF4)
               EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
             else
               EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
