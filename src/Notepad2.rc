@@ -678,8 +678,12 @@ END
 
 IDR_ACCMSGBOX ACCELERATORS
 BEGIN
-    VK_F7, IDM_VIEW_SAVESETTINGSNOW, VIRTKEY, NOINVERT
+    VK_F7,          IDM_VIEW_SAVESETTINGSNOW, VIRTKEY, NOINVERT
+    VK_F3,          IDM_EDIT_FINDNEXT,      VIRTKEY, NOINVERT
+    VK_F3,          IDM_EDIT_FINDPREV,      VIRTKEY, SHIFT, NOINVERT
+    VK_F4,          IDM_EDIT_REPLACENEXT,   VIRTKEY, NOINVERT
 END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1100,7 +1104,7 @@ BEGIN
     PUSHBUTTON      "&Cancel",IDC_BUTTON2,187,45,50,14
     CONTROL         "&Don't display this message again.",IDC_INFOBOXCHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,47,122,10
-    LTEXT           "Suppressing messages requires an INI file. Press F7 to create one.",IDC_STATIC,7,64,230,8
+    LTEXT           "Suppressing messages requires an INI file. Press F7 to create one.",IDC_SUPPRESSING,7,64,230,8
 END
 
 IDD_SORT DIALOGEX 0, 0, 184, 164

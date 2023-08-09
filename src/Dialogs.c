@@ -41,6 +41,7 @@
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/MainWndHelper.h"
+#include "Extension/Subclassing.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -2300,6 +2301,42 @@ BOOL SelectDefLineEndingDlg(HWND hwnd, int *iOption)
 //
 //
 
+// [2e]: InfoBox improvements #386
+LRESULT CALLBACK DlgInfoBoxChildWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+  extern HACCEL hAccMsgBox;
+  static BOOL bSkipNextChar = FALSE;
+  
+  MSG msg = { GetParent(hwnd), message, wParam, lParam };
+  switch (message)
+  {
+  case WM_CHAR:
+    if (bSkipNextChar)
+    {
+      bSkipNextChar = FALSE;
+      return 0;
+    }
+    break;
+  case WM_KEYDOWN:
+    if (TranslateAccelerator(GetParent(hwnd), hAccMsgBox, &msg))
+    {
+      bSkipNextChar = TRUE;
+      return 0;
+    }
+    break;
+  case WM_SYSKEYDOWN:
+    if (TranslateAccelerator(GetParent(hwnd), hAccMsgBox, &msg))
+    {
+      bSkipNextChar = TRUE;
+      return 0;
+    }
+    break;
+  }
+
+  return n2e_CallOriginalWindowProc(hwnd, message, wParam, lParam);
+}
+// [/2e]: InfoBox improvements #386
+
 typedef struct _infobox
 {
   int    iType;           // [2e]: InfoBox improvements #386
@@ -2315,8 +2352,6 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
   LPINFOBOX lpib;
 
   // [2e]: InfoBox improvements #386
-  const int KEYBOARD_REQUEST_TIMERID = 1234;
-  static UINT_PTR s_uiKeyboardTimer = 0;
   static HWND s_hwndButton1 = NULL;
   static HWND s_hwndButton2 = NULL;
   // [/2e]
@@ -2343,6 +2378,9 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       SetWindowText(hwnd, wchCaption);
       s_hwndButton1 = GetDlgItem(hwnd, IDC_BUTTON1);
       s_hwndButton2 = GetDlgItem(hwnd, IDC_BUTTON2);
+      n2e_SubclassWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), DlgInfoBoxChildWindowProc);
+      n2e_SubclassWindow(s_hwndButton1, DlgInfoBoxChildWindowProc);
+      n2e_SubclassWindow(s_hwndButton2, DlgInfoBoxChildWindowProc);
       switch (lpib->iType)
       {
       case MBYESNO:
@@ -2361,76 +2399,65 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         SetWindowText(s_hwndButton2, L"&OK");
         break;
       }
-      s_uiKeyboardTimer = SetTimer(hwnd, KEYBOARD_REQUEST_TIMERID, 50, NULL);
       if (!lpib->bDisableCheckBox)
       {
         RECT rect = {0};
         GetWindowRect(hwnd, &rect);
-        SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rect.bottom - rect.top - 60, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
+        RECT rectSuppressing = { 0 };
+        GetWindowRect(GetDlgItem(hwnd, IDC_SUPPRESSING), &rectSuppressing);
+        SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rectSuppressing.top - rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
       }
       lpib->bIsMsgFindWrap1 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap1") == 0);
       lpib->bIsMsgFindWrap2 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap2") == 0);
-      BYTE keyStates[256] = { 0 };
-      GetKeyboardState(keyStates);
-      keyStates[VK_F2] = 0;
-      keyStates[VK_F3] = 0;
-      keyStates[VK_F4] = 0;
-      keyStates[VK_F7] = 0;
-      SetKeyboardState(keyStates);
       // [/2e]
       DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 
     case WM_COMMAND:
+      lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
       switch (LOWORD(wParam))
       {
         case IDOK:
         case IDCANCEL:
         case IDYES:
         case IDNO:
-          lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
           if (IsDlgButtonChecked(hwnd, IDC_INFOBOXCHECK))
             IniSetInt(L"Suppressed Messages", lpib->lpstrSetting, 1);
           EndDialog(hwnd, LOWORD(wParam));
           break;
-      }
-      return TRUE;
-
-    // [2e]: InfoBox improvements #386
-    case WM_TIMER:
-      lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
-      if (wParam == KEYBOARD_REQUEST_TIMERID)
-      {
-        if (lpib->bDisableCheckBox && HIBYTE(GetKeyState(VK_F7)))
-        {
-          KillTimer(NULL, s_uiKeyboardTimer);
-          EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
-          PostMessage(hwndMain, WM_COMMAND, MAKEWPARAM(IDM_VIEW_SAVESETTINGSNOW, 0), 0);
-          return TRUE;
-        }
-        if (lpib->bIsMsgFindWrap1 || lpib->bIsMsgFindWrap2)
-        {
-          const BOOL bF3 = HIBYTE(GetKeyState(VK_F3));
-          const BOOL bF4 = HIBYTE(GetKeyState(VK_F4));
-          const BOOL bShift = HIBYTE(GetKeyState(VK_SHIFT));
-          if (bF3 || bF4)
+        case IDM_VIEW_SAVESETTINGSNOW:
+          if (lpib->bDisableCheckBox)
           {
-            KillTimer(NULL, s_uiKeyboardTimer);
-            // #TODO: check?
-            if ((lpib->bIsMsgFindWrap1 && bF3 && !bShift)
-              || (lpib->bIsMsgFindWrap2 && bF3 && bShift)
-              || bF4)
-              EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
-            else
-              EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
             return TRUE;
           }
-        }
+          break;
+        case IDM_EDIT_FINDNEXT:
+          if (lpib->bIsMsgFindWrap1)
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+          else
+          {
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+          }
+          break;
+        case IDM_EDIT_FINDPREV:
+          if (lpib->bIsMsgFindWrap2)
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+          else
+          {
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+          }
+          break;
+        case IDM_EDIT_REPLACENEXT:
+          EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+          PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+          break;
       }
-
-      return FALSE;
-    // [/2e]
+      return TRUE;
   }
   return FALSE;
 }

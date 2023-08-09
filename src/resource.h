@@ -100,6 +100,7 @@
 #define IDC_AUTOSTRIPBLANKS             103
 #define IDC_ENCODINGFROMFILEVARS        103
 #define IDC_RADIO_KEEP_ORDER            103
+#define IDC_SUPPRESSING                 103
 #define IDR_DATA_LUA_THEME              104
 #define IDD_ENCODING                    104
 #define IDC_FINDSTART                   104
