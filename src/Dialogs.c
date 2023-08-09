@@ -2339,12 +2339,12 @@ LRESULT CALLBACK DlgInfoBoxChildWindowProc(HWND hwnd, UINT message, WPARAM wPara
 
 typedef struct _infobox
 {
-  int    iType;           // [2e]: InfoBox improvements #386
+  int    iType;             // [2e]: InfoBox improvements #386
   LPWSTR lpstrMessage;
   LPWSTR lpstrSetting;
-  BOOL   bDisableCheckBox;
-  BOOL   bIsMsgFindWrap1;
-  BOOL   bIsMsgFindWrap2;
+  BOOL   bDisableCheckBox;  // [2e]: InfoBox improvements #386
+  BOOL   bIsMsgFindWrap1;   // [2e]: InfoBox improvements #386
+  BOOL   bIsMsgFindWrap2;   // [2e]: InfoBox improvements #386
 } INFOBOX, *LPINFOBOX;
 
 INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
@@ -2388,15 +2388,18 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
         SetWindowText(s_hwndButton1, L"&Yes");
         SetWindowLongPtr(s_hwndButton2, GWL_ID, IDNO);
         SetWindowText(s_hwndButton2, L"&No");
+        SendMessage(hwnd, DM_SETDEFID, IDYES, 0);
         break;
       case MBOKCANCEL:
         SetWindowLongPtr(s_hwndButton1, GWL_ID, IDOK);
         SetWindowLongPtr(s_hwndButton2, GWL_ID, IDCANCEL);
+        SendMessage(hwnd, DM_SETDEFID, IDOK, 0);
         break;
       case MBINFO:
         ShowWindow(s_hwndButton1, SW_HIDE);
         SetWindowLongPtr(s_hwndButton2, GWL_ID, IDOK);
         SetWindowText(s_hwndButton2, L"&OK");
+        SendMessage(hwnd, DM_SETDEFID, IDOK, 0);
         break;
       }
       if (!lpib->bDisableCheckBox)
@@ -2434,27 +2437,40 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
             return TRUE;
           }
           break;
-        case IDM_EDIT_FINDNEXT:
-          if (lpib->bIsMsgFindWrap1)
-            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
-          else
+        default:
+          if (lpib->bIsMsgFindWrap1 || lpib->bIsMsgFindWrap2)
           {
-            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
-            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+            switch (LOWORD(wParam))
+            {
+            case IDM_EDIT_FINDNEXT:
+              if (lpib->bIsMsgFindWrap1)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            case IDM_EDIT_FINDPREV:
+              if (lpib->bIsMsgFindWrap2)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            case IDM_EDIT_REPLACENEXT:
+              if (lpib->bIsMsgFindWrap1)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            }
           }
-          break;
-        case IDM_EDIT_FINDPREV:
-          if (lpib->bIsMsgFindWrap2)
-            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
-          else
-          {
-            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
-            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
-          }
-          break;
-        case IDM_EDIT_REPLACENEXT:
-          EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
-          PostMessage(hwndMain, WM_COMMAND, wParam, 0);
           break;
       }
       return TRUE;
