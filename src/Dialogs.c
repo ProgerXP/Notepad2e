@@ -2371,6 +2371,8 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       SetDlgItemText(hwnd, IDC_INFOBOXTEXT, lpib->lpstrMessage);
       if (lpib->bDisableCheckBox)
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
+      else
+        ShowWindow(GetDlgItem(hwnd, IDC_SUPPRESSING), SW_HIDE);
       LocalFree(lpib->lpstrMessage);
       // [2e]: InfoBox improvements #386
       WCHAR wchCaption[MAX_PATH];
@@ -2406,9 +2408,13 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       {
         RECT rect = {0};
         GetWindowRect(hwnd, &rect);
+        RECT rectButton = { 0 };
+        GetWindowRect(s_hwndButton2, &rectButton);
         RECT rectSuppressing = { 0 };
         GetWindowRect(GetDlgItem(hwnd, IDC_SUPPRESSING), &rectSuppressing);
-        SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, rectSuppressing.top - rect.top, SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
+        SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, 
+          rect.bottom - rect.top - (rectSuppressing.bottom - rectSuppressing.top) - (rectSuppressing.top - rectButton.bottom),
+          SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
       }
       lpib->bIsMsgFindWrap1 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap1") == 0);
       lpib->bIsMsgFindWrap2 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap2") == 0);
@@ -2429,6 +2435,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
             IniSetInt(L"Suppressed Messages", lpib->lpstrSetting, 1);
           EndDialog(hwnd, LOWORD(wParam));
           break;
+        // [2e]: InfoBox improvements #386
         case IDM_VIEW_SAVESETTINGSNOW:
           if (lpib->bDisableCheckBox)
           {
@@ -2472,6 +2479,7 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
             }
           }
           break;
+          // [/2e]
       }
       return TRUE;
   }
