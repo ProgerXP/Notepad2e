@@ -1185,7 +1185,7 @@ void Document::CheckReadOnly() {
 // Document only modified by gateways DeleteChars, InsertString, Undo, Redo, and SetStyleAt.
 // SetStyleAt does not change the persistent state of a document
 
-bool Document::DeleteChars(Sci::Position pos, Sci::Position len) {
+bool Document::DeleteChars(const Sci::Position& anchor, const Sci::Position& pos, Sci::Position len) {
 	if (pos < 0)
 		return false;
 	if (len <= 0)
@@ -1206,7 +1206,7 @@ bool Document::DeleteChars(Sci::Position pos, Sci::Position len) {
 			const Sci::Line prevLinesTotal = LinesTotal();
 			const bool startSavePoint = cb.IsSavePoint();
 			bool startSequence = false;
-			const char *text = cb.DeleteChars(pos, len, startSequence);
+			const char *text = cb.DeleteChars(anchor, pos, len, startSequence);
 			if (startSavePoint && cb.IsCollectingUndo())
 				NotifySavePoint(!startSavePoint);
 			if ((pos < LengthNoExcept()) || (pos == 0))
@@ -1227,7 +1227,7 @@ bool Document::DeleteChars(Sci::Position pos, Sci::Position len) {
 /**
  * Insert a string with a length.
  */
-Sci::Position Document::InsertString(Sci::Position position, const char *s, Sci::Position insertLength) {
+Sci::Position Document::InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength) {
 	if (insertLength <= 0) {
 		return 0;
 	}
@@ -1258,7 +1258,7 @@ Sci::Position Document::InsertString(Sci::Position position, const char *s, Sci:
 	const Sci::Line prevLinesTotal = LinesTotal();
 	const bool startSavePoint = cb.IsSavePoint();
 	bool startSequence = false;
-	const char *text = cb.InsertString(position, s, insertLength, startSequence);
+	const char *text = cb.InsertString(anchor, position, s, insertLength, startSequence);
 	if (startSavePoint && cb.IsCollectingUndo())
 		NotifySavePoint(!startSavePoint);
 	ModifiedAt(position);
@@ -1282,7 +1282,7 @@ void Document::ChangeInsertion(const char *s, Sci::Position length) {
 int SCI_METHOD Document::AddData(const char *data, Sci_Position length) {
 	try {
 		const Sci::Position position = Length();
-		InsertString(position, data, length);
+		InsertString(position, position, data, length);
 	} catch (std::bad_alloc &) {
 		return SC_STATUS_BADALLOC;
 	} catch (...) {
@@ -1441,19 +1441,19 @@ Sci::Position Document::Redo() {
 }
 
 void Document::DelChar(Sci::Position pos) {
-	DeleteChars(pos, LenChar(pos));
+	DeleteChars(pos, pos, LenChar(pos));
 }
 
 void Document::DelCharBack(Sci::Position pos) {
 	if (pos <= 0) {
 		return;
 	} else if (IsCrLf(pos - 2)) {
-		DeleteChars(pos - 2, 2);
+		DeleteChars(pos, pos - 2, 2);
 	} else if (dbcsCodePage) {
 		const Sci::Position startChar = NextPosition(pos, -1);
-		DeleteChars(startChar, pos - startChar);
+		DeleteChars(startChar, startChar, pos - startChar);
 	} else {
-		DeleteChars(pos - 1, 1);
+		DeleteChars(pos, pos - 1, 1);
 	}
 }
 
@@ -1494,7 +1494,7 @@ int SCI_METHOD Document::GetLineIndentation(Sci_Position line) {
 	return indent;
 }
 
-Sci::Position Document::SetLineIndentation(Sci::Line line, Sci::Position indent) {
+Sci::Position Document::SetLineIndentation(const Sci::Position& anchor, const Sci::Position& caret, Sci::Line line, Sci::Position indent) {
 	const int indentOfLine = GetLineIndentation(line);
 	if (indent < 0)
 		indent = 0;
@@ -1502,9 +1502,9 @@ Sci::Position Document::SetLineIndentation(Sci::Line line, Sci::Position indent)
 		std::string linebuf = CreateIndentation(indent, tabInChars, !useTabs);
 		const Sci::Position thisLineStart = LineStart(line);
 		const Sci::Position indentPos = GetLineIndentPosition(line);
-		UndoGroup ug(this);
-		DeleteChars(thisLineStart, indentPos - thisLineStart);
-		return thisLineStart + InsertString(thisLineStart, linebuf.c_str(),
+		UndoGroup ug(this, anchor, caret);
+		DeleteChars(anchor, thisLineStart, indentPos - thisLineStart);
+		return thisLineStart + InsertString(anchor, thisLineStart, linebuf.c_str(),
 			linebuf.length());
 	} else {
 		return GetLineIndentPosition(line);
@@ -1597,16 +1597,16 @@ Sci::Position Document::FindColumn(Sci::Line line, Sci::Position column) {
 	return position;
 }
 
-void Document::Indent(bool forwards, Sci::Line lineBottom, Sci::Line lineTop) {
+void Document::Indent(const Sci::Position& anchor, const Sci::Position& caret, bool forwards, Sci::Line lineBottom, Sci::Line lineTop) {
 	// Dedent - suck white space off the front of the line to dedent by equivalent of a tab
 	for (Sci::Line line = lineBottom; line >= lineTop; line--) {
 		const Sci::Position indentOfLine = GetLineIndentation(line);
 		if (forwards) {
 			if (LineStart(line) < LineEnd(line)) {
-				SetLineIndentation(line, indentOfLine + IndentSize());
+				SetLineIndentation(anchor, caret, line, indentOfLine + IndentSize());
 			}
 		} else {
-			SetLineIndentation(line, indentOfLine - IndentSize());
+			SetLineIndentation(anchor, caret, line, indentOfLine - IndentSize());
 		}
 	}
 }
@@ -1635,37 +1635,37 @@ std::string Document::TransformLineEnds(const char *s, size_t len, int eolModeWa
 	return dest;
 }
 
-void Document::ConvertLineEnds(int eolModeSet) {
-	UndoGroup ug(this);
+void Document::ConvertLineEnds(const Sci::Position& anchor, const Sci::Position& caret, int eolModeSet) {
+	UndoGroup ug(this, anchor, caret);
 
 	for (Sci::Position pos = 0; pos < Length(); pos++) {
 		if (cb.CharAt(pos) == '\r') {
 			if (cb.CharAt(pos + 1) == '\n') {
 				// CRLF
 				if (eolModeSet == SC_EOL_CR) {
-					DeleteChars(pos + 1, 1); // Delete the LF
+					DeleteChars(anchor, pos + 1, 1); // Delete the LF
 				} else if (eolModeSet == SC_EOL_LF) {
-					DeleteChars(pos, 1); // Delete the CR
+					DeleteChars(anchor, pos, 1); // Delete the CR
 				} else {
 					pos++;
 				}
 			} else {
 				// CR
 				if (eolModeSet == SC_EOL_CRLF) {
-					pos += InsertString(pos + 1, "\n", 1); // Insert LF
+					pos += InsertString(anchor, pos + 1, "\n", 1); // Insert LF
 				} else if (eolModeSet == SC_EOL_LF) {
-					pos += InsertString(pos, "\n", 1); // Insert LF
-					DeleteChars(pos, 1); // Delete CR
+					pos += InsertString(anchor, pos, "\n", 1); // Insert LF
+					DeleteChars(anchor, pos, 1); // Delete CR
 					pos--;
 				}
 			}
 		} else if (cb.CharAt(pos) == '\n') {
 			// LF
 			if (eolModeSet == SC_EOL_CRLF) {
-				pos += InsertString(pos, "\r", 1); // Insert CR
+				pos += InsertString(anchor, pos, "\r", 1); // Insert CR
 			} else if (eolModeSet == SC_EOL_CR) {
-				pos += InsertString(pos, "\r", 1); // Insert CR
-				DeleteChars(pos, 1); // Delete LF
+				pos += InsertString(anchor, pos, "\r", 1); // Insert CR
+				DeleteChars(anchor, pos, 1); // Delete LF
 				pos--;
 			}
 		}
@@ -3436,6 +3436,22 @@ const char *BuiltinRegex::SubstituteByPosition(Document *doc, const char *text, 
 	}
 	*length = substituted.length();
 	return substituted.c_str();
+}
+
+Sci::Position Document::UndoPosition() {
+  Sci::Position newPos = -1;
+  CheckReadOnly();
+  std::pair<int, int> pos = cb.GetUndoPositionStep();
+  cb.PerformUndoPositionStep();
+  return std::get<1>(pos);
+}
+
+Sci::Position Document::RedoPosition() {
+  Sci::Position newPos = -1;
+  CheckReadOnly();
+  std::pair<int, int> pos = cb.GetRedoPositionStep();
+  cb.PerformRedoPositionStep();
+  return std::get<1>(pos);
 }
 
 #ifndef SCI_OWNREGEX

@@ -315,6 +315,7 @@ void Action::Clear() {
 UndoHistory::UndoHistory() {
 
 	actions.resize(3);
+  caretPositions.resize(3);
 	maxAction = 0;
 	currentAction = 0;
 	undoSequenceDepth = 0;
@@ -322,6 +323,7 @@ UndoHistory::UndoHistory() {
 	tentativePoint = -1;
 
 	actions[currentAction].Create(startAction);
+  caretPositions[currentAction] = { 0, 0 };
 }
 
 UndoHistory::~UndoHistory() {
@@ -333,10 +335,11 @@ void UndoHistory::EnsureUndoRoom() {
 	if (static_cast<size_t>(currentAction) >= (actions.size() - 2)) {
 		// Run out of undo nodes so extend the array
 		actions.resize(actions.size() * 2);
+    caretPositions.resize(caretPositions.size() * 2);
 	}
 }
 
-const char *UndoHistory::AppendAction(actionType at, Sci::Position position, const char *data, Sci::Position lengthData,
+const char *UndoHistory::AppendAction(actionType at, const Sci::Position& anchor, const Sci::Position& position, const char *data, Sci::Position lengthData,
 	bool &startSequence, bool mayCoalesce) {
 	EnsureUndoRoom();
 	//Platform::DebugPrintf("%% %d action %d %d %d\n", at, position, lengthData, currentAction);
@@ -402,13 +405,14 @@ const char *UndoHistory::AppendAction(actionType at, Sci::Position position, con
 	startSequence = oldCurrentAction != currentAction;
 	const int actionWithData = currentAction;
 	actions[currentAction].Create(at, position, data, lengthData, mayCoalesce);
+  caretPositions[currentAction + currentPositionOffset] = { anchor, position };
 	currentAction++;
 	actions[currentAction].Create(startAction);
 	maxAction = currentAction;
 	return actions[actionWithData].data.get();
 }
 
-void UndoHistory::BeginUndoAction() {
+void UndoHistory::BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor) {
 	EnsureUndoRoom();
 	if (undoSequenceDepth == 0) {
 		if (actions[currentAction].at != startAction) {
@@ -417,6 +421,7 @@ void UndoHistory::BeginUndoAction() {
 			maxAction = currentAction;
 		}
 		actions[currentAction].mayCoalesce = false;
+    caretPositions[currentAction + currentPositionOffset] = { anchor, cursor };
 	}
 	undoSequenceDepth++;
 }
@@ -502,6 +507,22 @@ void UndoHistory::CompletedUndoStep() {
 	currentAction--;
 }
 
+const std::pair<int, int> &UndoHistory::GetUndoPositionStep() const {
+  return caretPositions[currentAction + currentPositionOffset];
+}
+
+void UndoHistory::CompletedUndoPositionStep() {
+  currentPositionOffset = std::max(-currentAction, currentPositionOffset-1);
+}
+
+const std::pair<int, int> &UndoHistory::GetRedoPositionStep() const {
+  return caretPositions[currentAction + currentPositionOffset + 1];
+}
+
+void UndoHistory::CompletedRedoPositionStep() {
+  currentPositionOffset = std::min(0, currentPositionOffset + 1);
+}
+
 bool UndoHistory::CanRedo() const noexcept {
 	return maxAction > currentAction;
 }
@@ -525,6 +546,14 @@ const Action &UndoHistory::GetRedoStep() const {
 
 void UndoHistory::CompletedRedoStep() {
 	currentAction++;
+}
+
+bool UndoHistory::CanUndoPosition() const noexcept {
+  return (currentAction + currentPositionOffset > 0) && (maxAction > 0);
+}
+
+bool UndoHistory::CanRedoPosition() const noexcept {
+  return (maxAction > currentAction + currentPositionOffset);
 }
 
 CellBuffer::CellBuffer(bool hasStyles_, bool largeDocument_) :
@@ -601,14 +630,14 @@ Sci::Position CellBuffer::GapPosition() const noexcept {
 }
 
 // The char* returned is to an allocation owned by the undo history
-const char *CellBuffer::InsertString(Sci::Position position, const char *s, Sci::Position insertLength, bool &startSequence) {
+const char *CellBuffer::InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength, bool &startSequence) {
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
 	const char *data = s;
 	if (!readOnly) {
 		if (collectingUndo) {
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// This takes up about half load time
-			data = uh.AppendAction(insertAction, position, s, insertLength, startSequence);
+			data = uh.AppendAction(insertAction, anchor, position, s, insertLength, startSequence);
 		}
 
 		BasicInsertString(position, s, insertLength);
@@ -648,7 +677,7 @@ bool CellBuffer::SetStyleFor(Sci::Position position, Sci::Position lengthStyle, 
 }
 
 // The char* returned is to an allocation owned by the undo history
-const char *CellBuffer::DeleteChars(Sci::Position position, Sci::Position deleteLength, bool &startSequence) {
+const char *CellBuffer::DeleteChars(const Sci::Position& anchor, const Sci::Position& position, Sci::Position deleteLength, bool &startSequence) {
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
 	PLATFORM_ASSERT(deleteLength > 0);
 	const char *data = nullptr;
@@ -657,7 +686,7 @@ const char *CellBuffer::DeleteChars(Sci::Position position, Sci::Position delete
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// The gap would be moved to position anyway for the deletion so this doesn't cost extra
 			data = substance.RangePointer(position, deleteLength);
-			data = uh.AppendAction(removeAction, position, data, deleteLength, startSequence);
+			data = uh.AppendAction(removeAction, anchor, position, data, deleteLength, startSequence);
 		}
 
 		BasicDeleteChars(position, deleteLength);
@@ -1136,17 +1165,17 @@ bool CellBuffer::IsCollectingUndo() const noexcept {
 	return collectingUndo;
 }
 
-void CellBuffer::BeginUndoAction() {
-	uh.BeginUndoAction();
+void CellBuffer::BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor) {
+	uh.BeginUndoAction(anchor, cursor);
 }
 
 void CellBuffer::EndUndoAction() {
 	uh.EndUndoAction();
 }
 
-void CellBuffer::AddUndoAction(Sci::Position token, bool mayCoalesce) {
+void CellBuffer::AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce) {
 	bool startSequence;
-	uh.AppendAction(containerAction, token, nullptr, 0, startSequence, mayCoalesce);
+	uh.AppendAction(containerAction, anchor, token, nullptr, 0, startSequence, mayCoalesce);
 }
 
 void CellBuffer::DeleteUndoHistory() {
@@ -1163,6 +1192,22 @@ int CellBuffer::StartUndo() {
 
 const Action &CellBuffer::GetUndoStep() const {
 	return uh.GetUndoStep();
+}
+
+const std::pair<int, int> &CellBuffer::GetUndoPositionStep() const {
+  return uh.GetUndoPositionStep();
+}
+
+void CellBuffer::PerformUndoPositionStep() {
+  uh.CompletedUndoPositionStep();
+}
+
+const std::pair<int, int> &CellBuffer::GetRedoPositionStep() const {
+  return uh.GetRedoPositionStep();
+}
+
+void CellBuffer::PerformRedoPositionStep() {
+  uh.CompletedRedoPositionStep();
 }
 
 void CellBuffer::PerformUndoStep() {
@@ -1201,3 +1246,10 @@ void CellBuffer::PerformRedoStep() {
 	uh.CompletedRedoStep();
 }
 
+bool CellBuffer::CanUndoPosition() const noexcept {
+  return uh.CanUndoPosition();
+}
+
+bool CellBuffer::CanRedoPosition() const noexcept {
+  return uh.CanRedoPosition();
+}

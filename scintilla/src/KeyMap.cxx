@@ -141,6 +141,8 @@ const KeyToCommand KeyMap::MapDefault[] = {
 #else
     {'Y', 			SCI_CTRL,	SCI_REDO},
 #endif
+    {'O', 			SCI_CSHIFT,	SCI_UNDOPOSITION},
+    {'O', 			SCI_CTRL | SCI_ALT,	SCI_REDOPOSITION},
     {'X', 			SCI_CTRL,	SCI_CUT},
     {'C', 			SCI_CTRL,	SCI_COPY},
     {'V', 			SCI_CTRL,	SCI_PASTE},

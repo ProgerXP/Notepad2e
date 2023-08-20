@@ -305,6 +305,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	bool UserVirtualSpace() const noexcept {
 		return ((virtualSpaceOptions & SCVS_USERACCESSIBLE) != 0);
 	}
+  Sci::Position CurrentAnchor() const;
 	Sci::Position CurrentPosition() const;
 	bool SelectionEmpty() const;
 	SelectionPosition SelectionStart();
@@ -413,6 +414,9 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual void Redo();
 	void DelCharBack(bool allowLineStartDeletion);
 	virtual void ClaimSelection() = 0;
+
+  virtual void UndoPosition();
+  virtual void RedoPosition();
 
 	static int ModifierFlags(bool shift, bool ctrl, bool alt, bool meta=false, bool super=false) noexcept;
 	virtual void NotifyChange() = 0;

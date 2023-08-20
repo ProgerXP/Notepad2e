@@ -218,10 +218,10 @@ void ScintillaBase::ListNotify(ListBoxEvent *plbe) {
 }
 
 void ScintillaBase::AutoCompleteInsert(Sci::Position startPos, Sci::Position removeLen, const char *text, Sci::Position textLen) {
-	UndoGroup ug(pdoc);
+	UndoGroup ug(pdoc, CurrentAnchor(), CurrentPosition());
 	if (multiAutoCMode == SC_MULTIAUTOC_ONCE) {
-		pdoc->DeleteChars(startPos, removeLen);
-		const Sci::Position lengthInserted = pdoc->InsertString(startPos, text, textLen);
+		pdoc->DeleteChars(CurrentAnchor(), startPos, removeLen);
+		const Sci::Position lengthInserted = pdoc->InsertString(CurrentAnchor(), startPos, text, textLen);
 		SetEmptySelection(startPos + lengthInserted);
 	} else {
 		// SC_MULTIAUTOC_EACH
@@ -232,9 +232,9 @@ void ScintillaBase::AutoCompleteInsert(Sci::Position startPos, Sci::Position rem
 				positionInsert = RealizeVirtualSpace(positionInsert, sel.Range(r).caret.VirtualSpace());
 				if (positionInsert - removeLen >= 0) {
 					positionInsert -= removeLen;
-					pdoc->DeleteChars(positionInsert, removeLen);
+					pdoc->DeleteChars(CurrentAnchor(), positionInsert, removeLen);
 				}
-				const Sci::Position lengthInserted = pdoc->InsertString(positionInsert, text, textLen);
+				const Sci::Position lengthInserted = pdoc->InsertString(CurrentAnchor(), positionInsert, text, textLen);
 				if (lengthInserted > 0) {
 					sel.Range(r).caret.SetPosition(positionInsert + lengthInserted);
 					sel.Range(r).anchor.SetPosition(positionInsert + lengthInserted);

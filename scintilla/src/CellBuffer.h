@@ -59,6 +59,8 @@ class UndoHistory {
 	int undoSequenceDepth;
 	int savePoint;
 	int tentativePoint;
+  int currentPositionOffset = 0;
+  std::vector<std::pair<int, int>> caretPositions;  // [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
 
 	void EnsureUndoRoom();
 
@@ -71,9 +73,9 @@ public:
 	void operator=(UndoHistory &&) = delete;
 	~UndoHistory();
 
-	const char *AppendAction(actionType at, Sci::Position position, const char *data, Sci::Position lengthData, bool &startSequence, bool mayCoalesce=true);
+	const char *AppendAction(actionType at, const Sci::Position& anchor, const Sci::Position& position, const char *data, Sci::Position lengthData, bool &startSequence, bool mayCoalesce=true);
 
-	void BeginUndoAction();
+	void BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor);
 	void EndUndoAction();
 	void DropUndoSequence();
 	void DeleteUndoHistory();
@@ -95,10 +97,17 @@ public:
 	int StartUndo();
 	const Action &GetUndoStep() const;
 	void CompletedUndoStep();
+  const std::pair<int, int> &GetUndoPositionStep() const;
+  void CompletedUndoPositionStep();
+  const std::pair<int, int> &GetRedoPositionStep() const;
+  void CompletedRedoPositionStep();
 	bool CanRedo() const noexcept;
 	int StartRedo();
 	const Action &GetRedoStep() const;
 	void CompletedRedoStep();
+
+  bool CanUndoPosition() const noexcept;
+  bool CanRedoPosition() const noexcept;
 };
 
 /**
@@ -167,14 +176,14 @@ public:
 	Sci::Line LineFromPositionIndex(Sci::Position pos, int lineCharacterIndex) const noexcept;
 	void InsertLine(Sci::Line line, Sci::Position position, bool lineStart);
 	void RemoveLine(Sci::Line line);
-	const char *InsertString(Sci::Position position, const char *s, Sci::Position insertLength, bool &startSequence);
+	const char *InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength, bool &startSequence);
 
 	/// Setting styles for positions outside the range of the buffer is safe and has no effect.
 	/// @return true if the style of a character is changed.
 	bool SetStyleAt(Sci::Position position, char styleValue);
 	bool SetStyleFor(Sci::Position position, Sci::Position lengthStyle, char styleValue);
 
-	const char *DeleteChars(Sci::Position position, Sci::Position deleteLength, bool &startSequence);
+	const char *DeleteChars(const Sci::Position& anchor, const Sci::Position& position, Sci::Position deleteLength, bool &startSequence);
 
 	bool IsReadOnly() const noexcept;
 	void SetReadOnly(bool set);
@@ -193,9 +202,9 @@ public:
 
 	bool SetUndoCollection(bool collectUndo);
 	bool IsCollectingUndo() const noexcept;
-	void BeginUndoAction();
+	void BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor);
 	void EndUndoAction();
-	void AddUndoAction(Sci::Position token, bool mayCoalesce);
+	void AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce);
 	void DeleteUndoHistory();
 
 	/// To perform an undo, StartUndo is called to retrieve the number of steps, then UndoStep is
@@ -203,11 +212,18 @@ public:
 	bool CanUndo() const noexcept;
 	int StartUndo();
 	const Action &GetUndoStep() const;
+  const std::pair<int, int> &GetUndoPositionStep() const;
+  void PerformUndoPositionStep();
+  const std::pair<int, int> &GetRedoPositionStep() const;
+  void PerformRedoPositionStep();
 	void PerformUndoStep();
 	bool CanRedo() const noexcept;
 	int StartRedo();
 	const Action &GetRedoStep() const;
 	void PerformRedoStep();
+
+  bool CanUndoPosition() const noexcept;
+  bool CanRedoPosition() const noexcept;
 };
 
 }
