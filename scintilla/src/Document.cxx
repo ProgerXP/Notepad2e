@@ -3441,16 +3441,14 @@ const char *BuiltinRegex::SubstituteByPosition(Document *doc, const char *text, 
 Sci::Position Document::UndoPosition() {
   Sci::Position newPos = -1;
   CheckReadOnly();
-  std::pair<int, int> pos = cb.GetUndoPositionStep();
-  cb.PerformUndoPositionStep();
+  std::pair<int, int> pos = cb.PerformUndoPositionStep();
   return std::get<1>(pos);
 }
 
 Sci::Position Document::RedoPosition() {
   Sci::Position newPos = -1;
   CheckReadOnly();
-  std::pair<int, int> pos = cb.GetRedoPositionStep();
-  cb.PerformRedoPositionStep();
+  std::pair<int, int> pos = cb.PerformRedoPositionStep();
   return std::get<1>(pos);
 }
 

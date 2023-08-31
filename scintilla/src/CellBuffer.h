@@ -49,6 +49,43 @@ public:
 	void Clear();
 };
 
+// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+class PositionHistory {
+  std::vector<std::pair<int, int>> positions;
+  std::vector<std::pair<int, int>> redoPositions;
+
+public:
+  bool CanUndo() const noexcept {
+    return positions.size() > 0;
+  }
+  bool CanRedo() const noexcept {
+    return redoPositions.size() > 0;
+  }
+  void PushPosition(const int anchor, const int cursor) {
+    if (positions.empty() || (positions.back() != std::pair<int, int>({anchor, cursor})))
+      positions.push_back({anchor, cursor});
+    redoPositions.clear();
+  }
+  void ReplacePosition(const int anchor, const int cursor) {
+    if (!positions.empty())
+      positions.pop_back();
+    PushPosition(anchor, cursor);
+  }
+  std::pair<int, int> UndoPosition() {
+    if (!CanUndo())
+      return {};
+    redoPositions.push_back(positions.back());
+    positions.pop_back();
+    return (positions.size() > 0) ? positions.back() : redoPositions.back();
+  }
+  std::pair<int, int> RedoPosition() {
+    if (!CanRedo())
+      return {};
+    positions.push_back(redoPositions.back());
+    redoPositions.pop_back();
+    return positions.back();
+  }
+};
 /**
  *
  */
@@ -59,8 +96,6 @@ class UndoHistory {
 	int undoSequenceDepth;
 	int savePoint;
 	int tentativePoint;
-  int currentPositionOffset = 0;
-  std::vector<std::pair<int, int>> caretPositions;  // [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
 
 	void EnsureUndoRoom();
 
@@ -97,17 +132,10 @@ public:
 	int StartUndo();
 	const Action &GetUndoStep() const;
 	void CompletedUndoStep();
-  const std::pair<int, int> &GetUndoPositionStep() const;
-  void CompletedUndoPositionStep();
-  const std::pair<int, int> &GetRedoPositionStep() const;
-  void CompletedRedoPositionStep();
 	bool CanRedo() const noexcept;
 	int StartRedo();
 	const Action &GetRedoStep() const;
 	void CompletedRedoStep();
-
-  bool CanUndoPosition() const noexcept;
-  bool CanRedoPosition() const noexcept;
 };
 
 /**
@@ -127,6 +155,7 @@ private:
 
 	bool collectingUndo;
 	UndoHistory uh;
+  PositionHistory ph;
 
 	std::unique_ptr<ILineVector> plv;
 
@@ -212,10 +241,8 @@ public:
 	bool CanUndo() const noexcept;
 	int StartUndo();
 	const Action &GetUndoStep() const;
-  const std::pair<int, int> &GetUndoPositionStep() const;
-  void PerformUndoPositionStep();
-  const std::pair<int, int> &GetRedoPositionStep() const;
-  void PerformRedoPositionStep();
+  std::pair<int, int> PerformUndoPositionStep();
+  std::pair<int, int> PerformRedoPositionStep();
 	void PerformUndoStep();
 	bool CanRedo() const noexcept;
 	int StartRedo();
