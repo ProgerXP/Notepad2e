@@ -3438,20 +3438,6 @@ const char *BuiltinRegex::SubstituteByPosition(Document *doc, const char *text, 
 	return substituted.c_str();
 }
 
-Sci::Position Document::UndoPosition() {
-  Sci::Position newPos = -1;
-  CheckReadOnly();
-  std::pair<int, int> pos = cb.PerformUndoPositionStep();
-  return std::get<1>(pos);
-}
-
-Sci::Position Document::RedoPosition() {
-  Sci::Position newPos = -1;
-  CheckReadOnly();
-  std::pair<int, int> pos = cb.PerformRedoPositionStep();
-  return std::get<1>(pos);
-}
-
 #ifndef SCI_OWNREGEX
 
 RegexSearchBase *Scintilla::CreateRegexSearch(CharClassify *charClassTable) {

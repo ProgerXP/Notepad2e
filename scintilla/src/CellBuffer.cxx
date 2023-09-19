@@ -609,7 +609,6 @@ const char *CellBuffer::InsertString(const Sci::Position& anchor, const Sci::Pos
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// This takes up about half load time
 			data = uh.AppendAction(insertAction, anchor, position, s, insertLength, startSequence);
-      ph.ReplacePosition(anchor, position);
 		}
 
 		BasicInsertString(position, s, insertLength);
@@ -659,7 +658,6 @@ const char *CellBuffer::DeleteChars(const Sci::Position& anchor, const Sci::Posi
 			// The gap would be moved to position anyway for the deletion so this doesn't cost extra
 			data = substance.RangePointer(position, deleteLength);
 			data = uh.AppendAction(removeAction, anchor, position, data, deleteLength, startSequence);
-      ph.ReplacePosition(anchor, position);
 		}
 
 		BasicDeleteChars(position, deleteLength);
@@ -1140,7 +1138,6 @@ bool CellBuffer::IsCollectingUndo() const noexcept {
 
 void CellBuffer::BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor) {
 	uh.BeginUndoAction(anchor, cursor);
-  ph.PushPosition(anchor, cursor);
 }
 
 void CellBuffer::EndUndoAction() {
@@ -1150,7 +1147,6 @@ void CellBuffer::EndUndoAction() {
 void CellBuffer::AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce) {
 	bool startSequence;
 	uh.AppendAction(containerAction, anchor, token, nullptr, 0, startSequence, mayCoalesce);
-  ph.ReplacePosition(anchor, token);
 }
 
 void CellBuffer::DeleteUndoHistory() {
@@ -1167,14 +1163,6 @@ int CellBuffer::StartUndo() {
 
 const Action &CellBuffer::GetUndoStep() const {
 	return uh.GetUndoStep();
-}
-
-std::pair<int, int> CellBuffer::PerformUndoPositionStep() {
-  return ph.UndoPosition();
-}
-
-std::pair<int, int> CellBuffer::PerformRedoPositionStep() {
-  return ph.RedoPosition();
 }
 
 void CellBuffer::PerformUndoStep() {
@@ -1211,12 +1199,4 @@ void CellBuffer::PerformRedoStep() {
 		BasicDeleteChars(actionStep.position, actionStep.lenData);
 	}
 	uh.CompletedRedoStep();
-}
-
-bool CellBuffer::CanUndoPosition() const noexcept {
-  return ph.CanUndo();
-}
-
-bool CellBuffer::CanRedoPosition() const noexcept {
-  return ph.CanRedo();
 }

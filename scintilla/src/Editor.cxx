@@ -685,6 +685,7 @@ void Editor::SetSelection(SelectionPosition currentPos_, SelectionPosition ancho
 		InvalidateSelection(rangeNew);
 	}
 	sel.RangeMain() = rangeNew;
+	ph.PushPosition(sel.RangeMain());
 	SetRectangularRange();
 	ClaimSelection();
 	SetHoverIndicatorPosition(sel.MainCaret());
@@ -716,6 +717,7 @@ void Editor::SetSelection(SelectionPosition currentPos_) {
 		sel.RangeMain() =
 			SelectionRange(SelectionPosition(currentPos_), sel.RangeMain().anchor);
 	}
+	ph.PushPosition(sel.RangeMain());
 	ClaimSelection();
 	SetHoverIndicatorPosition(sel.MainCaret());
 
@@ -737,6 +739,7 @@ void Editor::SetEmptySelection(SelectionPosition currentPos_) {
 	}
 	sel.Clear();
 	sel.RangeMain() = rangeNew;
+	ph.PushPosition(sel.RangeMain());
 	SetRectangularRange();
 	ClaimSelection();
 	SetHoverIndicatorPosition(sel.MainCaret());
@@ -2161,6 +2164,7 @@ void Editor::ClearAll() {
 	view.ClearAllTabstops();
 
 	sel.Clear();
+	ph.Clear();
 	SetTopLine(0);
 	SetVerticalScrollPos();
 	InvalidateStyleRedraw();
@@ -2195,6 +2199,7 @@ void Editor::PasteRectangular(SelectionPosition pos, const char *ptr, Sci::Posit
 	}
 	sel.Clear();
 	sel.RangeMain() = SelectionRange(pos);
+	ph.PushPosition(sel.RangeMain());
 	Sci::Line line = pdoc->SciLineFromPosition(sel.MainCaret());
 	UndoGroup ug(pdoc, CurrentAnchor(), CurrentPosition());
 	sel.RangeMain().caret = RealizeVirtualSpace(sel.RangeMain().caret);
@@ -2294,22 +2299,25 @@ void Editor::Redo() {
 }
 
 void Editor::UndoPosition() {
-  if (pdoc->CanUndoPosition()) {
-    InvalidateCaret();
-    const Sci::Position newPos = pdoc->UndoPosition();
-    if (newPos >= 0)
-      SetEmptySelection(newPos);
-    EnsureCaretVisible();
-  }
+	if (ph.CanUndo()) {
+		InvalidateCaret();
+		sel.RangeMain() = ph.UndoPosition();
+		if (sel.IsRectangular())
+			sel.DropAdditionalRanges();
+		InvalidateSelection(sel.RangeMain(), true);
+		EnsureCaretVisible();
+	}
 }
 
 void Editor::RedoPosition() {
-  if (pdoc->CanRedoPosition()) {
-    const Sci::Position newPos = pdoc->RedoPosition();
-    if (newPos >= 0)
-      SetEmptySelection(newPos);
-    EnsureCaretVisible();
-  }
+	if (ph.CanRedo()) {
+		InvalidateCaret();
+		sel.RangeMain() = ph.RedoPosition();
+		if (sel.IsRectangular())
+			sel.DropAdditionalRanges();
+		InvalidateSelection(sel.RangeMain(), true);
+		EnsureCaretVisible();
+	}
 }
 
 void Editor::DelCharBack(bool allowLineStartDeletion) {
@@ -3087,6 +3095,7 @@ void Editor::LineReverse() {
 	// Wholly select all affected lines
 	sel.RangeMain() = SelectionRange(pdoc->LineStart(lineStart),
 		pdoc->LineStart(lineEnd+1));
+	ph.PushPosition(sel.RangeMain());
 }
 
 void Editor::Duplicate(bool forLine) {
@@ -5118,6 +5127,7 @@ void Editor::ButtonUpWithModifiers(Point pt, unsigned int curTime, int modifiers
 				if (sel.Count() > 1) {
 					sel.RangeMain() =
 						SelectionRange(newPos, sel.Range(sel.Count() - 1).anchor);
+					ph.PushPosition(sel.RangeMain());
 					InvalidateWholeSelection();
 				} else {
 					SetSelection(newPos, sel.RangeMain().anchor);

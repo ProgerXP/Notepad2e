@@ -352,10 +352,6 @@ public:
 	Sci::Position Redo();
 	bool CanUndo() const noexcept { return cb.CanUndo(); }
 	bool CanRedo() const noexcept { return cb.CanRedo(); }
-  Sci::Position UndoPosition();
-  Sci::Position RedoPosition();
-  bool CanUndoPosition() const noexcept { return cb.CanUndoPosition(); }
-  bool CanRedoPosition() const noexcept { return cb.CanRedoPosition(); }
 	void DeleteUndoHistory() { cb.DeleteUndoHistory(); }
 	bool SetUndoCollection(bool collectUndo) {
 		return cb.SetUndoCollection(collectUndo);
