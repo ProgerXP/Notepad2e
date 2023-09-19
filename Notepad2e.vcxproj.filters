@@ -453,6 +453,9 @@
     <ClInclude Include="src\Extension\User32Helper.h">
       <Filter>Source Files\Extension</Filter>
     </ClInclude>
+    <ClInclude Include="scintilla\src\PositionHistory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Dialogs.c">

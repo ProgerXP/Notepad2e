@@ -1711,3 +1711,174 @@ Update ``sptr_t Editor::WndProc()``:
 /**Shift/Ctrl+Alt+Left/Right to navigate word start/end #436**
 
 ---
+
+**Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360**
+
+Add new commands:
+
+[Scintilla/include/Scintilla.h]:
+```
+#define SCI_UNDOPOSITION 2800
+#define SCI_REDOPOSITION 2801
+```
+[/Scintilla/include/Scintilla.h]
+
+Update editor module:
+
+[Scintilla/src/Editor.h]:
+
+```
+#ifndef EDITOR_H
+#define EDITOR_H
+
+// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+#include "PositionHistory.h"
+...
+    bool convertPastes;
+    bool skipUIUpdate;
+    PositionHistory ph;    // [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+...
+    virtual void ClaimSelection() = 0;
+
+    virtual void UndoPosition();
+    virtual void RedoPosition();
+...
+```
+[Scintilla/src/Editor.h]
+
+[Scintilla/src/Editor.cxx]:
+
+Add new statement after every ``    sel.RangeMain() = ...``-entry, i.e:
+```
+...
+    sel.RangeMain() = rangeNew;
+    ph.PushPosition(sel.RangeMain());
+...
+```
+Add new statement:
+```
+...
+    sel.Clear();
+    ph.Clear();
+...
+```
+Add new methods implementation:
+```
+void Editor::UndoPosition() {
+    if (ph.CanUndo()) {
+        InvalidateCaret();
+        sel.RangeMain() = ph.UndoPosition();
+        if (sel.IsRectangular())
+            sel.DropAdditionalRanges();
+        InvalidateSelection(sel.RangeMain(), true);
+        EnsureCaretVisible();
+    }
+}
+
+void Editor::RedoPosition() {
+    if (ph.CanRedo()) {
+        InvalidateCaret();
+        sel.RangeMain() = ph.RedoPosition();
+        if (sel.IsRectangular())
+            sel.DropAdditionalRanges();
+        InvalidateSelection(sel.RangeMain(), true);
+        EnsureCaretVisible();
+    }
+}
+```
+
+Add new commands:
+```
+...
+    case SCI_CANUNDO:
+        return (pdoc->CanUndo() && !pdoc->IsReadOnly()) ? 1 : 0;
+
+    case SCI_UNDOPOSITION:
+        UndoPosition();
+        break;
+
+    case SCI_REDOPOSITION:
+        RedoPosition();
+        break;
+...
+```
+[/Scintilla/src/Editor.cxx]:
+
+[Scintilla/src/KeyMap.cxx]:
+
+Update ``KeyMap::MapDefault`` with new commands:
+```
+...
+#else
+    {'Y',             SCI_CTRL,    SCI_REDO},
+#endif
+    {'O',             SCI_CSHIFT,    SCI_UNDOPOSITION},
+    {'O',             SCI_CTRL | SCI_ALT,    SCI_REDOPOSITION},
+    {'X',             SCI_CTRL,    SCI_CUT},
+...
+```
+
+[/Scintilla/src/KeyMap.cxx]:
+
+Add ``PositionHistory`` module:
+
+[Scintilla/src/PositionHistory.h]:
+```
+// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+#ifndef POSITIONHISTORY_H
+#define POSITIONHISTORY_H
+
+namespace Scintilla {
+
+	class PositionHistory {
+		std::vector<SelectionRange> positions;
+		std::vector<SelectionRange> redoPositions;
+
+	public:
+		void Clear() noexcept {
+			positions.clear();
+			redoPositions.clear();
+		}
+		bool CanUndo() const noexcept {
+			return positions.size() > 0;
+		}
+		bool CanRedo() const noexcept {
+			return redoPositions.size() > 0;
+		}
+		void PushPosition(const SelectionRange& sr) noexcept {
+			if (!positions.empty()
+				&& (positions.back().Length() > 0)
+				&& (positions.back().Contains(sr.anchor) || positions.back().Contains(sr.caret)))
+				positions.pop_back();
+			if (positions.empty() || !(positions.back() == sr))
+				positions.push_back(sr);
+			redoPositions.clear();
+		}
+		SelectionRange UndoPosition() noexcept {
+			if (!CanUndo())
+				return {};
+			redoPositions.push_back(positions.back());
+			positions.pop_back();
+			return (positions.size() > 0) ? positions.back() : redoPositions.back();
+		}
+		SelectionRange RedoPosition() noexcept {
+			if (!CanRedo())
+				return {};
+			positions.push_back(redoPositions.back());
+			redoPositions.pop_back();
+			return positions.back();
+		}
+	};
+
+}
+
+#endif
+
+```
+
+[/Scintilla/src/PositionHistory.h]:
+
+
+/**Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360**
+
+---

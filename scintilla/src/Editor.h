@@ -8,6 +8,9 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+#include "PositionHistory.h"
+
 namespace Scintilla {
 
 /**
@@ -253,6 +256,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 
 	bool convertPastes;
 	bool skipUIUpdate;
+	PositionHistory ph;	// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
 
 	Editor();
 	// Deleted so Editor objects can not be copied.
@@ -413,6 +417,9 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	virtual void Redo();
 	void DelCharBack(bool allowLineStartDeletion);
 	virtual void ClaimSelection() = 0;
+
+	virtual void UndoPosition();
+	virtual void RedoPosition();
 
 	static int ModifierFlags(bool shift, bool ctrl, bool alt, bool meta=false, bool super=false) noexcept;
 	virtual void NotifyChange() = 0;

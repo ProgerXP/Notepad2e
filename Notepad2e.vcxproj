@@ -568,6 +568,7 @@
     <ClInclude Include="scintilla\src\EditView.h" />
     <ClInclude Include="scintilla\src\MarginView.h" />
     <ClInclude Include="scintilla\src\Position.h" />
+    <ClInclude Include="scintilla\src\PositionHistory.h" />
     <ClInclude Include="scintilla\src\UnicodeFromUTF8.h" />
     <ClInclude Include="scintilla\src\UniqueString.h" />
     <ClInclude Include="scintilla\win32\HanjaDic.h" />
