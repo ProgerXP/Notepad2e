@@ -71,9 +71,9 @@ public:
 	void operator=(UndoHistory &&) = delete;
 	~UndoHistory();
 
-	const char *AppendAction(actionType at, const Sci::Position& anchor, const Sci::Position& position, const char *data, Sci::Position lengthData, bool &startSequence, bool mayCoalesce=true);
+	const char *AppendAction(actionType at, Sci::Position position, const char *data, Sci::Position lengthData, bool &startSequence, bool mayCoalesce=true);
 
-	void BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor);
+	void BeginUndoAction();
 	void EndUndoAction();
 	void DropUndoSequence();
 	void DeleteUndoHistory();
@@ -167,14 +167,14 @@ public:
 	Sci::Line LineFromPositionIndex(Sci::Position pos, int lineCharacterIndex) const noexcept;
 	void InsertLine(Sci::Line line, Sci::Position position, bool lineStart);
 	void RemoveLine(Sci::Line line);
-	const char *InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength, bool &startSequence);
+	const char *InsertString(Sci::Position position, const char *s, Sci::Position insertLength, bool &startSequence);
 
 	/// Setting styles for positions outside the range of the buffer is safe and has no effect.
 	/// @return true if the style of a character is changed.
 	bool SetStyleAt(Sci::Position position, char styleValue);
 	bool SetStyleFor(Sci::Position position, Sci::Position lengthStyle, char styleValue);
 
-	const char *DeleteChars(const Sci::Position& anchor, const Sci::Position& position, Sci::Position deleteLength, bool &startSequence);
+	const char *DeleteChars(Sci::Position position, Sci::Position deleteLength, bool &startSequence);
 
 	bool IsReadOnly() const noexcept;
 	void SetReadOnly(bool set);
@@ -193,9 +193,9 @@ public:
 
 	bool SetUndoCollection(bool collectUndo);
 	bool IsCollectingUndo() const noexcept;
-	void BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor);
+	void BeginUndoAction();
 	void EndUndoAction();
-	void AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce);
+	void AddUndoAction(Sci::Position token, bool mayCoalesce);
 	void DeleteUndoHistory();
 
 	/// To perform an undo, StartUndo is called to retrieve the number of steps, then UndoStep is

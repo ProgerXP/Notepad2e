@@ -8,6 +8,9 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
+// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
+#include "PositionHistory.h"
+
 namespace Scintilla {
 
 /**
@@ -143,47 +146,6 @@ struct WrapPending {
 	}
 };
 
-// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
-class PositionHistory {
-	std::vector<SelectionRange> positions;
-	std::vector<SelectionRange> redoPositions;
-
-public:
-	void Clear() {
-		positions.clear();
-		redoPositions.clear();
-	}
-	bool CanUndo() const noexcept {
-		return positions.size() > 0;
-	}
-	bool CanRedo() const noexcept {
-		return redoPositions.size() > 0;
-	}
-	void PushPosition(const SelectionRange& sr) {
-		if (!positions.empty()
-			&& (positions.back().Length() > 0)
-			&& (positions.back().Contains(sr.anchor) || positions.back().Contains(sr.caret)))
-			positions.pop_back();
-		if (positions.empty() || !(positions.back() == sr))
-			positions.push_back(sr);
-		redoPositions.clear();
-	}
-	SelectionRange UndoPosition() {
-		if (!CanUndo())
-			return {};
-		redoPositions.push_back(positions.back());
-		positions.pop_back();
-		return (positions.size() > 0) ? positions.back() : redoPositions.back();
-	}
-	SelectionRange RedoPosition() {
-		if (!CanRedo())
-			return {};
-		positions.push_back(redoPositions.back());
-		redoPositions.pop_back();
-		return positions.back();
-	}
-};
-
 /**
  */
 class Editor : public EditModel, public DocWatcher {
@@ -294,7 +256,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 
 	bool convertPastes;
 	bool skipUIUpdate;
-	PositionHistory ph;
+	PositionHistory ph;	// [2e]: Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360
 
 	Editor();
 	// Deleted so Editor objects can not be copied.
@@ -347,7 +309,6 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	bool UserVirtualSpace() const noexcept {
 		return ((virtualSpaceOptions & SCVS_USERACCESSIBLE) != 0);
 	}
-  Sci::Position CurrentAnchor() const;
 	Sci::Position CurrentPosition() const;
 	bool SelectionEmpty() const;
 	SelectionPosition SelectionStart();
@@ -457,8 +418,8 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void DelCharBack(bool allowLineStartDeletion);
 	virtual void ClaimSelection() = 0;
 
-  virtual void UndoPosition();
-  virtual void RedoPosition();
+	virtual void UndoPosition();
+	virtual void RedoPosition();
 
 	static int ModifierFlags(bool shift, bool ctrl, bool alt, bool meta=false, bool super=false) noexcept;
 	virtual void NotifyChange() = 0;

@@ -343,8 +343,8 @@ public:
 	// Gateways to modifying document
 	void ModifiedAt(Sci::Position pos) noexcept;
 	void CheckReadOnly();
-	bool DeleteChars(const Sci::Position& anchor, const Sci::Position& caret, Sci::Position len);
-	Sci::Position InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength);
+	bool DeleteChars(Sci::Position pos, Sci::Position len);
+	Sci::Position InsertString(Sci::Position position, const char *s, Sci::Position insertLength);
 	void ChangeInsertion(const char *s, Sci::Position length);
 	int SCI_METHOD AddData(const char *data, Sci_Position length) override;
 	void * SCI_METHOD ConvertToDocument() override;
@@ -357,9 +357,9 @@ public:
 		return cb.SetUndoCollection(collectUndo);
 	}
 	bool IsCollectingUndo() const noexcept { return cb.IsCollectingUndo(); }
-	void BeginUndoAction(const Sci::Position& anchor, const Sci::Position& caret) { cb.BeginUndoAction(anchor, caret); }
+	void BeginUndoAction() { cb.BeginUndoAction(); }
 	void EndUndoAction() { cb.EndUndoAction(); }
-	void AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce) { cb.AddUndoAction(anchor, token, mayCoalesce); }
+	void AddUndoAction(Sci::Position token, bool mayCoalesce) { cb.AddUndoAction(token, mayCoalesce); }
 	void SetSavePoint();
 	bool IsSavePoint() const noexcept { return cb.IsSavePoint(); }
 
@@ -373,15 +373,15 @@ public:
 	Sci::Position GapPosition() const noexcept { return cb.GapPosition(); }
 
 	int SCI_METHOD GetLineIndentation(Sci_Position line) override;
-	Sci::Position SetLineIndentation(const Sci::Position& anchor, const Sci::Position& caret, Sci::Line line, Sci::Position indent);
+	Sci::Position SetLineIndentation(Sci::Line line, Sci::Position indent);
 	Sci::Position GetLineIndentPosition(Sci::Line line) const;
 	Sci::Position GetColumn(Sci::Position pos);
 	Sci::Position CountCharacters(Sci::Position startPos, Sci::Position endPos) const noexcept;
 	Sci::Position CountUTF16(Sci::Position startPos, Sci::Position endPos) const noexcept;
 	Sci::Position FindColumn(Sci::Line line, Sci::Position column);
-	void Indent(const Sci::Position& anchor, const Sci::Position& caret, bool forwards, Sci::Line lineBottom, Sci::Line lineTop);
+	void Indent(bool forwards, Sci::Line lineBottom, Sci::Line lineTop);
 	static std::string TransformLineEnds(const char *s, size_t len, int eolModeWanted);
-	void ConvertLineEnds(const Sci::Position& anchor, const Sci::Position& caret, int eolModeSet);
+	void ConvertLineEnds(int eolModeSet);
 	void SetReadOnly(bool set) { cb.SetReadOnly(set); }
 	bool IsReadOnly() const noexcept { return cb.IsReadOnly(); }
 	bool IsLarge() const noexcept { return cb.IsLarge(); }
@@ -517,10 +517,10 @@ class UndoGroup {
 	Document *pdoc;
 	bool groupNeeded;
 public:
-	UndoGroup(Document *pdoc_, const Sci::Position& anchor, const Sci::Position& caret, bool groupNeeded_=true) :
+	UndoGroup(Document *pdoc_, bool groupNeeded_=true) :
 		pdoc(pdoc_), groupNeeded(groupNeeded_) {
 		if (groupNeeded) {
-			pdoc->BeginUndoAction(anchor, caret);
+			pdoc->BeginUndoAction();
 		}
 	}
 	// Deleted so UndoGroup objects can not be copied.

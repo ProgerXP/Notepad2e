@@ -981,7 +981,7 @@ void ScintillaWin::SelectionToHangul() {
 		documentStr = StringEncode(uniStr, CodePageOfDocument());
 
 		if (converted > 0) {
-			pdoc->BeginUndoAction(CurrentAnchor(), CurrentPosition());
+			pdoc->BeginUndoAction();
 			ClearSelection();
 			InsertPaste(&documentStr[0], documentStr.size());
 			pdoc->EndUndoAction();
@@ -2314,7 +2314,7 @@ void ScintillaWin::Paste() {
 	if (!::OpenClipboardRetry(MainHWND())) {
 		return;
 	}
-	UndoGroup ug(pdoc, CurrentAnchor(), CurrentPosition());
+	UndoGroup ug(pdoc);
 	const bool isLine = SelectionEmpty() &&
 		(::IsClipboardFormatAvailable(cfLineSelect) || ::IsClipboardFormatAvailable(cfVSLineTag));
 	ClearSelection(multiPasteMode == SC_MULTIPASTE_EACH);
@@ -2852,9 +2852,9 @@ LRESULT ScintillaWin::ImeOnReconvert(LPARAM lParam) {
 			const Sci::Position lineEnd = pdoc->LineEnd(pdoc->LineFromPosition(rBase));
 			const Sci::Position overflow = (docCompStart + docCompLen) - lineEnd;
 			if (overflow > 0) {
-				pdoc->DeleteChars(CurrentAnchor(), docCompStart, docCompLen - overflow);
+				pdoc->DeleteChars(docCompStart, docCompLen - overflow);
 			} else {
-				pdoc->DeleteChars(CurrentAnchor(), docCompStart, docCompLen);
+				pdoc->DeleteChars(docCompStart, docCompLen);
 			}
 		}
 	}

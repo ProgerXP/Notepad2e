@@ -336,7 +336,7 @@ void UndoHistory::EnsureUndoRoom() {
 	}
 }
 
-const char *UndoHistory::AppendAction(actionType at, const Sci::Position& anchor, const Sci::Position& position, const char *data, Sci::Position lengthData,
+const char *UndoHistory::AppendAction(actionType at, Sci::Position position, const char *data, Sci::Position lengthData,
 	bool &startSequence, bool mayCoalesce) {
 	EnsureUndoRoom();
 	//Platform::DebugPrintf("%% %d action %d %d %d\n", at, position, lengthData, currentAction);
@@ -408,7 +408,7 @@ const char *UndoHistory::AppendAction(actionType at, const Sci::Position& anchor
 	return actions[actionWithData].data.get();
 }
 
-void UndoHistory::BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor) {
+void UndoHistory::BeginUndoAction() {
 	EnsureUndoRoom();
 	if (undoSequenceDepth == 0) {
 		if (actions[currentAction].at != startAction) {
@@ -601,14 +601,14 @@ Sci::Position CellBuffer::GapPosition() const noexcept {
 }
 
 // The char* returned is to an allocation owned by the undo history
-const char *CellBuffer::InsertString(const Sci::Position& anchor, const Sci::Position& position, const char *s, Sci::Position insertLength, bool &startSequence) {
+const char *CellBuffer::InsertString(Sci::Position position, const char *s, Sci::Position insertLength, bool &startSequence) {
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
 	const char *data = s;
 	if (!readOnly) {
 		if (collectingUndo) {
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// This takes up about half load time
-			data = uh.AppendAction(insertAction, anchor, position, s, insertLength, startSequence);
+			data = uh.AppendAction(insertAction, position, s, insertLength, startSequence);
 		}
 
 		BasicInsertString(position, s, insertLength);
@@ -648,7 +648,7 @@ bool CellBuffer::SetStyleFor(Sci::Position position, Sci::Position lengthStyle, 
 }
 
 // The char* returned is to an allocation owned by the undo history
-const char *CellBuffer::DeleteChars(const Sci::Position& anchor, const Sci::Position& position, Sci::Position deleteLength, bool &startSequence) {
+const char *CellBuffer::DeleteChars(Sci::Position position, Sci::Position deleteLength, bool &startSequence) {
 	// InsertString and DeleteChars are the bottleneck though which all changes occur
 	PLATFORM_ASSERT(deleteLength > 0);
 	const char *data = nullptr;
@@ -657,7 +657,7 @@ const char *CellBuffer::DeleteChars(const Sci::Position& anchor, const Sci::Posi
 			// Save into the undo/redo stack, but only the characters - not the formatting
 			// The gap would be moved to position anyway for the deletion so this doesn't cost extra
 			data = substance.RangePointer(position, deleteLength);
-			data = uh.AppendAction(removeAction, anchor, position, data, deleteLength, startSequence);
+			data = uh.AppendAction(removeAction, position, data, deleteLength, startSequence);
 		}
 
 		BasicDeleteChars(position, deleteLength);
@@ -1136,17 +1136,17 @@ bool CellBuffer::IsCollectingUndo() const noexcept {
 	return collectingUndo;
 }
 
-void CellBuffer::BeginUndoAction(const Sci::Position& anchor, const Sci::Position& cursor) {
-	uh.BeginUndoAction(anchor, cursor);
+void CellBuffer::BeginUndoAction() {
+	uh.BeginUndoAction();
 }
 
 void CellBuffer::EndUndoAction() {
 	uh.EndUndoAction();
 }
 
-void CellBuffer::AddUndoAction(const Sci::Position& anchor, const Sci::Position& token, bool mayCoalesce) {
+void CellBuffer::AddUndoAction(Sci::Position token, bool mayCoalesce) {
 	bool startSequence;
-	uh.AppendAction(containerAction, anchor, token, nullptr, 0, startSequence, mayCoalesce);
+	uh.AppendAction(containerAction, token, nullptr, 0, startSequence, mayCoalesce);
 }
 
 void CellBuffer::DeleteUndoHistory() {
@@ -1200,3 +1200,4 @@ void CellBuffer::PerformRedoStep() {
 	}
 	uh.CompletedRedoStep();
 }
+
