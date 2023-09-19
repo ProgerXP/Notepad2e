@@ -1626,7 +1626,7 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
       int iLineToNavigate = iLineFrom;
       LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLineFrom), SciCall_LineEndPosition(iLineFrom));
       const int iLineEffectiveLength = n2e_CountNonWhitespaces(text);
-      const BOOL isInvalidLine = (iLineEffectiveLength < 10);
+      const BOOL isInvalidLine = (iLineEffectiveLength < 7);
       bContinueSearch = (iLineFrom > 0) && isInvalidLine && (iFoldLevel >= n2e_GetFoldLevel(iLineFrom - 1));
       if (bContinueSearch)
       {
@@ -1639,7 +1639,7 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom)
         }
         continue;
       }
-      else if (isInvalidLine && (iLineFrom > 0))
+      else if (isInvalidLine && (iLineFrom > 0) && (iLineToNavigateBackup >= 0))
       {
         n2e_Free(text);
         iLineToNavigate = iLineToNavigateBackup;
