@@ -5069,6 +5069,13 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             n2e_ToolTipAddControl(hwndToolTip, FindWindowEx(hwndReplaceText, NULL, WC_EDIT, NULL), lpszReplaceToolTip
             );
           }
+          WCHAR wchFind[TEXT_BUFFER_LENGTH];
+          if (GetDlgItemTextW(hwnd, IDC_FINDTEXT, wchFind, COUNTOF(wchFind)))
+          {
+            const int iSel = ComboBox_FindStringExact(hwndFindText, 0, wchFind);
+            if (iSel >= 0)
+              ComboBox_SetCurSel(hwndFindText, iSel);
+          }
         }
         // [/2e]
       }
