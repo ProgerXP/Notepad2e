@@ -526,9 +526,8 @@ int Document::NextWordStart(int pos, int delta) {
 					pos--;
 				}
 				bool stopAtCurrentNewLine = false;
-				while ((pos >= 0) &&
-					((WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccSpace)
-					&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccNewLine)))
+				while ((pos > 0)
+					&& (WordCharacterClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
 				{
 					pos--;
 					stopAtCurrentNewLine = true;
@@ -539,12 +538,14 @@ int Document::NextWordStart(int pos, int delta) {
 				}
 				else
 				{
-					CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
+					CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
 					while (pos > 0)
 					{
-						CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
-						if (((ccPrev == CharClassify::ccSpace) || (ccPrev == CharClassify::ccNewLine))
-							&& (ccCurrent != CharClassify::ccSpace))
+						CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
+						if ((ccCurrent == CharClassify::ccNewLine)
+								|| (((ccPrev == CharClassify::ccSpace) || (ccPrev == CharClassify::ccNewLine))
+										&& (ccCurrent != CharClassify::ccSpace))
+							)
 							break;
 						pos--;
 						ccCurrent = ccPrev;
@@ -577,14 +578,16 @@ int Document::NextWordStart(int pos, int delta) {
 			// accelerated navigation
 			{
 				bool stopAtCurrentNewLine = false;
-				while ((pos < Length()) && (WordCharClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
+				while ((pos < Length()) && (WordCharacterClass(cb.CharAt(pos)) == CharClassify::ccNewLine))
 				{
 					pos++;
 					stopAtCurrentNewLine = true;
 				}
 				if (stopAtCurrentNewLine)
 				{
-					while ((pos < Length()) && (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccWord))
+					while ((pos < Length())
+						&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccWord)
+						&& (WordCharacterClass(cb.CharAt(pos)) != CharClassify::ccNewLine))
 					{
 						pos++;
 					}
@@ -593,10 +596,10 @@ int Document::NextWordStart(int pos, int delta) {
 				{
 					pos++;
 					assert(pos > 0);
-					CharClassify::cc ccPrev = WordCharClass(cb.CharAt(pos - 1));
+					CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
 					while (pos < Length())
 					{
-						CharClassify::cc ccCurrent = WordCharClass(cb.CharAt(pos));
+						CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
 						if ((ccCurrent == CharClassify::ccNewLine)
 							|| ((ccPrev == CharClassify::ccSpace) && (ccCurrent != CharClassify::ccSpace)))
 							break;

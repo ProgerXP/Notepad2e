@@ -1859,16 +1859,18 @@ Sci::Position Document::NextWordStart(Sci::Position pos, int delta, int alternat
 				}
 				if (stopAtCurrentNewLine)
 				{
-          pos++;
+					pos++;
 				}
-        else
+				else
 				{
 					CharClassify::cc ccCurrent = WordCharacterClass(cb.CharAt(pos));
 					while (pos > 0)
 					{
 						CharClassify::cc ccPrev = WordCharacterClass(cb.CharAt(pos - 1));
-						if (((ccCurrent == CharClassify::ccNewLine) && (ccPrev != CharClassify::ccNewLine))
-							|| ((ccPrev != CharClassify::ccWord)  && (ccCurrent == CharClassify::ccWord)))
+						if ((ccCurrent == CharClassify::ccNewLine)
+								|| (((ccPrev == CharClassify::ccSpace) || (ccPrev == CharClassify::ccNewLine))
+										&& (ccCurrent != CharClassify::ccSpace))
+							)
 							break;
 						pos--;
 						ccCurrent = ccPrev;
