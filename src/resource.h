@@ -28,6 +28,7 @@
 #define ID_BLOCK_UNWRAPSELECTION        43
 #define IDR_ACCFINDREPLACE_INLINE       46
 #define ID_SPECIAL_ESCAPEHTML           47
+#define IDR_ACCMSGBOX                   48
 #define ID_BLOCK_UNWRAPQUOTES           49
 #define ID_SETTINGS_EVAL_DISABLED       51
 #define ID_SETTINGS_EVAL_SELECTION      52
@@ -99,6 +100,7 @@
 #define IDC_AUTOSTRIPBLANKS             103
 #define IDC_ENCODINGFROMFILEVARS        103
 #define IDC_RADIO_KEEP_ORDER            103
+#define IDC_SUPPRESSING                 103
 #define IDR_DATA_LUA_THEME              104
 #define IDD_ENCODING                    104
 #define IDC_FINDSTART                   104
@@ -175,10 +177,10 @@
 #define IDC_SYSLINK3                    125
 #define IDD_INFOBOX                     126
 #define IDC_SYSLINK4                    126
-#define IDD_INFOBOX2                    127
 #define IDC_INITIALIZE_SEARCH_STRING    127
-#define IDD_INFOBOX3                    128
+#define IDC_BUTTON1                     128
 #define IDD_ABOUT_3RD_PARTY             129
+#define IDC_BUTTON2                     129
 #define IDD_STARTINGLINENUMBER          130
 #define IDACC_FIND                      200
 #define IDACC_REPLACE                   201

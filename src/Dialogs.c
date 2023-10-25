@@ -41,6 +41,7 @@
 #include "Extension/EditHelper.h"
 #include "Extension/EditHelperEx.h"
 #include "Extension/MainWndHelper.h"
+#include "Extension/Subclassing.h"
 
 extern HWND  hwndMain;
 extern HWND  hwndEdit;
@@ -63,7 +64,7 @@ int MsgBox(int iType, UINT uIdMsg, ...)
 {
   WCHAR szText[1024];
   WCHAR szBuf[1024];
-  WCHAR szTitle[64];
+  WCHAR szTitle[MAX_PATH];  // [2e]: InfoBox improvements #386
   int iIcon = 0;
   HWND hwnd;
   if (!GetString(uIdMsg, szBuf, COUNTOF(szBuf)))
@@ -94,7 +95,8 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       StrCatBuff(szText, L".", COUNTOF(szText));
   }
 
-  GetString(IDS_APPTITLE, szTitle, COUNTOF(szTitle));
+  // [2e]: InfoBox improvements #386
+  GetWindowText(hwndMain, szTitle, COUNTOF(szTitle));
 
   switch (iType)
   {
@@ -2293,22 +2295,66 @@ BOOL SelectDefLineEndingDlg(HWND hwnd, int *iOption)
 
 }
 
-
 //=============================================================================
 //
 //  InfoBoxDlgProc()
 //
 //
+
+// [2e]: InfoBox improvements #386
+LRESULT CALLBACK DlgInfoBoxChildWindowProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+  extern HACCEL hAccMsgBox;
+  static BOOL bSkipNextChar = FALSE;
+  
+  MSG msg = { GetParent(hwnd), message, wParam, lParam };
+  switch (message)
+  {
+  case WM_CHAR:
+    if (bSkipNextChar)
+    {
+      bSkipNextChar = FALSE;
+      return 0;
+    }
+    break;
+  case WM_KEYDOWN:
+    if (TranslateAccelerator(GetParent(hwnd), hAccMsgBox, &msg))
+    {
+      bSkipNextChar = TRUE;
+      return 0;
+    }
+    break;
+  case WM_SYSKEYDOWN:
+    if (TranslateAccelerator(GetParent(hwnd), hAccMsgBox, &msg))
+    {
+      bSkipNextChar = TRUE;
+      return 0;
+    }
+    break;
+  }
+
+  return n2e_CallOriginalWindowProc(hwnd, message, wParam, lParam);
+}
+// [/2e]: InfoBox improvements #386
+
 typedef struct _infobox
 {
+  int    iType;             // [2e]: InfoBox improvements #386
   LPWSTR lpstrMessage;
   LPWSTR lpstrSetting;
-  BOOL   bDisableCheckBox;
+  BOOL   bDisableCheckBox;  // [2e]: InfoBox improvements #386
+  BOOL   bIsMsgFindWrap1;   // [2e]: InfoBox improvements #386
+  BOOL   bIsMsgFindWrap2;   // [2e]: InfoBox improvements #386
 } INFOBOX, *LPINFOBOX;
 
 INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
   LPINFOBOX lpib;
+
+  // [2e]: InfoBox improvements #386
+  static HWND s_hwndButton1 = NULL;
+  static HWND s_hwndButton2 = NULL;
+  // [/2e]
 
   switch (umsg)
   {
@@ -2325,23 +2371,115 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       SetDlgItemText(hwnd, IDC_INFOBOXTEXT, lpib->lpstrMessage);
       if (lpib->bDisableCheckBox)
         EnableWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), FALSE);
+      else
+        ShowWindow(GetDlgItem(hwnd, IDC_SUPPRESSING), SW_HIDE);
       LocalFree(lpib->lpstrMessage);
+      // [2e]: InfoBox improvements #386
+      WCHAR wchCaption[MAX_PATH];
+      GetWindowText(hwndMain, wchCaption, MAX_PATH);
+      SetWindowText(hwnd, wchCaption);
+      s_hwndButton1 = GetDlgItem(hwnd, IDC_BUTTON1);
+      s_hwndButton2 = GetDlgItem(hwnd, IDC_BUTTON2);
+      n2e_SubclassWindow(GetDlgItem(hwnd, IDC_INFOBOXCHECK), DlgInfoBoxChildWindowProc);
+      n2e_SubclassWindow(s_hwndButton1, DlgInfoBoxChildWindowProc);
+      n2e_SubclassWindow(s_hwndButton2, DlgInfoBoxChildWindowProc);
+      switch (lpib->iType)
+      {
+      case MBYESNO:
+        SetWindowLongPtr(s_hwndButton1, GWL_ID, IDYES);
+        SetWindowText(s_hwndButton1, L"&Yes");
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDNO);
+        SetWindowText(s_hwndButton2, L"&No");
+        SendMessage(hwnd, DM_SETDEFID, IDYES, 0);
+        break;
+      case MBOKCANCEL:
+        SetWindowLongPtr(s_hwndButton1, GWL_ID, IDOK);
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDCANCEL);
+        SendMessage(hwnd, DM_SETDEFID, IDOK, 0);
+        break;
+      case MBINFO:
+        ShowWindow(s_hwndButton1, SW_HIDE);
+        SetWindowLongPtr(s_hwndButton2, GWL_ID, IDOK);
+        SetWindowText(s_hwndButton2, L"&OK");
+        SendMessage(hwnd, DM_SETDEFID, IDOK, 0);
+        break;
+      }
+      if (!lpib->bDisableCheckBox)
+      {
+        RECT rect = {0};
+        GetWindowRect(hwnd, &rect);
+        RECT rectButton = { 0 };
+        GetWindowRect(s_hwndButton2, &rectButton);
+        RECT rectSuppressing = { 0 };
+        GetWindowRect(GetDlgItem(hwnd, IDC_SUPPRESSING), &rectSuppressing);
+        SetWindowPos(hwnd, NULL, 0, 0, rect.right - rect.left, 
+          rect.bottom - rect.top - (rectSuppressing.bottom - rectSuppressing.top) - (rectSuppressing.top - rectButton.bottom),
+          SWP_NOMOVE | SWP_NOZORDER | SWP_NOREDRAW | SWP_NOACTIVATE);
+      }
+      lpib->bIsMsgFindWrap1 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap1") == 0);
+      lpib->bIsMsgFindWrap2 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap2") == 0);
+      // [/2e]
       DPI_INIT();
       CenterDlgInParent(hwnd);
       return TRUE;
 
     case WM_COMMAND:
+      lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
       switch (LOWORD(wParam))
       {
         case IDOK:
         case IDCANCEL:
         case IDYES:
         case IDNO:
-          lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
           if (IsDlgButtonChecked(hwnd, IDC_INFOBOXCHECK))
             IniSetInt(L"Suppressed Messages", lpib->lpstrSetting, 1);
           EndDialog(hwnd, LOWORD(wParam));
           break;
+        // [2e]: InfoBox improvements #386
+        case IDM_VIEW_SAVESETTINGSNOW:
+          if (lpib->bDisableCheckBox)
+          {
+            EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+            PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+            return TRUE;
+          }
+          break;
+        default:
+          if (lpib->bIsMsgFindWrap1 || lpib->bIsMsgFindWrap2)
+          {
+            switch (LOWORD(wParam))
+            {
+            case IDM_EDIT_FINDNEXT:
+              if (lpib->bIsMsgFindWrap1)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            case IDM_EDIT_FINDPREV:
+              if (lpib->bIsMsgFindWrap2)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            case IDM_EDIT_REPLACENEXT:
+              if (lpib->bIsMsgFindWrap1)
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton1, GWL_ID));
+              else
+              {
+                EndDialog(hwnd, GetWindowLongPtr(s_hwndButton2, GWL_ID));
+                PostMessage(hwndMain, WM_COMMAND, wParam, 0);
+              }
+              break;
+            }
+          }
+          break;
+          // [/2e]
       }
       return TRUE;
   }
@@ -2360,7 +2498,6 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
 {
 
   HWND hwnd;
-  int idDlg = IDD_INFOBOX;
   INFOBOX ib;
   WCHAR wchFormat[512];
   int iMode;
@@ -2373,15 +2510,12 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
   if (!GetString(uidMessage, wchFormat, COUNTOF(wchFormat)))
     return (-1);
 
+  // [2e]: InfoBox improvements #386
+  ib.iType = iType;
   ib.lpstrMessage = LocalAlloc(LPTR, 1024 * sizeof(WCHAR));
   wvsprintf(ib.lpstrMessage, wchFormat, (LPVOID)((PUINT_PTR)&uidMessage + 1));
   ib.lpstrSetting = (LPWSTR)lpstrSetting;
   ib.bDisableCheckBox = (lstrlen(szIniFile) == 0 || lstrlen(lpstrSetting) == 0 || iMode == 2) ? TRUE : FALSE;
-
-  if (iType == MBYESNO)
-    idDlg = IDD_INFOBOX2;
-  else if (iType == MBOKCANCEL)
-    idDlg = IDD_INFOBOX3;
 
   if (hwnd = GetFocus())
   {
@@ -2395,7 +2529,7 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
 
   return ThemedDialogBoxParam(
     g_hInstance,
-    MAKEINTRESOURCE(idDlg),
+    MAKEINTRESOURCE(IDD_INFOBOX),
     hwnd,
     InfoBoxDlgProc,
     (LPARAM)&ib);

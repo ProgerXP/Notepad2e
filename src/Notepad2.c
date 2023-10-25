@@ -357,7 +357,9 @@ int flagQuietCreate = 0;
 int flagUseSystemMRU = 0;
 int flagRelaunchElevated = 0;
 int flagDisplayHelp = 0;
-HACCEL hAccFindReplace;
+HACCEL hAccFindReplace = NULL;
+// [2e]: InfoBox improvements #386
+HACCEL hAccMsgBox = NULL;
 
 
 //=============================================================================
@@ -484,6 +486,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, in
 
   hAccMain = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_MAINWND));
   hAccFindReplace = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE));
+
+  // [2e]: InfoBox improvements #386
+  hAccMsgBox = LoadAccelerators(NULL, MAKEINTRESOURCE(IDR_ACCMSGBOX));
+
   // [2e]: Ctrl+H: Replace input behaviour #121
   const HACCEL hAccFindReplaceInline = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDR_ACCFINDREPLACE_INLINE));
 
