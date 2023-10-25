@@ -1882,3 +1882,20 @@ namespace Scintilla {
 /**Back/Forward caret navigation hotkeys (Ctrl+Alt/Shift+O) #360**
 
 ---
+
+**Selection start changes if replacing leading substring #468**
+
+Replace implementation for ``SelectionRange::MoveForInsertDelete``:
+
+[Scintilla/src/Selection.cxx]:
+```
+void SelectionRange::MoveForInsertDelete(bool insertion, Sci::Position startChange, Sci::Position length) noexcept {
+	caret.MoveForInsertDelete(insertion, startChange, length, false);
+	anchor.MoveForInsertDelete(insertion, startChange, length, false);
+}
+```
+[/Scintilla/src/Selection.h]
+
+/**Selection start changes if replacing leading substring #468**
+
+---

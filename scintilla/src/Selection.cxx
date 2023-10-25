@@ -89,17 +89,8 @@ Sci::Position SelectionRange::Length() const noexcept {
 }
 
 void SelectionRange::MoveForInsertDelete(bool insertion, Sci::Position startChange, Sci::Position length) noexcept {
-	// For insertions that occur at the start of the selection move both the start
-	// and end of the selection to preserve the selected length.
-	// The end will automatically move since it is after the insertion, so determine
-	// which position is the start and pass this into
-	// SelectionPosition::MoveForInsertDelete.
-	// There isn't any reason to move an empty selection so don't move it.
-	const bool caretStart = caret.Position() < anchor.Position();
-	const bool anchorStart = anchor.Position() < caret.Position();
-
-	caret.MoveForInsertDelete(insertion, startChange, length, caretStart);
-	anchor.MoveForInsertDelete(insertion, startChange, length, anchorStart);
+	caret.MoveForInsertDelete(insertion, startChange, length, false);
+	anchor.MoveForInsertDelete(insertion, startChange, length, false);
 }
 
 bool SelectionRange::Contains(Sci::Position pos) const noexcept {
