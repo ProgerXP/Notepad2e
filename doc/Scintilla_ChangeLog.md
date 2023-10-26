@@ -1902,3 +1902,59 @@ void SelectionRange::MoveForInsertDelete(bool insertion, Sci::Position startChan
 /**Selection start changes if replacing leading substring #468**
 
 ---
+
+**Paste clipboard file(s) as list of paths #471**
+
+Change condition in ``bool ScintillaWin::CanPaste()``:
+
+[Scintilla/win32/ScintillaWin.cxx]:
+```
+    if (!Editor::CanPaste())
+        return false;
+    if (::IsClipboardFormatAvailable(CF_TEXT) || ::IsClipboardFormatAvailable(CF_HDROP))
+        return true;
+    if (IsUnicodeMode())
+        ...
+```
+[/Scintilla/win32/ScintillaWin.cxx]
+
+Add ``else`` block to ``void ScintillaWin::Paste()``:
+
+[Scintilla/win32/ScintillaWin.cxx]:
+```
+		GlobalMemory memSelection(::GetClipboardData(CF_TEXT));
+		if (memSelection) {
+			...
+		}
+		else if (HDROP hDropFiles = (HDROP)::GetClipboardData(CF_HDROP))
+		{
+			const UINT count = DragQueryFileA(hDropFiles, -1, NULL, 0);
+			for (UINT i = 0; i < count; ++i)
+			{
+				UINT size = DragQueryFile(hDropFiles, i, NULL, 0);
+				if (size > 0)
+				{
+					size_t len = size + 1;
+					std::vector<wchar_t> filename;
+					filename.resize(len);
+					DragQueryFile(hDropFiles, i, &filename[0], len);
+					if (i < count - 1)
+					{
+						filename.pop_back();
+						const std::string eol(StringFromEOLMode(pdoc->eolMode));
+						filename.insert(filename.cend(), eol.cbegin(), eol.cend());
+						len = filename.size();
+					}
+					const size_t mlen = UTF8Length(&filename[0], len);
+					std::vector<char> putf(mlen + 1);
+					UTF8FromUTF16(&filename[0], len, &putf[0], mlen);
+					InsertPasteShape(&putf[0], mlen, pasteShape);
+				}
+			}
+		}
+```
+[/Scintilla/win32/ScintillaWin.cxx]
+
+/**Paste clipboard file(s) as list of paths #471**
+
+---

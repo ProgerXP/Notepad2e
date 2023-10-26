@@ -2238,7 +2238,8 @@ void ScintillaWin::CopyAllowLine() {
 bool ScintillaWin::CanPaste() {
 	if (!Editor::CanPaste())
 		return false;
-	if (::IsClipboardFormatAvailable(CF_TEXT))
+	// [2e]: Paste clipboard file(s) as list of paths #471
+	if (::IsClipboardFormatAvailable(CF_TEXT) || ::IsClipboardFormatAvailable(CF_HDROP))
 		return true;
 	if (IsUnicodeMode())
 		return ::IsClipboardFormatAvailable(CF_UNICODETEXT) != 0;
@@ -2389,6 +2390,34 @@ void ScintillaWin::Paste() {
 			}
 			memSelection.Unlock();
 		}
+		// [2e]: Paste clipboard file(s) as list of paths #471
+		else if (HDROP hDropFiles = (HDROP)::GetClipboardData(CF_HDROP))
+		{
+			const UINT count = DragQueryFileA(hDropFiles, -1, NULL, 0);
+			for (UINT i = 0; i < count; ++i)
+			{
+				UINT size = DragQueryFile(hDropFiles, i, NULL, 0);
+				if (size > 0)
+				{
+					size_t len = size + 1;
+					std::vector<wchar_t> filename;
+					filename.resize(len);
+					DragQueryFile(hDropFiles, i, &filename[0], len);
+					if (i < count - 1)
+					{
+						filename.pop_back();
+						const std::string eol(StringFromEOLMode(pdoc->eolMode));
+						filename.insert(filename.cend(), eol.cbegin(), eol.cend());
+						len = filename.size();
+					}
+					const size_t mlen = UTF8Length(&filename[0], len);
+					std::vector<char> putf(mlen + 1);
+					UTF8FromUTF16(&filename[0], len, &putf[0], mlen);
+					InsertPasteShape(&putf[0], mlen, pasteShape);
+				}
+			}
+		}
+		// [/2e]: Paste clipboard file(s) as list of paths #471
 	}
 	::CloseClipboard();
 	Redraw();
