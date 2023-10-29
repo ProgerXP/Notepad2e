@@ -971,12 +971,24 @@ UINT n2e_SelectionGetSciEventMask(const BOOL range_not)
 void n2e_OnMouseVanishEvent(const BOOL showCursor)
 {
   static int hideCursorCounter = 0;
+  static POINT ptMouseCursor = { 0 };
+  static DWORD dwLastTimeCheck = 0;
+  const DWORD VANISH_CURSOR_DELAY_MS = 250;
+
+  POINT ptCursorPosition = { 0 };
+  GetCursorPos(&ptCursorPosition);
+
   if (showCursor)
   {
     if (hideCursorCounter > 0)
     {
       ShowCursor(TRUE);
       --hideCursorCounter;
+      ptMouseCursor = ptCursorPosition;
+      if (dwLastTimeCheck && (dwLastTimeCheck + VANISH_CURSOR_DELAY_MS < GetTickCount()))
+      {
+        dwLastTimeCheck = 0;
+      }
     }
   }
   else
@@ -991,8 +1003,23 @@ void n2e_OnMouseVanishEvent(const BOOL showCursor)
       }
       if (bVanish)
       {
-        ShowCursor(FALSE);
-        ++hideCursorCounter;
+        BOOL bHideCursor = TRUE;
+        if ((ptCursorPosition.x != ptMouseCursor.x) || (ptCursorPosition.y != ptMouseCursor.y))
+        {
+          bHideCursor = !dwLastTimeCheck;
+          ptMouseCursor = ptCursorPosition;
+          dwLastTimeCheck = GetTickCount();
+        }
+        else if (dwLastTimeCheck && (dwLastTimeCheck + VANISH_CURSOR_DELAY_MS > GetTickCount()))
+        {
+          bHideCursor = FALSE;
+        }
+
+        if (bHideCursor)
+        {
+          ShowCursor(FALSE);
+          ++hideCursorCounter;
+        }
       }
     }
   }

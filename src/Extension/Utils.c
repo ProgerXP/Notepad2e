@@ -260,6 +260,7 @@ LRESULT CALLBACK n2e_ScintillaSubclassWndProc(HWND hwnd, UINT uMsg, WPARAM wPara
         return 0;
       }
       {
+        n2e_OnMouseVanishEvent(FALSE);
         const int res = n2e_CallOriginalWindowProc(hwnd, uMsg, wParam, lParam);
         // Skip the following WM_SYSCHAR to prevent default beeping when processing Alt+Backspace hotkey
         if ((res == 0) && (wParam == VK_BACK) && ((lParam & (1 << 29)) != 0))
