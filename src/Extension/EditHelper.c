@@ -441,8 +441,10 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
   }
   else
   {
-    tr.chrg.cpMin = SciCall_GetWordStartPos(cpos, TRUE);
-    tr.chrg.cpMax = SciCall_GetWordEndPos(cpos, TRUE);
+    // [2e]: Inconsistent word selection of Find Word #469
+    SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_EDIT_SELECTWORD, 1), SCI_NULL);
+    tr.chrg.cpMin = SciCall_GetSelStart();
+    tr.chrg.cpMax = SciCall_GetSelEnd();
   }
   int wlen = tr.chrg.cpMax - tr.chrg.cpMin;
   int res = 0;
