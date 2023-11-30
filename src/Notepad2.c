@@ -5031,6 +5031,9 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
           else
             lstrcpyA(efrData.szFindUTF8, mszSelection);
 
+          // [2e]: Always save Find strings to MRU #440
+          MRU_AddA(mruFind, efrData.szFindUTF8);
+
           // [2e]: Find - disable Match whole/beginning of word when Regexp is checked #439
           if (efrData.fuFlags & SCFIND_REGEXP)
             efrData.fuFlags &= (~(SCFIND_WHOLEWORD | SCFIND_WORDSTART));
