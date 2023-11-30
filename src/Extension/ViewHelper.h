@@ -2,6 +2,7 @@
 #include "Utils.h"
 
 typedef void (*ViewCommandHandler)(HWND hwnd);
+typedef void(*ViewCommandWithParamsHandler)(HWND hwnd, const WPARAM wParam, const LPARAM lParam);
 
 #define VIEW_COMMAND(c) n2e_ApplyViewCommand(c)
 
@@ -15,6 +16,7 @@ void n2e_UpdateViewsDPI(const WPARAM dpi);
 BOOL n2e_CloseView();
 void n2e_UpdateLexer(HWND hwnd);
 void n2e_ApplyViewCommand(ViewCommandHandler lpHandler);
+void n2e_ApplyViewCommandWithParams(ViewCommandWithParamsHandler lpHandler, const WPARAM wParam, const LPARAM lParam);
 
 BOOL n2e_IsScintillaWindow(const HWND hwnd);
 HWND n2e_GetActiveEditCheckFocus();

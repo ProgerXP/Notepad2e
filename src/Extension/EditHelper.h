@@ -9,6 +9,8 @@
 #define ICON_FIND_FAILED 26
 #define FIND_INFO_INDEX 15
 
+
+extern long iMaxSearchDistance;
 extern BOOL bUsePrefixInOpenDialog;
 extern EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
@@ -32,15 +34,14 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
 BOOL n2e_IsCommentStyleById(const int iStyle);
 int n2e_GetSingleLineCommentPrefixLength(const int iLexer);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
+void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, const int iPos);
+void n2e_ResetIndicatedLines();
 int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf);
 BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos);
 BOOL n2e_CommentStyleIsDefined(const HWND hwnd);
 BOOL n2e_OpenNextFile(const HWND hwnd, LPCWSTR file, const BOOL next);
 void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode);
 void n2e_EscapeHTML(const HWND hwnd);
-void n2e_UpdateFindIcon(const BOOL findOK);
-void n2e_UpdateFindIconAndFlashWindow(const BOOL findOK);
-void n2e_ResetFindIcon();
 void n2e_EditString2Hex(const HWND hwnd);
 void n2e_EditHex2String(const HWND hwnd);
 void n2e_EditString2Base64(const HWND hwnd);

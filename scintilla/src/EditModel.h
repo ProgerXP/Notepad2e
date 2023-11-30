@@ -66,6 +66,13 @@ public:
 	void SetDefaultFoldDisplayText(const char *text);
 	const char *GetDefaultFoldDisplayText() const noexcept;
 	const char *GetFoldDisplayText(Sci::Line lineDoc) const;
+
+	// [2e]: Find first/last match indication #388
+	Sci::Line firstIndicatedLine = -1, lastIndicatedLine = -1;
+	virtual void SetIndicatedLines(Sci::Line firstLine, Sci::Line lastLine) {
+		firstIndicatedLine = firstLine;
+		lastIndicatedLine = lastLine;
+	}
 };
 
 }

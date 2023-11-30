@@ -404,6 +404,10 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void InsertPasteShape(const char *text, Sci::Position len, PasteShape shape);
 	void ClearSelection(bool retainMultipleSelections = false);
 	void ClearAll();
+	// [2e]: Find first / last match indication #388
+	void ClearIndicatedLines();
+	bool ClearIndicatedLinesIfRequired(const Sci::Position pos);
+	// [/[2e]
 	void ClearDocumentStyle();
 	virtual void Cut();
 	void PasteRectangular(SelectionPosition pos, const char *ptr, Sci::Position len);

@@ -5035,8 +5035,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         GetString(SC_RESETPOS, tch, COUNTOF(tch));
         InsertMenu(hmenu, 1, MF_BYPOSITION | MF_STRING | MF_ENABLED, SC_RESETPOS, tch);
         InsertMenu(hmenu, 2, MF_BYPOSITION | MF_SEPARATOR, 0, NULL);
-        // [2e]: Match indicator
-        n2e_ResetFindIcon();
         // [2e]: Ctrl+H: Replace input behaviour #121
         n2e_SubclassFindEditInCombo(hwnd, IDC_FINDTEXT);
         n2e_SubclassFindEditInCombo(hwnd, IDC_REPLACETEXT);
@@ -5230,8 +5228,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           {
             GetDlgPos(hwnd, &xFindReplaceDlg, &yFindReplaceDlg);
             bSwitchedFindReplace = TRUE;
-            // [2e]: Match indicator
-            n2e_ResetFindIcon();
             CopyMemory(&efrSave, lpefr, sizeof(EDITFINDREPLACE));
           }
 
@@ -5411,8 +5407,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
           if (bCloseDlg)
           {
-            // [2e]: Match indicator
-            n2e_ResetFindIcon();
             DestroyWindow(hwnd);
             hDlgFindReplace = NULL;
           }
@@ -5420,8 +5414,6 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
 
         case IDCANCEL:
-          // [2e]: Match indicator
-          n2e_ResetFindIcon();
           DestroyWindow(hwnd);
           break;
 
@@ -5602,8 +5594,8 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  // [2e]: Match indicator
-  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
+  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
+
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
     if (IDOK == InfoBox(MBOKCANCEL, L"MsgFindWrap1", IDS_FIND_WRAPFW))
@@ -5611,8 +5603,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       ttf.chrg.cpMin = 0;
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
-      // [2e]: Match indicator
-      n2e_UpdateFindIconAndFlashWindow((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos + 1));
+      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
     }
     else
     {
@@ -5620,7 +5611,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Match indicator
       if (!IsWindowVisible(hDlgFindReplace))
       {
-        n2e_ResetFindIcon();
+        n2e_ResetIndicatedLines();
       }
       // [/2e]
     }
@@ -5689,8 +5680,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  // [2e]: Match indicator
-  n2e_UpdateFindIcon(bTextFound && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
+  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
   {
@@ -5700,7 +5690,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateFindIconAndFlashWindow((iPos >= 0) && n2e_CheckTextExists(hwnd, lpefr, &ttf, iPos));
+      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
     }
     else
     {
@@ -5708,7 +5698,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Match indicator
       if (!IsWindowVisible(hDlgFindReplace))
       {
-        n2e_ResetFindIcon();
+        n2e_ResetIndicatedLines();
       }
       // [/2e]
     }

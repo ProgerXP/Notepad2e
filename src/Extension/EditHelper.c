@@ -409,16 +409,38 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   return iPos;
 }
 
-int FindTextTest(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int cpMin)
+int FindTextTest(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int cpMin, const int cpMax)
 {
   struct TextToFind ttf = *pttf;
   ttf.chrg.cpMin = cpMin;
+  if (cpMax > 0)
+    ttf.chrg.cpMax = cpMax;
   return n2e_FindTextImpl(hwnd, lpefr, &ttf);
 }
 
 BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos)
 {
-  return (FindTextTest(hwnd, lpefr, pttf, iPos) >= 0);
+  return (FindTextTest(hwnd, lpefr, pttf, iPos, -1) >= 0);
+}
+
+void n2e_SetIndicatedLinesCommandHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
+{
+  SciCallEx_SetIndicatedLines(hwnd, wParam, lParam);
+}
+
+void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, const int iPos)
+{
+  const int prevPosition = FindTextTest(hwnd, lpefr, pttf, max(0, iPos - iMaxSearchDistance), iPos);
+  const int nextPosition = FindTextTest(hwnd, lpefr, pttf, iPos + 1, iPos + iMaxSearchDistance);
+  const int firstLine = SciCallEx_LineFromPosition(hwnd, ((prevPosition >= 0) && (prevPosition != iPos)) ? prevPosition : iPos);
+  const int lastLine = SciCallEx_LineFromPosition(hwnd, ((nextPosition >= 0) && (nextPosition != iPos)) ? nextPosition : iPos);
+
+  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, firstLine, lastLine);
+}
+
+void n2e_ResetIndicatedLines()
+{
+  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, -1, -1);
 }
 
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next)
@@ -531,8 +553,9 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
     efr.fuFlags = searchflags;
 
     res = n2e_FindTextImpl(hwnd, &efr, &ttf);
+
     const BOOL bTextFound = (res >= 0);
-    n2e_UpdateFindIcon(bTextFound && (FindTextTest(hwnd, &efr, &ttf, res + 1) >= 0));
+    n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res);
 
     if ((-1 == res) && (bFindWordWrapAround != 0))
     {
@@ -547,7 +570,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
         ttf.chrg.cpMax = tr.chrg.cpMax;
       }
       res = n2e_FindTextImpl(hwnd, &efr, &ttf);
-      n2e_UpdateFindIcon(res >= 0);
+      n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res);
     }
     if (res >= 0)
     {
@@ -736,38 +759,6 @@ void n2e_EscapeHTML(const HWND hwnd)
     SendMessage(hwnd, SCI_SETSEL, beg, end);
   }
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-}
-
-void n2e_UpdateFindIcon(const BOOL findOK)
-{
-  TBBUTTON* pBtn = &tbbMainWnd[FIND_INFO_INDEX];
-  pBtn->iBitmap = findOK ? ICON_FIND_OK : ICON_FIND_FAILED;
-
-  TBBUTTONINFO tbbi = { 0 };
-  tbbi.cbSize = sizeof(tbbi);
-  tbbi.idCommand = pBtn->idCommand;
-  tbbi.iImage = pBtn->iBitmap;
-  tbbi.dwMask = TBIF_IMAGE;
-  SendMessage(hwndToolbar, TB_SETBUTTONINFO, tbbi.idCommand, (LPARAM)&tbbi);
-}
-
-void n2e_UpdateFindIconAndFlashWindow(const BOOL findOK)
-{
-  n2e_UpdateFindIcon(findOK);
-
-  FLASHWINFO fwi = {
-    .cbSize = sizeof(FLASHWINFO),
-    .hwnd = hwndMain,
-    .dwFlags = FLASHW_CAPTION,
-    .uCount = 1,
-    .dwTimeout = 0
-  };
-  FlashWindowEx(&fwi);
-}
-
-void n2e_ResetFindIcon()
-{
-  n2e_UpdateFindIcon(TRUE);
 }
 
 void n2e_UpdateAlwaysOnTopButton()

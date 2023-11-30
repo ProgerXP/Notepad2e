@@ -2,6 +2,7 @@
 #include <cassert>
 #include "CommonUtils.h"
 #include "Edit.h"
+#include "EditHelper.h"
 #include "EditHelperEx.h"
 #include "ExtSelection.h"
 #include "Scintilla.h"
@@ -37,7 +38,6 @@ BOOL bEditSelectionInit = FALSE;
 BOOL bNeedUpdateInEditMode = FALSE;
 
 extern BOOL bHighlightLineIfWindowInactive;
-extern long iMaxSearchDistance;
 extern EWordNavigationMode iWordNavigationMode;
 extern int iDisplayTechnology;
 extern HWND hwndMain;

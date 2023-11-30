@@ -147,6 +147,8 @@ DeclareSciCallV0(BeginUndoAction, BEGINUNDOACTION);
 DeclareSciCallV0(EndUndoAction, ENDUNDOACTION);
 DeclareSciCallV1(SetSkipUIUpdate, SETSKIPUIUPDATE, int, skipUIUpdate);
 
+DeclareSciCallV2(SetIndicatedLines, SETINDICATEDLINES, int, firstLine, int, lastLine);
+
 //=============================================================================
 //
 //  Scrolling and automatic scrolling

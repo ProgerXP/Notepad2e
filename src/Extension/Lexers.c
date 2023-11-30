@@ -7,7 +7,7 @@ KEYWORDLIST KeyWords_NULL = {
 
 
 EDITLEXER lexDefault = { SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; log; asc; doc; diz; nfo", L"", &KeyWords_NULL, NULL_COMMENT_INFO, {
-  // [2e]: update EDefaultLexerOptions enum in case of changed order
+  // [2e]: NOTE: update EDefaultLexerOptions enum in case of changed order
   /*  0 */ { STYLE_DEFAULT, 63100, L"Default Style", L"font:Lucida Console; size:10", L"" },
   /*  1 */ { STYLE_LINENUMBER, 63101, L"Margins and Line Numbers", L"size:-1", L"" },
   /*  2 */ { STYLE_BRACELIGHT, 63102, L"Matching Braces", L"size:+1; bold; fore:#FF0000", L"" },
@@ -20,22 +20,24 @@ EDITLEXER lexDefault = { SCLEX_NULL, 63000, L"Default Text", L"txt; text; wtx; l
   /*  9 */ { SCI_SETCARETLINEBACK + SCI_SETCARETLINEBACKALPHA, 63361, L"Current Line, Inactive View (Color)", L"back:#999999; alpha:50", L"" },
   /* 10 */ { SCI_SETCARETFORE + SCI_SETCARETWIDTH, 63109, L"Caret (Color, Size 1-3)", L"", L"" },
   /* 11 */ { SCI_SETEDGECOLOUR, 63110, L"Long Line Marker (Colors)", L"fore:#FFC000", L"" },
-  /* 12 */ { SCI_SETEXTRAASCENT + SCI_SETEXTRADESCENT, 63111, L"Extra Line Spacing (Size)", L"size:2", L"" },
-  /* 13 */ { 0, 63124, L"Splitter (Color, Size)", L"size:0", L"" },
+  /* 12 */ { STYLE_INDICATORLINECOLOR, 63363, L"Find Marker (Color)", L"fore:#FFCCCC", L"" },
+  /* 13 */ { SCI_SETEXTRAASCENT + SCI_SETEXTRADESCENT, 63111, L"Extra Line Spacing (Size)", L"size:2", L"" },
+  /* 14 */ { 0, 63124, L"Splitter (Color, Size)", L"size:0", L"" },
 
-  /* 14 */ { STYLE_DEFAULT, 63112, L"2nd Default Style", L"font:Courier New; size:10", L"" },
-  /* 15 */ { STYLE_LINENUMBER, 63113, L"2nd Margins and Line Numbers", L"font:Tahoma; size:-2; fore:#FF0000", L"" },
-  /* 16 */ { STYLE_BRACELIGHT, 63114, L"2nd Matching Braces", L"bold; fore:#FF0000", L"" },
-  /* 17 */ { STYLE_BRACEBAD, 63115, L"2nd Matching Braces Error", L"bold; fore:#000080", L"" },
-  /* 18 */ { STYLE_CONTROLCHAR, 63116, L"2nd Control Characters (Font)", L"size:-1", L"" },
-  /* 19 */ { STYLE_INDENTGUIDE, 63117, L"2nd Indentation Guide (Color)", L"fore:#A0A0A0", L"" },
-  /* 20 */ { SCI_SETSELFORE + SCI_SETSELBACK, 63118, L"2nd Selected Text (Colors)", L"eolfilled", L"" },
-  /* 21 */ { SCI_SETWHITESPACEFORE + SCI_SETWHITESPACEBACK + SCI_SETWHITESPACESIZE, 63119, L"2nd Whitespace (Colors, Size 0-5)", L"fore:#FF4000", L"" },
-  /* 22 */ { SCI_SETCARETLINEBACK + SCI_SETCARETLINEBACKALPHA, 63120, L"2nd Current Line Background (Color)", L"back:#FFFF00; alpha:50", L"" },
-  /* 23 */ { SCI_SETCARETLINEBACK + SCI_SETCARETLINEBACKALPHA, 63362, L"2nd Current Line, Inactive View (Color)", L"back:#999999; alpha:50", L"" },
-  /* 24 */ { SCI_SETCARETFORE + SCI_SETCARETWIDTH, 63121, L"2nd Caret (Color, Size 1-3)", L"", L"" },
-  /* 25 */ { SCI_SETEDGECOLOUR, 63122, L"2nd Long Line Marker (Colors)", L"fore:#FFC000", L"" },
-  /* 26 */ { SCI_SETEXTRAASCENT + SCI_SETEXTRADESCENT, 63123, L"2nd Extra Line Spacing (Size)", L"", L"" },
+  /* 15 */ { STYLE_DEFAULT, 63112, L"2nd Default Style", L"font:Courier New; size:10", L"" },
+  /* 16 */ { STYLE_LINENUMBER, 63113, L"2nd Margins and Line Numbers", L"font:Tahoma; size:-2; fore:#FF0000", L"" },
+  /* 17 */ { STYLE_BRACELIGHT, 63114, L"2nd Matching Braces", L"bold; fore:#FF0000", L"" },
+  /* 18 */ { STYLE_BRACEBAD, 63115, L"2nd Matching Braces Error", L"bold; fore:#000080", L"" },
+  /* 19 */ { STYLE_CONTROLCHAR, 63116, L"2nd Control Characters (Font)", L"size:-1", L"" },
+  /* 20 */ { STYLE_INDENTGUIDE, 63117, L"2nd Indentation Guide (Color)", L"fore:#A0A0A0", L"" },
+  /* 21 */ { SCI_SETSELFORE + SCI_SETSELBACK, 63118, L"2nd Selected Text (Colors)", L"eolfilled", L"" },
+  /* 22 */ { SCI_SETWHITESPACEFORE + SCI_SETWHITESPACEBACK + SCI_SETWHITESPACESIZE, 63119, L"2nd Whitespace (Colors, Size 0-5)", L"fore:#FF4000", L"" },
+  /* 23 */ { SCI_SETCARETLINEBACK + SCI_SETCARETLINEBACKALPHA, 63120, L"2nd Current Line Background (Color)", L"back:#FFFF00; alpha:50", L"" },
+  /* 24 */ { SCI_SETCARETLINEBACK + SCI_SETCARETLINEBACKALPHA, 63362, L"2nd Current Line, Inactive View (Color)", L"back:#999999; alpha:50", L"" },
+  /* 25 */ { SCI_SETCARETFORE + SCI_SETCARETWIDTH, 63121, L"2nd Caret (Color, Size 1-3)", L"", L"" },
+  /* 26 */ { SCI_SETEDGECOLOUR, 63122, L"2nd Long Line Marker (Colors)", L"fore:#FFC000", L"" },
+  /* 27 */ { STYLE_INDICATORLINECOLOR, 63364, L"2nd Find Marker (Color)", L"fore:#FF2D2D", L"" },
+  /* 28 */ { SCI_SETEXTRAASCENT + SCI_SETEXTRADESCENT, 63123, L"2nd Extra Line Spacing (Size)", L"", L"" },
   { -1, 00000, L"", L"", L"" }
 }
 };

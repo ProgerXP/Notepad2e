@@ -2094,6 +2094,7 @@ void Editor::InsertPaste(const char *text, Sci::Position len) {
 }
 
 void Editor::InsertPasteShape(const char *text, Sci::Position len, PasteShape shape) {
+	ClearIndicatedLinesIfRequired(sel.MainCaret());
 	std::string convertedText;
 	if (convertPastes) {
 		// Convert line endings of the paste into our local line-endings mode
@@ -2134,6 +2135,7 @@ void Editor::ClearSelection(bool retainMultipleSelections) {
 				pdoc->DeleteChars(sel.Range(r).Start().Position(),
 					sel.Range(r).Length());
 				sel.Range(r) = SelectionRange(sel.Range(r).Start());
+				ClearIndicatedLinesIfRequired(sel.Range(r).Start().Position());
 			}
 		}
 	}
@@ -2160,9 +2162,29 @@ void Editor::ClearAll() {
 
 	sel.Clear();
 	ph.Clear();
+	ClearIndicatedLines(); // [2e]: Find first/last match indication #388
 	SetTopLine(0);
 	SetVerticalScrollPos();
 	InvalidateStyleRedraw();
+}
+
+void Editor::ClearIndicatedLines()
+{
+	firstIndicatedLine = lastIndicatedLine = -1;
+}
+
+bool Editor::ClearIndicatedLinesIfRequired(const Sci::Position pos)
+{
+	if ((firstIndicatedLine >= 0) && (lastIndicatedLine >= 0))
+	{
+		const Range rangeIndicated(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+		if (rangeIndicated.Contains(pos))
+		{
+			ClearIndicatedLines();
+			return true;
+		}
+	}
+	return false;
 }
 
 void Editor::ClearDocumentStyle() {
@@ -2255,6 +2277,7 @@ void Editor::Clear() {
 				}
 				if ((sel.Count() == 1) || !pdoc->IsPositionInLineEnd(sel.Range(r).caret.Position())) {
 					pdoc->DelChar(sel.Range(r).caret.Position());
+					ClearIndicatedLinesIfRequired(sel.Range(r).caret.Position());
 					sel.Range(r).ClearVirtualSpace();
 				}  // else multiple selection so don't eat line ends
 			} else {
@@ -2345,6 +2368,7 @@ void Editor::DelCharBack(bool allowLineStartDeletion) {
 							sel.Range(r) = SelectionRange(posSelect);
 						} else {
 							pdoc->DelCharBack(sel.Range(r).caret.Position());
+							ClearIndicatedLinesIfRequired(sel.Range(r).caret.Position());
 						}
 					}
 				}
@@ -3159,6 +3183,7 @@ void Editor::NewLine() {
 		if (insertLength > 0) {
 			sel.Range(r) = SelectionRange(positionInsert + insertLength);
 			countInsertions++;
+			ClearIndicatedLinesIfRequired(positionInsert);
 		}
 	}
 
@@ -4051,6 +4076,7 @@ int Editor::KeyCommand(unsigned int iMessage) {
 			const Sci::Position start = pdoc->LineStart(lineStart);
 			const Sci::Position end = pdoc->LineStart(lineEnd + 1);
 			pdoc->DeleteChars(start, end - start);
+			ClearIndicatedLines();
 			NotifyLineCountChanged();
 		}
 		break;

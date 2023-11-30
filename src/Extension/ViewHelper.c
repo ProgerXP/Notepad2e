@@ -202,6 +202,14 @@ void n2e_ApplyViewCommand(ViewCommandHandler lpHandler)
   }
 }
 
+void n2e_ApplyViewCommandWithParams(ViewCommandWithParamsHandler lpHandler, const WPARAM wParam, const LPARAM lParam)
+{
+  for (int i = 0; i < n2e_ScintillaWindowsCount(); ++i)
+  {
+    lpHandler(n2e_ScintillaWindowByIndex(i), wParam, lParam);
+  }
+}
+
 BOOL n2e_IsScintillaWindow(const HWND hwnd)
 {
   WCHAR szClassName[64] = { 0 };

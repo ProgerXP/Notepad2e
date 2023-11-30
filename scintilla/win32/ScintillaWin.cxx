@@ -1831,6 +1831,19 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			RefreshStyleData();
 			return 0;
 
+		case SCI_SETINDICATEDLINES:
+			if ((firstIndicatedLine >= 0) || (lastIndicatedLine >= 0))
+			{
+				if (lastIndicatedLine < 0)
+					InvalidateRange(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(firstIndicatedLine));
+				else if (firstIndicatedLine < 0)
+					InvalidateRange(pdoc->LineStart(lastIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+				else
+					InvalidateRange(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+			}
+			Editor::SetIndicatedLines(wParam, lParam);
+			return 0;
+
 		default:
 			return ScintillaBase::WndProc(iMessage, wParam, lParam);
 		}

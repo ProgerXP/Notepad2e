@@ -2326,8 +2326,8 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               }
             }
           }
-          // [2e]: Match indicator
-          n2e_ResetFindIcon();
+          // [2e]: Find first/last match indication #388
+          n2e_ResetIndicatedLines();
         }
       }
       break;
@@ -7527,8 +7527,8 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     if (bResetFileWatching)
       iFileWatchingMode = 0;
     InstallFileWatching(NULL);
-    // [2e]: Match indicator
-    n2e_ResetFindIcon();
+    // [2e]: Find first/last match indication #388
+    n2e_ResetIndicatedLines();
     n2e_ResetLastRun();
     // [2e]: Save on deactivate #164
     n2e_ResetSaveOnLoseFocus();
@@ -7670,8 +7670,8 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
   if (fSuccess)
   {
-    // [2e]: Match indicator
-    n2e_ResetFindIcon();
+    // [2e]: Find first/last match indication #388
+    n2e_ResetIndicatedLines();
     n2e_ResetLastRun();
     // [2e]: Save on deactivate #164
     n2e_ResetSaveOnLoseFocus();
