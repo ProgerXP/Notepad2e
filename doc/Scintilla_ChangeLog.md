@@ -1958,3 +1958,174 @@ Add ``else`` block to ``void ScintillaWin::Paste()``:
 /**Paste clipboard file(s) as list of paths #471**
 
 ---
+
+**Find first/last match indication #388**
+
+Add new styles and message to Scintilla.h:
+
+[scintilla/include/Scintilla.h]:
+```
+#define STYLE_LINEINDICATOR 40
+#define STYLE_LINEINDICATOR_FIRST_LAST 41
+..
+#define SCI_SETINDICATEDLINES 9014
+```
+[/scintilla/include/Scintilla.h]
+
+Append code to EditModel-class:
+
+[scintilla/src/EditModel.h]:
+```
+	// [2e]: Find first/last match indication #388
+	Sci::Line firstIndicatedLine = -1, lastIndicatedLine = -1;
+	Sci::Line beforeIndicatedLine = -1, afterIndicatedLine = -1;
+	int topIndicatedLine() const { return std::max(firstIndicatedLine, beforeIndicatedLine); }
+	int bottomIndicatedLine() const { return std::max(lastIndicatedLine, afterIndicatedLine); }
+	virtual void SetIndicatedLines(
+		const Sci::Line line1, const bool isFirst,
+		const Sci::Line line2, const bool isLast) {
+			firstIndicatedLine = isFirst ? line1 : -1;
+			beforeIndicatedLine = isFirst ? -1 : line1;
+			lastIndicatedLine = isLast ? line2 : -1;
+			afterIndicatedLine = isLast ? -1 : line2;
+	}
+    // [/2e]
+```
+[/scintilla/src/EditModel.h]
+
+Add new code to Editor-class:
+
+[scintilla/src/Editor.h]:
+```
+...
+    void ClearAll();
+    // [2e]: Find first / last match indication #388
+    void ClearIndicatedLines();
+    bool ClearIndicatedLinesIfRequired(const Sci::Position pos);
+    // [/[2e]
+...
+```
+[/scintilla/src/Editor.h]
+
+[scintilla/src/Editor.cxx]:
+```
+...
+void Editor::InsertPasteShape(const char *text, Sci::Position len, PasteShape shape) {
+    ClearIndicatedLinesIfRequired(sel.MainCaret());
+...
+                sel.Range(r) = SelectionRange(sel.Range(r).Start());
+                ClearIndicatedLinesIfRequired(sel.Range(r).Start().Position());
+...
+    sel.Clear();
+    ph.Clear();
+    ClearIndicatedLines();
+    SetTopLine(0);
+...
+void Editor::ClearIndicatedLines()
+{
+    firstIndicatedLine = lastIndicatedLine = beforeIndicatedLine = afterIndicatedLine = -1;
+}
+
+bool Editor::ClearIndicatedLinesIfRequired(const Sci::Position pos)
+{
+    if (((firstIndicatedLine >= 0) || (beforeIndicatedLine >= 0)) && ((lastIndicatedLine >= 0) || (afterIndicatedLine >= 0)))
+    {
+        const Range rangeIndicated(
+            pdoc->LineStart(firstIndicatedLine >= 0 ? firstIndicatedLine : beforeIndicatedLine),
+            pdoc->LineEnd(lastIndicatedLine >= 0 ? lastIndicatedLine : afterIndicatedLine));
+        if (rangeIndicated.Contains(pos))
+        {
+            ClearIndicatedLines();
+            return true;
+        }
+    }
+    return false;
+}
+...
+                    pdoc->DelChar(sel.Range(r).caret.Position());
+                    ClearIndicatedLinesIfRequired(sel.Range(r).caret.Position());
+...
+                        } else {
+                            pdoc->DelCharBack(sel.Range(r).caret.Position());
+                            ClearIndicatedLinesIfRequired(sel.Range(r).caret.Position());
+                        }
+...
+        if (insertLength > 0) {
+            sel.Range(r) = SelectionRange(positionInsert + insertLength);
+            countInsertions++;
+            ClearIndicatedLinesIfRequired(positionInsert);
+        }
+...
+            const Sci::Position end = pdoc->LineStart(lineEnd + 1);
+            pdoc->DeleteChars(start, end - start);
+            ClearIndicatedLines();
+            NotifyLineCountChanged();
+...
+```
+[/scintilla/src/Editor.cxx]
+
+Update EditView module:
+
+[scintilla/src/EditView.cxx]:
+```
+...
+static void DrawLineIndicator(Surface *surface, const ViewStyle &vsDraw, const Sci::Line line,
+    const bool showIndicatorFirst, const bool showIndicatorLast,
+    const bool showIndicatorBefore, const bool showIndicatorAfter, PRectangle rcLine) {
+    if (showIndicatorFirst || showIndicatorBefore) {
+        PRectangle rcIndicatorLine = rcLine;
+        rcIndicatorLine.bottom = rcIndicatorLine.top + 1;
+        surface->FillRectangle(rcIndicatorLine, vsDraw.styles[showIndicatorFirst ? STYLE_LINEINDICATOR_FIRST_LAST : STYLE_LINEINDICATOR].fore);
+    }
+    if (showIndicatorLast || showIndicatorAfter) {
+        PRectangle rcIndicatorLine = rcLine;
+        rcIndicatorLine.top = rcIndicatorLine.bottom - 1;
+        surface->FillRectangle(rcIndicatorLine, vsDraw.styles[showIndicatorLast ? STYLE_LINEINDICATOR_FIRST_LAST : STYLE_LINEINDICATOR].fore);
+    }
+}
+...
+    if (phase & drawIndicatorsFore) {
+        DrawIndicators(surface, model, vsDraw, ll, line, xStart, rcLine, subLine, lineRangeIncludingEnd.end, false, model.hoverIndicatorPos);
+        DrawLineIndicator(surface, vsDraw, line,
+            line == model.firstIndicatedLine, line == model.lastIndicatedLine,
+            line == model.beforeIndicatedLine, line == model.afterIndicatedLine, rcLine);
+    }
+...
+```
+[/scintilla/src/EditView.cxx]
+
+Add new message handler to ScintillaWin:
+
+[scintilla/win32/ScintillaWin.cxx]:
+```
+...
+		case SCI_SETDPI:
+			SetDPI(LOWORD(wParam),
+				HIWORD(wParam),
+				MulDiv(DEFAULT_FONT_DPI, DEFAULT_SCREEN_DPI, GetDpiY()));
+			InvalidateStyleData();
+			RefreshStyleData();
+			return 0;
+
+		case SCI_SETINDICATEDLINES:
+			if ((topIndicatedLine() >= 0) || (bottomIndicatedLine() >= 0))
+			{
+				const Sci::Line topLine = topIndicatedLine();
+				const Sci::Line bottomLine = bottomIndicatedLine();
+				if (bottomLine < 0)
+					InvalidateRange(pdoc->LineStart(topLine), pdoc->LineEnd(topLine));
+				else if (topLine < 0)
+					InvalidateRange(pdoc->LineStart(bottomLine), pdoc->LineEnd(bottomLine));
+				else
+					InvalidateRange(pdoc->LineStart(topLine), pdoc->LineEnd(bottomLine));
+			}
+			Editor::SetIndicatedLines(LOWORD(wParam), HIWORD(wParam), LOWORD(lParam), HIWORD(lParam));
+			return 0;
+
+...
+```
+[/scintilla/win32/ScintillaWin.cxx]
+
+/**Find first/last match indication #388**
+
+---

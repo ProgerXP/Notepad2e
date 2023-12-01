@@ -1832,14 +1832,16 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			return 0;
 
 		case SCI_SETINDICATEDLINES:
-			if ((firstIndicatedLine >= 0) || (lastIndicatedLine >= 0))
+			if ((topIndicatedLine() >= 0) || (bottomIndicatedLine() >= 0))
 			{
-				if (lastIndicatedLine < 0)
-					InvalidateRange(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(firstIndicatedLine));
-				else if (firstIndicatedLine < 0)
-					InvalidateRange(pdoc->LineStart(lastIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+				const Sci::Line topLine = topIndicatedLine();
+				const Sci::Line bottomLine = bottomIndicatedLine();
+				if (bottomLine < 0)
+					InvalidateRange(pdoc->LineStart(topLine), pdoc->LineEnd(topLine));
+				else if (topLine < 0)
+					InvalidateRange(pdoc->LineStart(bottomLine), pdoc->LineEnd(bottomLine));
 				else
-					InvalidateRange(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+					InvalidateRange(pdoc->LineStart(topLine), pdoc->LineEnd(bottomLine));
 			}
 			Editor::SetIndicatedLines(LOWORD(wParam), HIWORD(wParam), LOWORD(lParam), HIWORD(lParam));
 			return 0;

@@ -70,7 +70,9 @@ public:
 	// [2e]: Find first/last match indication #388
 	Sci::Line firstIndicatedLine = -1, lastIndicatedLine = -1;
 	Sci::Line beforeIndicatedLine = -1, afterIndicatedLine = -1;
-	virtual void SetIndicatedLines(
+	int topIndicatedLine() const { return std::max(firstIndicatedLine, beforeIndicatedLine); }
+	int bottomIndicatedLine() const { return std::max(lastIndicatedLine, afterIndicatedLine); }
+	void SetIndicatedLines(
 		const Sci::Line line1, const bool isFirst,
 		const Sci::Line line2, const bool isLast) {
 			firstIndicatedLine = isFirst ? line1 : -1;
