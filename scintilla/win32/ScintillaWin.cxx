@@ -1841,7 +1841,7 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 				else
 					InvalidateRange(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
 			}
-			Editor::SetIndicatedLines(wParam, lParam);
+			Editor::SetIndicatedLines(LOWORD(wParam), HIWORD(wParam), LOWORD(lParam), HIWORD(lParam));
 			return 0;
 
 		default:

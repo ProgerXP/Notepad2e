@@ -34,7 +34,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
 BOOL n2e_IsCommentStyleById(const int iStyle);
 int n2e_GetSingleLineCommentPrefixLength(const int iLexer);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
-void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, const int iPos);
+void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, int iPos);
 void n2e_ResetIndicatedLines();
 int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf);
 BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int iPos);

@@ -196,7 +196,8 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define STYLE_CALLTIP 38
 #define STYLE_FOLDDISPLAYTEXT 39
 #define STYLE_LASTPREDEFINED 39
-#define STYLE_INDICATORLINECOLOR 40
+#define STYLE_LINEINDICATOR 40
+#define STYLE_LINEINDICATOR_FIRST_LAST 41
 #define STYLE_MAX 255
 #define SC_CHARSET_ANSI 0
 #define SC_CHARSET_DEFAULT 1

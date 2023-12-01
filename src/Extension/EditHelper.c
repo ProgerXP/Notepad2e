@@ -413,7 +413,7 @@ int FindTextTest(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToF
 {
   struct TextToFind ttf = *pttf;
   ttf.chrg.cpMin = cpMin;
-  if (cpMax > 0)
+  if (cpMax >= 0)
     ttf.chrg.cpMax = cpMax;
   return n2e_FindTextImpl(hwnd, lpefr, &ttf);
 }
@@ -428,19 +428,21 @@ void n2e_SetIndicatedLinesCommandHandler(const HWND hwnd, const WPARAM wParam, c
   SciCallEx_SetIndicatedLines(hwnd, wParam, lParam);
 }
 
-void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, const int iPos)
+void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, int iPos)
 {
-  const int prevPosition = FindTextTest(hwnd, lpefr, pttf, max(0, iPos - iMaxSearchDistance), iPos);
+  if (iPos < 0)
+    iPos = pttf->chrg.cpMin;
+  const int prevPosition = FindTextTest(hwnd, lpefr, pttf, iPos - 1, max(0, iPos - iMaxSearchDistance));
   const int nextPosition = FindTextTest(hwnd, lpefr, pttf, iPos + 1, iPos + iMaxSearchDistance);
   const int firstLine = SciCallEx_LineFromPosition(hwnd, ((prevPosition >= 0) && (prevPosition != iPos)) ? prevPosition : iPos);
   const int lastLine = SciCallEx_LineFromPosition(hwnd, ((nextPosition >= 0) && (nextPosition != iPos)) ? nextPosition : iPos);
 
-  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, firstLine, lastLine);
+  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, MAKEWPARAM(firstLine, prevPosition <= 0), MAKELPARAM(lastLine, nextPosition == -1));
 }
 
 void n2e_ResetIndicatedLines()
 {
-  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, -1, -1);
+  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, MAKEWPARAM(-1, TRUE), MAKELPARAM(-1, TRUE));
 }
 
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next)

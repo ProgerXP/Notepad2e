@@ -1885,17 +1885,17 @@ void EditView::DrawIndentGuidesOverEmpty(Surface *surface, const EditModel &mode
 }
 
 static void DrawLineIndicator(Surface *surface, const ViewStyle &vsDraw, const Sci::Line line,
+	const bool showIndicatorFirst, const bool showIndicatorLast,
 	const bool showIndicatorBefore, const bool showIndicatorAfter, PRectangle rcLine) {
-	const ColourDesired color = vsDraw.styles[STYLE_INDICATORLINECOLOR].fore;
-	if (showIndicatorBefore) {
+	if (showIndicatorFirst || showIndicatorBefore) {
 		PRectangle rcIndicatorLine = rcLine;
 		rcIndicatorLine.bottom = rcIndicatorLine.top + 1;
-		surface->FillRectangle(rcIndicatorLine, color);
+		surface->FillRectangle(rcIndicatorLine, vsDraw.styles[showIndicatorFirst ? STYLE_LINEINDICATOR_FIRST_LAST : STYLE_LINEINDICATOR].fore);
 	}
-	if (showIndicatorAfter) {
+	if (showIndicatorLast || showIndicatorAfter) {
 		PRectangle rcIndicatorLine = rcLine;
 		rcIndicatorLine.top = rcIndicatorLine.bottom - 1;
-		surface->FillRectangle(rcIndicatorLine, color);
+		surface->FillRectangle(rcIndicatorLine, vsDraw.styles[showIndicatorLast ? STYLE_LINEINDICATOR_FIRST_LAST : STYLE_LINEINDICATOR].fore);
 	}
 }
 
@@ -1953,7 +1953,9 @@ void EditView::DrawLine(Surface *surface, const EditModel &model, const ViewStyl
 
 	if (phase & drawIndicatorsFore) {
 		DrawIndicators(surface, model, vsDraw, ll, line, xStart, rcLine, subLine, lineRangeIncludingEnd.end, false, model.hoverIndicatorPos);
-		DrawLineIndicator(surface, vsDraw, line, line == model.firstIndicatedLine, line == model.lastIndicatedLine, rcLine);
+		DrawLineIndicator(surface, vsDraw, line,
+			line == model.firstIndicatedLine, line == model.lastIndicatedLine,
+			line == model.beforeIndicatedLine, line == model.afterIndicatedLine, rcLine);
 	}
 
 	DrawFoldDisplayText(surface, model, vsDraw, ll, line, xStart, rcLine, subLine, subLineStart, phase);

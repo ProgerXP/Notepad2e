@@ -69,9 +69,14 @@ public:
 
 	// [2e]: Find first/last match indication #388
 	Sci::Line firstIndicatedLine = -1, lastIndicatedLine = -1;
-	virtual void SetIndicatedLines(Sci::Line firstLine, Sci::Line lastLine) {
-		firstIndicatedLine = firstLine;
-		lastIndicatedLine = lastLine;
+	Sci::Line beforeIndicatedLine = -1, afterIndicatedLine = -1;
+	virtual void SetIndicatedLines(
+		const Sci::Line line1, const bool isFirst,
+		const Sci::Line line2, const bool isLast) {
+			firstIndicatedLine = isFirst ? line1 : -1;
+			beforeIndicatedLine = isFirst ? -1 : line1;
+			lastIndicatedLine = isLast ? line2 : -1;
+			afterIndicatedLine = isLast ? -1 : line2;
 	}
 };
 

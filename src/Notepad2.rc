@@ -2078,6 +2078,8 @@ BEGIN
     63362                   "2nd Current Line, Inactive View (Color)"
     63363                   "Find Marker (Color)"
     63364                   "2nd Find Marker (Color)"
+    63365                   "Find Marker First/Last (Color)"
+    63366                   "2nd Find Marker First/Last (Color)"
 END
 
 #endif    // English (United States) resources

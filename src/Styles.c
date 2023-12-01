@@ -606,6 +606,7 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
 
   // [2e]: Find first/last match indication #388
   Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[DLO_FIND_MARKER + iIdx].i64Style), lexDefault.Styles[DLO_FIND_MARKER + iIdx].szValue);
+  Style_SetStyles(hwnd, lexDefault.iLexer, MULTI_STYLE_STYLE1(lexDefault.Styles[DLO_FIND_MARKER_FIRST_LAST + iIdx].i64Style), lexDefault.Styles[DLO_FIND_MARKER_FIRST_LAST + iIdx].szValue);
 
   // Extra Line Spacing
   if (Style_StrGetSize(lexDefault.Styles[DLO_EXTRA_LINE_SPACING + iIdx].szValue, &iValue))

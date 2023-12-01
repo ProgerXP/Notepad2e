@@ -2170,14 +2170,16 @@ void Editor::ClearAll() {
 
 void Editor::ClearIndicatedLines()
 {
-	firstIndicatedLine = lastIndicatedLine = -1;
+	firstIndicatedLine = lastIndicatedLine = beforeIndicatedLine = afterIndicatedLine = -1;
 }
 
 bool Editor::ClearIndicatedLinesIfRequired(const Sci::Position pos)
 {
-	if ((firstIndicatedLine >= 0) && (lastIndicatedLine >= 0))
+	if (((firstIndicatedLine >= 0) || (beforeIndicatedLine >= 0)) && ((lastIndicatedLine >= 0) || (afterIndicatedLine >= 0)))
 	{
-		const Range rangeIndicated(pdoc->LineStart(firstIndicatedLine), pdoc->LineEnd(lastIndicatedLine));
+		const Range rangeIndicated(
+			pdoc->LineStart(firstIndicatedLine >= 0 ? firstIndicatedLine : beforeIndicatedLine),
+			pdoc->LineEnd(lastIndicatedLine >= 0 ? lastIndicatedLine : afterIndicatedLine));
 		if (rangeIndicated.Contains(pos))
 		{
 			ClearIndicatedLines();
