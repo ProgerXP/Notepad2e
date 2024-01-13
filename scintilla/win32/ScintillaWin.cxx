@@ -3389,7 +3389,7 @@ bool ScintillaWin::HasCaretSizeChanged() const noexcept {
 }
 
 BOOL ScintillaWin::CreateSystemCaret() {
-	sysCaretWidth = vs.caretWidth;
+	sysCaretWidth = vs.caretWidth * dsf();
 	if (0 == sysCaretWidth) {
 		sysCaretWidth = 1;
 	}

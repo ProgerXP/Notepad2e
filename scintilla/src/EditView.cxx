@@ -1385,7 +1385,7 @@ void EditView::DrawCarets(Surface *surface, const EditModel &model, const ViewSt
 				if (drawDrag) {
 					/* Dragging text, use a line caret */
 					rcCaret.left = round(xposCaret - caretWidthOffset);
-					rcCaret.right = rcCaret.left + vsDraw.caretWidth;
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
 				} else if ((caretShape == ViewStyle::CaretShape::bar) && drawOverstrikeCaret) {
 					/* Overstrike (insert mode), use a modified bar caret */
 					rcCaret.top = rcCaret.bottom - 2;
@@ -1403,7 +1403,7 @@ void EditView::DrawCarets(Surface *surface, const EditModel &model, const ViewSt
 				} else {
 					/* Line caret */
 					rcCaret.left = round(xposCaret - caretWidthOffset);
-					rcCaret.right = rcCaret.left + vsDraw.caretWidth;
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
 				}
 				const ColourDesired caretColour = mainCaret ? vsDraw.caretcolour : vsDraw.additionalCaretColour;
 				if (drawBlockCaret) {

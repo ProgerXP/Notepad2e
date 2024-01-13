@@ -334,6 +334,8 @@ public:
 	friend class SurfaceImpl;
 };
 
+int dsf(); // [2e]: Scale highlight border and caret size according to DPI #472
+
 /**
  * A surface abstracts a place to draw.
  */

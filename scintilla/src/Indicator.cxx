@@ -121,12 +121,12 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 	} else if ((sacDraw.style == INDIC_HIDDEN) || (sacDraw.style == INDIC_TEXTFORE)) {
 		// Draw nothing
 	} else if (sacDraw.style == INDIC_BOX) {
-		surface->MoveTo(irc.left, ymid + 1);
-		surface->LineTo(irc.right, ymid + 1);
-		const int lineTop = static_cast<int>(rcLine.top) + 1;
+		surface->MoveTo(irc.left, ymid + dsf());
+		surface->LineTo(irc.right, ymid + dsf());
+		const int lineTop = static_cast<int>(rcLine.top) + dsf();
 		surface->LineTo(irc.right, lineTop);
 		surface->LineTo(irc.left, lineTop);
-		surface->LineTo(irc.left, ymid + 1);
+		surface->LineTo(irc.left, ymid + dsf());
 	} else if (sacDraw.style == INDIC_ROUNDBOX ||
 		sacDraw.style == INDIC_STRAIGHTBOX ||
 		sacDraw.style == INDIC_FULLBOX) {
@@ -135,7 +135,7 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 			rcBox.top = rcLine.top + 1;
 		rcBox.left = rc.left;
 		rcBox.right = rc.right;
-		surface->AlphaRectangle(rcBox, (sacDraw.style == INDIC_ROUNDBOX) ? 1 : 0,
+		surface->AlphaRectangle(rcBox, (sacDraw.style == INDIC_ROUNDBOX) ? dsf() : 0,
 			sacDraw.fore, fillAlpha, sacDraw.fore, outlineAlpha, 0);
 	} else if (sacDraw.style == INDIC_GRADIENT ||
 		sacDraw.style == INDIC_GRADIENTCENTRE) {
