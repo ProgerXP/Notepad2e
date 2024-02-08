@@ -88,19 +88,20 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 		surface->LineTo(irc.right, irc.top + y);	// Finish the line
 	} else if (sacDraw.style == INDIC_TT) {
 		surface->MoveTo(irc.left, ymid);
-		int x = irc.left + 5;
+		int x = irc.left + 5 * dsf();
+		const int deltaX = ceil(5.0 * dsf() / 2);
 		while (x < rc.right) {
 			surface->LineTo(x, ymid);
-			surface->MoveTo(x-3, ymid);
-			surface->LineTo(x-3, ymid+2);
-			x++;
+			surface->MoveTo(x - deltaX, ymid);
+			surface->LineTo(x - deltaX, ymid + 2);
+			x += dsf();
 			surface->MoveTo(x, ymid);
-			x += 5;
+			x += 5 * dsf();
 		}
 		surface->LineTo(irc.right, ymid);	// Finish the line
-		if (x - 3 <= rc.right) {
-			surface->MoveTo(x-3, ymid);
-			surface->LineTo(x-3, ymid+2);
+		if (x - deltaX <= rc.right) {
+			surface->MoveTo(x - deltaX, ymid);
+			surface->LineTo(x - deltaX, ymid + 2);
 		}
 	} else if (sacDraw.style == INDIC_DIAGONAL) {
 		int x = irc.left;
@@ -113,11 +114,11 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 				endX = irc.right;
 			}
 			surface->LineTo(endX, endY);
-			x += 4;
+			x += 2 + 2 * dsf();
 		}
 	} else if (sacDraw.style == INDIC_STRIKE) {
-		surface->MoveTo(irc.left, irc.top - 4);
-		surface->LineTo(irc.right, irc.top - 4);
+		surface->MoveTo(irc.left, irc.top - (2 + 2 * dsf()));
+		surface->LineTo(irc.right, irc.top - (2 + 2 * dsf()));
 	} else if ((sacDraw.style == INDIC_HIDDEN) || (sacDraw.style == INDIC_TEXTFORE)) {
 		// Draw nothing
 	} else if (sacDraw.style == INDIC_BOX) {
@@ -167,44 +168,58 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 		const int width = std::min(ircBox.Width(), 4000);
 		RGBAImage image(width, ircBox.Height(), 1.0, nullptr);
 		// Draw horizontal lines top and bottom
-		for (int x=0; x<width; x++) {
-			for (int y = 0; y<ircBox.Height(); y += ircBox.Height() - 1) {
-				image.SetPixel(x, y, sacDraw.fore, ((x + y) % 2) ? outlineAlpha : fillAlpha);
+		bool drawPixel = true;
+		for (int y = 0; y<ircBox.Height(); y += ircBox.Height() - dsf()) {
+			for (int x = 0; x < width; x += dsf()) {
+				const int color = drawPixel ? fillAlpha : outlineAlpha;
+				for (int j = 0; j < dsf(); j++) {
+					for (int k = 0; k < dsf(); k++) {
+						image.SetPixel(x + j, y + k, sacDraw.fore, color);
+					}
+				}
+				drawPixel = !drawPixel;
 			}
 		}
 		// Draw vertical lines left and right
-		for (int y = 1; y<ircBox.Height(); y++) {
-			for (int x=0; x<width; x += width-1) {
-				image.SetPixel(x, y, sacDraw.fore, ((x + y) % 2) ? outlineAlpha : fillAlpha);
+		drawPixel = false;
+		for (int y = dsf(); y<ircBox.Height(); y+=dsf()) {
+			for (int x=0; x<width; x += width - dsf()) {
+				const int color = drawPixel ? fillAlpha : outlineAlpha;
+				for (int j = 0; j < dsf(); j++) {
+					for (int k = 0; k < dsf(); k++) {
+						image.SetPixel(x + j, y + k, sacDraw.fore, color);
+					}
+				}
 			}
+			drawPixel = !drawPixel;
 		}
 		surface->DrawRGBAImage(rcBox, image.GetWidth(), image.GetHeight(), image.Pixels());
 	} else if (sacDraw.style == INDIC_DASH) {
 		int x = irc.left;
 		while (x < rc.right) {
 			surface->MoveTo(x, ymid);
-			surface->LineTo(std::min(x + 4, irc.right), ymid);
-			x += 7;
+			surface->LineTo(std::min(x + 2 + 2*dsf(), irc.right), ymid);
+			x += 3 + 4 * dsf();
 		}
 	} else if (sacDraw.style == INDIC_DOTS) {
 		int x = irc.left;
 		while (x < irc.right) {
-			const PRectangle rcDot = PRectangle::FromInts(x, ymid, x + 1, ymid + 1);
+			const PRectangle rcDot = PRectangle::FromInts(x, ymid, x + dsf(), ymid + dsf());
 			surface->FillRectangle(rcDot, sacDraw.fore);
-			x += 2;
+			x += 2 * dsf();
 		}
 	} else if (sacDraw.style == INDIC_COMPOSITIONTHICK) {
-		const PRectangle rcComposition(rc.left+1, rcLine.bottom-2, rc.right-1, rcLine.bottom);
+		const PRectangle rcComposition(rc.left+dsf(), rcLine.bottom-2*dsf(), rc.right-dsf(), rcLine.bottom);
 		surface->FillRectangle(rcComposition, sacDraw.fore);
 	} else if (sacDraw.style == INDIC_COMPOSITIONTHIN) {
-		const PRectangle rcComposition(rc.left+1, rcLine.bottom-2, rc.right-1, rcLine.bottom-1);
+		const PRectangle rcComposition(rc.left+dsf(), rcLine.bottom-2*dsf(), rc.right-dsf(), rcLine.bottom-dsf());
 		surface->FillRectangle(rcComposition, sacDraw.fore);
 	} else if (sacDraw.style == INDIC_POINT || sacDraw.style == INDIC_POINTCHARACTER) {
 		if (rcCharacter.Width() >= 0.1) {
-			const XYPOSITION pixelHeight = std::floor(rc.Height() - 1.0f);	// 1 pixel onto next line if multiphase
+			const XYPOSITION pixelHeight = std::floor(rc.Height() - 1.0f) * dsf();	// 1 pixel onto next line if multiphase
 			const XYPOSITION x = (sacDraw.style == INDIC_POINT) ? (rcCharacter.left) : ((rcCharacter.right + rcCharacter.left) / 2);
 			const XYPOSITION ix = round(x);
-			const XYPOSITION iy = std::floor(rc.top + 1.0f);
+			const XYPOSITION iy = std::floor(rc.top + 1.0f*dsf());
 			Point pts[] = {
 				Point(ix - pixelHeight, iy + pixelHeight),	// Left
 				Point(ix + pixelHeight, iy + pixelHeight),	// Right

@@ -92,7 +92,7 @@ int GetDpiFont()
 	return dpiFont;
 }
 
-int dsf()
+inline int dsf()
 {
 	return dpiScalingFactor;
 }
@@ -1299,11 +1299,11 @@ void SurfaceD2D::LineTo(int x_, int y_) {
 		} else if ((std::abs(xDiff) == std::abs(yDiff))) {
 			// 45 degree slope
 			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
-				D2D1::Point2F(x_ + 0.5f - xDelta, y_ + 0.5f - yDelta), pBrush);
+				D2D1::Point2F(x_ + 0.5f - xDelta, y_ + 0.5f - yDelta), pBrush, dsf());
 		} else {
 			// Line has a different slope so difficult to avoid last pixel
 			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
-				D2D1::Point2F(x_ + 0.5f, y_ + 0.5f), pBrush);
+				D2D1::Point2F(x_ + 0.5f, y_ + 0.5f), pBrush, dsf());
 		}
 		x = x_;
 		y = y_;
