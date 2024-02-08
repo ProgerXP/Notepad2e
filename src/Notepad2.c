@@ -2039,6 +2039,14 @@ void MsgSize(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
   UpdateStatusbarWidth(cx);
 
+  // [2e]: Refresh selection highlighting after window resize #474
+  if (n2e_GetActiveEdit())
+  {
+    if (n2e_IsSelectionEditModeOn())
+      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
+    n2e_SelectionUpdate(SUM_INIT);
+  }
+
   // [2e]: Progress indication for Grep/Ungrep
   if (bShowProgressBar && hwndStatusProgressBar)
   {
