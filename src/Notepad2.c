@@ -323,13 +323,13 @@ WCHAR     g_wchWorkingDirectory[MAX_PATH] = L"";
 // [2e]: Make Reuse Window non-global #454
 typedef enum
 {
-  RWM_STRICT_OR_NEW_WINDOW = 0,
-  RWM_ANY = 1,
-  RWM_NO = 2,
-  RWM_NEW = 3
+  RWM_DEFAULT = 0,
+  RWM_TRY = 1,
+  RWM_FORCE = 2,
+  RWM_DISABLED = 3
 } EReuseWindowMode;
 
-enum EReuseWindowMode reuseWindowMode = RWM_STRICT_OR_NEW_WINDOW;
+enum EReuseWindowMode reuseWindowMode = RWM_DEFAULT;
 // [/2e]
 int flagMultiFileArg = 0;
 int flagSingleFileInstance = 0;
@@ -675,7 +675,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
                NULL);
 
   // [2e]: Make Reuse Window non-global #454
-  n2e_SetReuseWindowMode(hwndMain, (reuseWindowMode == RWM_ANY) || (reuseWindowMode == RWM_NEW));
+  n2e_SetReuseWindowMode(hwndMain, (reuseWindowMode == RWM_TRY) || (reuseWindowMode == RWM_FORCE));
 
   n2e_InitInstance();
 
@@ -6540,7 +6540,7 @@ BOOL ParseCommandLine()
 
         case L'N':
           // [2e]: Make Reuse Window non-global #454
-          reuseWindowMode = flagReuseWindow ? RWM_NEW : RWM_NO;
+          reuseWindowMode = flagReuseWindow ? RWM_TRY : RWM_DISABLED;
           // [/2e]
           if (*CharUpper(lp1 + 1) == L'S')
             flagSingleFileInstance = 1;
@@ -6551,7 +6551,9 @@ BOOL ParseCommandLine()
         case L'R':
           // [2e]: Make Reuse Window non-global #454
           flagReuseWindow = TRUE;
-          reuseWindowMode = (reuseWindowMode == RWM_NEW) || (reuseWindowMode == RWM_NO) ? RWM_NEW :RWM_ANY;
+          reuseWindowMode = ((reuseWindowMode == RWM_TRY) || (reuseWindowMode == RWM_DISABLED))
+            ? RWM_TRY
+            : RWM_FORCE;
           // [/2e]
           if (*CharUpper(lp1 + 1) == L'S')
             flagSingleFileInstance = 1;
@@ -6877,7 +6879,7 @@ void LoadFlags()
 
   LoadIniSection(L"Settings2", pIniSection, cchIniSection);
 
-  if (reuseWindowMode != RWM_NO)
+  if (reuseWindowMode != RWM_DISABLED)
   {
     if (IniSectionGetInt(pIniSection, L"SingleFileInstance", 0))
       flagSingleFileInstance = 1;
@@ -8082,7 +8084,7 @@ BOOL ActivatePrevInst()
   HWND hwnd = NULL;
   COPYDATASTRUCT cds;
 
-  const BOOL flagNoReuseWindow = (reuseWindowMode == RWM_NO) || (reuseWindowMode == RWM_NEW);
+  const BOOL flagNoReuseWindow = (reuseWindowMode == RWM_DISABLED);
   if ((flagNoReuseWindow && !flagSingleFileInstance) || flagStartAsTrayIcon || flagNewFromClipboard || flagPasteBoard)
     return (FALSE);
 
@@ -8191,7 +8193,7 @@ BOOL ActivatePrevInst()
   EnumWindows(EnumWndProc, (LPARAM)&hwnd);
   
   // [2e]: Make Reuse Window non-global #454
-  if (!hwnd && (reuseWindowMode == RWM_ANY))
+  if (!hwnd && (reuseWindowMode == RWM_FORCE))
   {
     hwnd = (HWND)1;
     EnumWindows(EnumWndProc, (LPARAM)&hwnd);
