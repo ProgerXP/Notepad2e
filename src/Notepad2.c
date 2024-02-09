@@ -1500,6 +1500,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         LoadSettings();
         MsgInitMenu(hwnd, 0, 0);
         VIEW_COMMAND(EditInit);
+        VIEW_COMMAND(n2e_EditInit);
         n2e_Reset();
         n2e_UpdateWindowTitle(hwnd);
       }
