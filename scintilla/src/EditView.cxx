@@ -319,15 +319,15 @@ static void DrawTabArrow(Surface *surface, PRectangle rcTab, int ymid, const Vie
 void EditView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const ViewStyle &vsDraw) {
 	if (!pixmapIndentGuide->Initialised()) {
 		// 1 extra pixel in height so can handle odd/even positions and so produce a continuous line
-		pixmapIndentGuide->InitPixMap(1, vsDraw.lineHeight + 1, surfaceWindow, wid);
-		pixmapIndentGuideHighlight->InitPixMap(1, vsDraw.lineHeight + 1, surfaceWindow, wid);
-		const PRectangle rcIG = PRectangle::FromInts(0, 0, 1, vsDraw.lineHeight);
+		pixmapIndentGuide->InitPixMap(1*dsf(), vsDraw.lineHeight + 1*dsf(), surfaceWindow, wid);
+		pixmapIndentGuideHighlight->InitPixMap(1*dsf(), vsDraw.lineHeight + 1*dsf(), surfaceWindow, wid);
+		const PRectangle rcIG = PRectangle::FromInts(0, 0, 1*dsf(), vsDraw.lineHeight);
 		pixmapIndentGuide->FillRectangle(rcIG, vsDraw.styles[STYLE_INDENTGUIDE].back);
 		pixmapIndentGuide->PenColour(vsDraw.styles[STYLE_INDENTGUIDE].fore);
 		pixmapIndentGuideHighlight->FillRectangle(rcIG, vsDraw.styles[STYLE_BRACELIGHT].back);
 		pixmapIndentGuideHighlight->PenColour(vsDraw.styles[STYLE_BRACELIGHT].fore);
-		for (int stripe = 1; stripe < vsDraw.lineHeight + 1; stripe += 2) {
-			const PRectangle rcPixel = PRectangle::FromInts(0, stripe, 1, stripe + 1);
+		for (int stripe = 1*dsf(); stripe < vsDraw.lineHeight + 1; stripe += 2*dsf()) {
+			const PRectangle rcPixel = PRectangle::FromInts(0, stripe, 1*dsf(), stripe + 1*dsf());
 			pixmapIndentGuide->FillRectangle(rcPixel, vsDraw.styles[STYLE_INDENTGUIDE].fore);
 			pixmapIndentGuideHighlight->FillRectangle(rcPixel, vsDraw.styles[STYLE_BRACELIGHT].fore);
 		}
@@ -800,8 +800,8 @@ static ColourDesired TextBackground(const EditModel &model, const ViewStyle &vsD
 
 void EditView::DrawIndentGuide(Surface *surface, Sci::Line lineVisible, int lineHeight, XYPOSITION start, PRectangle rcSegment, bool highlight) {
 	const Point from = Point::FromInts(0, ((lineVisible & 1) && (lineHeight & 1)) ? 1 : 0);
-	const PRectangle rcCopyArea(start + 1, rcSegment.top,
-		start + 2, rcSegment.bottom);
+	const PRectangle rcCopyArea(start + 1*dsf(), rcSegment.top,
+		start + 2*dsf(), rcSegment.bottom);
 	surface->Copy(rcCopyArea, from,
 		highlight ? *pixmapIndentGuideHighlight : *pixmapIndentGuide);
 }
@@ -1385,7 +1385,7 @@ void EditView::DrawCarets(Surface *surface, const EditModel &model, const ViewSt
 				if (drawDrag) {
 					/* Dragging text, use a line caret */
 					rcCaret.left = round(xposCaret - caretWidthOffset);
-					rcCaret.right = rcCaret.left + vsDraw.caretWidth;
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
 				} else if ((caretShape == ViewStyle::CaretShape::bar) && drawOverstrikeCaret) {
 					/* Overstrike (insert mode), use a modified bar caret */
 					rcCaret.top = rcCaret.bottom - 2;
@@ -1403,7 +1403,7 @@ void EditView::DrawCarets(Surface *surface, const EditModel &model, const ViewSt
 				} else {
 					/* Line caret */
 					rcCaret.left = round(xposCaret - caretWidthOffset);
-					rcCaret.right = rcCaret.left + vsDraw.caretWidth;
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
 				}
 				const ColourDesired caretColour = mainCaret ? vsDraw.caretcolour : vsDraw.additionalCaretColour;
 				if (drawBlockCaret) {
@@ -1785,11 +1785,11 @@ void EditView::DrawForeground(Surface *surface, const EditModel &model, const Vi
 											rcSegment.bottom);
 										surface->FillRectangle(rcSpace, textBack);
 									}
-									const int halfDotWidth = vsDraw.whitespaceSize / 2;
+									const int halfDotWidth = (vsDraw.whitespaceSize * dsf()) / 2;
 									PRectangle rcDot(xmid + xStart - halfDotWidth - static_cast<XYPOSITION>(subLineStart),
 										rcSegment.top + vsDraw.lineHeight / 2, 0.0f, 0.0f);
-									rcDot.right = rcDot.left + vsDraw.whitespaceSize;
-									rcDot.bottom = rcDot.top + vsDraw.whitespaceSize;
+									rcDot.right = rcDot.left + vsDraw.whitespaceSize * dsf();
+									rcDot.bottom = rcDot.top + vsDraw.whitespaceSize * dsf();
 									surface->FillRectangle(rcDot, textFore);
 								}
 							}

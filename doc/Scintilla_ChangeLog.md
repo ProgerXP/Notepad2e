@@ -2129,3 +2129,497 @@ Add new message handler to ScintillaWin:
 /**Find first/last match indication #388**
 
 ---
+
+**Scale highlight border and caret size according to DPI #472**
+
+Add forward declaration:
+
+[scintilla/include/Platform.h]:
+
+```
+inline int dsf();
+```
+[/scintilla/include/Platform.h]
+
+Add ``dsf()``-implementation and update methods:
+
+[scintilla/win32/PlatWin.cxx]
+```
+static int dpiFont = DEFAULT_FONT_DPI;
+// [2e]: Scale highlight border and caret size according to DPI #472
+static int dpiScalingFactor = 1;
+...
+void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
+{
+	dpiX = _dpiX;
+	dpiY = _dpiY;
+	dpiFont = _dpiFont;
+	dpiScalingFactor = (int)floor(0.5 + _dpiX * 1.0 / DEFAULT_SCREEN_DPI);
+}
+...
+int GetDpiFont()
+{
+	return dpiFont;
+}
+
+inline int dsf()
+{
+	return dpiScalingFactor;
+}
+...
+void SurfaceGDI::PenColour(ColourDesired fore) {
+	if (pen) {
+		::SelectObject(hdc, penOld);
+		::DeleteObject(pen);
+		pen = 0;
+		penOld = 0;
+	}
+	pen = ::CreatePen(0,dsf(),fore.AsInteger());
+	penOld = SelectPen(hdc, pen);
+}
+...
+void SurfaceGDI::RoundedRectangle(PRectangle rc, ColourDesired fore, ColourDesired back) {
+	PenColour(fore);
+	BrushColour(back);
+	const RECT rcw = RectFromPRectangle(rc);
+	::RoundRect(hdc,
+		rcw.left + dsf(), rcw.top,
+		rcw.right - dsf(), rcw.bottom,
+		8, 8);
+}
+...
+void SurfaceGDI::AlphaRectangle(PRectangle rc, int cornerSize, ColourDesired fill, int alphaFill,
+		ColourDesired outline, int alphaOutline, int /* flags*/ ) {
+	const RECT rcw = RectFromPRectangle(rc);
+	if (rc.Width() > 0) {
+		HDC hMemDC = ::CreateCompatibleDC(hdc);
+		const int width = rcw.right - rcw.left;
+		const int height = rcw.bottom - rcw.top;
+		// Ensure not distorted too much by corners when small
+		cornerSize = std::min(cornerSize, (std::min(width, height) / 2) - 2);
+		const BITMAPINFO bpih = {{sizeof(BITMAPINFOHEADER), width, height, 1, 32, BI_RGB, 0, 0, 0, 0, 0},
+			{{0, 0, 0, 0}}};
+		void *image = nullptr;
+		HBITMAP hbmMem = CreateDIBSection(hMemDC, &bpih,
+			DIB_RGB_COLORS, &image, NULL, 0);
+
+		if (hbmMem) {
+			HBITMAP hbmOld = SelectBitmap(hMemDC, hbmMem);
+
+			const DWORD valEmpty = dwordFromBGRA(0,0,0,0);
+			const DWORD valFill = dwordMultiplied(fill, alphaFill);
+			const DWORD valOutline = dwordMultiplied(outline, alphaOutline);
+
+			DWORD *pixels = static_cast<DWORD *>(image);
+			if (cornerSize > 1)
+			{
+				HRGN hrgnRoundRectAll = CreateRoundRectRgn(0, 0, width, height, cornerSize, cornerSize);
+				HRGN hrgnRoundRectInner = CreateRoundRectRgn(cornerSize, cornerSize, width - cornerSize, height - cornerSize, cornerSize, cornerSize);
+				HRGN hrgnRoundRectOutline = CreateRectRgn(0, 0, width, height);
+				CombineRgn(hrgnRoundRectOutline, hrgnRoundRectAll, hrgnRoundRectInner, RGN_DIFF);
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						if (PtInRegion(hrgnRoundRectOutline, x, y))
+							pixels[y*width + x] = valOutline;
+						else if (PtInRegion(hrgnRoundRectInner, x, y))
+							pixels[y*width + x] = valFill;
+						else
+							pixels[y*width + x] = valEmpty;
+					}
+				}
+				DeleteObject(hrgnRoundRectAll);
+				DeleteObject(hrgnRoundRectOutline);
+				DeleteObject(hrgnRoundRectInner);
+			}
+			else {
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						if ((x==0) || (x==width-1) || (y == 0) || (y == height-1)) {
+							pixels[y*width+x] = valOutline;
+						} else {
+							pixels[y*width+x] = valFill;
+						}
+					}
+				}
+				for (int c=0; c<cornerSize; c++) {
+					for (int x=0; x<c+1; x++) {
+						AllFour(pixels, width, height, x, c-x, valEmpty);
+					}
+				}
+				for (int x=1; x<cornerSize; x++) {
+					AllFour(pixels, width, height, x, cornerSize-x, valOutline);
+				}
+			}
+
+			const BLENDFUNCTION merge = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+
+			AlphaBlend(hdc, rcw.left, rcw.top, width, height, hMemDC, 0, 0, width, height, merge);
+
+			SelectBitmap(hMemDC, hbmOld);
+			::DeleteObject(hbmMem);
+		}
+		::DeleteDC(hMemDC);
+	} else {
+		BrushColour(outline);
+		FrameRect(hdc, &rcw, brush);
+	}
+}
+...
+void SurfaceD2D::LineTo(int x_, int y_) {
+	if (pRenderTarget) {
+		const int xDiff = x_ - x;
+		const int xDelta = Delta(xDiff);
+		const int yDiff = y_ - y;
+		const int yDelta = Delta(yDiff);
+		if ((xDiff == 0) || (yDiff == 0)) {
+			// Horizontal or vertical lines can be more precisely drawn as a filled rectangle
+			const int xEnd = x_ - xDelta;
+			const int left = std::min(x, xEnd);
+			const int width = std::abs(x - xEnd) + dsf();
+			const int yEnd = y_ - yDelta;
+			const int top = std::min(y, yEnd);
+			const int height = std::abs(y - yEnd) + dsf();
+			const D2D1_RECT_F rectangle1 = D2D1::RectF(static_cast<float>(left), static_cast<float>(top),
+				static_cast<float>(left+width), static_cast<float>(top+height));
+			pRenderTarget->FillRectangle(&rectangle1, pBrush);
+		} else if ((std::abs(xDiff) == std::abs(yDiff))) {
+			// 45 degree slope
+			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
+				D2D1::Point2F(x_ + 0.5f - xDelta, y_ + 0.5f - yDelta), pBrush, dsf());
+		} else {
+			// Line has a different slope so difficult to avoid last pixel
+			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
+				D2D1::Point2F(x_ + 0.5f, y_ + 0.5f), pBrush, dsf());
+		}
+		x = x_;
+		y = y_;
+	}
+}
+...
+void SurfaceD2D::AlphaRectangle(PRectangle rc, int cornerSize, ColourDesired fill, int alphaFill,
+		ColourDesired outline, int alphaOutline, int /* flags*/ ) {
+	if (pRenderTarget) {
+		if (cornerSize == 0) {
+			// When corner size is zero, draw square rectangle to prevent blurry pixels at corners
+			const D2D1_RECT_F rectFill = D2D1::RectF(std::round(rc.left) + 1.0f * dsf(), rc.top + 1.0f * dsf(), std::round(rc.right) - 1.0f * dsf(), rc.bottom - 1.0f * dsf());
+			D2DPenColour(fill, alphaFill);
+			pRenderTarget->FillRectangle(rectFill, pBrush);
+
+			const D2D1_RECT_F rectOutline = D2D1::RectF(std::round(rc.left) + 0.5f * dsf(), rc.top + 0.5f * dsf(), std::round(rc.right) - 0.5f * dsf(), rc.bottom - 0.5f * dsf());
+			D2DPenColour(outline, alphaOutline);
+			pRenderTarget->DrawRectangle(rectOutline, pBrush);
+		} else {
+			const float cornerSizeF = static_cast<float>(cornerSize);
+			D2D1_ROUNDED_RECT roundedRectFill = {
+				D2D1::RectF(std::round(rc.left) + 1.0f * dsf(), rc.top + 1.0f * dsf(), std::round(rc.right) - 1.0f * dsf(), rc.bottom - 1.0f * dsf()),
+				cornerSizeF - 1.0f * dsf(), cornerSizeF - 1.0f * dsf() };
+			D2DPenColour(fill, alphaFill);
+			pRenderTarget->FillRoundedRectangle(roundedRectFill, pBrush);
+
+			D2D1_ROUNDED_RECT roundedRect = {
+				D2D1::RectF(std::round(rc.left) + 0.5f * dsf(), rc.top + 0.5f * dsf(), std::round(rc.right) - 0.5f * dsf(), rc.bottom - 0.5f * dsf()),
+				cornerSizeF, cornerSizeF};
+			D2DPenColour(outline, alphaOutline);
+			pRenderTarget->DrawRoundedRectangle(roundedRect, pBrush);
+		}
+	}
+}
+
+```
+[/scintilla/win32/PlatWin.cxx]
+
+Update ``ScintillaWin::CreateSystemCaret()``:
+
+[scintilla/win32/ScintillaWin.cxx]
+```
+BOOL ScintillaWin::CreateSystemCaret() {
+	sysCaretWidth = vs.caretWidth * dsf();
+	if (0 == sysCaretWidth) {
+...
+```
+[/scintilla/win32/ScintillaWin.cxx]
+
+[scintilla/src/EditView.cxx]
+```
+void EditView::RefreshPixMaps(Surface *surfaceWindow, WindowID wid, const ViewStyle &vsDraw) {
+	if (!pixmapIndentGuide->Initialised()) {
+		// 1 extra pixel in height so can handle odd/even positions and so produce a continuous line
+		pixmapIndentGuide->InitPixMap(1*dsf(), vsDraw.lineHeight + 1*dsf(), surfaceWindow, wid);
+		pixmapIndentGuideHighlight->InitPixMap(1*dsf(), vsDraw.lineHeight + 1*dsf(), surfaceWindow, wid);
+		const PRectangle rcIG = PRectangle::FromInts(0, 0, 1*dsf(), vsDraw.lineHeight);
+		pixmapIndentGuide->FillRectangle(rcIG, vsDraw.styles[STYLE_INDENTGUIDE].back);
+		pixmapIndentGuide->PenColour(vsDraw.styles[STYLE_INDENTGUIDE].fore);
+		pixmapIndentGuideHighlight->FillRectangle(rcIG, vsDraw.styles[STYLE_BRACELIGHT].back);
+		pixmapIndentGuideHighlight->PenColour(vsDraw.styles[STYLE_BRACELIGHT].fore);
+		for (int stripe = 1*dsf(); stripe < vsDraw.lineHeight + 1; stripe += 2*dsf()) {
+			const PRectangle rcPixel = PRectangle::FromInts(0, stripe, 1*dsf(), stripe + 1*dsf());
+			pixmapIndentGuide->FillRectangle(rcPixel, vsDraw.styles[STYLE_INDENTGUIDE].fore);
+			pixmapIndentGuideHighlight->FillRectangle(rcPixel, vsDraw.styles[STYLE_BRACELIGHT].fore);
+		}
+		pixmapIndentGuide->EndDraw();
+		pixmapIndentGuideHighlight->EndDraw();
+	}
+}
+...
+void EditView::DrawIndentGuide(Surface *surface, Sci::Line lineVisible, int lineHeight, XYPOSITION start, PRectangle rcSegment, bool highlight) {
+	const Point from = Point::FromInts(0, ((lineVisible & 1) && (lineHeight & 1)) ? 1 : 0);
+	const PRectangle rcCopyArea(start + 1*dsf(), rcSegment.top,
+		start + 2*dsf(), rcSegment.bottom);
+	surface->Copy(rcCopyArea, from,
+		highlight ? *pixmapIndentGuideHighlight : *pixmapIndentGuide);
+}
+```
+
+Modify block in ``EditView::DrawCaret()``:
+```
+				if (drawDrag) {
+					/* Dragging text, use a line caret */
+					rcCaret.left = round(xposCaret - caretWidthOffset);
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
+				} else if ((caretShape == ViewStyle::CaretShape::bar) && drawOverstrikeCaret) {
+					/* Overstrike (insert mode), use a modified bar caret */
+					rcCaret.top = rcCaret.bottom - 2;
+					rcCaret.left = xposCaret + 1;
+					rcCaret.right = rcCaret.left + widthOverstrikeCaret - 1;
+				} else if ((caretShape == ViewStyle::CaretShape::block) || imeCaretBlockOverride) {
+					/* Block caret */
+					rcCaret.left = xposCaret;
+					if (!caretAtEOL && !caretAtEOF && (ll->chars[offset] != '\t') && !(IsControlCharacter(ll->chars[offset]))) {
+						drawBlockCaret = true;
+						rcCaret.right = xposCaret + widthOverstrikeCaret;
+					} else {
+						rcCaret.right = xposCaret + vsDraw.aveCharWidth;
+					}
+				} else {
+					/* Line caret */
+					rcCaret.left = round(xposCaret - caretWidthOffset);
+					rcCaret.right = rcCaret.left + vsDraw.caretWidth * dsf();
+				}
+```
+
+Modify block in ``EditView::DrawForeground()``:
+```
+						const int halfDotWidth = vsDraw.whitespaceSize / 2;
+						PRectangle rcDot(xmid + xStart - halfDotWidth - static_cast<XYPOSITION>(subLineStart),
+							rcSegment.top + vsDraw.lineHeight / 2, 0.0f, 0.0f);
+						rcDot.right = rcDot.left + vsDraw.whitespaceSize;
+						rcDot.bottom = rcDot.top + vsDraw.whitespaceSize;
+						surface->FillRectangle(rcDot, textFore);
+```
+[/scintilla/src/EditView.cxx]
+
+Replace ``Indicator::Draw()`` implementation:
+
+[scintilla/src/Indicator.cxx]
+```
+void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &rcLine, const PRectangle &rcCharacter, DrawState drawState, int value) const {
+	StyleAndColour sacDraw = sacNormal;
+	if (Flags() & SC_INDICFLAG_VALUEFORE) {
+		sacDraw.fore = ColourDesired(value & SC_INDICVALUEMASK);
+	}
+	if (drawState == drawHover) {
+		sacDraw = sacHover;
+	}
+	const IntegerRectangle irc(rc);
+	surface->PenColour(sacDraw.fore);
+	const int ymid = (irc.bottom + irc.top) / 2;
+	if (sacDraw.style == INDIC_SQUIGGLE) {
+		const IntegerRectangle ircSquiggle(PixelGridAlign(rc));
+		int x = ircSquiggle.left;
+		const int xLast = ircSquiggle.right;
+		int y = 0;
+		surface->MoveTo(x, irc.top + y);
+		while (x < xLast) {
+			if ((x + 2) > xLast) {
+				y = 1;
+				x = xLast;
+			} else {
+				x += 2;
+				y = 2 - y;
+			}
+			surface->LineTo(x, irc.top + y);
+		}
+	} else if (sacDraw.style == INDIC_SQUIGGLEPIXMAP) {
+		const PRectangle rcSquiggle = PixelGridAlign(rc);
+
+		const int width = std::min(4000, static_cast<int>(rcSquiggle.Width()));
+		RGBAImage image(width, 3, 1.0, nullptr);
+		enum { alphaFull = 0xff, alphaSide = 0x2f, alphaSide2=0x5f };
+		for (int x = 0; x < width; x++) {
+			if (x%2) {
+				// Two halfway columns have a full pixel in middle flanked by light pixels
+				image.SetPixel(x, 0, sacDraw.fore, alphaSide);
+				image.SetPixel(x, 1, sacDraw.fore, alphaFull);
+				image.SetPixel(x, 2, sacDraw.fore, alphaSide);
+			} else {
+				// Extreme columns have a full pixel at bottom or top and a mid-tone pixel in centre
+				image.SetPixel(x, (x % 4) ? 0 : 2, sacDraw.fore, alphaFull);
+				image.SetPixel(x, 1, sacDraw.fore, alphaSide2);
+			}
+		}
+		surface->DrawRGBAImage(rcSquiggle, image.GetWidth(), image.GetHeight(), image.Pixels());
+	} else if (sacDraw.style == INDIC_SQUIGGLELOW) {
+		surface->MoveTo(irc.left, irc.top);
+		int x = irc.left + 3;
+		int y = 0;
+		while (x < rc.right) {
+			surface->LineTo(x - 1, irc.top + y);
+			y = 1 - y;
+			surface->LineTo(x, irc.top + y);
+			x += 3;
+		}
+		surface->LineTo(irc.right, irc.top + y);	// Finish the line
+	} else if (sacDraw.style == INDIC_TT) {
+		surface->MoveTo(irc.left, ymid);
+		int x = irc.left + 5 * dsf();
+		const int deltaX = ceil(5.0 * dsf() / 2);
+		while (x < rc.right) {
+			surface->LineTo(x, ymid);
+			surface->MoveTo(x - deltaX, ymid);
+			surface->LineTo(x - deltaX, ymid + 2);
+			x += dsf();
+			surface->MoveTo(x, ymid);
+			x += 5 * dsf();
+		}
+		surface->LineTo(irc.right, ymid);	// Finish the line
+		if (x - deltaX <= rc.right) {
+			surface->MoveTo(x - deltaX, ymid);
+			surface->LineTo(x - deltaX, ymid + 2);
+		}
+	} else if (sacDraw.style == INDIC_DIAGONAL) {
+		int x = irc.left;
+		while (x < rc.right) {
+			surface->MoveTo(x, irc.top + 2);
+			int endX = x+3;
+			int endY = irc.top - 1;
+			if (endX > rc.right) {
+				endY += endX - irc.right;
+				endX = irc.right;
+			}
+			surface->LineTo(endX, endY);
+			x += 2 + 2 * dsf();
+		}
+	} else if (sacDraw.style == INDIC_STRIKE) {
+		surface->MoveTo(irc.left, irc.top - (2 + 2 * dsf()));
+		surface->LineTo(irc.right, irc.top - (2 + 2 * dsf()));
+	} else if ((sacDraw.style == INDIC_HIDDEN) || (sacDraw.style == INDIC_TEXTFORE)) {
+		// Draw nothing
+	} else if (sacDraw.style == INDIC_BOX) {
+		surface->MoveTo(irc.left, ymid + dsf());
+		surface->LineTo(irc.right, ymid + dsf());
+		const int lineTop = static_cast<int>(rcLine.top) + dsf();
+		surface->LineTo(irc.right, lineTop);
+		surface->LineTo(irc.left, lineTop);
+		surface->LineTo(irc.left, ymid + dsf());
+	} else if (sacDraw.style == INDIC_ROUNDBOX ||
+		sacDraw.style == INDIC_STRAIGHTBOX ||
+		sacDraw.style == INDIC_FULLBOX) {
+		PRectangle rcBox = rcLine;
+		if (sacDraw.style != INDIC_FULLBOX)
+			rcBox.top = rcLine.top + 1;
+		rcBox.left = rc.left;
+		rcBox.right = rc.right;
+		surface->AlphaRectangle(rcBox, (sacDraw.style == INDIC_ROUNDBOX) ? dsf() : 0,
+			sacDraw.fore, fillAlpha, sacDraw.fore, outlineAlpha, 0);
+	} else if (sacDraw.style == INDIC_GRADIENT ||
+		sacDraw.style == INDIC_GRADIENTCENTRE) {
+		PRectangle rcBox = rc;
+		rcBox.top = rcLine.top + 1;
+		rcBox.bottom = rcLine.bottom;
+		const Surface::GradientOptions options = Surface::GradientOptions::topToBottom;
+		const ColourAlpha start(sacNormal.fore, fillAlpha);
+		const ColourAlpha end(sacNormal.fore, 0);
+		std::vector<ColourStop> stops;
+		switch (sacDraw.style) {
+		case INDIC_GRADIENT:
+			stops.push_back(ColourStop(0.0, start));
+			stops.push_back(ColourStop(1.0, end));
+			break;
+		case INDIC_GRADIENTCENTRE:
+			stops.push_back(ColourStop(0.0, end));
+			stops.push_back(ColourStop(0.5, start));
+			stops.push_back(ColourStop(1.0, end));
+			break;
+		}
+		surface->GradientRectangle(rcBox, stops, options);
+	} else if (sacDraw.style == INDIC_DOTBOX) {
+		PRectangle rcBox = PixelGridAlign(rc);
+		rcBox.top = rcLine.top + 1;
+		rcBox.bottom = rcLine.bottom;
+		IntegerRectangle ircBox(rcBox);
+		// Cap width at 4000 to avoid large allocations when mistakes made
+		const int width = std::min(ircBox.Width(), 4000);
+		RGBAImage image(width, ircBox.Height(), 1.0, nullptr);
+		// Draw horizontal lines top and bottom
+		bool drawPixel = true;
+		for (int y = 0; y<ircBox.Height(); y += ircBox.Height() - dsf()) {
+			for (int x = 0; x < width; x += dsf()) {
+				const int color = drawPixel ? fillAlpha : outlineAlpha;
+				for (int j = 0; j < dsf(); j++) {
+					for (int k = 0; k < dsf(); k++) {
+						image.SetPixel(x + j, y + k, sacDraw.fore, color);
+					}
+				}
+				drawPixel = !drawPixel;
+			}
+		}
+		// Draw vertical lines left and right
+		drawPixel = false;
+		for (int y = dsf(); y<ircBox.Height(); y+=dsf()) {
+			for (int x=0; x<width; x += width - dsf()) {
+				const int color = drawPixel ? fillAlpha : outlineAlpha;
+				for (int j = 0; j < dsf(); j++) {
+					for (int k = 0; k < dsf(); k++) {
+						image.SetPixel(x + j, y + k, sacDraw.fore, color);
+					}
+				}
+			}
+			drawPixel = !drawPixel;
+		}
+		surface->DrawRGBAImage(rcBox, image.GetWidth(), image.GetHeight(), image.Pixels());
+	} else if (sacDraw.style == INDIC_DASH) {
+		int x = irc.left;
+		while (x < rc.right) {
+			surface->MoveTo(x, ymid);
+			surface->LineTo(std::min(x + 2 + 2*dsf(), irc.right), ymid);
+			x += 3 + 4 * dsf();
+		}
+	} else if (sacDraw.style == INDIC_DOTS) {
+		int x = irc.left;
+		while (x < irc.right) {
+			const PRectangle rcDot = PRectangle::FromInts(x, ymid, x + dsf(), ymid + dsf());
+			surface->FillRectangle(rcDot, sacDraw.fore);
+			x += 2 * dsf();
+		}
+	} else if (sacDraw.style == INDIC_COMPOSITIONTHICK) {
+		const PRectangle rcComposition(rc.left+dsf(), rcLine.bottom-2*dsf(), rc.right-dsf(), rcLine.bottom);
+		surface->FillRectangle(rcComposition, sacDraw.fore);
+	} else if (sacDraw.style == INDIC_COMPOSITIONTHIN) {
+		const PRectangle rcComposition(rc.left+dsf(), rcLine.bottom-2*dsf(), rc.right-dsf(), rcLine.bottom-dsf());
+		surface->FillRectangle(rcComposition, sacDraw.fore);
+	} else if (sacDraw.style == INDIC_POINT || sacDraw.style == INDIC_POINTCHARACTER) {
+		if (rcCharacter.Width() >= 0.1) {
+			const XYPOSITION pixelHeight = std::floor(rc.Height() - 1.0f) * dsf();	// 1 pixel onto next line if multiphase
+			const XYPOSITION x = (sacDraw.style == INDIC_POINT) ? (rcCharacter.left) : ((rcCharacter.right + rcCharacter.left) / 2);
+			const XYPOSITION ix = round(x);
+			const XYPOSITION iy = std::floor(rc.top + 1.0f*dsf());
+			Point pts[] = {
+				Point(ix - pixelHeight, iy + pixelHeight),	// Left
+				Point(ix + pixelHeight, iy + pixelHeight),	// Right
+				Point(ix, iy)								// Top
+			};
+			surface->Polygon(pts, ELEMENTS(pts), sacDraw.fore, sacDraw.fore);
+		}
+	} else {	// Either INDIC_PLAIN or unknown
+		surface->MoveTo(irc.left, ymid);
+		surface->LineTo(irc.right, ymid);
+	}
+}
+```
+[/scintilla/src/Indicator.cxx]
+
+
+/**Scale highlight border and caret size according to DPI #472**
+
+---
+

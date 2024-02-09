@@ -66,12 +66,15 @@ namespace Scintilla {
 static float dpiX = DEFAULT_SCREEN_DPI;
 static float dpiY = DEFAULT_SCREEN_DPI;
 static int dpiFont = DEFAULT_FONT_DPI;
+// [2e]: Scale highlight border and caret size according to DPI #472
+static int dpiScalingFactor = 1;
 
 void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 {
 	dpiX = _dpiX;
 	dpiY = _dpiY;
 	dpiFont = _dpiFont;
+	dpiScalingFactor = (int)floor(0.5 + _dpiX * 1.0 / DEFAULT_SCREEN_DPI);
 }
 
 float GetDpiX()
@@ -87,6 +90,11 @@ float GetDpiY()
 int GetDpiFont()
 {
 	return dpiFont;
+}
+
+inline int dsf()
+{
+	return dpiScalingFactor;
 }
 
 UINT CodePageFromCharSet(DWORD characterSet, UINT documentCodePage);
@@ -598,7 +606,7 @@ void SurfaceGDI::PenColour(ColourDesired fore) {
 		pen = 0;
 		penOld = 0;
 	}
-	pen = ::CreatePen(0,1,fore.AsInteger());
+	pen = ::CreatePen(0,dsf(),fore.AsInteger());
 	penOld = SelectPen(hdc, pen);
 }
 
@@ -683,8 +691,8 @@ void SurfaceGDI::RoundedRectangle(PRectangle rc, ColourDesired fore, ColourDesir
 	BrushColour(back);
 	const RECT rcw = RectFromPRectangle(rc);
 	::RoundRect(hdc,
-		rcw.left + 1, rcw.top,
-		rcw.right - 1, rcw.bottom,
+		rcw.left + dsf(), rcw.top,
+		rcw.right - dsf(), rcw.bottom,
 		8, 8);
 }
 
@@ -743,22 +751,44 @@ void SurfaceGDI::AlphaRectangle(PRectangle rc, int cornerSize, ColourDesired fil
 			const DWORD valOutline = dwordMultiplied(outline, alphaOutline);
 
 			DWORD *pixels = static_cast<DWORD *>(image);
-			for (int y=0; y<height; y++) {
-				for (int x=0; x<width; x++) {
-					if ((x==0) || (x==width-1) || (y == 0) || (y == height-1)) {
-						pixels[y*width+x] = valOutline;
-					} else {
-						pixels[y*width+x] = valFill;
+			if (cornerSize > 1)
+			{
+				HRGN hrgnRoundRectAll = CreateRoundRectRgn(0, 0, width, height, cornerSize, cornerSize);
+				HRGN hrgnRoundRectInner = CreateRoundRectRgn(cornerSize, cornerSize, width - cornerSize, height - cornerSize, cornerSize, cornerSize);
+				HRGN hrgnRoundRectOutline = CreateRectRgn(0, 0, width, height);
+				CombineRgn(hrgnRoundRectOutline, hrgnRoundRectAll, hrgnRoundRectInner, RGN_DIFF);
+				for (int y = 0; y < height; y++) {
+					for (int x = 0; x < width; x++) {
+						if (PtInRegion(hrgnRoundRectOutline, x, y))
+							pixels[y*width + x] = valOutline;
+						else if (PtInRegion(hrgnRoundRectInner, x, y))
+							pixels[y*width + x] = valFill;
+						else
+							pixels[y*width + x] = valEmpty;
 					}
 				}
+				DeleteObject(hrgnRoundRectAll);
+				DeleteObject(hrgnRoundRectOutline);
+				DeleteObject(hrgnRoundRectInner);
 			}
-			for (int c=0; c<cornerSize; c++) {
-				for (int x=0; x<c+1; x++) {
-					AllFour(pixels, width, height, x, c-x, valEmpty);
+			else {
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						if ((x==0) || (x==width-1) || (y == 0) || (y == height-1)) {
+							pixels[y*width+x] = valOutline;
+						} else {
+							pixels[y*width+x] = valFill;
+						}
+					}
 				}
-			}
-			for (int x=1; x<cornerSize; x++) {
-				AllFour(pixels, width, height, x, cornerSize-x, valOutline);
+				for (int c=0; c<cornerSize; c++) {
+					for (int x=0; x<c+1; x++) {
+						AllFour(pixels, width, height, x, c-x, valEmpty);
+					}
+				}
+				for (int x=1; x<cornerSize; x++) {
+					AllFour(pixels, width, height, x, cornerSize-x, valOutline);
+				}
 			}
 
 			const BLENDFUNCTION merge = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
@@ -1259,21 +1289,21 @@ void SurfaceD2D::LineTo(int x_, int y_) {
 			// Horizontal or vertical lines can be more precisely drawn as a filled rectangle
 			const int xEnd = x_ - xDelta;
 			const int left = std::min(x, xEnd);
-			const int width = std::abs(x - xEnd) + 1;
+			const int width = std::abs(x - xEnd) + dsf();
 			const int yEnd = y_ - yDelta;
 			const int top = std::min(y, yEnd);
-			const int height = std::abs(y - yEnd) + 1;
+			const int height = std::abs(y - yEnd) + dsf();
 			const D2D1_RECT_F rectangle1 = D2D1::RectF(static_cast<float>(left), static_cast<float>(top),
 				static_cast<float>(left+width), static_cast<float>(top+height));
 			pRenderTarget->FillRectangle(&rectangle1, pBrush);
 		} else if ((std::abs(xDiff) == std::abs(yDiff))) {
 			// 45 degree slope
 			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
-				D2D1::Point2F(x_ + 0.5f - xDelta, y_ + 0.5f - yDelta), pBrush);
+				D2D1::Point2F(x_ + 0.5f - xDelta, y_ + 0.5f - yDelta), pBrush, dsf());
 		} else {
 			// Line has a different slope so difficult to avoid last pixel
 			pRenderTarget->DrawLine(D2D1::Point2F(x + 0.5f, y + 0.5f),
-				D2D1::Point2F(x_ + 0.5f, y_ + 0.5f), pBrush);
+				D2D1::Point2F(x_ + 0.5f, y_ + 0.5f), pBrush, dsf());
 		}
 		x = x_;
 		y = y_;
@@ -1372,23 +1402,23 @@ void SurfaceD2D::AlphaRectangle(PRectangle rc, int cornerSize, ColourDesired fil
 	if (pRenderTarget) {
 		if (cornerSize == 0) {
 			// When corner size is zero, draw square rectangle to prevent blurry pixels at corners
-			const D2D1_RECT_F rectFill = D2D1::RectF(std::round(rc.left) + 1.0f, rc.top + 1.0f, std::round(rc.right) - 1.0f, rc.bottom - 1.0f);
+			const D2D1_RECT_F rectFill = D2D1::RectF(std::round(rc.left) + 1.0f * dsf(), rc.top + 1.0f * dsf(), std::round(rc.right) - 1.0f * dsf(), rc.bottom - 1.0f * dsf());
 			D2DPenColour(fill, alphaFill);
 			pRenderTarget->FillRectangle(rectFill, pBrush);
 
-			const D2D1_RECT_F rectOutline = D2D1::RectF(std::round(rc.left) + 0.5f, rc.top + 0.5f, std::round(rc.right) - 0.5f, rc.bottom - 0.5f);
+			const D2D1_RECT_F rectOutline = D2D1::RectF(std::round(rc.left) + 0.5f * dsf(), rc.top + 0.5f * dsf(), std::round(rc.right) - 0.5f * dsf(), rc.bottom - 0.5f * dsf());
 			D2DPenColour(outline, alphaOutline);
 			pRenderTarget->DrawRectangle(rectOutline, pBrush);
 		} else {
 			const float cornerSizeF = static_cast<float>(cornerSize);
 			D2D1_ROUNDED_RECT roundedRectFill = {
-				D2D1::RectF(std::round(rc.left) + 1.0f, rc.top + 1.0f, std::round(rc.right) - 1.0f, rc.bottom - 1.0f),
-				cornerSizeF - 1.0f, cornerSizeF - 1.0f };
+				D2D1::RectF(std::round(rc.left) + 1.0f * dsf(), rc.top + 1.0f * dsf(), std::round(rc.right) - 1.0f * dsf(), rc.bottom - 1.0f * dsf()),
+				cornerSizeF - 1.0f * dsf(), cornerSizeF - 1.0f * dsf() };
 			D2DPenColour(fill, alphaFill);
 			pRenderTarget->FillRoundedRectangle(roundedRectFill, pBrush);
 
 			D2D1_ROUNDED_RECT roundedRect = {
-				D2D1::RectF(std::round(rc.left) + 0.5f, rc.top + 0.5f, std::round(rc.right) - 0.5f, rc.bottom - 0.5f),
+				D2D1::RectF(std::round(rc.left) + 0.5f * dsf(), rc.top + 0.5f * dsf(), std::round(rc.right) - 0.5f * dsf(), rc.bottom - 0.5f * dsf()),
 				cornerSizeF, cornerSizeF};
 			D2DPenColour(outline, alphaOutline);
 			pRenderTarget->DrawRoundedRectangle(roundedRect, pBrush);
