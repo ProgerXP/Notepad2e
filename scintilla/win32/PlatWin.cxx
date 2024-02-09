@@ -74,7 +74,7 @@ void SetDPI(const float _dpiX, const float _dpiY, const int _dpiFont)
 	dpiX = _dpiX;
 	dpiY = _dpiY;
 	dpiFont = _dpiFont;
-  dpiScalingFactor = (int)floor(0.5 + _dpiX * 1.0 / DEFAULT_SCREEN_DPI);
+	dpiScalingFactor = (int)floor(0.5 + _dpiX * 1.0 / DEFAULT_SCREEN_DPI);
 }
 
 float GetDpiX()
