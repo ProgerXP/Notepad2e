@@ -123,8 +123,8 @@ void n2e_SplitView(const BOOL bHorizontally)
     SetWindowPos(hwndEditNew, NULL, 0, 0, 0, 0, SWP_NOZORDER | SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
   }
   SetWindowPos(hwndEditParent, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOREDRAW);
-  n2e_UpdateMainWindow();
   n2e_UpdateView(hwndEditNew, SendMessage(hwndEdit, SCI_GETDOCPOINTER, 0, 0));
+  n2e_UpdateMainWindow();
   n2e_SetActiveEdit(hwndEditNew);
   LockWindowUpdate(NULL);
   EditSelectEx(hwndEditNew, activePosition, activePosition);
