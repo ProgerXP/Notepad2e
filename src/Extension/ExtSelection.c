@@ -420,8 +420,11 @@ int n2e_HighlightWord(LPCSTR word)
               break;
             }
           }
-          SendMessage(hwnd, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, ttf.chrgText.cpMax - ttf.chrgText.cpMin);
-          cnt++;
+          if (!bEditSelectionInit || (hwnd == hwndEdit))
+          {
+            SendMessage(hwnd, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, ttf.chrgText.cpMax - ttf.chrgText.cpMin);
+            cnt++;
+          }
           ttf.chrg.cpMin = ttf.chrgText.cpMax;
         }
         else
