@@ -2623,3 +2623,21 @@ void Indicator::Draw(Surface *surface, const PRectangle &rc, const PRectangle &r
 
 ---
 
+**Split views scrolled after closing Customize Schemes #418**
+
+Modify ``Editor::WrapLines(WrapScope ws)``:
+move ``subLineTop`` variable declaration after ``AddSample``-call:
+
+[scintilla/include/Platform.h]:
+
+```
+				durationWrapOneLine.AddSample(linesBeingWrapped, epWrapping.Duration());
+
+				const Sci::Line subLineTop = topLine - pcs->DisplayFromDoc(lineDocTop);
+				goodTopLine = pcs->DisplayFromDoc(lineDocTop) + std::min(
+					subLineTop, static_cast<Sci::Line>(pcs->GetHeight(lineDocTop)-1));
+```
+
+/**Split views scrolled after closing Customize Schemes #418**
+
+---

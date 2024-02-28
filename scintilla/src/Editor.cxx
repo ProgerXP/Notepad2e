@@ -1548,7 +1548,6 @@ bool Editor::WrapLines(WrapScope ws) {
 		Sci::Line lineToWrap = wrapPending.start;
 		Sci::Line lineToWrapEnd = std::min(wrapPending.end, pdoc->LinesTotal());
 		const Sci::Line lineDocTop = pcs->DocFromDisplay(topLine);
-		const Sci::Line subLineTop = topLine - pcs->DisplayFromDoc(lineDocTop);
 		if (ws == WrapScope::wsVisible) {
 			lineToWrap = Sci::clamp(lineDocTop-5, wrapPending.start, pdoc->LinesTotal());
 			// Priority wrap to just after visible area.
@@ -1602,6 +1601,7 @@ bool Editor::WrapLines(WrapScope ws) {
 				}
 				durationWrapOneLine.AddSample(linesBeingWrapped, epWrapping.Duration());
 
+				const Sci::Line subLineTop = topLine - pcs->DisplayFromDoc(lineDocTop);
 				goodTopLine = pcs->DisplayFromDoc(lineDocTop) + std::min(
 					subLineTop, static_cast<Sci::Line>(pcs->GetHeight(lineDocTop)-1));
 			}
