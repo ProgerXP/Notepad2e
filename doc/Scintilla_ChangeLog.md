@@ -2641,3 +2641,28 @@ move ``subLineTop`` variable declaration after ``AddSample``-call:
 /**Split views scrolled after closing Customize Schemes #418**
 
 ---
+
+**Alt+Home/End to navigate line, not subline #429**
+
+Move ``case SCI_VCHOMERECTEXTEND``-statement (in method ``int Editor::HorizontalMove(unsigned int iMessage)``):
+
+[scintilla/src/Editor.cxx]:
+
+```
+		case SCI_VCHOMERECTEXTEND:
+		case SCI_HOMERECTEXTEND:
+		case SCI_HOMEEXTEND: // only when sel.IsRectangular() && sel.MoveExtends()
+			spCaret = SelectionPosition(
+				pdoc->LineStart(pdoc->LineFromPosition(spCaret.Position())));
+			break;
+		case SCI_VCHOMEEXTEND: // only when sel.IsRectangular() && sel.MoveExtends()
+			spCaret = SelectionPosition(pdoc->VCHomePosition(spCaret.Position()));
+			break;
+		case SCI_LINEENDRECTEXTEND:
+		case SCI_LINEENDEXTEND:
+```
+[/scintilla/src/Editor.cxx]
+
+/**Alt+Home/End to navigate line, not subline #429**
+
+---

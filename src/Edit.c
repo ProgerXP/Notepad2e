@@ -233,6 +233,11 @@ HWND EditCreate(HWND hwndParent)
   SendMessage(hwnd, SCI_CLEARCMDKEY, (SCK_PRIOR + ((SCMOD_ALT | SCMOD_SHIFT) << 16)), 0);
   // [/2e]
 
+  // [2e]: Alt+Home/End to navigate line, not subline #429
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_HOME + (SCMOD_ALT << 16)), SCI_HOME);
+  SendMessage(hwnd, SCI_ASSIGNCMDKEY, (SCK_END + (SCMOD_ALT << 16)), SCI_LINEEND);
+  // [/2e]
+
   // Init default values for printing
   EditPrintInit();
 

@@ -3527,12 +3527,13 @@ int Editor::HorizontalMove(unsigned int iMessage) {
 				spCaret = SelectionPosition(spCaret.Position() + 1);
 			}
 			break;
+		// [2e]: Alt+Home/End to navigate line, not subline #429
+		case SCI_VCHOMERECTEXTEND:
 		case SCI_HOMERECTEXTEND:
 		case SCI_HOMEEXTEND: // only when sel.IsRectangular() && sel.MoveExtends()
 			spCaret = SelectionPosition(
 				pdoc->LineStart(pdoc->LineFromPosition(spCaret.Position())));
 			break;
-		case SCI_VCHOMERECTEXTEND:
 		case SCI_VCHOMEEXTEND: // only when sel.IsRectangular() && sel.MoveExtends()
 			spCaret = SelectionPosition(pdoc->VCHomePosition(spCaret.Position()));
 			break;
