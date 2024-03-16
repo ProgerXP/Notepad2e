@@ -14,6 +14,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 #include <forward_list>
 #include <algorithm>
@@ -2724,45 +2725,76 @@ Sci::Position Document::ExtendStyleRange(Sci::Position pos, int delta, bool sing
 	return pos;
 }
 
-static char BraceOpposite(char ch, bool treatQuotesAsBraces) noexcept {
-	switch (ch) {
-	case '(':
-		return ')';
-	case ')':
-		return '(';
-	case '[':
-		return ']';
-	case ']':
-		return '[';
-	case '{':
-		return '}';
-	case '}':
-		return '{';
-	case '<':
-		return '>';
-	case '>':
-		return '<';
-	default:
-		// [2e]: Treat quotes as braces #287
-		if (treatQuotesAsBraces && (ch == '\'' || ch == '"' || ch == '`'))
-			return ch;
+// [2e]: Unwrap quotes at cursor : add more symbols #254
+bool match(const char* str, const char* value)
+{
+	return strcmp(str, value) == 0;
+}
 
-		return '\0';
+const std::vector<std::tuple<bool, const char*, const char*, int>> c_vectorBracesWithDirections = {
+	{ false, "(", ")",  1 },
+	{ false, ")", "(", -1 },
+	{ false, "[", "]",  1 },
+	{ false, "]", "[", -1 },
+	{ false, "{", "}",  1 },
+	{ false, "}", "{", -1 },
+	{ false, "<", ">",  1 },
+	{ false, ">", "<", -1 },
+	{ false, u8"‹", u8"›",  1 },
+	{ false, u8"›", u8"‹", -1 },
+	{ false, u8"「", u8"」",  1 },
+	{ false, u8"」", u8"「", -1 },
+	{ false, u8"『", u8"』",  1 },
+	{ false, u8"』", u8"『", -1 },
+	{ true,  "\'", "\'", -1 },
+	{ true,  "\"", "\"", -1 },
+	{ true,  "`", "`",   -1 },
+	{ true,  "«", "»",    1 },
+	{ true,  "»", "«",   -1 },
+	{ true,  "‘", "’",    1 },
+	{ true,  "’", "‘",   -1 },
+	{ true,  "‚", "‘",    1 },
+	{ true,  "“", "”",   1 },
+	{ true,  "”", "“",   -1 },
+	{ true,  "„", "“",    1 },
+	{ true, u8"《", u8"》",  1 },
+	{ true, u8"》", u8"《", -1 },
+	{ true,  u8"«", u8"»",  1 },
+	{ true,  u8"»", u8"«", -1 },
+	{ true,  u8"‘", u8"’",  1 },
+	{ true,  u8"’", u8"‘", -1 },
+	{ true,  u8"‚", u8"‘",  1 },
+	{ true,  u8"“", u8"”", 1 },
+	{ true,  u8"”", u8"“", -1 },
+	{ true,  u8"„", u8"“", 1 }
+};
+
+static const char* BraceOpposite(const char* chBuffer, bool treatQuotesAsBraces, int& direction) noexcept {
+	for (auto data : c_vectorBracesWithDirections)
+	{
+		if ((!std::get<0>(data) || treatQuotesAsBraces)
+			&& match(chBuffer, std::get<1>(data)))
+		{
+			direction = std::get<3>(data);
+			return std::get<2>(data);
+		}
 	}
+	direction = -1;
+	return '\0';
 }
 
 // [2e]: Treat quotes as braces #287
-int Document::FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept {
+int Document::FindBrace(Sci::Position position, const int direction, const char* chBrace, const char* chSeek, const int styBrace, const bool respectStyle) const noexcept {
 	int depth = 1;
 	position = NextPosition(position, direction);
 	while ((position >= 0) && (position < LengthNoExcept())) {
-		const char chAtPos = CharAt(position);
+		char chAtPos[5] = { 0 };
+		GetCharRange(chAtPos, position, NextPosition(position, 1) - position);
 		const int styAtPos = StyleIndexAt(position);
-
 		if ((position > GetEndStyled()) || (!respectStyle || (styAtPos == styBrace))) {
-			if ((chBrace != chSeek) && (chAtPos == chBrace))
+			if (!match(chBrace, chSeek) && match(chAtPos, chBrace))
 				depth++;
-			if (chAtPos == chSeek)
+			if (match(chAtPos, chSeek))
 				depth--;
 			if (depth == 0)
 				return position;
@@ -2778,16 +2810,15 @@ int Document::FindBrace(Sci::Position position, const int direction, const char 
 
 // TODO: should be able to extend styled region to find matching brace
 Sci::Position Document::BraceMatch(Sci::Position position, bool treatQuotesAsBraces) noexcept {
-	const char chBrace = CharAt(position);
-	const char chSeek = BraceOpposite(chBrace, treatQuotesAsBraces);
+	char chBrace[5] = { 0 };
+	GetCharRange(chBrace, position, NextPosition(position, 1) - position);
+	int direction = -1;
+	const char* chSeek = BraceOpposite(chBrace, treatQuotesAsBraces, direction);
 	if (chSeek == '\0')
 		return - 1;
 	const int styBrace = StyleIndexAt(position);
-	int direction = -1;
-	if (chBrace == '(' || chBrace == '[' || chBrace == '{' || chBrace == '<')
-		direction = 1;
 	// [2e]: Treat quotes as braces #287
-	else if (treatQuotesAsBraces && (chBrace == '\'' || chBrace == '"' || chBrace == '`'))
+	if (direction != 1)
 	{
 		const auto lineIndex = LineFromPosition(position);
 		const auto lineStartPos = LineStart(lineIndex);

@@ -497,7 +497,7 @@ public:
 	Sci::Position ParaDown(Sci::Position pos) const;
 	int IndentSize() const noexcept { return actualIndentInChars; }
 	// [2e]: Treat quotes as braces #287
-	int FindBrace(Sci::Position position, const int direction, const char chBrace, const char chSeek, const int styBrace, const bool respectStyle) const noexcept;
+	int FindBrace(Sci::Position position, const int direction, const char* chBrace, const char* chSeek, const int styBrace, const bool respectStyle) const noexcept;
 	Sci::Position BraceMatch(Sci::Position position, bool treatQuotesAsBraces) noexcept;
 	// [2e]: ctrl+arrow behavior toggle #89
 	void SetWordNavigationMode(const int iMode);

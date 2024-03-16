@@ -1,4 +1,4 @@
-#include "EditHelper.h"
+﻿#include "EditHelper.h"
 #include <cassert>
 #include <commctrl.h>
 #include "CommonUtils.h"
@@ -23,8 +23,8 @@
 #include "Trace.h"
 #include "Utils.h"
 
-#define BRACES "()[]{}<>"
-#define BRACES_WITH_QUOTES BRACES "'\"`"
+#define BRACES "()[]{}<>" u8"‹" u8"›" u8"「" u8"」" u8"『" u8"』"
+#define BRACES_WITH_QUOTES BRACES "'\"`" "«" "»" "‘" "’" "‚" "“" "”" "„" u8"《" u8"》" u8"«" u8"»" u8"‘" u8"’" u8"‚" u8"“" u8"”" u8"„"
 
 WCHAR wchLastHTMLTag[TEXT_BUFFER_LENGTH] = L"<tag>";
 WCHAR wchLastHTMLEndTag[TEXT_BUFFER_LENGTH] = L"</tag>";
@@ -703,9 +703,11 @@ void n2e_UnwrapSelection(const HWND hwnd, const BOOL quote_mode)
   if ((posStart >= 0) && (posEnd >= 0) && (max(posStart, posEnd) >= pos))
   {
     SciCall_BeginUndoAction();
-    SciCall_DeleteRange(max(posStart, posEnd), 1);
-    SciCall_DeleteRange(min(posStart, posEnd), 1);
-    SciCall_SetSel(min(posStart, posEnd), max(posStart, posEnd) - 1);
+    const int prefixLength = SciCall_PositionAfter(max(posStart, posEnd)) - max(posStart, posEnd);
+    const int postfixLength = SciCall_PositionAfter(min(posStart, posEnd)) - min(posStart, posEnd);
+    SciCall_DeleteRange(max(posStart, posEnd), prefixLength);
+    SciCall_DeleteRange(min(posStart, posEnd), postfixLength);
+    SciCall_SetSel(min(posStart, posEnd), max(posStart, posEnd) - prefixLength);
     SciCall_EndUndoAction();
   }
 }
