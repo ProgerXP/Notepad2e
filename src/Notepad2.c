@@ -252,7 +252,6 @@ LPWSTR      lpEncodingArg = NULL;
 LPMRULIST  pFileMRU;
 LPMRULIST  mruFind;
 LPMRULIST  mruReplace;
-LPMRULIST  mruScratchFiles;
 
 DWORD     dwLastIOError;
 WCHAR      szCurFile[MAX_PATH + 40];
@@ -7776,17 +7775,8 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
     // [2e]: Autosaving directory for unsaved windows #480
     else if (saveCopyMode == SCM_SCRATCH)
     {
-      if (lstrlen(wchUnsavedScratchPath))
-      {
-        WCHAR wchFileName[MAX_PATH] = { 0 };
-        while (!lstrlen(wchFileName) || PathFileExists(tchFile))
-        {
-          wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iUnsavedScratchIndex++);
-          lstrcpy(tchFile, wchUnsavedScratchPath);
-          PathAppend(tchFile, wchFileName);
-        }
-        MRU_AddFile(mruScratchFiles, tchFile, FALSE, FALSE);
-      }
+      if (lstrlen(wchScratchFileName))
+        lstrcpy(tchFile, wchScratchFileName);
       else
         return FALSE;
     }
@@ -7890,7 +7880,7 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode save
   // [2e]: Autosaving directory for unsaved windows #480
   if (res && (saveCopyMode != SCM_SCRATCH))
   {
-    n2e_CleanupScratchFiles();
+    n2e_CleanupScratchFile();
   }
   return res;
   // [/2e]

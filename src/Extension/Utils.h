@@ -168,8 +168,8 @@ void n2e_Release();
 void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
-void n2e_InitScratchFiles();
-void n2e_CleanupScratchFiles();
+void n2e_InitScratchFile();
+void n2e_CleanupScratchFile();
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_IsRectangularSelection();
 BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount);
@@ -208,6 +208,7 @@ extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
 extern int iStartingLineNumber;
 extern WCHAR wchUnsavedScratchPath[MAX_PATH];
+extern WCHAR wchScratchFileName[MAX_PATH];
 extern int iUnsavedScratchIndex;
 
 void n2e_CreateProgressBarInStatusBar();

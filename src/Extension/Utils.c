@@ -92,6 +92,7 @@ int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bExtendedSplitLines = TRUE;
 int iStartingLineNumber = 1;
 WCHAR wchUnsavedScratchPath[MAX_PATH] = { 0 };
+WCHAR wchScratchFileName[MAX_PATH] = { 0 };
 int iUnsavedScratchIndex = 0;
 
 HWND hwndStatusProgressBar = NULL;
@@ -118,7 +119,6 @@ extern enum EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
 extern LPMRULIST pFileMRU;
 extern LPMRULIST mruFind;
-extern LPMRULIST mruScratchFiles;
 extern enum ESaveSettingsMode nSaveSettingsMode;
 
 LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
@@ -559,8 +559,8 @@ void n2e_LoadINI()
     ExpandEnvironmentStringsImpl(wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
     if (!PathFileExists(wchUnsavedScratchPath) || !PathIsDirectory(wchUnsavedScratchPath))
       wchUnsavedScratchPath[0] = 0;
-    else if (!mruScratchFiles)
-      n2e_InitScratchFiles();
+    else if (!lstrlen(wchScratchFileName))
+      n2e_InitScratchFile();
   }
 
 #ifdef LPEG_LEXER
@@ -672,22 +672,26 @@ void n2e_Reset()
   n2e_Init(hwndEdit);
 }
 
-void n2e_InitScratchFiles()
+void n2e_InitScratchFile()
 {
-  mruScratchFiles = MRU_Create(L"Scratch Files", MRU_UTF8, 0xFFFF);
+  WCHAR wchFileName[MAX_PATH] = { 0 };
+  while (!lstrlen(wchScratchFileName) || PathFileExists(wchScratchFileName))
+  {
+    iUnsavedScratchIndex++;
+    wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iUnsavedScratchIndex);
+    lstrcpy(wchScratchFileName, wchUnsavedScratchPath);
+    PathAppend(wchScratchFileName, wchFileName);
+  }
 }
 
-void n2e_CleanupScratchFiles()
+void n2e_CleanupScratchFile()
 {
-  if (mruScratchFiles)
+  if (lstrlen(wchScratchFileName) && PathFileExists(wchScratchFileName))
   {
-    for (int i = mruScratchFiles->iSize - 1; i >= 0; i--)
-    {
-      if (lstrlen((LPWSTR)mruScratchFiles->pszItems[i]))
-        DeleteFile(mruScratchFiles->pszItems[i]);
-    }
-    MRU_Destroy(mruScratchFiles);
-    n2e_InitScratchFiles();
+    DeleteFile(wchScratchFileName);
+    wchScratchFileName[0] = 0;
+    iUnsavedScratchIndex = 0;
+    n2e_InitScratchFile();
   }
 }
 
