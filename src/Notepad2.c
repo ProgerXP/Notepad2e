@@ -252,6 +252,7 @@ LPWSTR      lpEncodingArg = NULL;
 LPMRULIST  pFileMRU;
 LPMRULIST  mruFind;
 LPMRULIST  mruReplace;
+LPMRULIST  mruScratchFiles;
 
 DWORD     dwLastIOError;
 WCHAR      szCurFile[MAX_PATH + 40];
@@ -954,8 +955,14 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         if (!bReadOnly && n2e_IsDocumentModified() && (iSaveOnLoseFocus != SLF_DISABLED) && IsWindowVisible(hwnd)
             && lstrlen(szCurFile) && !bFileSaveInProgress && !n2e_IsModalDialogOnTop())
         {
-          FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
+          FileSave(TRUE, FALSE, FALSE, SCM_NO, FALSE);
         }
+        // [2e]: Autosaving directory for unsaved windows #480
+        else if (wchUnsavedScratchPath && n2e_IsDocumentModified() && (SciCall_GetLength() <= FileSizeLimit()))
+        {
+          SetTimer(hwndMain, ID_AUTOSAVETIMER, AUTOSAVETIMEOUT, AutoSaveTimer);
+        }
+        // [/2e]
       }
       else
       {
@@ -1030,7 +1037,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 
 
     case WM_CLOSE:
-      if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if (FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
         DestroyWindow(hwnd);
       break;
 
@@ -1044,7 +1051,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         n2e_ShutdownBlockReasonCreate(hwndMain, tchs);
       }
       // [/2e]
-      if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if (FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
         return TRUE;
       else
         return FALSE;
@@ -1431,7 +1438,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       else
       {
         if (MsgBox(MBYESNO, IDS_FILECHANGENOTIFY2) == IDYES)
-          FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
+          FileSave(TRUE, FALSE, FALSE, SCM_NO, FALSE);
       }
       // [2e]: Improve File Change Notification for slow medium #409
       if (!n2e_IsWatchThreadRunning())
@@ -2343,24 +2350,24 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_FILE_SAVE:
-      FileSave(TRUE, FALSE, FALSE, FALSE, FALSE);
+      FileSave(TRUE, FALSE, FALSE, SCM_NO, FALSE);
       break;
 
 
     case IDM_FILE_SAVEAS:
-      FileSave(TRUE, FALSE, TRUE, FALSE, FALSE);
+      FileSave(TRUE, FALSE, TRUE, SCM_NO, FALSE);
       break;
 
 
     // [2e]: File->RenameTo menu item
     case ID_FILE_RENAMETO:
-      FileSave(TRUE, FALSE, TRUE, FALSE, TRUE);
+      FileSave(TRUE, FALSE, TRUE, SCM_NO, TRUE);
       break;
     // [/2e]
 
 
     case IDM_FILE_SAVECOPY:
-      FileSave(TRUE, FALSE, TRUE, TRUE, FALSE);
+      FileSave(TRUE, FALSE, TRUE, SCM_YES, FALSE);
       break;
 
 
@@ -2483,7 +2490,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
                 || ((iSaveBeforeRunningTools == SBRT_EXCEPT_NEW_WINDOW) && (LOWORD(wParam) != IDM_FILE_NEWWINDOW)))
            )
         {
-          if (!FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+          if (!FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
             break;
         }
 
@@ -2562,7 +2569,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         if (!lstrlen(szCurFile))
           break;
 
-        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
           break;
 
         if (lstrlen(szCurFile))
@@ -2616,7 +2623,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_FILE_RUN: {
         WCHAR tchCmdLine[MAX_PATH + 4];
-        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
           break;
 
         lstrcpy(tchCmdLine, szCurFile);
@@ -2644,7 +2651,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_FILE_OPENWITH:
-      if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if ((iSaveBeforeRunningTools != SBRT_DISABLED) && !FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
         break;
       OpenWithDlg(hwnd, szCurFile);
       break;
@@ -2716,7 +2723,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_FILE_OPENFAV:
-      if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+      if (FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
       {
         WCHAR tchSelItem[MAX_PATH];
 
@@ -2771,7 +2778,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case IDM_FILE_RECENT:
       if (MRU_Enum(pFileMRU, 0, NULL, 0) > 0)
       {
-        if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if (FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
         {
           WCHAR tchFile[MAX_PATH];
           if (FileMRUDlg(hwnd, tchFile))
@@ -2794,7 +2801,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
     case ID_FILE_OPENPREVIOUS:
       if (MRU_Enum(pFileMRU, 0, NULL, 0) > 0)
       {
-        if (FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+        if (FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
         {
           WCHAR tchFile[MAX_PATH];
           if (n2e_OpenMRULast(tchFile))
@@ -4680,7 +4687,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case CMD_SHIFTESC:
-      if (FileSave(TRUE, FALSE, FALSE, FALSE, FALSE))
+      if (FileSave(TRUE, FALSE, FALSE, SCM_NO, FALSE))
         SendMessage(hwnd, WM_CLOSE, 0, 0);
       break;
 
@@ -7509,7 +7516,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 
   if (!bDontSave)
   {
-    if (!FileSave(FALSE, TRUE, FALSE, FALSE, FALSE))
+    if (!FileSave(FALSE, TRUE, FALSE, SCM_NO, FALSE))
       return FALSE;
   }
 
@@ -7697,7 +7704,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 //  FileSave()
 //
 //
-BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
+BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode saveCopyMode, BOOL bDeleteOld)
 {
   WCHAR tchFile[MAX_PATH];
   BOOL fSuccess = FALSE;
@@ -7741,7 +7748,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   // Read only...
-  if (!bSaveAs && !bSaveCopy && lstrlen(szCurFile))
+  if (!bSaveAs && (saveCopyMode == SCM_NO) && lstrlen(szCurFile))
   {
     DWORD dwFileAttributes = GetFileAttributes(szCurFile);
     if (dwFileAttributes != INVALID_FILE_ATTRIBUTES)
@@ -7757,19 +7764,36 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
   }
 
   // Save As...
-  if (bSaveAs || bSaveCopy || lstrlen(szCurFile) == 0)
+  if (bSaveAs || (saveCopyMode != SCM_NO) || lstrlen(szCurFile) == 0)
   {
     WCHAR tchInitialDir[MAX_PATH] = L"";
-    if (bSaveCopy && lstrlen(tchLastSaveCopyDir))
+    if ((saveCopyMode == SCM_YES) && lstrlen(tchLastSaveCopyDir))
     {
       lstrcpy(tchInitialDir, tchLastSaveCopyDir);
       lstrcpy(tchFile, tchLastSaveCopyDir);
       PathAppend(tchFile, PathFindFileName(szCurFile));
     }
+    // [2e]: Autosaving directory for unsaved windows #480
+    else if (saveCopyMode == SCM_SCRATCH)
+    {
+      if (lstrlen(wchUnsavedScratchPath))
+      {
+        WCHAR wchFileName[MAX_PATH] = { 0 };
+        while (!lstrlen(wchFileName) || PathFileExists(tchFile))
+        {
+          wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iUnsavedScratchIndex++);
+          lstrcpy(tchFile, wchUnsavedScratchPath);
+          PathAppend(tchFile, wchFileName);
+        }
+        MRU_AddFile(mruScratchFiles, tchFile, FALSE, FALSE);
+      }
+      else
+        return FALSE;
+    }
     else
       lstrcpy(tchFile, szCurFile);
 
-    if (SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
+    if ((saveCopyMode == SCM_SCRATCH) || SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
     {
       // [2e]: Rename To fails if new name only differs in char case #140
       if (lstrcmp(szCurFile, tchFile) == 0)
@@ -7783,7 +7807,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
         return FALSE;
       }
       // [/2e]
-      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, bSaveCopy)
+      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, saveCopyMode != SCM_NO)
                           // [2e]: Process elevation #166
                           || n2e_ParentProcess_ElevatedFileIO(tchFile))
       {
@@ -7794,7 +7818,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
           DeleteFile(szCurFile);
         }
         // [/2e]
-        if (!bSaveCopy)
+        if (saveCopyMode == SCM_NO)
         {
           lstrcpy(szCurFile, tchFile);
           SetDlgItemText(hwndMain, IDC_FILENAME, szCurFile);
@@ -7805,7 +7829,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
           UpdateStatusbar();
           VIEW_COMMAND(UpdateLineNumberWidth);
         }
-        else
+        else if (saveCopyMode == SCM_YES)
         {
           lstrcpy(tchLastSaveCopyDir, tchFile);
           PathRemoveFileSpec(tchLastSaveCopyDir);
@@ -7831,7 +7855,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
 
   if (fSuccess)
   {
-    if (!bSaveCopy)
+    if (saveCopyMode == SCM_NO)
     {
       bModified = FALSE;
       iOriginalEncoding = iEncoding;
@@ -7856,13 +7880,18 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOO
 }
 
 
-BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, BOOL bSaveCopy, BOOL bDeleteOld)
+BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode saveCopyMode, BOOL bDeleteOld)
 {
   // [2e]: Save on deactivate #164
   BOOL res = FALSE;
   bFileSaveInProgress = TRUE;
-  res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, bSaveCopy, bDeleteOld);
+  res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, saveCopyMode, bDeleteOld);
   bFileSaveInProgress = FALSE;
+  // [2e]: Autosaving directory for unsaved windows #480
+  if (res && (saveCopyMode != SCM_SCRATCH))
+  {
+    n2e_CleanupScratchFiles();
+  }
   return res;
   // [/2e]
 }
@@ -8590,3 +8619,11 @@ void CALLBACK PasteBoardTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
     dwLastCopyTime = 0;
   }
 }
+
+// [2e]: Autosaving directory for unsaved windows #480
+void CALLBACK AutoSaveTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+{
+  KillTimer(hwnd, ID_AUTOSAVETIMER);
+  FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
+}
+// [/2e]

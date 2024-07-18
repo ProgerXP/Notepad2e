@@ -50,6 +50,7 @@
 #define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 #define INI_SETTING_STARTING_LINE_NUMBER L"StartingLineNumber"
+#define INI_SETTING_UNSAVED_SCRATCH_PATH L"UnsavedScratchPath"
 
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
@@ -90,6 +91,8 @@ BOOL bFindWordWrapAround = FALSE;
 int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bExtendedSplitLines = TRUE;
 int iStartingLineNumber = 1;
+WCHAR wchUnsavedScratchPath[MAX_PATH] = { 0 };
+int iUnsavedScratchIndex = 0;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
@@ -115,6 +118,7 @@ extern enum EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
 extern LPMRULIST pFileMRU;
 extern LPMRULIST mruFind;
+extern LPMRULIST mruScratchFiles;
 extern enum ESaveSettingsMode nSaveSettingsMode;
 
 LPVOID LoadDataFile(const UINT nResourceID, int* pLength);
@@ -549,6 +553,15 @@ void n2e_LoadINI()
   iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
   iStartingLineNumber = IniGetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
+  IniGetString(N2E_INI_SECTION, INI_SETTING_UNSAVED_SCRATCH_PATH, L"", wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
+  if (lstrlen(wchUnsavedScratchPath))
+  {
+    ExpandEnvironmentStringsImpl(wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
+    if (!PathFileExists(wchUnsavedScratchPath) || !PathIsDirectory(wchUnsavedScratchPath))
+      wchUnsavedScratchPath[0] = 0;
+    else if (!mruScratchFiles)
+      n2e_InitScratchFiles();
+  }
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -657,6 +670,25 @@ void n2e_Reset()
 {
   n2e_Release();
   n2e_Init(hwndEdit);
+}
+
+void n2e_InitScratchFiles()
+{
+  mruScratchFiles = MRU_Create(L"Scratch Files", MRU_UTF8, 0xFFFF);
+}
+
+void n2e_CleanupScratchFiles()
+{
+  if (mruScratchFiles)
+  {
+    for (int i = mruScratchFiles->iSize - 1; i >= 0; i--)
+    {
+      if (lstrlen((LPWSTR)mruScratchFiles->pszItems[i]))
+        DeleteFile(mruScratchFiles->pszItems[i]);
+    }
+    MRU_Destroy(mruScratchFiles);
+    n2e_InitScratchFiles();
+  }
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)

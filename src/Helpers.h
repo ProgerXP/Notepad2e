@@ -153,6 +153,8 @@ void StrTab2Space(LPWSTR);
 void PathFixBackslashes(LPWSTR);
 
 
+DWORD FileSizeLimit();
+void  ExpandEnvironmentStringsImpl(LPWSTR, DWORD);
 void  ExpandEnvironmentStringsEx(LPWSTR, DWORD);
 void  PathCanonicalizeEx(LPWSTR);
 DWORD GetLongPathNameEx(LPWSTR, DWORD);

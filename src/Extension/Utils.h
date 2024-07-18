@@ -129,6 +129,13 @@ typedef enum
   SIC_ONLY
 } ESearchInComments;
 
+typedef enum
+{
+  SCM_NO = 0,
+  SCM_YES = 1,
+  SCM_SCRATCH = 2
+} ESaveCopyMode;
+
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
@@ -161,6 +168,8 @@ void n2e_Release();
 void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
+void n2e_InitScratchFiles();
+void n2e_CleanupScratchFiles();
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_IsRectangularSelection();
 BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount);
@@ -198,6 +207,8 @@ extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
 extern int iStartingLineNumber;
+extern WCHAR wchUnsavedScratchPath[MAX_PATH];
+extern int iUnsavedScratchIndex;
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();
