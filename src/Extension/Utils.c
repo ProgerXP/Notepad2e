@@ -111,6 +111,7 @@ extern WCHAR szCurFile[MAX_PATH + 40];
 extern UINT uidsAppTitle;
 extern BOOL fIsElevated;
 extern BOOL bModified;
+extern BOOL bAutoSaved;
 extern int iEncoding;
 extern int iOriginalEncoding;
 extern BOOL bReadOnly;
@@ -131,6 +132,22 @@ HMODULE hModuleRichedit = NULL;
 BOOL n2e_IsDocumentModified()
 {
   return bModified || (iEncoding != iOriginalEncoding);
+}
+
+void n2e_SetDocumentModified(const BOOL bFlag)
+{
+  bModified = bFlag;
+  n2e_SetDocumentAutoSaved(FALSE);
+}
+
+BOOL n2e_IsDocumentAutoSaved()
+{
+  return bAutoSaved;
+}
+
+void n2e_SetDocumentAutoSaved(const BOOL bFlag)
+{
+  bAutoSaved = bFlag;
 }
 
 void n2e_InitInstance()
@@ -693,6 +710,13 @@ void n2e_CleanupScratchFile()
     iUnsavedScratchIndex = 0;
     n2e_InitScratchFile();
   }
+}
+
+BOOL n2e_IsAutoSaveRequired()
+{
+  return lstrlen(wchScratchFileName)
+    && n2e_IsDocumentModified() && !n2e_IsDocumentAutoSaved()
+    && (SciCall_GetLength() <= FileSizeLimit());
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)

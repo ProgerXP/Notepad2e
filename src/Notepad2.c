@@ -257,6 +257,7 @@ DWORD     dwLastIOError;
 WCHAR      szCurFile[MAX_PATH + 40];
 FILEVARS   fvCurFile;
 BOOL      bModified;
+BOOL      bAutoSaved = FALSE; // [2e]: Autosaving directory for unsaved windows #480
 BOOL      bReadOnly = FALSE;
 int       iEncoding;
 int       iOriginalEncoding;
@@ -957,7 +958,7 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
           FileSave(TRUE, FALSE, FALSE, SCM_NO, FALSE);
         }
         // [2e]: Autosaving directory for unsaved windows #480
-        else if (wchUnsavedScratchPath && n2e_IsDocumentModified() && (SciCall_GetLength() <= FileSizeLimit()))
+        else if (n2e_IsAutoSaveRequired())
         {
           SetTimer(hwndMain, ID_AUTOSAVETIMER, AUTOSAVETIMEOUT, AutoSaveTimer);
         }
@@ -965,6 +966,8 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       }
       else
       {
+        // [2e]: Autosaving directory for unsaved windows #480
+        KillTimer(hwndMain, ID_AUTOSAVETIMER);
         // [2e]: Split view #316
         n2e_RestoreActiveEdit(FALSE);
       }
@@ -5772,12 +5775,12 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
           break;
 
         case SCN_SAVEPOINTREACHED:
-          bModified = FALSE;
+          n2e_SetDocumentModified(FALSE);
           n2e_UpdateWindowTitle(hwnd);
           break;
 
         case SCN_SAVEPOINTLEFT:
-          bModified = TRUE;
+          n2e_SetDocumentModified(TRUE);
           n2e_UpdateWindowTitle(hwnd);
           break;
 
@@ -5796,6 +5799,12 @@ LRESULT MsgNotify(HWND hwnd, WPARAM wParam, LPARAM lParam)
         case SCN_DROPCOMPLETED:
           SetFocus(hwndFrom);
           break;
+
+        // [2e]: Autosaving directory for unsaved windows #480
+        case SCN_MODIFIED:
+          n2e_SetDocumentModified(TRUE);
+          break;
+
         // [/2e]
       }
       n2e_SelectionNotificationHandler(hwndFrom, pnmh->code, scn);
@@ -7530,7 +7539,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
     EditSetNewText(hwndEdit, "", 0);
     Style_SetLexer(hwndEdit, NULL);
     VIEW_COMMAND(UpdateLineNumberWidth);
-    bModified = FALSE;
+    n2e_SetDocumentModified(FALSE);
     bReadOnly = FALSE;
     iEOLMode = iLineEndings[iDefaultEOLMode];
     SendMessage(hwndEdit, SCI_SETEOLMODE, iLineEndings[iDefaultEOLMode], 0);
@@ -7642,7 +7651,7 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
       Style_SetLexerFromFile(hwndEdit, szCurFile);
     VIEW_COMMAND(UpdateLineNumberWidth);
     iOriginalEncoding = iEncoding;
-    bModified = FALSE;
+    n2e_SetDocumentModified(FALSE);
     SendMessage(hwndEdit, SCI_SETEOLMODE, iEOLMode, 0);
     if (!no_mru)
     {
@@ -7824,6 +7833,10 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
           lstrcpy(tchLastSaveCopyDir, tchFile);
           PathRemoveFileSpec(tchLastSaveCopyDir);
         }
+        else if (saveCopyMode == SCM_SCRATCH)
+        {
+          n2e_SetDocumentAutoSaved(TRUE);
+        }
       }
     }
     else
@@ -7847,7 +7860,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
   {
     if (saveCopyMode == SCM_NO)
     {
-      bModified = FALSE;
+      n2e_SetDocumentModified(FALSE);
       iOriginalEncoding = iEncoding;
       MRU_AddFile(pFileMRU, szCurFile, flagRelativeFileMRU, flagPortableMyDocs);
       if (flagUseSystemMRU == 2)
@@ -8614,6 +8627,7 @@ void CALLBACK PasteBoardTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 void CALLBACK AutoSaveTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
   KillTimer(hwnd, ID_AUTOSAVETIMER);
-  FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
+  if (!n2e_IsMainWindowActive())
+    FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
 }
 // [/2e]
