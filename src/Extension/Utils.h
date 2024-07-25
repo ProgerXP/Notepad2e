@@ -214,6 +214,7 @@ extern int iStartingLineNumber;
 extern WCHAR wchUnsavedScratchPath[MAX_PATH];
 extern WCHAR wchScratchFileName[MAX_PATH];
 extern int iUnsavedScratchIndex;
+extern UINT_PTR iAutoSaveTimer;
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

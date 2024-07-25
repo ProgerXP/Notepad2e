@@ -94,6 +94,7 @@ int iStartingLineNumber = 1;
 WCHAR wchUnsavedScratchPath[MAX_PATH] = { 0 };
 WCHAR wchScratchFileName[MAX_PATH] = { 0 };
 int iUnsavedScratchIndex = 0;
+UINT_PTR iAutoSaveTimer = 0;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;

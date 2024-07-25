@@ -960,14 +960,18 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         // [2e]: Autosaving directory for unsaved windows #480
         else if (n2e_IsAutoSaveRequired())
         {
-          SetTimer(hwndMain, ID_AUTOSAVETIMER, AUTOSAVETIMEOUT, AutoSaveTimer);
+          iAutoSaveTimer = SetTimer(hwndMain, ID_AUTOSAVETIMER, AUTOSAVETIMEOUT, AutoSaveTimer);
         }
         // [/2e]
       }
       else
       {
         // [2e]: Autosaving directory for unsaved windows #480
-        KillTimer(hwndMain, ID_AUTOSAVETIMER);
+        if (iAutoSaveTimer)
+        {
+          KillTimer(hwndMain, iAutoSaveTimer);
+          iAutoSaveTimer = 0;
+        }
         // [2e]: Split view #316
         n2e_RestoreActiveEdit(FALSE);
       }
@@ -8626,8 +8630,8 @@ void CALLBACK PasteBoardTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 // [2e]: Autosaving directory for unsaved windows #480
 void CALLBACK AutoSaveTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-  KillTimer(hwnd, ID_AUTOSAVETIMER);
-  if (!n2e_IsMainWindowActive())
-    FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
+  KillTimer(hwnd, iAutoSaveTimer);
+  iAutoSaveTimer = 0;
+  FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
 }
 // [/2e]
