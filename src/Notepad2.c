@@ -7515,7 +7515,10 @@ BOOL FileIO(BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
 //
 BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWSTR lpszFile)
 {
-  return _FileLoad(bDontSave, bNew, bReload, bNoEncDetect, lpszFile, FALSE);
+  const BOOL res = _FileLoad(bDontSave, bNew, bReload, bNoEncDetect, lpszFile, FALSE);
+  if (!res)
+    n2e_SetDocumentAutoSaved(FALSE);
+  return res;
 }
 
 BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWSTR lpszFile, BOOL no_mru)
