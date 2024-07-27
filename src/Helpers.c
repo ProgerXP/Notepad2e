@@ -1490,6 +1490,21 @@ void PathFixBackslashes(LPWSTR lpsz)
 }
 
 
+// [2e]: Autosaving directory for unsaved windows #480
+DWORD FileSizeLimit()
+{
+  const DWORD dwFileSizeLimit = IniGetInt(L"Settings2", L"FileLoadWarningMB", 1);
+  return dwFileSizeLimit * 1024 * 1024;
+}
+
+void ExpandEnvironmentStringsImpl(LPWSTR lpSrc, DWORD dwSrc)
+{
+  WCHAR szBuf[312] = { 0 };
+  if (ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
+    lstrcpyn(lpSrc, szBuf, dwSrc);
+}
+// [/2e]
+
 //=============================================================================
 //
 //  ExpandEnvironmentStringsEx()
@@ -1498,11 +1513,9 @@ void PathFixBackslashes(LPWSTR lpsz)
 //
 void ExpandEnvironmentStringsEx(LPWSTR lpSrc, DWORD dwSrc)
 {
-  WCHAR szBuf[312];
-
   // [2e]: Don't interpret %envvars% in pathname when opening file #193
-  if (fExpandEnvVariables && ExpandEnvironmentStrings(lpSrc, szBuf, COUNTOF(szBuf)))
-    lstrcpyn(lpSrc, szBuf, dwSrc);
+  if (fExpandEnvVariables)
+    ExpandEnvironmentStringsImpl(lpSrc, dwSrc);
 }
 
 

@@ -50,6 +50,7 @@
 #define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 #define INI_SETTING_STARTING_LINE_NUMBER L"StartingLineNumber"
+#define INI_SETTING_UNSAVED_SCRATCH_PATH L"UnsavedScratchPath"
 
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
@@ -90,6 +91,10 @@ BOOL bFindWordWrapAround = FALSE;
 int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bExtendedSplitLines = TRUE;
 int iStartingLineNumber = 1;
+WCHAR wchUnsavedScratchPath[MAX_PATH] = { 0 };
+WCHAR wchScratchFileName[MAX_PATH] = { 0 };
+int iUnsavedScratchIndex = 0;
+UINT_PTR iAutoSaveTimer = 0;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
@@ -107,6 +112,7 @@ extern WCHAR szCurFile[MAX_PATH + 40];
 extern UINT uidsAppTitle;
 extern BOOL fIsElevated;
 extern BOOL bModified;
+extern BOOL bAutoSaved;
 extern int iEncoding;
 extern int iOriginalEncoding;
 extern BOOL bReadOnly;
@@ -127,6 +133,22 @@ HMODULE hModuleRichedit = NULL;
 BOOL n2e_IsDocumentModified()
 {
   return bModified || (iEncoding != iOriginalEncoding);
+}
+
+void n2e_SetDocumentModified(const BOOL bFlag)
+{
+  bModified = bFlag;
+  n2e_SetDocumentAutoSaved(FALSE);
+}
+
+BOOL n2e_IsDocumentAutoSaved()
+{
+  return bAutoSaved;
+}
+
+void n2e_SetDocumentAutoSaved(const BOOL bFlag)
+{
+  bAutoSaved = bFlag;
 }
 
 void n2e_InitInstance()
@@ -549,6 +571,15 @@ void n2e_LoadINI()
   iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
   iStartingLineNumber = IniGetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
+  IniGetString(N2E_INI_SECTION, INI_SETTING_UNSAVED_SCRATCH_PATH, L"", wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
+  if (lstrlen(wchUnsavedScratchPath))
+  {
+    ExpandEnvironmentStringsImpl(wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
+    if (!PathFileExists(wchUnsavedScratchPath) || !PathIsDirectory(wchUnsavedScratchPath))
+      wchUnsavedScratchPath[0] = 0;
+    else if (!lstrlen(wchScratchFileName))
+      n2e_InitScratchFile();
+  }
 
 #ifdef LPEG_LEXER
   IniGetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, L"", wchLPegHomeOrigin, COUNTOF(wchLPegHomeOrigin));
@@ -657,6 +688,36 @@ void n2e_Reset()
 {
   n2e_Release();
   n2e_Init(hwndEdit);
+}
+
+void n2e_InitScratchFile()
+{
+  WCHAR wchFileName[MAX_PATH] = { 0 };
+  while (!lstrlen(wchScratchFileName) || PathFileExists(wchScratchFileName))
+  {
+    iUnsavedScratchIndex++;
+    wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iUnsavedScratchIndex);
+    lstrcpy(wchScratchFileName, wchUnsavedScratchPath);
+    PathAppend(wchScratchFileName, wchFileName);
+  }
+}
+
+void n2e_CleanupScratchFile()
+{
+  if (lstrlen(wchScratchFileName) && PathFileExists(wchScratchFileName))
+  {
+    DeleteFile(wchScratchFileName);
+    wchScratchFileName[0] = 0;
+    iUnsavedScratchIndex = 0;
+    n2e_InitScratchFile();
+  }
+}
+
+BOOL n2e_IsAutoSaveRequired()
+{
+  return lstrlen(wchScratchFileName)
+    && n2e_IsDocumentModified() && !n2e_IsDocumentAutoSaved()
+    && (SciCall_GetLength() <= FileSizeLimit());
 }
 
 BOOL n2e_TestOffsetTail(WCHAR *wch)

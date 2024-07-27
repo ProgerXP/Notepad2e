@@ -129,6 +129,13 @@ typedef enum
   SIC_ONLY
 } ESearchInComments;
 
+typedef enum
+{
+  SCM_NO = 0,
+  SCM_YES = 1,
+  SCM_SCRATCH = 2
+} ESaveCopyMode;
+
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)
@@ -140,6 +147,9 @@ extern EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode;
 extern BOOL bTreatQuotesAsBraces;
 
 BOOL n2e_IsDocumentModified();
+void n2e_SetDocumentModified(const BOOL bFlag);
+BOOL n2e_IsDocumentAutoSaved();
+void n2e_SetDocumentAutoSaved(const BOOL bFlag);
 
 void n2e_InitInstance();
 void n2e_ExitInstance();
@@ -161,6 +171,9 @@ void n2e_Release();
 void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
+void n2e_InitScratchFile();
+void n2e_CleanupScratchFile();
+BOOL n2e_IsAutoSaveRequired();
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_IsRectangularSelection();
 BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount);
@@ -198,6 +211,10 @@ extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
 extern int iStartingLineNumber;
+extern WCHAR wchUnsavedScratchPath[MAX_PATH];
+extern WCHAR wchScratchFileName[MAX_PATH];
+extern int iUnsavedScratchIndex;
+extern UINT_PTR iAutoSaveTimer;
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

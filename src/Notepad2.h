@@ -92,7 +92,9 @@ typedef struct np2params {
 
 //==== Paste Board Timer ======================================================
 #define ID_PASTEBOARDTIMER 0xA001
-
+// [2e]: Autosaving directory for unsaved windows #480
+#define ID_AUTOSAVETIMER   0xA002
+#define AUTOSAVETIMEOUT    1000 * 60
 
 //==== Reuse Window Lock Timeout ==============================================
 #define REUSEWINDOWLOCKTIMEOUT 250
@@ -112,6 +114,7 @@ void SetNotifyIconTitle(HWND);
 void InstallFileWatching(LPCWSTR);
 void CALLBACK WatchTimerProc(HWND, UINT, UINT_PTR, DWORD);
 void CALLBACK PasteBoardTimer(HWND, UINT, UINT_PTR, DWORD);
+void CALLBACK AutoSaveTimer(HWND, UINT, UINT_PTR, DWORD);
 
 void LoadSettings();
 void SaveSettings(BOOL);
@@ -141,7 +144,7 @@ void HideMatchBraces(HWND);
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
 BOOL FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR);
 BOOL _FileLoad(BOOL, BOOL, BOOL, BOOL, LPCWSTR, BOOL);
-BOOL FileSave(BOOL, BOOL, BOOL, BOOL, BOOL);
+BOOL FileSave(BOOL, BOOL, BOOL, enum ESaveCopyMode, BOOL);
 BOOL OpenFileDlg(HWND, LPWSTR, int, LPCWSTR);
 BOOL SaveFileDlg(HWND, LPWSTR, int, LPCWSTR);
 
