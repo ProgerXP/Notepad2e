@@ -50,7 +50,7 @@
 #define INI_SETTING_DISPLAY_TECHNOLOGY L"DisplayTechnology"
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 #define INI_SETTING_STARTING_LINE_NUMBER L"StartingLineNumber"
-#define INI_SETTING_UNSAVED_SCRATCH_PATH L"UnsavedScratchPath"
+#define INI_SETTING_DRAFTS_PATH L"DraftsPath"
 
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
@@ -91,10 +91,10 @@ BOOL bFindWordWrapAround = FALSE;
 int iDisplayTechnology = SC_TECHNOLOGY_DIRECTWRITE;
 BOOL bExtendedSplitLines = TRUE;
 int iStartingLineNumber = 1;
-WCHAR wchUnsavedScratchPath[MAX_PATH] = { 0 };
-WCHAR wchScratchFileName[MAX_PATH] = { 0 };
-int iUnsavedScratchIndex = 0;
-UINT_PTR iAutoSaveTimer = 0;
+WCHAR wchDraftsPath[MAX_PATH] = { 0 };
+WCHAR wchDraftFileName[MAX_PATH] = { 0 };
+int iDraftIndex = 0;
+UINT_PTR iDraftSaveTimer = 0;
 
 HWND hwndStatusProgressBar = NULL;
 BOOL bShowProgressBar = FALSE;
@@ -571,14 +571,14 @@ void n2e_LoadINI()
   iDisplayTechnology = IniGetInt(N2E_INI_SECTION, INI_SETTING_DISPLAY_TECHNOLOGY, iDisplayTechnology);
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
   iStartingLineNumber = IniGetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
-  IniGetString(N2E_INI_SECTION, INI_SETTING_UNSAVED_SCRATCH_PATH, L"", wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
-  if (lstrlen(wchUnsavedScratchPath))
+  IniGetString(N2E_INI_SECTION, INI_SETTING_DRAFTS_PATH, L"", wchDraftsPath, COUNTOF(wchDraftsPath));
+  if (lstrlen(wchDraftsPath))
   {
-    ExpandEnvironmentStringsImpl(wchUnsavedScratchPath, COUNTOF(wchUnsavedScratchPath));
-    if (!PathFileExists(wchUnsavedScratchPath) || !PathIsDirectory(wchUnsavedScratchPath))
-      wchUnsavedScratchPath[0] = 0;
-    else if (!lstrlen(wchScratchFileName))
-      n2e_InitScratchFile();
+    ExpandEnvironmentStringsImpl(wchDraftsPath, COUNTOF(wchDraftsPath));
+    if (!PathFileExists(wchDraftsPath) || !PathIsDirectory(wchDraftsPath))
+      wchDraftsPath[0] = 0;
+    else if (!lstrlen(wchDraftFileName))
+      n2e_InitDraftFile();
   }
 
 #ifdef LPEG_LEXER
@@ -690,32 +690,32 @@ void n2e_Reset()
   n2e_Init(hwndEdit);
 }
 
-void n2e_InitScratchFile()
+void n2e_InitDraftFile()
 {
   WCHAR wchFileName[MAX_PATH] = { 0 };
-  while (!lstrlen(wchScratchFileName) || PathFileExists(wchScratchFileName))
+  while (!lstrlen(wchDraftFileName) || PathFileExists(wchDraftFileName))
   {
-    iUnsavedScratchIndex++;
-    wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iUnsavedScratchIndex);
-    lstrcpy(wchScratchFileName, wchUnsavedScratchPath);
-    PathAppend(wchScratchFileName, wchFileName);
+    iDraftIndex++;
+    wsprintf(wchFileName, L"%i-%i.txt", GetCurrentProcessId(), iDraftIndex);
+    lstrcpy(wchDraftFileName, wchDraftsPath);
+    PathAppend(wchDraftFileName, wchFileName);
   }
 }
 
-void n2e_CleanupScratchFile()
+void n2e_CleanupDraftFile()
 {
-  if (lstrlen(wchScratchFileName) && PathFileExists(wchScratchFileName))
+  if (lstrlen(wchDraftFileName) && PathFileExists(wchDraftFileName))
   {
-    DeleteFile(wchScratchFileName);
-    wchScratchFileName[0] = 0;
-    iUnsavedScratchIndex = 0;
-    n2e_InitScratchFile();
+    DeleteFile(wchDraftFileName);
+    wchDraftFileName[0] = 0;
+    iDraftIndex = 0;
+    n2e_InitDraftFile();
   }
 }
 
 BOOL n2e_IsAutoSaveRequired()
 {
-  return lstrlen(wchScratchFileName)
+  return lstrlen(wchDraftFileName)
     && n2e_IsDocumentModified() && !n2e_IsDocumentAutoSaved()
     && (SciCall_GetLength() <= FileSizeLimit());
 }

@@ -4,13 +4,15 @@
 #include "Extension/StringRecoding-fwd.h"
 #include "Scintilla.h"
 #include "Styles.h"
+#include "Utils.h"
 
 extern HWND hwndEdit;
 extern int iEncoding;
 extern int iEOLMode;
 extern DWORD dwLastIOError;
 extern int iLongLinesLimit;
-BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, BOOL);
+
+BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, enum ESaveCopyMode);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
 void EditSelectEx(HWND, int, int);
 

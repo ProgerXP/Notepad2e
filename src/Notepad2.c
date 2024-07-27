@@ -75,7 +75,7 @@ HWND      hDlgGotoLine = NULL;
 BOOL      bFileSaveInProgress = FALSE;
 // [2e]: Open/Save dialogs - configurable filters #258
 int       iOpenSaveFilterIndex = 1;
-// [2e] : Use non-proportional font in search/replace dialog #381
+// [2e]: Use non-proportional font in search/replace dialog #381
 HFONT     hMonospacedFont = NULL;
 
 #define NUMTOOLBITMAPS  34
@@ -960,17 +960,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
         // [2e]: Autosaving directory for unsaved windows #480
         else if (n2e_IsAutoSaveRequired())
         {
-          iAutoSaveTimer = SetTimer(hwndMain, ID_AUTOSAVETIMER, AUTOSAVETIMEOUT, AutoSaveTimer);
+          iDraftSaveTimer = SetTimer(hwndMain, ID_DRAFTSAVETIMER, DRAFTSAVETIMEOUT, DraftSaveTimer);
         }
         // [/2e]
       }
       else
       {
         // [2e]: Autosaving directory for unsaved windows #480
-        if (iAutoSaveTimer)
+        if (iDraftSaveTimer)
         {
-          KillTimer(hwndMain, iAutoSaveTimer);
-          iAutoSaveTimer = 0;
+          KillTimer(hwndMain, iDraftSaveTimer);
+          iDraftSaveTimer = 0;
         }
         // [2e]: Split view #316
         n2e_RestoreActiveEdit(FALSE);
@@ -1799,7 +1799,7 @@ void CreateBars(HWND hwnd, HINSTANCE hInstance)
     bExternalBitmap = TRUE;
   else
   {
-    // [2e] Enable toolbar scaling (DPI) #327
+    // [2e]: Enable toolbar scaling (DPI) #327
     hbmp = DPICreateToolbarBitmap(hwnd, hInstance);
     hbmpCopy = CopyImage(hbmp, IMAGE_BITMAP, 0, 0, LR_CREATEDIBSECTION);
   }
@@ -7476,7 +7476,7 @@ void HideMatchBraces(HWND hwnd)
 //
 BOOL FileIO(BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
             BOOL *pbUnicodeErr, BOOL *pbFileTooBig,
-            BOOL *pbCancelDataLoss, BOOL bSaveCopy)
+            BOOL *pbCancelDataLoss, enum ESaveCopyMode saveCopyMode)
 {
   WCHAR tch[MAX_PATH + 40];
   BOOL fSuccess;
@@ -7495,7 +7495,7 @@ BOOL FileIO(BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
   if (fLoad)
     fSuccess = EditLoadFile(hwndEdit, psz, bNoEncDetect, ienc, ieol, pbUnicodeErr, pbFileTooBig);
   else
-    fSuccess = EditSaveFile(hwndEdit, psz, *ienc, pbCancelDataLoss, bSaveCopy);
+    fSuccess = EditSaveFile(hwndEdit, psz, *ienc, pbCancelDataLoss, saveCopyMode);
 
   dwFileAttributes = GetFileAttributes(psz);
   bReadOnly = (dwFileAttributes != INVALID_FILE_ATTRIBUTES && dwFileAttributes & FILE_ATTRIBUTE_READONLY);
@@ -7791,17 +7791,17 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
       PathAppend(tchFile, PathFindFileName(szCurFile));
     }
     // [2e]: Autosaving directory for unsaved windows #480
-    else if (saveCopyMode == SCM_SCRATCH)
+    else if (saveCopyMode == SCM_DRAFT)
     {
-      if (lstrlen(wchScratchFileName))
-        lstrcpy(tchFile, wchScratchFileName);
+      if (lstrlen(wchDraftFileName))
+        lstrcpy(tchFile, wchDraftFileName);
       else
         return FALSE;
     }
     else
       lstrcpy(tchFile, szCurFile);
 
-    if ((saveCopyMode == SCM_SCRATCH) || SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
+    if ((saveCopyMode == SCM_DRAFT) || SaveFileDlg(hwndMain, tchFile, COUNTOF(tchFile), tchInitialDir))
     {
       // [2e]: Rename To fails if new name only differs in char case #140
       if (lstrcmp(szCurFile, tchFile) == 0)
@@ -7815,7 +7815,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
         return FALSE;
       }
       // [/2e]
-      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, saveCopyMode != SCM_NO)
+      else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, saveCopyMode)
                           // [2e]: Process elevation #166
                           || n2e_ParentProcess_ElevatedFileIO(tchFile))
       {
@@ -7842,7 +7842,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
           lstrcpy(tchLastSaveCopyDir, tchFile);
           PathRemoveFileSpec(tchLastSaveCopyDir);
         }
-        else if (saveCopyMode == SCM_SCRATCH)
+        else if (saveCopyMode == SCM_DRAFT)
         {
           n2e_SetDocumentAutoSaved(TRUE);
         }
@@ -7900,9 +7900,9 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode save
   res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, saveCopyMode, bDeleteOld);
   bFileSaveInProgress = FALSE;
   // [2e]: Autosaving directory for unsaved windows #480
-  if (res && (saveCopyMode != SCM_SCRATCH))
+  if (res && (saveCopyMode != SCM_DRAFT))
   {
-    n2e_CleanupScratchFile();
+    n2e_CleanupDraftFile();
   }
   // [/2e]
   return res;
@@ -8633,10 +8633,10 @@ void CALLBACK PasteBoardTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTi
 }
 
 // [2e]: Autosaving directory for unsaved windows #480
-void CALLBACK AutoSaveTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
+void CALLBACK DraftSaveTimer(HWND hwnd, UINT uMsg, UINT_PTR idEvent, DWORD dwTime)
 {
-  KillTimer(hwnd, iAutoSaveTimer);
-  iAutoSaveTimer = 0;
-  FileSave(TRUE, FALSE, FALSE, SCM_SCRATCH, FALSE);
+  KillTimer(hwnd, iDraftSaveTimer);
+  iDraftSaveTimer = 0;
+  FileSave(TRUE, FALSE, FALSE, SCM_DRAFT, FALSE);
 }
 // [/2e]

@@ -133,7 +133,7 @@ typedef enum
 {
   SCM_NO = 0,
   SCM_YES = 1,
-  SCM_SCRATCH = 2
+  SCM_DRAFT = 2
 } ESaveCopyMode;
 
 #define N2E_INI_SECTION L"Notepad2e"
@@ -171,8 +171,8 @@ void n2e_Release();
 void n2e_Reset();
 void n2e_Reload_Settings();
 BOOL n2e_CanSaveINISection(const BOOL bCheckSaveSettingsMode, const ESaveSettingsMode modeRequired);
-void n2e_InitScratchFile();
-void n2e_CleanupScratchFile();
+void n2e_InitDraftFile();
+void n2e_CleanupDraftFile();
 BOOL n2e_IsAutoSaveRequired();
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
 BOOL n2e_IsRectangularSelection();
@@ -211,10 +211,10 @@ extern WCHAR g_wchWorkingDirectory[MAX_PATH];
 extern BOOL bLPegEnabled;
 extern WCHAR g_wchLPegHome[MAX_PATH];
 extern int iStartingLineNumber;
-extern WCHAR wchUnsavedScratchPath[MAX_PATH];
-extern WCHAR wchScratchFileName[MAX_PATH];
-extern int iUnsavedScratchIndex;
-extern UINT_PTR iAutoSaveTimer;
+extern WCHAR wchDraftsPath[MAX_PATH];
+extern WCHAR wchDraftFileName[MAX_PATH];
+extern int iDraftIndex;
+extern UINT_PTR iDraftSaveTimer;
 
 void n2e_CreateProgressBarInStatusBar();
 void n2e_DestroyProgressBarInStatusBar();

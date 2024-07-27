@@ -1466,7 +1466,7 @@ BOOL EditSaveFile(
   LPCWSTR pszFile,
   int iEncoding,
   BOOL *pbCancelDataLoss,
-  BOOL bSaveCopy)
+  enum ESaveCopyMode saveCopyMode)
 {
 
   HANDLE hFile;
@@ -1509,13 +1509,13 @@ BOOL EditSaveFile(
     return FALSE;
 
   // ensure consistent line endings
-  if (bFixLineEndings)
+  if (bFixLineEndings && (saveCopyMode != SCM_DRAFT)) // [2e]: Autosaving directory for unsaved windows #480
   {
     SendMessage(hwnd, SCI_CONVERTEOLS, SendMessage(hwnd, SCI_GETEOLMODE, 0, 0), 0);
     EditFixPositions(hwnd);
   }
   // strip trailing blanks
-  if (bAutoStripBlanks)
+  if (bAutoStripBlanks && (saveCopyMode != SCM_DRAFT)) // [2e]: Autosaving directory for unsaved windows #480
     EditStripTrailingBlanks(hwnd, TRUE);
 
   // get text
@@ -1630,7 +1630,7 @@ BOOL EditSaveFile(
 
   if (bWriteSuccess)
   {
-    if (!bSaveCopy)
+    if (saveCopyMode == SCM_NO) // [2e]: Autosaving directory for unsaved windows #480
       SendMessage(hwnd, SCI_SETSAVEPOINT, 0, 0);
 
     return TRUE;

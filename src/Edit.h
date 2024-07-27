@@ -76,7 +76,7 @@ char* EditGetClipboardText(HWND);
 BOOL  EditCopyAppend(HWND);
 int   EditDetectEOLMode(HWND, char*, DWORD);
 BOOL  EditLoadFile(HWND, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*);
-BOOL  EditSaveFile(HWND, LPCWSTR, int, BOOL*, BOOL);
+BOOL  EditSaveFile(HWND, LPCWSTR, int, BOOL*, enum ESaveCopyMode);
 
 void  EditInvertCase(HWND);
 void  EditTitleCase(HWND);
