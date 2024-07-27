@@ -7516,8 +7516,10 @@ BOOL FileIO(BOOL fLoad, LPCWSTR psz, BOOL bNoEncDetect, int *ienc, int *ieol,
 BOOL FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWSTR lpszFile)
 {
   const BOOL res = _FileLoad(bDontSave, bNew, bReload, bNoEncDetect, lpszFile, FALSE);
+  // [2e]: Autosaving directory for unsaved windows #480
   if (!res)
     n2e_SetDocumentAutoSaved(FALSE);
+  // [/2e]
   return res;
 }
 
@@ -7902,8 +7904,8 @@ BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode save
   {
     n2e_CleanupScratchFile();
   }
-  return res;
   // [/2e]
+  return res;
 }
 
 //=============================================================================
