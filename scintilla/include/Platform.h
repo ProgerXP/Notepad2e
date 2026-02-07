@@ -352,7 +352,6 @@ public:
 	virtual void Init(WindowID wid)=0;
 	virtual void Init(SurfaceID sid, WindowID wid)=0;
 	virtual void InitPixMap(int width, int height, Surface *surface_, WindowID wid)=0;
-	virtual void EndDraw()=0;
 
 	virtual void Release()=0;
 	virtual bool Initialised()=0;
