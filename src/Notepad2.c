@@ -2482,12 +2482,16 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         WCHAR szModuleName[MAX_PATH];
         WCHAR szFileName[MAX_PATH];
         WCHAR szParameters[2 * MAX_PATH + 64];
+        WCHAR wchDirectory[MAX_PATH];
 
         MONITORINFO mi;
         HMONITOR hMonitor;
         WINDOWPLACEMENT wndpl;
         int x, y, cx, cy, imax;
         WCHAR tch[64];
+
+        // [2e]: Launch Window commands - use current file's directory #489
+        lstrcpy(wchDirectory, g_wchWorkingDirectory);
 
         // [2e]: Add INI setting to disable file save prompt in Launch > New Window #361
         // [2e]: Disable save prompt for some Launch commands #176
@@ -2544,13 +2548,23 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         wsprintf(tch, L" -pos %i,%i,%i,%i,%i", x, y, cx, cy, imax);
         lstrcat(szParameters, tch);
 
-        if (LOWORD(wParam) != IDM_FILE_NEWWINDOW2 && lstrlen(szCurFile))
+        // [2e]: Launch Window commands - use current file's directory #489
+        if (lstrlen(szCurFile))
         {
-          lstrcpy(szFileName, szCurFile);
-          PathQuoteSpaces(szFileName);
-          lstrcat(szParameters, L" ");
-          lstrcat(szParameters, szFileName);
+          if (wCommandID == IDM_FILE_NEWWINDOW)
+          {
+            lstrcpy(szFileName, szCurFile);
+            PathQuoteSpaces(szFileName);
+            lstrcat(szParameters, L" ");
+            lstrcat(szParameters, szFileName);
+          }
+          else if (wCommandID == IDM_FILE_NEWWINDOW2)
+          {
+            lstrcpy(wchDirectory, szCurFile);
+            PathRemoveFileSpec(wchDirectory);
+          }
         }
+        // [/2e]
 
         ZeroMemory(&sei, sizeof(SHELLEXECUTEINFO));
 
@@ -2560,7 +2574,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         sei.lpVerb = NULL;
         sei.lpFile = szModuleName;
         sei.lpParameters = szParameters;
-        sei.lpDirectory = g_wchWorkingDirectory;
+        sei.lpDirectory = wchDirectory; // [2e]: Launch Window commands - use current file's directory #489
         sei.nShow = SW_SHOWNORMAL;
 
         ShellExecuteEx(&sei);
