@@ -431,7 +431,10 @@ void n2e_SetIndicatedLinesCommandHandler(const HWND hwnd, const WPARAM wParam, c
 void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, int iPos)
 {
   if (iPos < 0)
-    iPos = pttf->chrg.cpMin;
+  {
+    n2e_ResetIndicatedLines();
+    return;
+  }
   const int prevPosition = FindTextTest(hwnd, lpefr, pttf, iPos - 1, max(0, iPos - iMaxSearchDistance));
   const int nextPosition = FindTextTest(hwnd, lpefr, pttf, iPos + 1, iPos + iMaxSearchDistance);
   const int firstLine = SciCallEx_LineFromPosition(hwnd, ((prevPosition >= 0) && (prevPosition != iPos)) ? prevPosition : iPos);

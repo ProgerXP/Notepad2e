@@ -2015,8 +2015,8 @@ static void DrawLineIndicator(Surface *surface, const ViewStyle &vsDraw, const S
     if (phase & drawIndicatorsFore) {
         DrawIndicators(surface, model, vsDraw, ll, line, xStart, rcLine, subLine, lineRangeIncludingEnd.end, false, model.hoverIndicatorPos);
         DrawLineIndicator(surface, vsDraw, line,
-            line == model.firstIndicatedLine, line == model.lastIndicatedLine,
-            line == model.beforeIndicatedLine, line == model.afterIndicatedLine, rcLine);
+            (line == model.firstIndicatedLine) && !subLine, (line == model.lastIndicatedLine) && (subLine == ll->lines - 1),
+            (line == model.beforeIndicatedLine) && !subLine, (line == model.afterIndicatedLine) && (subLine == ll->lines - 1), rcLine);
     }
 ...
 ```
