@@ -364,8 +364,7 @@ BoostRegexSearch::Match BoostRegexSearch::EncodingDependent<CharT, CharacterIter
 			: search._boostRegexFlags |  regex_constants::match_not_bol;
 		try
 		{
-			found = (lineRange.start != lineRange.end)
-					&& boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
+			found = boost::regex_search(itStart, itEnd, _match, _regex, search._boostRegexFlags);
 		}
 		catch (...)
 		{
