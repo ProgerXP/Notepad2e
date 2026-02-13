@@ -32,6 +32,15 @@ int n2e_GetSingleLineCommentPrefixLength(const int iLexer)
   return strlen(n2e_GetSingleLineCommentPrefix(iLexer));
 }
 
+BOOL n2e_SingleLineCommentPrefixIsWord(const int iLexer)
+{
+  LPCSTR prefix = n2e_GetSingleLineCommentPrefix(iLexer);
+  for (auto i = 0; i < lstrlen(prefix); ++i)
+    if (IsCharAlphaNumeric(prefix[i]))
+      return TRUE;
+  return FALSE;
+}
+
 BOOL n2e_IsSingleLineCommentStyle(const int iLexer, const int iStyle)
 {
   const int iLineStyle = n2e_GetCommentInfo(iLexer)->iLineStyle;

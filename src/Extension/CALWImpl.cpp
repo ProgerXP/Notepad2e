@@ -464,7 +464,7 @@ extern "C" {
       iCharCount = TextBuffer_GetCharSequenceLength(&pED->m_tb, ch, 1);
     }
     const BOOL isWhiteSpace = IsCharFromString(lpstrWhiteSpaces, ch);
-    const int iCommentOffset = GetTrailingEOLLength() + iCharCount + (isWhiteSpace ? iSingleLineCommentPrefixLength : 0);
+    const int iCommentOffset = GetTrailingEOLLength() + iSingleLineCommentPrefixLength + (isWhiteSpace ? iCharCount : 0);
     if (n2e_IsSingleLineCommentStyleAtPos(NULL, lexerId, iCommentOffset, pED))
     {
       const int iWhiteSpacesAfterComment = TextBuffer_CountWhiteSpaces(&pED->m_tb, iCommentOffset);
@@ -815,7 +815,7 @@ extern "C" {
     auto prefixLength = m_cp->prefix->GetLength();
     if ((iLineOffset == 0) && (prefixLength > 0))
     {
-      if ((iLineIndex > 0) && isMarker(ch, pED))
+      if ((iLineIndex > 0) && isMarker(ch, pED) && (TextBuffer_GetCharAt(&pED->m_tb, -1) != CHAR_FORCE_EOL_PROCESSED))
       {
         BOOL bContinueAsUsual = FALSE;
         TextBuffer_OffsetPos(&pED->m_tb, -1);
@@ -897,7 +897,9 @@ extern "C" {
     int iWordByteCount = 0;
     const int iWordLength = TextBuffer_GetWordLength(&pED->m_tb, iEncoding, &iWordByteCount);
     if ((iWordCount == 0)
-        || (iLineOffset + iWordLength <= longLineLimit) || isMarker(ch, pED))
+      || (iLineOffset == prefixLength)
+      || (iLineOffset + iWordLength <= longLineLimit)
+      || isMarker(ch, pED))
     {
       if (m_cp->prefix->IsMarker()
         && ((TextBuffer_GetHeadLength(&pED->m_tbRes) > 0) && IsEOL(TextBuffer_GetCharAt(&pED->m_tbRes, -1))))

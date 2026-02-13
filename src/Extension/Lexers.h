@@ -18,7 +18,7 @@
 #define NULL_COMMENT   FALSE, "", "", "", L"", L"", L""
 #define ASM_COMMENT    TRUE, ";", "", "", L";", L"", L""
 #define BASH_COMMENT   TRUE, "#", "", "", L"#", L"", L""
-#define BATCH_COMMENT  TRUE, "rem ", "", "", L"rem ", L"", L""
+#define BATCH_COMMENT  TRUE, "rem", "", "", L"rem", L"", L""
 // using of C-style comments for HTML/XML/CSS lexers
 // was implemented as a part of "CSS syntax scheme improvements #4"
 #define C_COMMENT      FALSE, "//", "/*", "*/", L"//", L"/*", L"*/"

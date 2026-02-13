@@ -959,6 +959,80 @@ namespace Notepad2eTests
                                "  #  1.  abc abc abc abc abc abc abc abc abc abc abc abc abc abc abc\n"
                                "  #      abc abc abc abc abc",
               false, 0, { 70, SCLEX_CONF, SC_EOL_LF }),
+
+          CTestCaseData(false, "rem foo foo\r\n"
+                               "rem\r\n"
+                               "rem xxxxxxxxxxxxxxxxxxx",
+              CPI_DEFAULT,
+                               "rem foo foo\r\n"
+                               "rem\r\n"
+                               "rem xxxxxxxxxxxxxxxxxxx",
+              false, 0, { 50, SCLEX_BATCH, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "rem foo foo foo foo\r\n"
+                               "rem123\r\n"
+                               "rem xxxxxxxxxxxxxxxxxxx",
+              CPI_DEFAULT,
+                               "rem foo foo\r\n"
+                               "rem foo foo\r\n"
+                               "rem123\r\n"
+                               "rem xxxxxxxxxxxxxxxxxxx",
+              false, 0, { 12, SCLEX_BATCH, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "rem foo foo foo foo\r\n"
+                            "rem 123\r\n"
+                            "rem xxxxxxxxxxxxxxxxxxx",
+              CPI_DEFAULT,
+                            "rem foo foo foo\r\n"
+                            "rem foo 123\r\n"
+                            "rem xxxxxxxxxxxxxxxxxxx",
+              false, 0, { 15, SCLEX_BATCH, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "rem foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo \n"
+                            "rem\n"
+                            "rem xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"
+                            "rem\n"
+                            "rem foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo",
+              CPI_DEFAULT,
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo\n"
+                            "rem\n"
+                            "rem xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\n"
+                            "rem\n"
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo foo foo\n"
+                            "rem foo foo foo foo foo foo foo foo",
+              false, 0, { 40, SCLEX_BATCH, SC_EOL_LF }),
+
+          CTestCaseData(false, "; foo\r\n"
+                            ";\r\n"
+                            "; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              CPI_DEFAULT,
+                            "; foo\r\n"
+                            ";\r\n"
+                            "; xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+              false, 0, { 50, SCLEX_PROPERTIES, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "# XXXXXXX XXXXXX\n"
+                              "# 1. XX\n"
+                              "",
+              CPI_DEFAULT,
+                              "# XXXXXXX XXXXXX\n"
+                              "# 1. XX\n"
+                              "",
+              false, 0, { 50, SCLEX_CONF, SC_EOL_LF }),
+
+          CTestCaseData(false, "# XXXXXXX XXXXXX\n"
+                               "# 1. XX\n"
+                               "# yyy zzz",
+              CPI_DEFAULT,
+                              "# XXXXXXX XXXXXX\n"
+                              "# 1. XX yyy zzz",
+              false, 0, { 50, SCLEX_CONF, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
@@ -1188,46 +1262,14 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_NEW_TEST
-          CTestCaseData(false, "  test\n"
-                               "   string",
+          CTestCaseData(false, "# XXXXXXX XXXXXX\n"
+                              "# 1. XX\n"
+                              "",
               CPI_DEFAULT,
-                               "  test\n"
-                               "   string",
-              false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
-
-          CTestCaseData(false, "  test\n"
-                               "  string",
-              CPI_DEFAULT,
-                               "  test string",
-              false, 0, { 50, SCLEX_CPP, SC_EOL_LF }),
-
-          CTestCaseData(false, "//   if (foo) {\n"
-                               "//     var bar = 123;\n"
-                               "//   }",
-              CPI_DEFAULT,
-                               "//   if (foo) {\n"
-                               "//     var bar = 123;\n"
-                               "//   }",
-              false, 0, { 21, SCLEX_CPP, SC_EOL_LF }),
-
-/*          CTestCaseData(false, "* item 1\n"
-                               "  * sub item\n"
-                               "* item 2",
-              CPI_DEFAULT,
-                               "* item 1\n"
-                               "  * sub\n"
-                               "    item\n"
-                               "* item 2",
-              false, 0, { 8, SCLEX_CPP, SC_EOL_LF }),
-/*
-          CTestCaseData(false, "* item 1\n"
-                               "  * sub item\n"
-                               "* item 2",
-                CPI_DEFAULT,
-                               "* item 1\n"
-                               "  * sub item\n"
-                               "* item 2",
-                false, 0, { 20, SCLEX_CPP, SC_EOL_LF }),*/
+                              "# XXXXXXX XXXXXX\n"
+                              "# 1. XX\n"
+                              "",
+              false, 0, { 50, SCLEX_CONF, SC_EOL_LF }),
 #endif 
       };
       DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);

@@ -118,6 +118,7 @@ int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
 int TextBuffer_CountWhiteSpaces(TextBuffer* pTB, const int iOffsetFrom);
 BOOL TextBuffer_IsWhiteSpaceLine(TextBuffer* pTB, const int iOffsetFrom, int* piLineLength);
 BOOL TextBuffer_IsTextAtPos(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom);
+BOOL TextBuffer_IsAnyFollowingCharAtLine(TextBuffer* pTB, LPCSTR lpChars, const int iOffsetFrom);
 BOOL TextBuffer_IsAnyCharAtPos_RequireSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrSpecial, const int iOffsetFrom);
 BOOL TextBuffer_IsPosOKImpl(TextBuffer* pTB, const int requiredChars);
 BOOL TextBuffer_IsPosOK(TextBuffer* pTB, RecodingAlgorithm* pRA);

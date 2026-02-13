@@ -111,7 +111,9 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
 {
   return (iLexer != SCLEX_NULL)
-    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer));
+    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer))
+    && (!n2e_SingleLineCommentPrefixIsWord(iLexer)
+      || TextBuffer_IsAnyFollowingCharAtLine(&pED->m_tb, lpstrWhiteSpacesAndEOLs, iPos));
 }
 
 void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos) {}

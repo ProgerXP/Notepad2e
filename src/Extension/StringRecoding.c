@@ -246,6 +246,21 @@ int TextBuffer_Find(TextBuffer* pTB, const LPCSTR lpstr, const int iOffsetFrom)
   return pRes ? pRes - pSrc : -1;
 }
 
+BOOL TextBuffer_IsAnyFollowingCharAtLine(TextBuffer* pTB, LPCSTR lpChars, const int iOffsetFrom)
+{
+  int res = 0;
+  while (pTB->m_iPos + iOffsetFrom + res < pTB->m_iMaxPos)
+  {
+    const char _ch = pTB->m_ptr[pTB->m_iPos + iOffsetFrom + res];
+    if (strchr(lpChars, _ch))
+    {
+      return TRUE;
+    }
+    break;
+  }
+  return FALSE;
+}
+
 BOOL TextBuffer_IsAnyCharAtPos_RequireSpecial(TextBuffer* pTB, LPCSTR lpChars, LPCSTR lpstrSpecial, const int iOffsetFrom)
 {
   int res = 0;
