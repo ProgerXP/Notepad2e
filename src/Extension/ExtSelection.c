@@ -695,6 +695,7 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
     }
     if (work)
     {
+      delta_len += (new_len - iOriginalSelectionLength);
       SendMessage(hwndEdit, SCI_SETTARGETSTART, se->pos, 0);
       SendMessage(hwndEdit, SCI_SETTARGETEND, se->pos + iOriginalSelectionLength, 0);
       if (rollback)
@@ -707,9 +708,11 @@ BOOL n2e_SelectionProcessChanges(const EProcessChangesMode opt)
       }
       else
       {
+        const auto restoreCaretPos = (se->pos + iOriginalSelectionLength == cur_pos);
         SendMessage(hwndEdit, SCI_REPLACETARGET, -1, (LPARAM)trEditSelection.lpstrText);
+        if (restoreCaretPos)
+          SciCall_SetSel(cur_pos + delta_len, cur_pos + delta_len);
       }
-      delta_len += (new_len - iOriginalSelectionLength);
       if (se->pos < trEditSelection.chrg.cpMax)
       {
         trEditSelection.chrg.cpMin += (new_len - iOriginalSelectionLength);
