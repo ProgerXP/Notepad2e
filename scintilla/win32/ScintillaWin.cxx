@@ -102,6 +102,12 @@
 #define SPI_GETWHEELSCROLLLINES   104
 #endif
 
+// [2e]: Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL                  0x020E
+#endif
+// [/2e]
+
 #ifndef WM_UNICHAR
 #define WM_UNICHAR                      0x0109
 #endif
@@ -1330,6 +1336,17 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 				ChangeSize();
 			}
 			break;
+
+		// [2e]: Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482
+		case WM_MOUSEHWHEEL:
+			if (mouseWheelCaptures) {
+				const auto delta = abs(GET_WHEEL_DELTA_WPARAM(wParam));
+				const auto scrollRight = ((short)HIWORD(wParam) > 0);
+				for (auto i = 0; i < delta / WHEEL_DELTA; ++i)
+					HorizontalScrollMessage(scrollRight ? SB_LINERIGHT : SB_LINELEFT);
+			}
+			break;
+		// [/2e]
 
 		case WM_MOUSEWHEEL:
 			if (!mouseWheelCaptures) {

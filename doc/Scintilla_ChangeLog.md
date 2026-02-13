@@ -2594,3 +2594,34 @@ Move ``case SCI_VCHOMERECTEXTEND``-statement (in method ``int Editor::Horizontal
 /**Alt+Home/End to navigate line, not subline #429**
 
 ---
+
+**Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482**
+
+Add ``WM_MOUSEHWHEEL`` declaration and WndProc-handler:
+
+[scintilla/win32/ScintillaWin.cxx]
+```
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL                  0x020E
+#endif
+```
+
+...
+
+		case WM_MOUSEHWHEEL:
+			if (mouseWheelCaptures) {
+				const auto delta = abs(GET_WHEEL_DELTA_WPARAM(wParam));
+				const auto scrollRight = ((short)HIWORD(wParam) > 0);
+				for (auto i = 0; i < delta / WHEEL_DELTA; ++i)
+					HorizontalScrollMessage(scrollRight ? SB_LINERIGHT : SB_LINELEFT);
+			}
+			break;
+		case WM_MOUSEWHEEL:
+
+...
+
+[/scintilla/win32/ScintillaWin.cxx]
+
+/**Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482**
+
+---
