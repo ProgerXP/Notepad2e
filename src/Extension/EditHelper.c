@@ -1,4 +1,5 @@
 #include "EditHelper.h"
+#include "BoostRegexSearch.h"
 #include <cassert>
 #include <commctrl.h>
 #include "CommonUtils.h"
@@ -372,6 +373,7 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   // [2e]: Always save Find strings to MRU #440
   MRU_AddA(mruFind, pttf->lpstrText);
 
+  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART | SCFIND_REGEXP_SKIPCRLFASONE;
   int iPos = -1;
   BOOL bContinueSearch = TRUE;
   while (bContinueSearch)

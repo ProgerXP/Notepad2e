@@ -5880,6 +5880,13 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
 
 }
 
+BOOL isEndedWithEOL(char *psz)
+{
+  const auto length = strlen(psz);
+  if (length < 2)
+    return FALSE;
+  return (psz[length - 2] == '\\') && ((psz[length - 1] == 'r') || (psz[length - 1] == 'n'));
+}
 
 //=============================================================================
 //
@@ -5941,6 +5948,8 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
+  const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
+  BOOL docEndProcessed = FALSE;
 
   // [2e]: Find/Replace - Skip comments mode #303
   while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
@@ -5956,20 +5965,19 @@ BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
 
     iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
 
-    const int iNewPosition = ttf.chrgText.cpMin + iReplacedLen;
-    const int iLine = SciCall_LineFromPosition(iNewPosition);
-    const BOOL isLineEnd = (SciCall_LineEndPosition(iLine) == iNewPosition);
+    const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
 
     ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-    ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-      break;
+    ttf.chrg.cpMax = SciCall_GetLength();
 
-    if (isLineEnd)
+    if (bAdjustPosition)
+      ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
+
+    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
     {
-      const int iPositionOffset = SciCall_PositionAfter(ttf.chrg.cpMin) - ttf.chrg.cpMin;
-      ttf.chrg.cpMin += iPositionOffset;
-      ttf.chrg.cpMax += iPositionOffset;
+      if (lineEndAdded || docEndProcessed)
+        break;
+      docEndProcessed = TRUE;
     }
   }
 
@@ -6060,6 +6068,9 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
   ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   ttf.lpstrText = szFind2;
 
+  const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
+  BOOL docEndProcessed = FALSE;
+
   // [2e]: Find/Replace - Skip comments mode #303
   while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
   {
@@ -6073,23 +6084,22 @@ BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowIn
 
       SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
       SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
+
       iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
 
-      const int iNewPosition = ttf.chrgText.cpMin + iReplacedLen;
-      const int iLine = SciCall_LineFromPosition(iNewPosition);
-      const BOOL isLineEnd = (SciCall_LineEndPosition(iLine) == iNewPosition);
+      const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
 
       ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-      ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+      ttf.chrg.cpMax = SciCall_GetLength();
+
+      if (bAdjustPosition)
+        ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
 
       if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-        fCancel = TRUE;
-
-      if (isLineEnd)
       {
-        const int iPositionOffset = SciCall_PositionAfter(ttf.chrg.cpMin) - ttf.chrg.cpMin;
-        ttf.chrg.cpMin += iPositionOffset;
-        ttf.chrg.cpMax += iPositionOffset;
+        if (lineEndAdded || docEndProcessed)
+          fCancel = TRUE;
+        docEndProcessed = TRUE;
       }
     }
 
