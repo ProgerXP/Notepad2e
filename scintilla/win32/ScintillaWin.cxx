@@ -103,6 +103,10 @@
 #endif
 
 // [2e]: Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482
+#ifndef SPI_GETWHEELSCROLLCHARS
+#define SPI_GETWHEELSCROLLCHARS					0x006C
+#endif
+
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL                  0x020E
 #endif
@@ -273,6 +277,11 @@ public:
 
 }
 
+struct HorizontalScrollRange {
+	int pageWidth;
+	int documentWidth;
+};
+
 /**
  */
 class ScintillaWin :
@@ -286,7 +295,9 @@ class ScintillaWin :
 	SetCoalescableTimerSig SetCoalescableTimerFn;
 
 	unsigned int linesPerScroll;	///< Intellimouse support
-	int wheelDelta; ///< Wheel delta from roll
+	unsigned int charsPerScroll;	///< Intellimouse support
+	MouseWheelDelta verticalWheelDelta;
+	MouseWheelDelta horizontalWheelDelta;
 
 	HRGN hRgnUpdate;
 
@@ -411,6 +422,8 @@ class ScintillaWin :
 	void ChangeScrollPos(int barType, Sci::Position pos);
 	sptr_t GetTextLength();
 	sptr_t GetText(uptr_t wParam, sptr_t lParam);
+	void HorizontalScrollToClamped(int xPos);
+	HorizontalScrollRange GetHorizontalScrollRange() const;
 
 public:
 	~ScintillaWin() override;
@@ -469,7 +482,6 @@ ScintillaWin::ScintillaWin(HWND hwnd) {
 	SetCoalescableTimerFn = nullptr;
 
 	linesPerScroll = 0;
-	wheelDelta = 0;   // Wheel delta from roll
 
 	hRgnUpdate = 0;
 
@@ -1289,6 +1301,38 @@ sptr_t ScintillaWin::GetText(uptr_t wParam, sptr_t lParam) {
 	}
 }
 
+// [2e]: Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482
+double clamp(double v, double min, double max) {
+	return std::min(std::max(v, min), max);
+}
+
+constexpr POINT POINTFromLParam(sptr_t lParam) noexcept {
+	return { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+}
+
+constexpr HWND HwndFromWindowID(WindowID wid) noexcept {
+	return static_cast<HWND>(wid);
+}
+
+inline HWND HwndFromWindow(const Window &w) noexcept {
+	return HwndFromWindowID(w.GetID());
+}
+
+void ScintillaWin::HorizontalScrollToClamped(int xPos) {
+	const HorizontalScrollRange range = GetHorizontalScrollRange();
+	HorizontalScrollTo(clamp(xPos, 0, range.documentWidth - range.pageWidth + 1));
+}
+
+HorizontalScrollRange ScintillaWin::GetHorizontalScrollRange() const {
+	const PRectangle rcText = GetTextRectangle();
+	int pageWidth = static_cast<int>(rcText.Width());
+	const int horizEndPreferred = std::max({ scrollWidth, pageWidth - 1, 0 });
+	if (!horizontalScrollBarVisible || Wrapping())
+		pageWidth = horizEndPreferred + 1;
+	return { pageWidth, horizEndPreferred };
+}
+// [/2e]
+
 sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 	try {
 		//Platform::DebugPrintf("S M:%x WP:%x L:%x\n", iMessage, wParam, lParam);
@@ -1338,64 +1382,62 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 			break;
 
 		// [2e]: Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482
-		case WM_MOUSEHWHEEL:
-			if (mouseWheelCaptures) {
-				const auto delta = abs(GET_WHEEL_DELTA_WPARAM(wParam));
-				const auto scrollRight = ((short)HIWORD(wParam) > 0);
-				for (auto i = 0; i < delta / WHEEL_DELTA; ++i)
-					HorizontalScrollMessage(scrollRight ? SB_LINERIGHT : SB_LINELEFT);
-			}
-			break;
-		// [/2e]
-
 		case WM_MOUSEWHEEL:
+		case WM_MOUSEHWHEEL:
 			if (!mouseWheelCaptures) {
 				// if the mouse wheel is not captured, test if the mouse
 				// pointer is over the editor window and if not, don't
 				// handle the message but pass it on.
 				RECT rc;
 				GetWindowRect(MainHWND(), &rc);
-				POINT pt;
-				pt.x = GET_X_LPARAM(lParam);
-				pt.y = GET_Y_LPARAM(lParam);
+				const POINT pt = POINTFromLParam(lParam);
 				if (!PtInRect(&rc, pt))
 					return ::DefWindowProc(MainHWND(), iMessage, wParam, lParam);
 			}
 			// if autocomplete list active then send mousewheel message to it
 			if (ac.Active()) {
-				HWND hWnd = static_cast<HWND>(ac.lb->GetID());
+				HWND hWnd = HwndFromWindow(*(ac.lb));
 				::SendMessage(hWnd, iMessage, wParam, lParam);
 				break;
 			}
 
-			// Don't handle datazoom.
-			// (A good idea for datazoom would be to "fold" or "unfold" details.
-			// i.e. if datazoomed out only class structures are visible, when datazooming in the control
-			// structures appear, then eventually the individual statements...)
-			if (wParam & MK_SHIFT) {
-				return ::DefWindowProc(MainHWND(), iMessage, wParam, lParam);
+			// Treat Shift+WM_MOUSEWHEEL as horizontal scrolling, not data-zoom.
+			if (iMessage == WM_MOUSEHWHEEL || (wParam & MK_SHIFT)) {
+				if (vs.wrapState != eWrapNone || charsPerScroll == 0) {
+					return ::DefWindowProc(MainHWND(), iMessage, wParam, lParam);
+				}
+
+				MouseWheelDelta &wheelDelta = (iMessage == WM_MOUSEHWHEEL) ? horizontalWheelDelta : verticalWheelDelta;
+				if (wheelDelta.Accumulate(wParam)) {
+					int charsToScroll = charsPerScroll * wheelDelta.Actions();
+					if (iMessage == WM_MOUSEHWHEEL) {
+						// horizontal scroll is in reverse direction
+						charsToScroll = -charsToScroll;
+					}
+					const int widthToScroll = static_cast<int>(std::lround(charsToScroll * vs.aveCharWidth));
+					HorizontalScrollToClamped(xOffset + widthToScroll);
+				}
+				// return 1 for Logitech mouse, https://www.pretentiousname.com/setpoint_hwheel/index.html
+				return (iMessage == WM_MOUSEHWHEEL) ? 1 : 0;
 			}
-			// Either SCROLL or ZOOM. We handle the wheel steppings calculation
-			wheelDelta -= GET_WHEEL_DELTA_WPARAM(wParam);
-			if (std::abs(wheelDelta) >= WHEEL_DELTA && linesPerScroll > 0) {
+
+			// Either SCROLL vertically or ZOOM. We handle the wheel steppings calculation
+			if (linesPerScroll != 0 && verticalWheelDelta.Accumulate(wParam)) {
 				Sci::Line linesToScroll = linesPerScroll;
 				if (linesPerScroll == WHEEL_PAGESCROLL)
 					linesToScroll = LinesOnScreen() - 1;
 				if (linesToScroll == 0) {
 					linesToScroll = 1;
 				}
-				linesToScroll *= (wheelDelta / WHEEL_DELTA);
-				if (wheelDelta >= 0)
-					wheelDelta = wheelDelta % WHEEL_DELTA;
-				else
-					wheelDelta = - (-wheelDelta % WHEEL_DELTA);
+				linesToScroll *= verticalWheelDelta.Actions();
 
 				if (wParam & MK_CONTROL) {
 					// Zoom! We play with the font sizes in the styles.
 					// Number of steps/line is ignored, we just care if sizing up or down
 					if (n2e_wheel_action) {
 						n2e_wheel_action(MainHWND(), linesToScroll);
-					} else {
+					}
+					else {
 						if (linesToScroll < 0) {
 							KeyCommand(SCI_ZOOMIN);
 						}
@@ -1403,12 +1445,14 @@ sptr_t ScintillaWin::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam
 							KeyCommand(SCI_ZOOMOUT);
 						}
 					}
-				} else {
+				}
+				else {
 					// Scroll
 					ScrollTo(topLine + linesToScroll);
 				}
 			}
 			return 0;
+		// [/2e]
 
 		case WM_TIMER:
 			if (wParam == idleTimerID && idler.state) {
@@ -2926,6 +2970,10 @@ LRESULT ScintillaWin::ImeOnReconvert(LPARAM lParam) {
 void ScintillaWin::GetIntelliMouseParameters() noexcept {
 	// This retrieves the number of lines per scroll as configured inthe Mouse Properties sheet in Control Panel
 	::SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &linesPerScroll, 0);
+	if (!::SystemParametersInfo(SPI_GETWHEELSCROLLCHARS, 0, &charsPerScroll, 0)) {
+		// no horizontal scrolling configuration on Windows XP
+		charsPerScroll = (linesPerScroll == WHEEL_PAGESCROLL) ? 3 : linesPerScroll;
+	}
 }
 
 void ScintillaWin::CopyToClipboard(const SelectionText &selectedText) {

@@ -29,6 +29,20 @@ extern ID2D1Factory *pD2DFactory;
 extern IDWriteFactory *pIDWriteFactory;
 #endif
 
+class MouseWheelDelta {
+	int wheelDelta = 0;
+public:
+	bool Accumulate(WPARAM wParam) noexcept {
+		wheelDelta -= GET_WHEEL_DELTA_WPARAM(wParam);
+		return std::abs(wheelDelta) >= WHEEL_DELTA;
+	}
+	int Actions() noexcept {
+		const int actions = wheelDelta / WHEEL_DELTA;
+		wheelDelta = wheelDelta % WHEEL_DELTA;
+		return actions;
+	}
+};
+
 }
 
 #endif
