@@ -16,6 +16,7 @@
 ******************************************************************************/
 
 #include "Scintilla.h"
+#include "../../scintilla/win32/ScintillaWin.h"
 #include "Extension/ViewHelper.h"
 //=============================================================================
 //
@@ -38,7 +39,7 @@ __forceinline HANDLE GetScintillaHandle(HWND hwnd)
 //  SciCall()
 //
 //
-LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
+
 #define SciCallEx(hwnd, m, w, l) Scintilla_DirectFunction(GetScintillaHandle(hwnd), m, w, l)
 #define SciCall(m, w, l) SciCallEx(hwndEdit, m, w, l)
 

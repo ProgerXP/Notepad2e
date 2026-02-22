@@ -27,8 +27,4 @@ void n2e_RestoreActiveEdit(const BOOL forceUpdateUI);
 
 void n2e_ForceWindowRedraw(const HWND hwnd);
 
-#ifndef N2E_TESTING
 #define hwndEdit n2e_GetActiveEdit()
-#else
-#define hwndEdit NULL
-#endif

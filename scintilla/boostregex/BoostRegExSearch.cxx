@@ -24,7 +24,7 @@
 #include "ILexer.h"
 #include "ILoader.h"
 #include "CaseFolder.h"
-#include "../scintilla/lexlib/CharacterCategory.h"
+#include "../lexlib/CharacterCategory.h"
 #include "Document.h"
 #include "UniConversion.h"
 #include "BoostRegexSearch.h"

@@ -16,8 +16,8 @@
 
 extern "C"
 __declspec(dllexport)
-sptr_t __stdcall Scintilla_DirectFunction(
-    ScintillaWin *sci, UINT iMessage, uptr_t wParam, sptr_t lParam) {
+LRESULT Scintilla_DirectFunction(HANDLE hwnd, UINT iMessage, WPARAM wParam, LPARAM lParam) {
+	ScintillaWin *sci = (ScintillaWin*)hwnd;
 	return Scintilla::DirectFunction(sci, iMessage, wParam, lParam);
 }
 

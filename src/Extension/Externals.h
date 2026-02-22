@@ -24,10 +24,15 @@ extern NP2ENCODING mEncoding[];
 extern HANDLE g_hScintilla;
 extern PEDITLEXER pLexCurrent;
 
-#else // ifndef N2E_TESTING
+#else // ifdef N2E_TESTING
 
 #include <wtypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+  extern HWND g_hwndActiveEdit;
+}
+#endif
 extern PEDITLEXER pLexCurrent;
 
 #define NCP_DEFAULT            1
@@ -65,6 +70,11 @@ extern NP2ENCODING mEncoding[];
 void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos);
 void n2e_HideProgressBarInStatusBar();
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
+
+#ifdef __cplusplus
+extern "C"
+#endif
+HWND n2e_GetActiveEdit();
 
 extern WCHAR szIniFile[MAX_PATH];
 

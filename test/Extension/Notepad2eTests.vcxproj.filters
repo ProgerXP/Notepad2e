@@ -113,5 +113,8 @@
     <ClCompile Include="..\..\src\Extension\CALWInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RegExTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
