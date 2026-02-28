@@ -1,0 +1,446 @@
+#include <Windows.h>
+#include <Shlwapi.h>
+#include "Edit.h"
+#include "../src/Extension/SciCall.h"
+#include "Scintilla.h"
+#include "BoostRegexSearch.h"
+#include "../src/Extension/Lexers.h"
+#include "../src/Extension/StringRecoding.h"
+
+#ifdef N2E_TESTING
+
+#define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
+
+// #DEFECT: copy-paste from Edit.c
+BOOL isEndedWithEOL(char *psz)
+{
+  const auto length = strlen(psz);
+  if (length < 2)
+    return FALSE;
+  return (psz[length - 2] == '\\') && ((psz[length - 1] == 'r') || (psz[length - 1] == 'n'));
+}
+
+/**
+* Is the character an octal digit?
+*/
+static BOOL IsOctalDigit(char ch)
+{
+  return ch >= '0' && ch <= '7';
+}
+
+/**
+ * If the character is an hexa digit, get its value.
+ */
+static int GetHexDigit(char ch)
+{
+  if (ch >= '0' && ch <= '9')
+  {
+    return ch - '0';
+  }
+  if (ch >= 'A' && ch <= 'F')
+  {
+    return ch - 'A' + 10;
+  }
+  if (ch >= 'a' && ch <= 'f')
+  {
+    return ch - 'a' + 10;
+  }
+  return -1;
+}
+
+/**
+ * Convert C style \a, \b, \f, \n, \r, \t, \v, \xhh and \uhhhh into their indicated characters.
+ */
+unsigned int UnSlash(char *s, UINT cpEdit)
+{
+  char *sStart = s;
+  char *o = s;
+
+  while (*s)
+  {
+    if (*s == '\\')
+    {
+      s++;
+      if (*s == 'a')
+        *o = '\a';
+      else if (*s == 'b')
+        *o = '\b';
+      else if (*s == 'f')
+        *o = '\f';
+      else if (*s == 'n')
+        *o = '\n';
+      else if (*s == 'r')
+        *o = '\r';
+      else if (*s == 't')
+        *o = '\t';
+      else if (*s == 'v')
+        *o = '\v';
+      else if (*s == 'x' || *s == 'u')
+      {
+        BOOL bShort = (*s == 'x');
+        char ch[8];
+        char *pch = ch;
+        WCHAR val[2] = L"";
+        int hex;
+        val[0] = 0;
+        hex = GetHexDigit(*(s + 1));
+        if (hex >= 0)
+        {
+          s++;
+          val[0] = hex;
+          hex = GetHexDigit(*(s + 1));
+          if (hex >= 0)
+          {
+            s++;
+            val[0] *= 16;
+            val[0] += hex;
+            if (!bShort)
+            {
+              hex = GetHexDigit(*(s + 1));
+              if (hex >= 0)
+              {
+                s++;
+                val[0] *= 16;
+                val[0] += hex;
+                hex = GetHexDigit(*(s + 1));
+                if (hex >= 0)
+                {
+                  s++;
+                  val[0] *= 16;
+                  val[0] += hex;
+                }
+              }
+            }
+          }
+          if (val[0])
+          {
+            val[1] = 0;
+            WideCharToMultiByte(cpEdit, 0, val, -1, ch, COUNTOF(ch), NULL, NULL);
+            *o = *pch++;
+            while (*pch)
+              *++o = *pch++;
+          }
+          else
+            o--;
+        }
+        else
+          o--;
+      }
+      else
+        *o = *s;
+    }
+    else
+      *o = *s;
+    o++;
+    if (*s)
+    {
+      s++;
+    }
+  }
+  *o = '\0';
+  return (unsigned int)(o - sStart);
+}
+
+/**
+ * Convert C style \0oo into their indicated characters.
+ * This is used to get control characters into the regular expresion engine.
+ */
+unsigned int UnSlashLowOctal(char *s)
+{
+  char *sStart = s;
+  char *o = s;
+  while (*s)
+  {
+    if ((s[0] == '\\') && (s[1] == '0') && IsOctalDigit(s[2]) && IsOctalDigit(s[3]))
+    {
+      *o = (char)(8 * (s[2] - '0') + (s[3] - '0'));
+      s += 3;
+    }
+    else
+    {
+      *o = *s;
+    }
+    o++;
+    if (*s)
+      s++;
+  }
+  *o = '\0';
+  return (unsigned int)(o - sStart);
+}
+
+void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
+{
+  if (bRegEx)
+    UnSlashLowOctal(pszInput);
+  else
+    UnSlash(pszInput, cpEdit);
+}
+#else
+#include "Dialogs.h"
+#include "Helpers.h"
+#include "resource.h"
+
+extern LPMRULIST mruFind;
+
+extern void BeginWaitCursor();
+extern void EndWaitCursor();
+extern void UpdateLineNumberWidth(HWND hwnd);
+#endif
+
+BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
+{
+  return pStyle && (pStyle->i64Style != -1) && (StrStrI(pStyle->pszName, L"comment") != NULL);
+}
+
+PEDITSTYLE n2e_GetStyleById(const int iStyle)
+{
+  PEDITSTYLE pStyle = pLexCurrent->Styles;
+  int i = 0;
+  while (pStyle && (pStyle->i64Style != -1))
+  {
+    if (((iStyle == 0) && pStyle->i64Style == iStyle)
+      || (MULTI_STYLE_STYLE1(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE2(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE3(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE4(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE5(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE6(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE7(pStyle->i64Style) == iStyle)
+      || (MULTI_STYLE_STYLE8(pStyle->i64Style) == iStyle))
+      break;
+
+    pStyle = &pLexCurrent->Styles[++i];
+  }
+  return pStyle;
+}
+
+BOOL n2e_IsCommentStyleById(const int iStyle)
+{
+  return n2e_IsCommentStyle(n2e_GetStyleById(iStyle));
+}
+
+BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
+{
+  return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
+}
+
+BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
+{
+#ifdef N2E_TESTING
+  return (iLexer != SCLEX_NULL)
+    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer))
+    && (!n2e_SingleLineCommentPrefixIsWord(iLexer)
+      || TextBuffer_IsAnyFollowingCharAtLine(&pED->m_tb, lpstrWhiteSpacesAndEOLs, iPos));
+#else
+  const int iTestPos = pED->m_tr.m_iSelStart + pED->m_tb.m_iPos + iPos;
+  const HWND _hwnd = hwnd ? hwnd : hwndEdit;
+  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, iTestPos, 0);
+  const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
+  return (pStyle && (pStyle->i64Style != -1)
+    && (StrStrI(pStyle->pszName, L"comment") != NULL)
+    && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle));
+  //|| (SciCall_GetLength() == iTestPos);
+#endif
+}
+
+BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
+{
+  PEDITSTYLE pStyle = pLexCurrent->Styles;
+  int i = 0;
+  while (pStyle && (pStyle->i64Style != -1))
+  {
+    if (n2e_IsCommentStyle(pStyle))
+      return TRUE;
+
+    pStyle = &pLexCurrent->Styles[++i];
+  }
+  return FALSE;
+}
+
+BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
+{
+#ifndef ICU_BUILD
+  return TRUE;
+#else
+  if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || n2e_IsUTF8EncodingMode())
+    return TRUE;
+
+  if (InfoBox(MBYESNO, L"MsgICURegexWarning", IDS_WARN_ICU_REGEX) != IDYES)
+    return FALSE;
+
+  SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_ENCODING_UTF8, 1), 0);
+
+  const BOOL res = n2e_IsUnicodeEncodingMode() || (iEncoding == CPI_UTF8);
+  if (res)
+  {
+    const UINT uCPEdit = (UINT)SendMessage(lpefr->hwnd, SCI_GETCODEPAGE, 0, 0);
+    GetDlgItemTextA2W(uCPEdit, hDlgFindReplace, IDC_FINDTEXT, lpefr->szFind, COUNTOF(lpefr->szFind));
+  }
+  return res;
+#endif
+}
+
+int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf)
+{
+#ifndef N2E_TESTING
+  // [2e]: Always save Find strings to MRU #440
+  MRU_AddA(mruFind, pttf->lpstrText);
+#endif
+
+  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART | SCFIND_REGEXP_SKIPCRLFASONE;
+  int iPos = -1;
+  BOOL bContinueSearch = TRUE;
+  while (bContinueSearch)
+  {
+    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)pttf);
+    bContinueSearch = (iPos >= 0);
+
+    if (bContinueSearch)
+    {
+      switch (lpefr->iSearchInComments)
+      {
+      case SIC_ALWAYS:
+        bContinueSearch = FALSE;
+        break;
+      case SIC_ONLY:
+        bContinueSearch = !n2e_IsCommentStyleAtPos(hwnd, iPos);
+        break;
+      case SIC_NEVER:
+        bContinueSearch = n2e_IsCommentStyleAtPos(hwnd, iPos);
+        break;
+      }
+    }
+    if (bContinueSearch)
+    {
+      if (pttf->chrg.cpMin <= pttf->chrg.cpMax)
+      {
+        pttf->chrg.cpMin = iPos + 1;
+      }
+      else
+      {
+        pttf->chrg.cpMin = iPos;
+      }
+    }
+  }
+  return iPos;
+}
+
+BOOL n2e_EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
+{
+
+  struct TextToFind ttf;
+  int iPos;
+  int iCount = 0;
+  int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
+  char szFind2[TEXT_BUFFER_LENGTH];
+  char *pszReplace2;
+
+  if (!lstrlenA(lpefr->szFind))
+    return FALSE;
+
+  // [2e]: Boost regex and Cyrillic #162
+  if (!n2e_IsFindReplaceAvailable(lpefr))
+    return FALSE;
+
+#ifndef N2E_TESTING
+  // Show wait cursor...
+  BeginWaitCursor();
+#endif
+
+  lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
+  if (lpefr->bTransformBS)
+    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
+    (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+
+  if (lstrlenA(szFind2) == 0)
+  {
+#ifndef N2E_TESTING
+    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+#endif
+    return FALSE;
+  }
+
+  // [2e]: Extremely slow Replace when changing line count #363
+  SciCall_SetSkipUIUpdate(1);
+
+#ifndef N2E_TESTING
+  if (lstrcmpA(lpefr->szReplace, "^c") == 0)
+  {
+    iReplaceMsg = SCI_REPLACETARGET;
+    pszReplace2 = EditGetClipboardText(hwnd);
+  }
+  else
+#endif
+  {
+    pszReplace2 = StrDupA(lpefr->szReplace);
+    if (lpefr->bTransformBS)
+      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
+      (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+  }
+
+  if (!pszReplace2)
+    pszReplace2 = StrDupA("");
+
+  ZeroMemory(&ttf, sizeof(ttf));
+
+  ttf.chrg.cpMin = 0;
+  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+  ttf.lpstrText = szFind2;
+
+  const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
+  BOOL docEndProcessed = FALSE;
+
+  // [2e]: Find/Replace - Skip comments mode #303
+  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
+  {
+    int iReplacedLen;
+
+    if (++iCount == 1)
+    {
+      SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+    }
+    SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
+    SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
+
+    iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
+
+    const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
+
+    ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
+    ttf.chrg.cpMax = SciCall_GetLength();
+
+    if (bAdjustPosition)
+      ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
+
+    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
+    {
+      if (lineEndAdded || docEndProcessed)
+        break;
+      docEndProcessed = TRUE;
+    }
+  }
+
+  if (iCount)
+    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+
+  // [2e]: Extremely slow Replace when changing line count #363
+  SciCall_SetSkipUIUpdate(0);
+
+#ifndef N2E_TESTING
+  // [2e]: Gutter not updated on Replace #206
+  VIEW_COMMAND(UpdateLineNumberWidth);
+  // Remove wait cursor
+  EndWaitCursor();
+
+  if (bShowInfo)
+  {
+    if (iCount > 0)
+      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
+    else
+      InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
+  }
+#endif
+
+  LocalFree(pszReplace2);
+  return TRUE;
+}

@@ -4922,7 +4922,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         }
         else
         {
-          EditReplaceAll(hwndEdit, &efrTS, TRUE);
+          n2e_EditReplaceAll(hwndEdit, &efrTS, TRUE);
         }
       }
       break;

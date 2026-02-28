@@ -5389,7 +5389,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
 
             case IDC_REPLACEALL:
               bReplaceInitialized = TRUE;
-              bCloseDlg &= EditReplaceAll(lpefr->hwnd, lpefr, TRUE);
+              bCloseDlg &= n2e_EditReplaceAll(lpefr->hwnd, lpefr, TRUE);
               break;
 
             case IDC_REPLACEINSEL:
@@ -5886,123 +5886,6 @@ BOOL isEndedWithEOL(char *psz)
   if (length < 2)
     return FALSE;
   return (psz[length - 2] == '\\') && ((psz[length - 1] == 'r') || (psz[length - 1] == 'n'));
-}
-
-//=============================================================================
-//
-//  EditReplaceAll()
-//
-BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
-{
-
-  struct TextToFind ttf;
-  int iPos;
-  int iCount = 0;
-  int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  char szFind2[TEXT_BUFFER_LENGTH];
-  char *pszReplace2;
-
-  if (!lstrlenA(lpefr->szFind))
-    return FALSE;
-
-  // [2e]: Boost regex and Cyrillic #162
-  if (!n2e_IsFindReplaceAvailable(lpefr))
-    return FALSE;
-
-  // Show wait cursor...
-  BeginWaitCursor();
-
-  lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
-  if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-
-  if (lstrlenA(szFind2) == 0)
-  {
-    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-    return FALSE;
-  }
-
-  // [2e]: Extremely slow Replace when changing line count #363
-  SciCall_SetSkipUIUpdate(1);
-
-  if (lstrcmpA(lpefr->szReplace, "^c") == 0)
-  {
-    iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
-  }
-  else
-  {
-    pszReplace2 = StrDupA(lpefr->szReplace);
-    if (lpefr->bTransformBS)
-      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
-                           (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-  }
-
-  if (!pszReplace2)
-    pszReplace2 = StrDupA("");
-
-  ZeroMemory(&ttf, sizeof(ttf));
-
-  ttf.chrg.cpMin = 0;
-  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-  ttf.lpstrText = szFind2;
-
-  const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
-  BOOL docEndProcessed = FALSE;
-
-  // [2e]: Find/Replace - Skip comments mode #303
-  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
-  {
-    int iReplacedLen;
-
-    if (++iCount == 1)
-    {
-      SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-    }
-    SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
-    SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
-
-    iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
-
-    const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
-
-    ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-    ttf.chrg.cpMax = SciCall_GetLength();
-
-    if (bAdjustPosition)
-      ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
-
-    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-    {
-      if (lineEndAdded || docEndProcessed)
-        break;
-      docEndProcessed = TRUE;
-    }
-  }
-
-  if (iCount)
-    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-
-  // [2e]: Extremely slow Replace when changing line count #363
-  SciCall_SetSkipUIUpdate(0);
-
-  // [2e]: Gutter not updated on Replace #206
-  VIEW_COMMAND(UpdateLineNumberWidth);
-  // Remove wait cursor
-  EndWaitCursor();
-
-  if (bShowInfo)
-  {
-    if (iCount > 0)
-      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
-    else
-      InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-  }
-
-  LocalFree(pszReplace2);
-  return TRUE;
-
 }
 
 

@@ -78,4 +78,21 @@ HWND n2e_GetActiveEdit();
 
 extern WCHAR szIniFile[MAX_PATH];
 
+typedef struct _editfindreplace
+{
+  char szFind[TEXT_BUFFER_LENGTH];
+  char szReplace[TEXT_BUFFER_LENGTH];
+  char szFindUTF8[TEXT_BUFFER_LENGTH];
+  char szReplaceUTF8[TEXT_BUFFER_LENGTH];
+  UINT fuFlags;
+  BOOL bTransformBS;
+  BOOL bObsolete /* was bFindUp */;
+  BOOL bFindClose;
+  BOOL bReplaceClose;
+  BOOL bNoFindWrap;
+  ESearchInComments iSearchInComments;
+  HWND hwnd;
+
+} EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;
+
 #endif

@@ -13,6 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Tests">
+      <UniqueIdentifier>{e77b217d-2f20-4fa6-b7b8-2ad1b74c43e3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Algorithms">
+      <UniqueIdentifier>{c7736043-8ab9-4fa5-ac1c-bacad96fcfce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Misc">
+      <UniqueIdentifier>{88b3b92f-d04c-440c-a3a6-aede7f8b2545}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Misc">
+      <UniqueIdentifier>{0b8e6353-d2fc-488d-b6f3-73f28d0cb009}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Algorithms">
+      <UniqueIdentifier>{fad6ca18-d9e8-438f-a660-ba3b9bbcc18a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -21,40 +36,43 @@
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Extension\StrToHex.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Extension\CommentAwareLineWrapping.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Extension\CommonUtils.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Extension\Trace.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TextEncodingTestCaseData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Extension\StrToBase64.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Extension\StringRecoding.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\Extension\StrToQP.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\src\Extension\CommonUtils.h">
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Extension\Externals.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\Extension\StrToURL.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="..\..\src\Extension\Trace.h">
+      <Filter>Header Files\Misc</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Extension\CALWImpl.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Algorithms</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\Extension\CALWInterface.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\CommentAwareLineWrapping.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StringRecoding.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StrToBase64.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StrToHex.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StrToQP.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\Extension\StrToURL.h">
+      <Filter>Header Files\Algorithms</Filter>
+    </ClInclude>
+    <ClInclude Include="SciTests.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -62,59 +80,65 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextEncodingTests.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="RegExTests.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Extension\StrToHex.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\CommonUtils.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\Trace.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\StrToBase64.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TextEncodingTestCaseData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\Externals.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\StringRecoding.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\StrToQP.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\tinyexpr\tinyexpr.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="SciTests.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
     <ClCompile Include="EvalTests.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Extension\StrToURL.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="TextEncodingTestCaseData.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\Extension\Lexers.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\LexerUtils.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="TextEncodingTests.cpp">
+      <Filter>Source Files\Tests</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\CALWImpl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\Extension\CommentAwareLineWrapping.c">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Algorithms</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\Extension\CALWInterface.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Algorithms</Filter>
     </ClCompile>
-    <ClCompile Include="RegExTests.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="..\..\src\Extension\StringRecoding.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToBase64.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToHex.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToQP.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\StrToURL.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\tinyexpr\tinyexpr.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\CommentAwareLineWrapping.c">
+      <Filter>Source Files\Algorithms</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\CommonUtils.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\Externals.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\Lexers.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\LexerUtils.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Extension\Trace.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Shared\SharedEditHelper.c">
+      <Filter>Source Files\Misc</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -60,7 +60,7 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
-      <PreprocessorDefinitions>WIN32;SCI_DLL_EXPORT;SCI_LEXER;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;SCI_DLL_EXPORT;SCI_LEXER;SCI_OWNREGEX;_CRT_SECURE_NO_DEPRECATE;_SCL_SECURE_NO_WARNINGS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(BOOST_ROOT);..\include;..\src;..\lexlib;</AdditionalIncludeDirectories>
       <BrowseInformation>true</BrowseInformation>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

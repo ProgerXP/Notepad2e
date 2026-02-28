@@ -103,6 +103,7 @@
     <ClInclude Include="..\..\src\Extension\StrToQP.h" />
     <ClInclude Include="..\..\src\Extension\StrToURL.h" />
     <ClInclude Include="..\..\src\Extension\Trace.h" />
+    <ClInclude Include="SciTests.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TextEncodingTestCaseData.h" />
@@ -162,8 +163,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
+    <ClCompile Include="..\..\src\Shared\SharedEditHelper.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="EvalTests.cpp" />
     <ClCompile Include="RegExTests.cpp" />
+    <ClCompile Include="SciTests.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
