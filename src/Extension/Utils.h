@@ -175,7 +175,6 @@ void n2e_InitDraftFile();
 void n2e_CleanupDraftFile();
 BOOL n2e_IsAutoSaveRequired();
 BOOL n2e_IsTextEmpty(LPCWSTR txt);
-BOOL n2e_IsRectangularSelection();
 BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount);
 BOOL n2e_OpenMRULast(LPWSTR fn);
 void n2e_GetLastDir(LPTSTR out);

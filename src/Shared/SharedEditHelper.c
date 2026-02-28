@@ -5,20 +5,57 @@
 #include "Scintilla.h"
 #include "BoostRegexSearch.h"
 #include "../src/Extension/Lexers.h"
+#include "../src/Extension/LexerUtils.h"
 #include "../src/Extension/StringRecoding.h"
 
-#ifdef N2E_TESTING
-
+#ifndef COUNTOF
 #define COUNTOF(ar) (sizeof(ar)/sizeof(ar[0]))
+#endif
 
-// #DEFECT: copy-paste from Edit.c
-BOOL isEndedWithEOL(char *psz)
+#ifndef N2E_TESTING
+#include "Dialogs.h"
+#include "Helpers.h"
+#include "resource.h"
+#include "ExtSelection.h"
+
+extern LPMRULIST mruFind;
+
+extern void BeginWaitCursor();
+extern void EndWaitCursor();
+extern void UpdateLineNumberWidth(HWND hwnd);
+#endif
+
+// [2e]: original code moved from Edit.c
+//
+//=============================================================================
+//
+//  EditSelectEx()
+//
+void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
 {
-  const auto length = strlen(psz);
-  if (length < 2)
-    return FALSE;
-  return (psz[length - 2] == '\\') && ((psz[length - 1] == 'r') || (psz[length - 1] == 'n'));
+  SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
+#ifndef N2E_TESTING
+  // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
+  if (!(n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()))
+  {
+    // [2e]: ScrollYCaretPolicy ini-option
+    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, n2e_GetCaretSlop());
+  }
+#endif
+  SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);
+  SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
+  SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0);
 }
+
+// [2e]: original code moved from Helpers.c
+//
+
+/******************************************************************************
+*
+*  UnSlash functions
+*  Mostly taken from SciTE, (c) Neil Hodgson, http://www.scintilla.org
+*
+/
 
 /**
 * Is the character an octal digit?
@@ -175,17 +212,32 @@ void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
   else
     UnSlash(pszInput, cpEdit);
 }
-#else
-#include "Dialogs.h"
-#include "Helpers.h"
-#include "resource.h"
+// [/2e]: original code moved from Helpers.c
 
-extern LPMRULIST mruFind;
+BOOL n2e_IsRectangularSelection()
+{
+  return SciCall_GetSelectionMode() == SC_SEL_RECTANGLE;
+}
 
-extern void BeginWaitCursor();
-extern void EndWaitCursor();
-extern void UpdateLineNumberWidth(HWND hwnd);
+BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
+{
+  if (n2e_IsRectangularSelection())
+  {
+#ifndef N2E_TESTING
+    MsgBox(MBWARN, IDS_SELRECT);
 #endif
+    return TRUE;
+  }
+  return FALSE;
+}
+
+BOOL isEndedWithEOL(char *psz)
+{
+  const auto length = strlen(psz);
+  if (length < 2)
+    return FALSE;
+  return (psz[length - 2] == '\\') && ((psz[length - 1] == 'r') || (psz[length - 1] == 'n'));
+}
 
 BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
 {
@@ -325,20 +377,23 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   return iPos;
 }
 
-BOOL n2e_EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
+BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo, BOOL bProcessSelectionOnly)
 {
-
-  struct TextToFind ttf;
-  int iPos;
+  struct TextToFind ttf = { 0 };
+  int iPos = 0;
   int iCount = 0;
   int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
+  BOOL fCancel = FALSE;
   char szFind2[TEXT_BUFFER_LENGTH];
   char *pszReplace2;
+
+  if (bProcessSelectionOnly && n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
+    return FALSE;
 
   if (!lstrlenA(lpefr->szFind))
     return FALSE;
 
-  // [2e]: Boost regex and Cyrillic #162
+  // [2e]: ICU build: missing regexp warnings #232
   if (!n2e_IsFindReplaceAvailable(lpefr))
     return FALSE;
 
@@ -383,45 +438,68 @@ BOOL n2e_EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
 
   ZeroMemory(&ttf, sizeof(ttf));
 
-  ttf.chrg.cpMin = 0;
-  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
+  ttf.chrg.cpMin = bProcessSelectionOnly ? SciCall_GetSelStart() : 0;
+  ttf.chrg.cpMax = bProcessSelectionOnly ? SciCall_GetSelEnd() : SciCall_GetLength();
   ttf.lpstrText = szFind2;
 
   const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
   BOOL docEndProcessed = FALSE;
 
   // [2e]: Find/Replace - Skip comments mode #303
-  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
+  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
   {
-    int iReplacedLen;
-
-    if (++iCount == 1)
+    if (!bProcessSelectionOnly ||
+      (ttf.chrgText.cpMin >= SciCall_GetSelStart() &&
+      ttf.chrgText.cpMax <= SciCall_GetSelEnd()))
     {
-      SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
+      int iReplacedLen;
+
+      if (++iCount == 1)
+        SciCall_BeginUndoAction();
+
+      SciCall_SetTargetStart(ttf.chrgText.cpMin);
+      SciCall_SetTargetEnd(ttf.chrgText.cpMax);
+
+      iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
+
+      const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
+
+      ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
+      ttf.chrg.cpMax = SciCall_GetLength();
+
+      if (bAdjustPosition)
+        ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
+
+      if (ttf.chrg.cpMin == ttf.chrg.cpMax)
+      {
+        if (lineEndAdded || docEndProcessed)
+          fCancel = TRUE;
+        docEndProcessed = TRUE;
+      }
     }
-    SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
-    SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
 
-    iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
-
-    const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
-
-    ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-    ttf.chrg.cpMax = SciCall_GetLength();
-
-    if (bAdjustPosition)
-      ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
-
-    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-    {
-      if (lineEndAdded || docEndProcessed)
-        break;
-      docEndProcessed = TRUE;
-    }
+    else
+      // gone across selection, cancel
+      fCancel = TRUE;
   }
 
   if (iCount)
-    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
+  {
+    if (bProcessSelectionOnly && (SciCall_GetSelEnd() < SendMessage(hwnd, SCI_GETTARGETEND, 0, 0)))
+    {
+      int iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
+      int iCurrentPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
+
+      if (iAnchorPos > iCurrentPos)
+        iAnchorPos = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
+      else
+        iCurrentPos = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
+
+      EditSelectEx(hwnd, iAnchorPos, iCurrentPos);
+    }
+
+    SciCall_EndUndoAction();
+  }
 
   // [2e]: Extremely slow Replace when changing line count #363
   SciCall_SetSkipUIUpdate(0);
@@ -443,4 +521,15 @@ BOOL n2e_EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
 
   LocalFree(pszReplace2);
   return TRUE;
+
+}
+
+BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
+{
+  return n2e_EditReplaceAllImpl(hwnd, lpefr, bShowInfo, TRUE);
+}
+
+BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
+{
+  return n2e_EditReplaceAllImpl(hwnd, lpefr, bShowInfo, FALSE);
 }

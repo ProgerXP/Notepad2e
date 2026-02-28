@@ -107,8 +107,6 @@ HWND n2e_GetActiveEdit()
   return g_hwndActiveEdit;
 }
 
-void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos) {}
-
 WCHAR szIniFile[MAX_PATH];
 
 #endif // #ifdef N2E_TESTING

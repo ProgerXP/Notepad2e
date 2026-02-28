@@ -1,7 +1,4 @@
-#include "Lexers.h"
-#include "LexerUtils.h"
 #include "Externals.h"
-#include "SciLexer.h"
 
 const COMMENTINFO COMMENT_INFO_NULL = COMMENT_INFO(NULL_COMMENT, -1);
 

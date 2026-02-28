@@ -29,7 +29,6 @@ BOOL n2e_JoinLines_InitSelection(const BOOL noSpaceDelimiter);
 void n2e_StripHTMLTags(const HWND hwnd);
 void n2e_JumpToOffset(const HWND hwnd, const int iNewPos);
 void n2e_EditInsertNewLine(const HWND hwnd, const BOOL insertAbove);
-BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd);
 void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next);
 BOOL n2e_IsCommentStyleById(const int iStyle);
 int n2e_GetSingleLineCommentPrefixLength(const int iLexer);

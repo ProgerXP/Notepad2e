@@ -145,16 +145,6 @@ void n2e_StripHTMLTags(const HWND hwnd)
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
 }
 
-BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
-{
-  if (n2e_IsRectangularSelection())
-  {
-    MsgBox(MBWARN, IDS_SELRECT);
-    return TRUE;
-  }
-  return FALSE;
-}
-
 extern BOOL bAutoIndent;
 
 LPSTR GetLinePrefix(const int iLine, LPBOOL pbLineEmpty)

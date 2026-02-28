@@ -873,11 +873,6 @@ BOOL n2e_IsTextEmpty(LPCWSTR txt)
   return TRUE;
 }
 
-BOOL n2e_IsRectangularSelection()
-{
-  return SciCall_GetSelectionMode() == SC_SEL_RECTANGLE;
-}
-
 BOOL n2e_GetCurrentSelection(LPWSTR buf, const int iCount)
 {
   BOOL res = FALSE;

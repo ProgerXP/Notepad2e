@@ -12,6 +12,7 @@
 #include "Utils.h"
 #include "ViewHelper.h"
 #include "Notepad2.h"
+#include "Shared/SharedEditHelper.h"
 
 extern HWND hwndMain;
 extern HWND _hwndEdit;
