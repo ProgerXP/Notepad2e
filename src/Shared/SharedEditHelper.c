@@ -339,7 +339,12 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   MRU_AddA(mruFind, pttf->lpstrText);
 #endif
 
-  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART | SCFIND_REGEXP_SKIPCRLFASONE;
+  lpefr->fuFlags &= ~SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
+  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_SKIPCRLFASONE;
+
+  if (strstr(lpefr->szFindUTF8, "$"))
+    lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
+
   int iPos = -1;
   BOOL bContinueSearch = TRUE;
   while (bContinueSearch)
@@ -445,6 +450,10 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
   BOOL docEndProcessed = FALSE;
 
+  const BOOL bInitLineStartPosition = (lpefr->szFindUTF8[0] == '^');
+  if (bInitLineStartPosition)
+    ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin));
+
   // [2e]: Find/Replace - Skip comments mode #303
   while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
   {
@@ -468,7 +477,15 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
       ttf.chrg.cpMax = SciCall_GetLength();
 
       if (bAdjustPosition)
-        ttf.chrg.cpMin = SciCall_PositionAfter(ttf.chrg.cpMin);
+      {
+        const auto iNextPosition = SciCall_PositionAfter(ttf.chrg.cpMin);
+        if (ttf.chrg.cpMin == iNextPosition)
+          docEndProcessed = TRUE;
+        ttf.chrg.cpMin = iNextPosition;
+      }
+      
+      if (bInitLineStartPosition)
+        ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin) + 1);
 
       if (ttf.chrg.cpMin == ttf.chrg.cpMax)
       {
