@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "SciTests.h"
 #include "../src/Shared/SharedEditHelper.h"
+#include <boost/regex.hpp>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
@@ -59,15 +60,86 @@ void generalTest(const CRegExTestData* dataset, const int datasetCount,
   });
 }
 
+class CRegexCustomFormatter
+{
+private:
+  const std::string m_replacement;
+  std::map<std::string, int> m_captures;
+public:
+  CRegexCustomFormatter(const std::string& replacement) : m_replacement(replacement)
+  {
+    boost::regex expression("[\\\\$](\\d+)");
+    boost::smatch what;
+    std::string::const_iterator start = replacement.begin();
+    std::string::const_iterator end = replacement.end();
+    while (boost::regex_search(start, end, what, expression))
+    {
+      m_captures[what[0]] = std::stoi(what[1]);
+      start = what[0].second;
+    }
+  }
+  std::string operator()(const boost::smatch& m) const
+  {
+    const std::string match_value = m[0].str();
+    const auto pos = m.position();
+    if (!m_captures.empty())
+    {
+      std::string res(m_replacement);
+      for (auto cap : m_captures)
+      {
+        const auto capturedValue = m[cap.second].str();
+        size_t pos = res.find(cap.first);
+        while (pos != std::string::npos)
+        {
+          res.replace(pos, cap.first.length(), capturedValue);
+          pos = res.find(cap.first, pos);
+        }
+      }
+      return res;
+    }
+    return m_replacement;
+  }
+};
+
 namespace Notepad2eTests
 {
   TEST_CLASS(CRegEx)
   {
   public:
+
+    TEST_METHOD(BoostRegexReplace)
+    {
+      const CRegExTestData data[] = {
+        CRegExTestData("ac\nbb", "a", "b", "bc\nbb"),
+        CRegExTestData("aa\nbb", "$", "\n", "aa\n\nbb\n"),
+        CRegExTestData("aa\nbb", "$", "\n\\1\\1\n", "aa\n\n\nbb\n\n"),
+        CRegExTestData("aa\nbb", "^(.*)$", "\n\\1\\1\n", "\naaaa\n\n\nbbbb\n"),
+        CRegExTestData("ab\nab", "b|$", "$0z", "abzz\nabzz"),
+        CRegExTestData("ab\nab\n", "b|$", "$0z", "abzz\nabzz\nz"),
+        CRegExTestData("ab\nab\n\n", "b|$", "$0z", "abzz\nabzz\nz\nz"),
+        CRegExTestData("aa\n\naa\n", "$", "z", "aaz\nz\naaz\nz"),
+        CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
+        CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[^@]+@.*$", "\n", "\n\n\n\n2"),
+        CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[^@]+@.*$", "zzz", "zzz\nzzz\n2"),
+        CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[\\l]+@.*$", "zzz", "zzz\n1\nzzz\n2"),
+        CRegExTestData("a@b@c\na@b@c", "^([^@]+@.*)$", "\\1X\n\\1", "a@b@cX\na@b@c\na@b@cX\na@b@c"),
+        CRegExTestData("aa bb\naa bb", "^.*$", "z", "z\nz"),
+        CRegExTestData("aa\n\naa", "$", "z", "aaz\nz\naaz"),
+        CRegExTestData("aa", "$", "z", "aaz"),
+        CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
+      };
+      for (auto i = 0; i < _countof(data); i++)
+      {
+        const auto _data = data[i];
+        boost::regex expression(_data.regexFrom);
+        std::string result = boost::regex_replace(_data.source, expression, CRegexCustomFormatter(_data.regexTo), boost::regex_constants::match_not_dot_newline);
+        Assert::IsTrue(result == _data.result, formatErrorText(c_errorResult, i).c_str());
+      }
+    }
     TEST_METHOD(ReplaceAll)
     {
       const CRegExTestData data[] = {
-        CRegExTestData("aa\nbb", "a", "b", "bb\nbb"),
+        CRegExTestData("ac\nbb", "a", "b", "bc\nbb"),
         CRegExTestData("aa\nbb", "$", "\\n", "aa\n\nbb\n"),
         CRegExTestData("aa\nbb", "$", "\\n\\1\\1\\n", "aa\n\n\nbb\n\n"),
         CRegExTestData("aa\nbb", "(.*)$", "\\n\\1\\1\\n", "\naaaa\n\n\nbbbb\n"),
@@ -83,6 +155,7 @@ namespace Notepad2eTests
         CRegExTestData("aa bb\naa bb", ".*", "z", "z\nz"),
         CRegExTestData("aa\n\naa", "$", "z", "aaz\nz\naaz"),
         CRegExTestData("aa", "$", "z", "aaz"),
+        CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
       };
 
       generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
