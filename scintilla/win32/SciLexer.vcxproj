@@ -117,6 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\boostregex\BoostRegExReplace.cxx" />
     <ClCompile Include="..\boostregex\BoostRegExSearch.cxx" />
     <ClCompile Include="..\boostregex\UTF8DocumentIterator.cxx" />
     <ClCompile Include="..\lexers\*.cxx" />

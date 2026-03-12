@@ -1063,6 +1063,7 @@ typedef sptr_t (*SciFnDirect)(sptr_t ptr, unsigned int iMessage, uptr_t wParam, 
 #define SCI_ALTDELWORDLEFT2 9012
 #define SCI_ALTDELWORDRIGHT2 9013
 #define SCI_SETINDICATEDLINES 9014
+#define SCI_REGEXREPLACETEXT 9015
 #define SC_MOD_NONE 0x0
 #define SC_MOD_INSERTTEXT 0x1
 #define SC_MOD_DELETETEXT 0x2
@@ -1196,6 +1197,17 @@ struct Sci_TextToFind {
 	struct Sci_CharacterRange chrg;
 	const char *lpstrText;
 	struct Sci_CharacterRange chrgText;
+};
+
+typedef int (*regexReplaceFilterFunc)(const void* hwnd, const int pos, const int mode);
+
+struct Sci_RegexReplace {
+	struct Sci_CharacterRange chrg;
+	const char* lpstrRegex;
+	const char* lpstrRegexReplace;
+	regexReplaceFilterFunc filterFunc;
+	int filterMode;
+	int count;
 };
 
 typedef void *Sci_SurfaceID;

@@ -142,17 +142,17 @@ namespace Notepad2eTests
         CRegExTestData("ac\nbb", "a", "b", "bc\nbb"),
         CRegExTestData("aa\nbb", "$", "\\n", "aa\n\nbb\n"),
         CRegExTestData("aa\nbb", "$", "\\n\\1\\1\\n", "aa\n\n\nbb\n\n"),
-        CRegExTestData("aa\nbb", "(.*)$", "\\n\\1\\1\\n", "\naaaa\n\n\nbbbb\n"),
+        CRegExTestData("aa\nbb", "^(.*)$", "\n\\1\\1\n", "\naaaa\n\n\nbbbb\n"),
         CRegExTestData("ab\nab", "b|$", "$0z", "abzz\nabzz"),
         CRegExTestData("ab\nab\n", "b|$", "$0z", "abzz\nabzz\nz"),
         CRegExTestData("ab\nab\n\n", "b|$", "$0z", "abzz\nabzz\nz\nz"),
         CRegExTestData("aa\n\naa\n", "$", "z", "aaz\nz\naaz\nz"),
         CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
-        CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[^@]+@.*$", "\\n", "\n\n1\n\n\n2"),
+        CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[^@]+@.*$", "\\n", "\n\n\n\n2"),
         CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[^@]+@.*$", "zzz", "zzz\nzzz\n2"),
         CRegExTestData("a@b@c\n1\nabc@b@c\n2", "^[\\l]+@.*$", "zzz", "zzz\n1\nzzz\n2"),
         CRegExTestData("a@b@c\na@b@c", "^([^@]+@.*)$", "\\1X\\n\\1", "a@b@cX\na@b@c\na@b@cX\na@b@c"),
-        CRegExTestData("aa bb\naa bb", ".*", "z", "z\nz"),
+        CRegExTestData("aa bb\naa bb", "^.*$", "z", "z\nz"),
         CRegExTestData("aa\n\naa", "$", "z", "aaz\nz\naaz"),
         CRegExTestData("aa", "$", "z", "aaz"),
         CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
@@ -174,7 +174,7 @@ namespace Notepad2eTests
       const CRegExTestData data[] = {
         CRegExTestData("aa\nab\nb", "a", "b", "ab\nbb\nb", 1, 4, 1, 4),
         CRegExTestData("aa\nab\nb", "a", "bz", "abz\nbzb\nb", 1, 4, 1, 6),
-        CRegExTestData("cbc\nxbc", "c|$", "z", "cbzz\nxbc", 1, 6, 1, 7),
+        CRegExTestData("cbc\nxbc", "c|$", "z", "cbzz\nxbzc", 1, 6, 1, 8),
       };
 
       generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {

@@ -488,6 +488,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 
 	virtual CaseFolder *CaseFolderForEncoding();
 	Sci::Position FindText(uptr_t wParam, sptr_t lParam);
+	Sci::Position RegexReplaceText(uptr_t wParam, sptr_t lParam);
 	void SearchAnchor();
 	Sci::Position SearchText(unsigned int iMessage, uptr_t wParam, sptr_t lParam);
 	Sci::Position SearchInTarget(const char *text, Sci::Position length);

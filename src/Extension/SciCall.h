@@ -132,6 +132,7 @@ DeclareSciCallV1(PositionAfter, POSITIONAFTER, int, position);
 DeclareSciCallV1(PositionBefore, POSITIONBEFORE, int, position);
 DeclareSciCallV2(DeleteRange, DELETERANGE, int, start, int, lengthDelete);
 DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, ft);
+DeclareSciCallV2(RegexReplaceText, REGEXREPLACETEXT, int, searchFlags, struct Sci_RegexReplace*, rr);
 DeclareSciCallV2(GetStyledText, GETSTYLEDTEXT, int, unused, struct Sci_TextToFind *, ft);
 DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
 DeclareSciCallR2(GetText, GETTEXT, int, int, length, char*, text);

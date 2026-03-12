@@ -1148,6 +1148,9 @@
     <ClCompile Include="src\Shared\SharedEditHelper.c">
       <Filter>Source Files\Shared</Filter>
     </ClCompile>
+    <ClCompile Include="scintilla\boostregex\BoostRegExReplace.cxx">
+      <Filter>scintilla\boostregexp</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="src\Notepad2.rc">

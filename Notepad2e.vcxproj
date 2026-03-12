@@ -291,6 +291,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="scintilla\boostregex\BoostRegExReplace.cxx" />
     <ClCompile Include="scintilla\boostregex\BoostRegExSearch.cxx" />
     <ClCompile Include="scintilla\boostregex\UTF8DocumentIterator.cxx" />
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />

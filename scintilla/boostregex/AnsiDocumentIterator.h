@@ -41,6 +41,14 @@ public:
 		}
 	}
 
+	AnsiDocumentIterator& operator=(const AnsiDocumentIterator& _right)
+	{
+		m_doc = _right.m_doc;
+		m_pos = _right.m_pos;
+		m_end = _right.m_end;
+		return *this;
+	}
+
 	bool operator == (const AnsiDocumentIterator& other) const
 	{
 		return (ended() == other.ended()) && (m_doc == other.m_doc) && (m_pos == other.m_pos);
@@ -63,10 +71,26 @@ public:
 		m_pos++;
 		return *this;
 	}
+	AnsiDocumentIterator& operator ++ (int v)
+	{
+		if (v == 0)
+			m_pos++;
+		else
+			m_pos += v;
+		return *this;
+	}
 
 	AnsiDocumentIterator& operator -- ()
 	{
 		m_pos--;
+		return *this;
+	}
+	AnsiDocumentIterator& operator -- (int v)
+	{
+		if (v == 0)
+			m_pos--;
+		else
+			m_pos -= v;
 		return *this;
 	}
 

@@ -339,11 +339,7 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   MRU_AddA(mruFind, pttf->lpstrText);
 #endif
 
-  lpefr->fuFlags &= ~SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
-  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_SKIPCRLFASONE;
-
-  if (strstr(lpefr->szFindUTF8, "$"))
-    lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART;
+  lpefr->fuFlags |= SCFIND_REGEXP_EMPTYMATCH_ALLOWATSTART | SCFIND_REGEXP_EMPTYMATCH_NOTAFTERMATCH | SCFIND_REGEXP_SKIPCRLFASONE;
 
   int iPos = -1;
   BOOL bContinueSearch = TRUE;
@@ -382,13 +378,26 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   return iPos;
 }
 
+int n2e_regexReplaceFilter(const void* ptr, const int pos, const int mode)
+{
+  // #TODO: code cleanup
+  const ESearchInComments sic = (ESearchInComments)mode;
+  switch (sic)
+	{
+	case SIC_ALWAYS:
+    return 1;
+  case SIC_ONLY:
+    return n2e_IsCommentStyleAtPos(hwndEdit, pos);
+  case SIC_NEVER:
+    return !n2e_IsCommentStyleAtPos(hwndEdit, pos);
+  default:
+    break;
+  }
+  return 1;
+}
+
 BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo, BOOL bProcessSelectionOnly)
 {
-  struct TextToFind ttf = { 0 };
-  int iPos = 0;
-  int iCount = 0;
-  int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  BOOL fCancel = FALSE;
   char szFind2[TEXT_BUFFER_LENGTH];
   char *pszReplace2;
 
@@ -426,7 +435,6 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
 #ifndef N2E_TESTING
   if (lstrcmpA(lpefr->szReplace, "^c") == 0)
   {
-    iReplaceMsg = SCI_REPLACETARGET;
     pszReplace2 = EditGetClipboardText(hwnd);
   }
   else
@@ -441,66 +449,16 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   if (!pszReplace2)
     pszReplace2 = StrDupA("");
 
-  ZeroMemory(&ttf, sizeof(ttf));
+  struct Sci_RegexReplace rr = { 0 };
+  rr.chrg.cpMin = bProcessSelectionOnly ? SciCall_GetSelStart() : 0;
+  rr.chrg.cpMax = bProcessSelectionOnly ? SciCall_GetSelEnd() : SciCall_GetLength();
+  rr.lpstrRegex = szFind2;
+  rr.lpstrRegexReplace = pszReplace2;
+  rr.filterFunc = n2e_regexReplaceFilter;
+  rr.filterMode = lpefr->iSearchInComments;
+  SciCall_RegexReplaceText(lpefr->fuFlags, &rr);
 
-  ttf.chrg.cpMin = bProcessSelectionOnly ? SciCall_GetSelStart() : 0;
-  ttf.chrg.cpMax = bProcessSelectionOnly ? SciCall_GetSelEnd() : SciCall_GetLength();
-  ttf.lpstrText = szFind2;
-
-  const BOOL lineEndAdded = isEndedWithEOL(pszReplace2);
-  BOOL docEndProcessed = FALSE;
-
-  const BOOL bInitLineStartPosition = (lpefr->szFindUTF8[0] == '^');
-  if (bInitLineStartPosition)
-    ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin));
-
-  // [2e]: Find/Replace - Skip comments mode #303
-  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
-  {
-    if (!bProcessSelectionOnly ||
-      (ttf.chrgText.cpMin >= SciCall_GetSelStart() &&
-      ttf.chrgText.cpMax <= SciCall_GetSelEnd()))
-    {
-      int iReplacedLen;
-
-      if (++iCount == 1)
-        SciCall_BeginUndoAction();
-
-      SciCall_SetTargetStart(ttf.chrgText.cpMin);
-      SciCall_SetTargetEnd(ttf.chrgText.cpMax);
-
-      iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
-
-      const auto bAdjustPosition = lineEndAdded || (ttf.chrgText.cpMin == ttf.chrgText.cpMax);
-
-      ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-      ttf.chrg.cpMax = SciCall_GetLength();
-
-      if (bAdjustPosition)
-      {
-        const auto iNextPosition = SciCall_PositionAfter(ttf.chrg.cpMin);
-        if (ttf.chrg.cpMin == iNextPosition)
-          docEndProcessed = TRUE;
-        ttf.chrg.cpMin = iNextPosition;
-      }
-      
-      if (bInitLineStartPosition)
-        ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin) + 1);
-
-      if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-      {
-        if (lineEndAdded || docEndProcessed)
-          fCancel = TRUE;
-        docEndProcessed = TRUE;
-      }
-    }
-
-    else
-      // gone across selection, cancel
-      fCancel = TRUE;
-  }
-
-  if (iCount)
+  if (rr.count)
   {
     if (bProcessSelectionOnly && (SciCall_GetSelEnd() < SendMessage(hwnd, SCI_GETTARGETEND, 0, 0)))
     {
@@ -514,8 +472,6 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
 
       EditSelectEx(hwnd, iAnchorPos, iCurrentPos);
     }
-
-    SciCall_EndUndoAction();
   }
 
   // [2e]: Extremely slow Replace when changing line count #363
