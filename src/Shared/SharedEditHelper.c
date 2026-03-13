@@ -485,8 +485,8 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
 
   if (bShowInfo)
   {
-    if (iCount > 0)
-      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
+    if (rr.count > 0)
+      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, rr.count);
     else
       InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
   }
