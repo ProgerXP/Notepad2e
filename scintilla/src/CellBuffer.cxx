@@ -275,6 +275,7 @@ Action::Action() {
 }
 
 Action::~Action() {
+	Clear();
 }
 
 void Action::Create(actionType at_, Sci::Position position_, const char *data_, Sci::Position lenData_, bool mayCoalesce_) {
@@ -290,6 +291,11 @@ void Action::Create(actionType at_, Sci::Position position_, const char *data_, 
 }
 
 void Action::Clear() {
+	if (lenData && data)
+	{
+		auto raw = data.release();
+		delete raw;
+	}
 	data = nullptr;
 	lenData = 0;
 }
@@ -440,8 +446,7 @@ void UndoHistory::DropUndoSequence() {
 }
 
 void UndoHistory::DeleteUndoHistory() {
-	for (int i = 1; i < maxAction; i++)
-		actions[i].Clear();
+	actions.resize(3);
 	maxAction = 0;
 	currentAction = 0;
 	actions[currentAction].Create(startAction);

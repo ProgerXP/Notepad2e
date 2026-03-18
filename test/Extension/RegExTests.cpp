@@ -112,7 +112,9 @@ namespace Notepad2eTests
       const CRegExTestData data[] = {
         CRegExTestData("ac\nbb", "a", "b", "bc\nbb"),
         CRegExTestData("aa\nbb", "$", "\n", "aa\n\nbb\n"),
+        CRegExTestData("aa\nbb", "$", "\n\\0\\0\n", "aa\n\n\nbb\n\n"),
         CRegExTestData("aa\nbb", "$", "\n\\1\\1\n", "aa\n\n\nbb\n\n"),
+        CRegExTestData("aa\nbb", "$", "\n\\6\\6\n", "aa\n\n\nbb\n\n"),
         CRegExTestData("aa\nbb", "^(.*)$", "\n\\1\\1\n", "\naaaa\n\n\nbbbb\n"),
         CRegExTestData("ab\nab", "b|$", "$0z", "abzz\nabzz"),
         CRegExTestData("ab\nab\n", "b|$", "$0z", "abzz\nabzz\nz"),
@@ -174,7 +176,7 @@ namespace Notepad2eTests
       const CRegExTestData data[] = {
         CRegExTestData("aa\nab\nb", "a", "b", "ab\nbb\nb", 1, 4, 1, 4),
         CRegExTestData("aa\nab\nb", "a", "bz", "abz\nbzb\nb", 1, 4, 1, 6),
-        CRegExTestData("cbc\nxbc", "c|$", "z", "cbzz\nxbzc", 1, 6, 1, 8),
+        CRegExTestData("cbc\nxbc", "c|$", "z", "cbzz\nxbc", 1, 6, 1, 7),
       };
 
       generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {

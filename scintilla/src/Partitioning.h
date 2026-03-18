@@ -85,6 +85,11 @@ private:
 	}
 
 	void Allocate(ptrdiff_t growSize) {
+		if (body)
+		{
+			auto raw = body.release();
+			delete raw;
+		}
 		body.reset(new SplitVectorWithRangeAdd<T>(growSize));
 		stepPartition = 0;
 		stepLength = 0;

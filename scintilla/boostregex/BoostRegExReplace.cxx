@@ -66,13 +66,9 @@ using namespace boost;
 class BoostRegexReplace : public RegexReplaceBase
 {
 public:
-	BoostRegexReplace() : _substituted(NULL) {}
+	BoostRegexReplace(){}
 	
-	virtual ~BoostRegexReplace()
-	{
-		delete[] _substituted;
-		_substituted = NULL;
-	}
+	virtual ~BoostRegexReplace(){}
 	
 	Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, Sci::Position startPosition, Sci::Position endPosition, const char *regex,
 		const char* regexReplaceString, const regexReplaceFilterFunc& filterFunc, int filterMode, bool caseSensitive, bool word, bool wordStart, int sciSearchFlags, Sci::Position *lengthRet, Sci::Position* counterRet) override;
@@ -247,7 +243,14 @@ Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const 
 		search._compileFlags = regex_constants::ECMAScript | (caseSensitive ? 0 : regex_constants::icase);
 
 		std::string _regexString = regexString;
-		if (!regexp)
+		std::string _regexReplaceString = regexReplaceString;
+		if (regexp)
+		{
+			boost::replace_all(_regexReplaceString, "\\r", "\r");
+			boost::replace_all(_regexReplaceString, "\\n", "\n");
+			boost::replace_all(_regexReplaceString, "\\r\\n", "\r\n");
+		}
+		else
 		{
 			if (word)
 				_regexString = "\\<" + _regexString + "\\>";
@@ -256,17 +259,19 @@ Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const 
 			else
 				_regexString = "\\Q" + _regexString + "\\E";
 		}
-		//-------------------------------------------------------------------------
-		std::string _regexReplaceString = regexReplaceString;
-		boost::replace_all(_regexReplaceString, "\\r", "\r");
-		boost::replace_all(_regexReplaceString, "\\n", "\n");
-		boost::replace_all(_regexReplaceString, "\\r\\n", "\r\n");
-		//-------------------------------------------------------------------------
 		search._regexString = _regexString.data();
 		search._regexReplaceString = _regexReplaceString.data();
 		search._boostRegexFlags = regexp
 			? regex_constants::match_not_dot_newline
 			: regex_constants::format_literal;
+
+		if (regexp)
+		{
+			if ((search._startPosition > 0) && !doc->IsLineStartPosition(search._startPosition))
+				search._boostRegexFlags |= regex_constants::match_not_bol;
+			if ((search._endPosition < doc->Length()) && !doc->IsLineEndPosition(search._endPosition))
+				search._boostRegexFlags |= regex_constants::match_not_eol;
+		}
 
 #ifdef ICU_BUILD
 			_utf32.ReplaceText(search);
@@ -334,24 +339,32 @@ public:
 	{
 		return *this;
 	}
-	void save(const Sci::Position& pos, const String& from, const String& to)
+	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to)
 	{
-		m_container->save(m_pos + pos, from, to);
+		m_container->save(m_pos + posFrom, m_pos + posTo, to);
 	}
 };
 
 template <class CharT, class String>
 struct ReplaceData
 {
-	std::list<std::tuple<Sci::Position, String, String>> m_replacements;
+	std::map<size_t, String> m_replacements;
+	std::list<std::tuple<Sci::Position, Sci::Position, size_t>> m_replacementPositions;
 
+	virtual ~ReplaceData()
+	{
+		m_replacements.clear();
+	}
 	MyOutIterator<ReplaceData, CharT, String> begin(const Sci::Position& pos)
 	{
 		return MyOutIterator<ReplaceData, CharT, String>(this, pos);
 	}
-	void save(const Sci::Position& pos, const String& from, const String& to)
+	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to)
 	{
-		m_replacements.push_back(std::make_tuple(pos, from, to));
+		const auto hash = std::hash<String>{}(to);
+		if (m_replacements.find(hash) == m_replacements.cend())
+			m_replacements[hash] = to;
+		m_replacementPositions.push_back(std::make_tuple(posFrom, posTo, hash));
 	}
 };
 
@@ -371,12 +384,13 @@ struct CRegexCustomFormatter
 	int m_searchMode = 0;
 	regexReplaceFilterFunc m_filterFunc;
 
-	const std::string m_replacement;
+	String m_replacement;
 	std::map<String, int> m_captures;
 
 	CRegexCustomFormatter(Editor* editor, Document* document, const int searchMode, const regexReplaceFilterFunc& filterFunc, const std::string& replacement, const bool plainFormat)
-		: m_editor(editor), m_document(document), m_searchMode(searchMode), m_filterFunc(filterFunc), m_replacement(replacement)
+		: m_editor(editor), m_document(document), m_searchMode(searchMode), m_filterFunc(filterFunc)
 	{
+		m_replacement = String(replacement.begin(), replacement.end());
 		if (plainFormat)
 			return;
 		Regex expression(CharTPtr("[\\\\$](\\d+)"));
@@ -388,12 +402,14 @@ struct CRegexCustomFormatter
 			m_captures[String(what[0].begin(), what[0].end())] = std::stoi(what[1]);
 			start = what[0].second;
 		}
+		int actualCaptureIndex = 0;
+		for (const auto& k : m_captures)
+			m_captures[k.first] = actualCaptureIndex++;
 	}
 	
 	MyOutIterator<Container, CharT, String> operator()(const Match& m, MyOutIterator<Container, CharT, String> it) const
 	{
-		const String match_value = m[0].str();
-		const auto pos = m.position();
+		const int pos = m[0].first.pos();
 		if (!m_filterFunc(m_editor, pos, m_searchMode))
 			return it;
 
@@ -402,7 +418,7 @@ struct CRegexCustomFormatter
 			String res(m_replacement.begin(), m_replacement.end());
 			for (const auto& cap : m_captures)
 			{
-				const auto capturedValue = m[cap.second].str();
+				const auto& capturedValue = m[cap.second].str();
 				size_t pos = res.find(cap.first);
 				while (pos != std::string::npos)
 				{
@@ -410,10 +426,10 @@ struct CRegexCustomFormatter
 					pos = res.find(cap.first, pos);
 				}
 			}
-			it.save(pos, match_value, res);
+			it.save(pos, pos + m.length(), res);
 			return it;
 		}
-		it.save(pos, match_value, String(m_replacement.begin(), m_replacement.end()));
+		it.save(pos, pos + m.length(), m_replacement);
 		return it;
 	}
 };
@@ -444,22 +460,22 @@ void BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceText
 
 	doc->BeginUndoAction();
 	Sci::Position offset = 0;
-	for (const auto& t : replaceData.m_replacements)
+	for (const auto& t : replaceData.m_replacementPositions)
 	{
-		const auto pos = std::get<0>(t);
-		const auto from = std::get<1>(t);
-		const auto to = std::get<2>(t);
-
-		const auto targetStart = offset + pos;
-		const auto targetEnd = offset + pos + from.length();
+		const auto& posFrom = std::get<0>(t);
+		const auto& posTo = std::get<1>(t);
+		const auto& hash = std::get<2>(t);
+		const auto& stringTo = replaceData.m_replacements[hash];
+		const auto targetStart = offset + posFrom;
+		const auto targetEnd = offset + posTo;
 		search._editor->WndProc(SCI_SETTARGETSTART, targetStart, 0);
 		search._editor->WndProc(SCI_SETTARGETEND, targetEnd, 0);
-		search._editor->WndProc(SCI_REPLACETARGET, to.length(), (sptr_t)to.data());
-
-		offset += to.length() - from.length();
+		search._editor->WndProc(SCI_REPLACETARGET, -1, (sptr_t)stringTo.c_str());
+		offset += stringTo.length() - (posTo - posFrom);
 	}
 	doc->EndUndoAction();
-	search.counter = replaceData.m_replacements.size();
+
+	search.counter = replaceData.m_replacementPositions.size();
 	return;
 }
 

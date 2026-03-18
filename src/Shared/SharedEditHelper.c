@@ -449,6 +449,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   if (!pszReplace2)
     pszReplace2 = StrDupA("");
 
+  SciCall_BeginUndoAction();
   struct Sci_RegexReplace rr = { 0 };
   rr.chrg.cpMin = bProcessSelectionOnly ? SciCall_GetSelStart() : 0;
   rr.chrg.cpMax = bProcessSelectionOnly ? SciCall_GetSelEnd() : SciCall_GetLength();
@@ -473,6 +474,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
       EditSelectEx(hwnd, iAnchorPos, iCurrentPos);
     }
   }
+  SciCall_EndUndoAction();
 
   // [2e]: Extremely slow Replace when changing line count #363
   SciCall_SetSkipUIUpdate(0);
