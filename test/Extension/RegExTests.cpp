@@ -1,6 +1,7 @@
 ﻿#include "stdafx.h"
 #include "SciTests.h"
 #include "../src/Shared/SharedEditHelper.h"
+#include "TextEncodingTestCaseData.h"
 #include <boost/regex.hpp>
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
@@ -160,15 +161,42 @@ namespace Notepad2eTests
         CRegExTestData("a@b@c\na@b@c", "^[^@]+@", "", "b@c\nb@c"),
       };
 
+      for (const auto& codePage : { CP_ACP, CP_UTF8, CPI_UNICODE })
+      {
+        generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+          SciCall_DeleteRange(0, SciCall_GetLength());
+          SciCall_SetCodePage(codePage);
+          SciCall_ReplaceSel(0, data.source.c_str());
+          EditReplaceAll(SciTests::hwnd(), lpefr, FALSE);
+          if (SciCall_GetText(SciCall_GetLength() + 1, buffer))
+            Assert::IsTrue(data.result == std::string(buffer), formatErrorText(c_errorResult, index).c_str());
+          else
+            Assert::Fail(L"Failed to retrieve text");
+          });
+      }
+    }
+
+    TEST_METHOD(ReplaceAllUnicode)
+    {
+      const CRegExTestData data[] = {
+        CRegExTestData(UCS2toCP(L"¡", CP_UTF8), "^.+$", "\\1\n\\1\n", UCS2toCP(L"¡\n¡\n", CP_UTF8)),
+        CRegExTestData(UCS2toCP(L"¡ ¢", CP_UTF8), "^.+$", "\\1\n\\1\n", UCS2toCP(L"¡ ¢\n¡ ¢\n", CP_UTF8)),
+        CRegExTestData(UCS2toCP(L"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ", CP_UTF8),
+                      "^.+$", "\\1\n\\1\n",
+                       UCS2toCP(L"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ\n"
+                                L"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ\n", CP_UTF8)),
+      };
+
       generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
-        SciCall_SetSel(0, SciCall_GetLength());
+        SciCall_DeleteRange(0, SciCall_GetLength());
+        SciCall_SetCodePage(CP_UTF8);
         SciCall_ReplaceSel(0, data.source.c_str());
         EditReplaceAll(SciTests::hwnd(), lpefr, FALSE);
         if (SciCall_GetText(SciCall_GetLength() + 1, buffer))
           Assert::IsTrue(data.result == std::string(buffer), formatErrorText(c_errorResult, index).c_str());
         else
           Assert::Fail(L"Failed to retrieve text");
-      });
+        });
     }
 
     TEST_METHOD(ReplaceInSelection)

@@ -1,12 +1,3 @@
-/**
- * Copyright (c) since 2009 Simon Steele - http://untidy.net/
- * Based on the work of Simon Steele for Programmer's Notepad 2 (http://untidy.net)
- * Converted from boost::xpressive to boost::regex and performance improvements 
- * (principally caching the compiled regex), and support for UTF8 encoded text
- * (c) 2012 Dave Brotherstone - Changes for boost::regex
- * (c) 2013 Francois-R.Boyer@PolyMtl.ca - Empty match modes and best match backward search.
- * 
- */
 #include <stdlib.h>
 #include <iterator> 
 #include <iostream>
@@ -29,7 +20,6 @@
 #include "../lexlib/CharacterCategory.h"
 #include "Document.h"
 #include "UniConversion.h"
-#include "BoostRegexSearch.h"
 #include <boost/algorithm/string/replace.hpp>
 
 #include <map>
@@ -57,7 +47,6 @@
 #include "AnsiDocumentIterator.h"
 #endif
 
-#define CP_UTF8 65001
 #define SC_CP_UTF8 65001
 
 using namespace Scintilla;
@@ -70,8 +59,8 @@ public:
 	
 	virtual ~BoostRegexReplace(){}
 	
-	Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, Sci::Position startPosition, Sci::Position endPosition, const char *regex,
-		const char* regexReplaceString, const regexReplaceFilterFunc& filterFunc, int filterMode, bool caseSensitive, bool word, bool wordStart, int sciSearchFlags, Sci::Position *lengthRet, Sci::Position* counterRet) override;
+	Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regex,
+		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counterRet) override;
 
 private:
 	class ReplaceParameters;
@@ -125,9 +114,9 @@ private:
 	public:
 		EncodingDependent() : _lastCompileFlags(-1) {}
 		void compileRegex(const char *regex, const int compileFlags);
-		void ReplaceText(ReplaceParameters& search);
+		Sci::Position ReplaceText(const ReplaceParameters& replace);
 	private:
-		void ReplaceTextImpl(ReplaceParameters& search);
+		Sci::Position ReplaceTextImpl(const ReplaceParameters& replace) const;
 
 	public:
 #ifdef ICU_BUILD
@@ -148,21 +137,17 @@ private:
 	public:
 		Editor* _editor;
 		Document* _document;
-		int _filterMode = 0;
-		regexReplaceFilterFunc _filterFunc;
+		TRegexReplaceFilterFunc _filterFunc;
+		int _filterParam = 0;
 		const char *_regexString;
 		const char* _regexReplaceString;
 		int _compileFlags;
 		Sci::Position _startPosition;
 		Sci::Position _endPosition;
 		regex_constants::match_flag_type _boostRegexFlags;
-		int _direction;
-		bool _is_allowed_empty;
-		bool _is_allowed_empty_at_start_position;
-		bool _skip_windows_line_end_as_one_character;
-		int counter = 0;
 	};
 
+public:
 #ifdef ICU_BUILD
 	static UChar32 *utf8ToUchar32(const char *utf8);
 	static char    *stringToCharPtr(const std::basic_string<UChar32, std::char_traits<UChar32>, std::allocator<UChar32>>& str, Sci::Position *lengthRet);
@@ -176,10 +161,6 @@ private:
 	EncodingDependent<char, AnsiDocumentIterator> _ansi;
 	EncodingDependent<wchar_t, UTF8DocumentIterator> _utf8;
 #endif
-	
-	char *_substituted;
-	
-	int _lastDirection;
 };
 
 #ifdef SCI_NAMESPACE
@@ -203,44 +184,35 @@ namespace Scintilla
 
 extern std::string g_exceptionMessage;
 
-/**
- * Find text in document, supporting both forward and backward
- * searches (just pass startPosition > endPosition to do a backward search).
- */
-
-Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, Sci::Position startPosition, Sci::Position endPosition, const char *regexString,
-	const char* regexReplaceString, const regexReplaceFilterFunc& filterFunc, int filterMode, bool caseSensitive, bool word, bool wordStart, int sciSearchFlags, Sci::Position *lengthRet, Sci::Position* counterRet)
+Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regexString,
+	const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counterRet)
 {
 	g_exceptionMessage.clear();
 	try {
-		ReplaceParameters search{};
+		ReplaceParameters replace{};
 
-		search._editor = (Scintilla::Editor*)editor;
-		search._document = doc;
-		search._filterMode = filterMode;
-		search._filterFunc = filterFunc;
+		replace._editor = (Scintilla::Editor*)editor;
+		replace._document = doc;
+		replace._filterFunc = filterFunc;
+		replace._filterParam = filterParam;
 
-		if (startPosition > endPosition
-			|| (startPosition == endPosition && _lastDirection < 0))  // If we search in an empty region, suppose the direction is the same as last search (this is only important to verify if there can be an empty match in that empty region).
+		if (startPosition > endPosition)
 		{
-			search._startPosition = endPosition;
-			search._endPosition = startPosition;
-			search._direction = -1;
+			replace._startPosition = endPosition;
+			replace._endPosition = startPosition;
 		}
 		else
 		{
-			search._startPosition = startPosition;
-			search._endPosition = endPosition;
-			search._direction = 1;
+			replace._startPosition = startPosition;
+			replace._endPosition = endPosition;
 		}
-		_lastDirection = search._direction;
 
 		// Range endpoints should not be inside DBCS characters, but just in case, move them.
-		search._startPosition = doc->MovePositionOutsideChar(search._startPosition, 1, false);
-		search._endPosition = doc->MovePositionOutsideChar(search._endPosition, 1, false);
+		replace._startPosition = doc->MovePositionOutsideChar(replace._startPosition, 1, false);
+		replace._endPosition = doc->MovePositionOutsideChar(replace._endPosition, 1, false);
 
 		const bool isUtf8 = (doc->CodePage() == SC_CP_UTF8);
-		search._compileFlags = regex_constants::ECMAScript | (caseSensitive ? 0 : regex_constants::icase);
+		replace._compileFlags = regex_constants::ECMAScript | (caseSensitive ? 0 : regex_constants::icase);
 
 		std::string _regexString = regexString;
 		std::string _regexReplaceString = regexReplaceString;
@@ -259,28 +231,27 @@ Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const 
 			else
 				_regexString = "\\Q" + _regexString + "\\E";
 		}
-		search._regexString = _regexString.data();
-		search._regexReplaceString = _regexReplaceString.data();
-		search._boostRegexFlags = regexp
+		replace._regexString = _regexString.data();
+		replace._regexReplaceString = _regexReplaceString.data();
+		replace._boostRegexFlags = regexp
 			? regex_constants::match_not_dot_newline
 			: regex_constants::format_literal;
 
 		if (regexp)
 		{
-			if ((search._startPosition > 0) && !doc->IsLineStartPosition(search._startPosition))
-				search._boostRegexFlags |= regex_constants::match_not_bol;
-			if ((search._endPosition < doc->Length()) && !doc->IsLineEndPosition(search._endPosition))
-				search._boostRegexFlags |= regex_constants::match_not_eol;
+			if ((replace._startPosition > 0) && !doc->IsLineStartPosition(replace._startPosition))
+				replace._boostRegexFlags |= regex_constants::match_not_bol;
+			if ((replace._endPosition < doc->Length()) && !doc->IsLineEndPosition(replace._endPosition))
+				replace._boostRegexFlags |= regex_constants::match_not_eol;
 		}
 
+		*counterRet =
 #ifdef ICU_BUILD
-			_utf32.ReplaceText(search);
+			_utf32.ReplaceText(replace);
 #else
-		isUtf8 ? _utf8.ReplaceText(search)
-		       : _ansi.ReplaceText(search);
+		isUtf8 ? _utf8.ReplaceText(replace)
+		       : _ansi.ReplaceText(replace);
 #endif
-
-		*counterRet = search.counter;
 		return 0;
 	}
 
@@ -293,16 +264,16 @@ Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const 
 
 	catch (...)
 	{
-		g_exceptionMessage = "Unexpected exception while searching";
+		g_exceptionMessage = "Unexpected exception while replacing";
 		return -3;
 	}
 }
 
 template <class CharT, class CharacterIterator>
-void BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceText(ReplaceParameters& search)
+Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceText(const ReplaceParameters& replace)
 {
-	compileRegex(search._regexString, search._compileFlags);
-	return ReplaceTextImpl(search);
+	compileRegex(replace._regexString, replace._compileFlags);
+	return ReplaceTextImpl(replace);
 }
 
 template <class Container, class CharT, class String>
@@ -339,16 +310,16 @@ public:
 	{
 		return *this;
 	}
-	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to)
+	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to) const
 	{
-		m_container->save(m_pos + posFrom, m_pos + posTo, to);
+		m_container->save(posFrom, posTo, to);
 	}
 };
 
 template <class CharT, class String>
 struct ReplaceData
 {
-	std::map<size_t, String> m_replacements;
+	std::map<size_t, std::string> m_replacements;
 	std::list<std::tuple<Sci::Position, Sci::Position, size_t>> m_replacementPositions;
 
 	virtual ~ReplaceData()
@@ -363,7 +334,19 @@ struct ReplaceData
 	{
 		const auto hash = std::hash<String>{}(to);
 		if (m_replacements.find(hash) == m_replacements.cend())
-			m_replacements[hash] = to;
+		{
+			if constexpr (!std::is_same_v<CharT, char>)
+			{
+				Sci::Position length = 0;
+				const auto charPtr = BoostRegexReplace::stringToCharPtr(to, &length);
+				m_replacements[hash] = std::string(charPtr);
+				delete[] charPtr;
+			}
+			else
+			{
+				m_replacements[hash] = to;
+			}
+		}
 		m_replacementPositions.push_back(std::make_tuple(posFrom, posTo, hash));
 	}
 };
@@ -381,14 +364,14 @@ struct CRegexCustomFormatter
 
 	Editor* m_editor = nullptr;
 	Document* m_document = nullptr;
-	int m_searchMode = 0;
-	regexReplaceFilterFunc m_filterFunc;
+	TRegexReplaceFilterFunc m_filterFunc;
+	int m_filterFuncParam = 0;
 
 	String m_replacement;
 	std::map<String, int> m_captures;
 
-	CRegexCustomFormatter(Editor* editor, Document* document, const int searchMode, const regexReplaceFilterFunc& filterFunc, const std::string& replacement, const bool plainFormat)
-		: m_editor(editor), m_document(document), m_searchMode(searchMode), m_filterFunc(filterFunc)
+	CRegexCustomFormatter(Editor* editor, Document* document, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement, const bool plainFormat)
+		: m_editor(editor), m_document(document), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
 	{
 		m_replacement = String(replacement.begin(), replacement.end());
 		if (plainFormat)
@@ -410,8 +393,21 @@ struct CRegexCustomFormatter
 	MyOutIterator<Container, CharT, String> operator()(const Match& m, MyOutIterator<Container, CharT, String> it) const
 	{
 		const int pos = m[0].first.pos();
-		if (!m_filterFunc(m_editor, pos, m_searchMode))
+		if (!m_filterFunc(m_editor, pos, m_filterFuncParam))
 			return it;
+
+		Sci::Position originLength = m.length();
+		if constexpr (!std::is_same_v<CharT, char>)
+		{
+			String matchStr;
+			auto _m = m[0].first;
+			for (auto i = 0; i < originLength; ++i)
+			{
+				matchStr.push_back(*_m);
+				_m++;
+			}
+			delete[] BoostRegexReplace::stringToCharPtr(matchStr, &originLength);
+		}
 
 		if (!m_captures.empty())
 		{
@@ -426,37 +422,37 @@ struct CRegexCustomFormatter
 					pos = res.find(cap.first, pos);
 				}
 			}
-			it.save(pos, pos + m.length(), res);
-			return it;
+			it.save(pos, pos + originLength, res);
 		}
-		it.save(pos, pos + m.length(), m_replacement);
+		else
+			it.save(pos, pos + originLength, m_replacement);
 		return it;
 	}
 };
 
 template <class CharT, class CharacterIterator>
-void BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceTextImpl(ReplaceParameters& search)
+Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceTextImpl(const ReplaceParameters& replace) const
 {
-	CharacterIterator endIterator(search._document, search._endPosition, search._endPosition);
-	CharacterIterator baseIterator(search._document, 0, search._endPosition);
-	Sci::Position next_search_from_position = search._startPosition;
+	CharacterIterator endIterator(replace._document, replace._endPosition, replace._endPosition);
+	CharacterIterator baseIterator(replace._document, 0, replace._endPosition);
+	Sci::Position next_replace_from_position = replace._startPosition;
 
 	using match_type = boost::match_results<CharacterIterator>;
 	using string_type = std::basic_string<CharT>;
 
 	ReplaceData<CharT, string_type> replaceData;
 	CRegexCustomFormatter<CharT, CharTPtr, match_type, string_type, ReplaceData<CharT, string_type>>
-		formatter(search._editor, search._document, search._filterMode, search._filterFunc, search._regexReplaceString, search._boostRegexFlags == regex_constants::format_literal);
+		formatter(replace._editor, replace._document, replace._filterFunc, replace._filterParam, replace._regexReplaceString, replace._boostRegexFlags == regex_constants::format_literal);
 
-	auto doc = search._document;
+	auto doc = replace._document;
 
 	boost::regex_replace(
-		replaceData.begin(search._startPosition),
-		CharacterIterator(doc, next_search_from_position, search._endPosition),
+		replaceData.begin(replace._startPosition),
+		CharacterIterator(doc, next_replace_from_position, replace._endPosition),
 		endIterator,
 		_regex,
 		formatter,
-		search._boostRegexFlags | boost::regex_constants::format_no_copy);
+		replace._boostRegexFlags | boost::regex_constants::format_no_copy);
 
 	doc->BeginUndoAction();
 	Sci::Position offset = 0;
@@ -468,15 +464,14 @@ void BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::ReplaceText
 		const auto& stringTo = replaceData.m_replacements[hash];
 		const auto targetStart = offset + posFrom;
 		const auto targetEnd = offset + posTo;
-		search._editor->WndProc(SCI_SETTARGETSTART, targetStart, 0);
-		search._editor->WndProc(SCI_SETTARGETEND, targetEnd, 0);
-		search._editor->WndProc(SCI_REPLACETARGET, -1, (sptr_t)stringTo.c_str());
+		replace._editor->WndProc(SCI_SETTARGETSTART, targetStart, 0);
+		replace._editor->WndProc(SCI_SETTARGETEND, targetEnd, 0);
+		replace._editor->WndProc(SCI_REPLACETARGET, -1, (sptr_t)stringTo.c_str());
 		offset += stringTo.length() - (posTo - posFrom);
 	}
 	doc->EndUndoAction();
 
-	search.counter = replaceData.m_replacementPositions.size();
-	return;
+	return replaceData.m_replacementPositions.size();
 }
 
 template <class CharT, class CharacterIterator>
@@ -537,6 +532,7 @@ char *BoostRegexReplace::stringToCharPtr(const std::string& str, Sci::Position *
 	size_t length = str.length();
 	char *charPtr = new char[length + 1];
 	memcpy_s(charPtr, length, str.c_str(), length);
+	charPtr[length] = 0;
 	*lengthRet = length;
 	return charPtr;
 }

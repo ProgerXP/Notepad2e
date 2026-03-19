@@ -101,6 +101,7 @@ __forceinline LRESULT SciCallEx_##fn(const HWND hwnd, type1 var1, type2 var2) { 
 //
 //
 DeclareSciCallR0(GetCodePage, GETCODEPAGE, int);
+DeclareSciCallV1(SetCodePage, SETCODEPAGE, int, codepage);
 DeclareSciCallR0(GetLineCount, GETLINECOUNT, int);
 DeclareSciCallR0(GetLinesOnScreen, LINESONSCREEN, int);
 DeclareSciCallR0(GetLength, GETLENGTH, int);

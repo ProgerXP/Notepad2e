@@ -109,8 +109,8 @@ class RegexReplaceBase {
 public:
 	virtual ~RegexReplaceBase() {}
 
-	virtual Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, Sci::Position minPos, Sci::Position maxPos, const char* s,
-		const char* regexReplaceString, const regexReplaceFilterFunc& filterFunc, int filterMode, bool caseSensitive, bool word, bool wordStart, int flags, Sci::Position* length, Sci::Position* counter) = 0;
+	virtual Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& minPos, const Sci::Position& maxPos, const char* s,
+		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counter) = 0;
 };
 
 /// Factory function for RegexSearchBase
@@ -457,8 +457,7 @@ public:
 	void SetCaseFolder(CaseFolder *pcf_) noexcept;
 	Sci::Position FindText(Sci::Position minPos, Sci::Position maxPos, const char *search, int flags, Sci::Position *length);
 	Sci::Position RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
-		const regexReplaceFilterFunc& filterFunc, int filterMode,
-		int flags, Sci::Position* length, Sci::Position* counter);
+		const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, Sci::Position* counter);
 	const char *SubstituteByPosition(const char *text, Sci::Position *length);
 	int LineCharacterIndex() const noexcept;
 	void AllocateLineCharacterIndex(int lineCharacterIndex);

@@ -126,10 +126,10 @@ public:
                 return *this;
         }
 
-        UTF8DocumentIterator& operator ++ (int)
+        UTF8DocumentIterator& operator ++ (int v)
         {
-          PLATFORM_ASSERT(false);
-          return *this;
+					PLATFORM_ASSERT(v == 0);
+					return ++(*this);
         }
 
         UTF8DocumentIterator& operator -- ()

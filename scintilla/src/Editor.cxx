@@ -4278,8 +4278,8 @@ Sci::Position Editor::FindText(
 }
 
 /**
- * Search of a text in the document, in the given range.
- * @return The position of the found text, -1 if not found.
+ * Replace text in the document, in the given range.
+ * @return The number of the replacements.
  */
 Sci::Position Editor::RegexReplaceText(
 	uptr_t wParam,		///< Search modes : @c SCFIND_MATCHCASE, @c SCFIND_WHOLEWORD,
@@ -4287,11 +4287,9 @@ Sci::Position Editor::RegexReplaceText(
 	sptr_t lParam) {	///< @c Sci_TextToFind structure: The text to search for in the given range.
 
 	Sci_RegexReplace* rr = static_cast<Sci_RegexReplace*>(PtrFromSPtr(lParam));
-	Sci::Position lengthFound = strlen(rr->lpstrRegex);
 	if (!pdoc->HasCaseFolder())
 		pdoc->SetCaseFolder(CaseFolderForEncoding());
 	try {
-		pdoc->SetDBCSCodePage(0);
 		pdoc->RegexReplaceText(
 			this,
 			static_cast<Sci::Position>(rr->chrg.cpMin),
@@ -4299,9 +4297,8 @@ Sci::Position Editor::RegexReplaceText(
 			rr->lpstrRegex,
 			rr->lpstrRegexReplace,
 			rr->filterFunc,
-			rr->filterMode,
+			rr->filterFuncParam,
 			static_cast<int>(wParam),
-			&lengthFound,
 			&rr->count);
 		return rr->count;
 	}

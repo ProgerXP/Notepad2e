@@ -2280,9 +2280,7 @@ Sci::Position Document::FindText(Sci::Position minPos, Sci::Position maxPos, con
 }
 
 Sci::Position Document::RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
-	const regexReplaceFilterFunc& filterFunc, int filterMode, int flags, Sci::Position* length, Sci::Position* counter) {
-	if (*length <= 0)
-		return minPos;
+	const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, Sci::Position* counter) {
 	const bool caseSensitive = (flags & SCFIND_MATCHCASE) != 0;
 	const bool word = (flags & SCFIND_WHOLEWORD) != 0;
 	const bool wordStart = (flags & SCFIND_WORDSTART) != 0;
@@ -2290,7 +2288,7 @@ Sci::Position Document::RegexReplaceText(void* editor, Sci::Position minPos, Sci
 
 	if (!regexReplace)
 		regexReplace = std::unique_ptr<RegexReplaceBase>(CreateRegexReplace(&charClass));
-	return regexReplace->ReplaceText(editor, this, regExp, minPos, maxPos, search, replace, filterFunc, filterMode, caseSensitive, word, wordStart, flags, length, counter);
+	return regexReplace->ReplaceText(editor, this, regExp, minPos, maxPos, search, replace, filterFunc, filterParam, caseSensitive, word, wordStart, counter);
 }
 
 const char *Document::SubstituteByPosition(const char *text, Sci::Position *length) {

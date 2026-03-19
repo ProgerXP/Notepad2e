@@ -96,6 +96,12 @@ public:
 		return *this;
 	}
 
+	UTF32DocumentIterator& operator ++ (int v)
+	{
+		PLATFORM_ASSERT(v == 0);
+		return ++(*this);
+	}
+
 	UTF32DocumentIterator& operator -- ()
 	{
 		if (m_utf16Length == 2 && m_characterIndex == 1)
