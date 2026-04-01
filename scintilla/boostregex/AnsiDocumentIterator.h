@@ -41,14 +41,6 @@ public:
 		}
 	}
 
-	AnsiDocumentIterator& operator=(const AnsiDocumentIterator& _right)
-	{
-		m_doc = _right.m_doc;
-		m_pos = _right.m_pos;
-		m_end = _right.m_end;
-		return *this;
-	}
-
 	bool operator == (const AnsiDocumentIterator& other) const
 	{
 		return (ended() == other.ended()) && (m_doc == other.m_doc) && (m_pos == other.m_pos);
@@ -71,26 +63,18 @@ public:
 		m_pos++;
 		return *this;
 	}
+
+	// [2e]: Recursive Regexp Replace on $ #307 (required for boost::regex_replace)
 	AnsiDocumentIterator& operator ++ (int v)
 	{
-		if (v == 0)
-			m_pos++;
-		else
-			m_pos += v;
-		return *this;
+		PLATFORM_ASSERT(v == 0);
+		return ++(*this);
 	}
+	// [/2e]
 
 	AnsiDocumentIterator& operator -- ()
 	{
 		m_pos--;
-		return *this;
-	}
-	AnsiDocumentIterator& operator -- (int v)
-	{
-		if (v == 0)
-			m_pos--;
-		else
-			m_pos -= v;
 		return *this;
 	}
 

@@ -72,18 +72,6 @@ public:
                 }
         }
 
-        UTF8DocumentIterator& operator=(const UTF8DocumentIterator& _right)
-        {
-					m_pos = _right.m_pos;
-					memcpy(&m_character, &_right.m_character, sizeof(m_character));
-					m_characterIndex = _right.m_characterIndex;
-					m_end = _right.m_end;
-					m_utf8Length = _right.m_utf8Length;
-					m_utf16Length = _right.m_utf16Length;
-					m_doc = _right.m_doc;
-          return *this;
-        }
-
         bool operator == (const UTF8DocumentIterator& other) const
         {
                 return (ended() == other.ended()) && (m_doc == other.m_doc) && (m_pos == other.m_pos);
@@ -153,12 +141,6 @@ public:
 			}
             return *this;
         }
-
-				UTF8DocumentIterator& operator -- (int)
-				{
-					PLATFORM_ASSERT(false);
-					return *this;
-				}
 
 		Sci::Position pos() const
         {

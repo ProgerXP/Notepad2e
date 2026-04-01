@@ -10,7 +10,6 @@
 #include "StrToQP.h"
 #include "StrToURL.h"
 #include "CommentAwareLineWrapping.h"
-#include "../Shared/SharedEditHelper.h"
 
 #define MIN_RECODING_BUFFER_SIZE 8
 #define DEFAULT_RECODING_BUFFER_SIZE 65536
