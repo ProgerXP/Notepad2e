@@ -1207,7 +1207,7 @@ struct Sci_RegexReplace {
 	const char* lpstrRegexReplace;
 	TRegexReplaceFilterFunc filterFunc;
 	int filterFuncParam;
-	int count;
+	Sci_Position count;
 };
 
 typedef void *Sci_SurfaceID;

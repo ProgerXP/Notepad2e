@@ -59,8 +59,8 @@ public:
 	
 	virtual ~BoostRegexReplace(){}
 	
-	Sci::Position ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regex,
-		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counterRet) override;
+	void ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regex,
+		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* countRet) override;
 
 private:
 	class ReplaceParameters;
@@ -182,12 +182,9 @@ namespace Scintilla
 }
 #endif
 
-extern std::string g_exceptionMessage;
-
-Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regexString,
-	const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counterRet)
+void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regexString,
+	const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* countRet)
 {
-	g_exceptionMessage.clear();
 	try {
 		ReplaceParameters replace{};
 
@@ -245,27 +242,21 @@ Sci::Position BoostRegexReplace::ReplaceText(void* editor, Document* doc, const 
 				replace._boostRegexFlags |= regex_constants::match_not_eol;
 		}
 
-		*counterRet =
+		*countRet =
 #ifdef ICU_BUILD
 			_utf32.ReplaceText(replace);
 #else
 		isUtf8 ? _utf8.ReplaceText(replace)
 		       : _ansi.ReplaceText(replace);
 #endif
-		return 0;
 	}
 
 	catch (regex_error& ex)
 	{
-		// -1 is normally used for not found, -2 is used here for invalid regex
-		g_exceptionMessage = ex.what();
-		return -2;
 	}
 
 	catch (...)
 	{
-		g_exceptionMessage = "Unexpected exception while replacing";
-		return -3;
 	}
 }
 
@@ -277,36 +268,36 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 }
 
 template <class Container, class CharT, class String>
-class MyOutIterator
+class CDocumentOutIterator
 {
 public:
 	Container* m_container = nullptr;
 	Sci::Position m_pos = 0;
 
-	MyOutIterator(Container* _container, const Sci::Position& _pos)
+	CDocumentOutIterator(Container* _container, const Sci::Position& _pos)
 		: m_container(_container), m_pos(_pos){}
 
-	MyOutIterator& operator=(const MyOutIterator& _right)
+	CDocumentOutIterator& operator=(const CDocumentOutIterator& _right)
 	{
 		m_container = _right.m_container;
 		m_pos = _right.m_pos;
 		return *this;
 	}
-	MyOutIterator& operator*()
+	CDocumentOutIterator& operator*()
 	{
 		return *this;
 	}
-	MyOutIterator& operator++(int)
-	{
-		m_pos++;
-		return *this;
-	}
-	MyOutIterator& operator--(int)
+	CDocumentOutIterator& operator++(int)
 	{
 		m_pos++;
 		return *this;
 	}
-	MyOutIterator& operator=(CharT c)
+	CDocumentOutIterator& operator--(int)
+	{
+		m_pos++;
+		return *this;
+	}
+	CDocumentOutIterator& operator=(CharT c)
 	{
 		return *this;
 	}
@@ -317,18 +308,18 @@ public:
 };
 
 template <class CharT, class String>
-struct ReplaceData
+struct CReplacementData
 {
 	std::map<size_t, std::string> m_replacements;
 	std::list<std::tuple<Sci::Position, Sci::Position, size_t>> m_replacementPositions;
 
-	virtual ~ReplaceData()
+	virtual ~CReplacementData()
 	{
 		m_replacements.clear();
 	}
-	MyOutIterator<ReplaceData, CharT, String> begin(const Sci::Position& pos)
+	CDocumentOutIterator<CReplacementData, CharT, String> begin(const Sci::Position& pos)
 	{
-		return MyOutIterator<ReplaceData, CharT, String>(this, pos);
+		return CDocumentOutIterator<CReplacementData, CharT, String>(this, pos);
 	}
 	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to)
 	{
@@ -390,7 +381,7 @@ struct CRegexCustomFormatter
 			m_captures[k.first] = actualCaptureIndex++;
 	}
 	
-	MyOutIterator<Container, CharT, String> operator()(const Match& m, MyOutIterator<Container, CharT, String> it) const
+	CDocumentOutIterator<Container, CharT, String> operator()(const Match& m, CDocumentOutIterator<Container, CharT, String> it) const
 	{
 		const int pos = m[0].first.pos();
 		if (!m_filterFunc(m_editor, pos, m_filterFuncParam))
@@ -438,16 +429,16 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 	Sci::Position next_replace_from_position = replace._startPosition;
 
 	using match_type = boost::match_results<CharacterIterator>;
-	using string_type = std::basic_string<CharT>;
+	using String = std::basic_string<CharT>;
 
-	ReplaceData<CharT, string_type> replaceData;
-	CRegexCustomFormatter<CharT, CharTPtr, match_type, string_type, ReplaceData<CharT, string_type>>
+	CReplacementData<CharT, String> outputData;
+	CRegexCustomFormatter<CharT, CharTPtr, match_type, String, CReplacementData<CharT, String>>
 		formatter(replace._editor, replace._document, replace._filterFunc, replace._filterParam, replace._regexReplaceString, replace._boostRegexFlags == regex_constants::format_literal);
 
 	auto doc = replace._document;
 
 	boost::regex_replace(
-		replaceData.begin(replace._startPosition),
+		outputData.begin(replace._startPosition),
 		CharacterIterator(doc, next_replace_from_position, replace._endPosition),
 		endIterator,
 		_regex,
@@ -456,12 +447,12 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 
 	doc->BeginUndoAction();
 	Sci::Position offset = 0;
-	for (const auto& t : replaceData.m_replacementPositions)
+	for (const auto& t : outputData.m_replacementPositions)
 	{
 		const auto& posFrom = std::get<0>(t);
 		const auto& posTo = std::get<1>(t);
 		const auto& hash = std::get<2>(t);
-		const auto& stringTo = replaceData.m_replacements[hash];
+		const auto& stringTo = outputData.m_replacements[hash];
 		const auto targetStart = offset + posFrom;
 		const auto targetEnd = offset + posTo;
 		replace._editor->WndProc(SCI_SETTARGETSTART, targetStart, 0);
@@ -471,7 +462,7 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 	}
 	doc->EndUndoAction();
 
-	return replaceData.m_replacementPositions.size();
+	return outputData.m_replacementPositions.size();
 }
 
 template <class CharT, class CharacterIterator>

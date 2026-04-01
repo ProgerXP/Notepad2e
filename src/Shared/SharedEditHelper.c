@@ -456,7 +456,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   rr.lpstrRegex = szFind2;
   rr.lpstrRegexReplace = pszReplace2;
   rr.filterFunc = n2e_regexReplaceFilter;
-  rr.filterMode = lpefr->iSearchInComments;
+  rr.filterFuncParam = lpefr->iSearchInComments;
   SciCall_RegexReplaceText(lpefr->fuFlags, &rr);
 
   if (rr.count)
