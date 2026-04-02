@@ -212,3 +212,7 @@ typedef struct _tagsdata
   LPWSTR pwsz1;
   LPWSTR pwsz2;
 } TAGSDATA, *PTAGSDATA;
+
+extern HWND hwndMain;
+extern HWND hDlgFindReplace;
+extern int iEncoding;

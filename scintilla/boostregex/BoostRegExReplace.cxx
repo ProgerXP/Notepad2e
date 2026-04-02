@@ -127,6 +127,7 @@ private:
 		typedef basic_regex<CharT> Regex;
 #endif
 		typedef match_results<CharacterIterator> MatchResults;
+		typedef std::basic_string<CharT> String;
 	private:
 		Regex _regex;
 		std::string _lastRegexString;
@@ -230,9 +231,9 @@ void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool rege
 		}
 		replace._regexString = _regexString.data();
 		replace._regexReplaceString = _regexReplaceString.data();
-		replace._boostRegexFlags = regexp
+		replace._boostRegexFlags = regex_constants::format_all | (regexp
 			? regex_constants::match_not_dot_newline
-			: regex_constants::format_literal;
+			: regex_constants::format_literal);
 
 		if (regexp)
 		{
@@ -342,43 +343,20 @@ struct CReplacementData
 	}
 };
 
-template <class CharT, class CharTPtr, class Match, class String, class Container>
+template <class CharT, class CharTPtr, class Regex, class Match, class String, class Container>
 struct CRegexCustomFormatter
 {
-#ifdef ICU_BUILD
-	typedef CharT Char;
-	typedef boost::u32regex Regex;
-#else
-	typedef CharT Char;
-	typedef basic_regex<CharT> Regex;
-#endif
-
 	Editor* m_editor = nullptr;
 	Document* m_document = nullptr;
+	const Regex& m_regex;
 	TRegexReplaceFilterFunc m_filterFunc;
 	int m_filterFuncParam = 0;
-
 	String m_replacement;
-	std::map<String, int> m_captures;
 
-	CRegexCustomFormatter(Editor* editor, Document* document, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement, const bool plainFormat)
-		: m_editor(editor), m_document(document), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
+	CRegexCustomFormatter(Editor* editor, Document* document, const Regex& regex, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement)
+		: m_editor(editor), m_document(document), m_regex(regex), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
 	{
 		m_replacement = String(replacement.begin(), replacement.end());
-		if (plainFormat)
-			return;
-		Regex expression(CharTPtr("[\\\\$](\\d+)"));
-		boost::smatch what;
-		auto start = replacement.begin();
-		auto end = replacement.end();
-		while (boost::regex_search(start, end, what, expression))
-		{
-			m_captures[String(what[0].begin(), what[0].end())] = std::stoi(what[1]);
-			start = what[0].second;
-		}
-		int actualCaptureIndex = 0;
-		for (const auto& k : m_captures)
-			m_captures[k.first] = actualCaptureIndex++;
 	}
 	
 	CDocumentOutIterator<Container, CharT, String> operator()(const Match& m, CDocumentOutIterator<Container, CharT, String> it) const
@@ -400,23 +378,8 @@ struct CRegexCustomFormatter
 			delete[] BoostRegexReplace::stringToCharPtr(matchStr, &originLength);
 		}
 
-		if (!m_captures.empty())
-		{
-			String res(m_replacement.begin(), m_replacement.end());
-			for (const auto& cap : m_captures)
-			{
-				const auto& capturedValue = m[cap.second].str();
-				size_t pos = res.find(cap.first);
-				while (pos != std::string::npos)
-				{
-					res.replace(pos, cap.first.length(), capturedValue);
-					pos = res.find(cap.first, pos);
-				}
-			}
-			it.save(pos, pos + originLength, res);
-		}
-		else
-			it.save(pos, pos + originLength, m_replacement);
+		const String res = m.format(m_replacement, boost::format_all, m_regex);
+		it.save(pos, pos + originLength, res);
 		return it;
 	}
 };
@@ -428,12 +391,9 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 	CharacterIterator baseIterator(replace._document, 0, replace._endPosition);
 	Sci::Position next_replace_from_position = replace._startPosition;
 
-	using match_type = boost::match_results<CharacterIterator>;
-	using String = std::basic_string<CharT>;
-
 	CReplacementData<CharT, String> outputData;
-	CRegexCustomFormatter<CharT, CharTPtr, match_type, String, CReplacementData<CharT, String>>
-		formatter(replace._editor, replace._document, replace._filterFunc, replace._filterParam, replace._regexReplaceString, replace._boostRegexFlags == regex_constants::format_literal);
+	CRegexCustomFormatter<CharT, CharTPtr, Regex, MatchResults, String, CReplacementData<CharT, String>>
+		formatter(replace._editor, replace._document, _regex, replace._filterFunc, replace._filterParam, replace._regexReplaceString);
 
 	auto doc = replace._document;
 

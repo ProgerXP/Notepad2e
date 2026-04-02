@@ -311,7 +311,7 @@ BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
 
 BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
 {
-#ifndef ICU_BUILD
+#ifdef N2E_TESTING
   return TRUE;
 #else
   if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || n2e_IsUTF8EncodingMode())
