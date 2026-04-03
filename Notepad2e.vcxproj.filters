@@ -43,6 +43,12 @@
     <Filter Include="scintilla\boostregexp">
       <UniqueIdentifier>{8595dcce-9c22-4a87-a7a2-08fe76b8a167}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Shared">
+      <UniqueIdentifier>{e61360d8-a81e-450a-a039-614a65446073}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shared">
+      <UniqueIdentifier>{e378deb0-f2c2-4a86-ba90-376de4d1df6e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\Dialogs.h">
@@ -455,6 +461,9 @@
     </ClInclude>
     <ClInclude Include="scintilla\src\PositionHistory.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Shared\SharedEditHelper.h">
+      <Filter>Header Files\Shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1135,6 +1144,12 @@
     </ClCompile>
     <ClCompile Include="src\Extension\User32Helper.c">
       <Filter>Source Files\Extension</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Shared\SharedEditHelper.c">
+      <Filter>Source Files\Shared</Filter>
+    </ClCompile>
+    <ClCompile Include="scintilla\boostregex\BoostRegExReplace.cxx">
+      <Filter>scintilla\boostregexp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

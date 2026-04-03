@@ -109,7 +109,6 @@ void  EditWrapToColumn(HWND, int);
 void  EditJoinLinesEx(HWND, BOOL);
 void  EditSortLines(HWND, int);
 void  EditJumpTo(HWND, int, int);
-void  EditSelectEx(HWND, int, int);
 void  EditFixPositions(HWND);
 void  EditEnsureSelectionVisible(HWND);
 void  EditGetExcerpt(HWND, LPWSTR, DWORD);
@@ -118,8 +117,6 @@ HWND  EditFindReplaceDlg(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditFindNext(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditFindPrev(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditReplace(HWND, LPCEDITFINDREPLACE, const BOOL);
-BOOL  EditReplaceAll(HWND, LPCEDITFINDREPLACE, BOOL);
-BOOL  EditReplaceAllInSelection(HWND, LPCEDITFINDREPLACE, BOOL);
 HWND  EditLinenumDlg(HWND, LPCEDITFINDREPLACE);
 BOOL  EditModifyLinesDlg(HWND, LPWSTR, LPWSTR);
 BOOL  EditEncloseSelectionDlg(HWND, LPWSTR, LPWSTR);
@@ -215,3 +212,7 @@ typedef struct _tagsdata
   LPWSTR pwsz1;
   LPWSTR pwsz2;
 } TAGSDATA, *PTAGSDATA;
+
+extern HWND hwndMain;
+extern HWND hDlgFindReplace;
+extern int iEncoding;

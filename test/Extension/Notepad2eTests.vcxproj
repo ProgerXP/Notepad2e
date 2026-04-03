@@ -49,7 +49,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
-    <IntDir>$(SolutionDir)bin\obj\$(Platform)\$(Configuration)\test\</IntDir>
+    <IntDir>$(SolutionDir)bin\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug'">
@@ -62,21 +62,23 @@
     <ClCompile>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>$(VCInstallDir)UnitTest\include;../../src/;../../scintilla/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>N2E_TESTING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(BOOST_ROOT);$(VCInstallDir)UnitTest\include;../../src/;../../scintilla/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>N2E_TESTING;SCI_DLL_IMPORT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <UseFullPaths>true</UseFullPaths>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <AdditionalLibraryDirectories>$(VCInstallDir)UnitTest\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(BOOST_ROOT)\stage\lib;$(VCInstallDir)UnitTest\lib;$(SolutionDir)bin\$(Platform)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Shlwapi.lib;SciLexer.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Debug'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>INCLUDE_DEPRECATED_FEATURES;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MultiThreadedDebug</RuntimeLibrary>
+      <RuntimeLibrary Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
@@ -103,6 +105,7 @@
     <ClInclude Include="..\..\src\Extension\StrToQP.h" />
     <ClInclude Include="..\..\src\Extension\StrToURL.h" />
     <ClInclude Include="..\..\src\Extension\Trace.h" />
+    <ClInclude Include="SciTests.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="TextEncodingTestCaseData.h" />
@@ -162,7 +165,13 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <CompileAs>CompileAsC</CompileAs>
     </ClCompile>
+    <ClCompile Include="..\..\src\Shared\SharedEditHelper.c">
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <CompileAs>CompileAsC</CompileAs>
+    </ClCompile>
     <ClCompile Include="EvalTests.cpp" />
+    <ClCompile Include="RegExTests.cpp" />
+    <ClCompile Include="SciTests.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>

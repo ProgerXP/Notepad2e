@@ -47,14 +47,12 @@
 #include "Extension/ViewHelper.h"
 
 
-extern HWND  hwndMain;
 extern HWND  hwndEdit;
 extern HWND  hwndEditParent;
 extern HFONT hMonospacedFont;
 extern HINSTANCE g_hInstance;
 extern LPMALLOC  g_lpMalloc;
 extern DWORD dwLastIOError;
-extern HWND hDlgFindReplace;
 extern HWND hDlgGotoLine;
 extern UINT cpLastFind;
 extern BOOL bReplaceInitialized;
@@ -78,8 +76,6 @@ extern BOOL bSkipUnicodeDetection;
 extern BOOL bLoadASCIIasUTF8;
 extern int iSrcEncoding;
 extern int iWeakSrcEncoding;
-
-extern int iEncoding;
 
 // Supported Encodings
 WCHAR wchANSI[8] = L"";
@@ -4755,25 +4751,6 @@ void EditJumpTo(HWND hwnd, int iNewLine, int iNewCol)
 
 //=============================================================================
 //
-//  EditSelectEx()
-//
-void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
-{
-  SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, 50);
-  // [2e]: Disable ScrollYCaretPolicy in page-wise Edit Mode #337
-  if (!(n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()))
-  {
-    // [2e]: ScrollYCaretPolicy ini-option
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, n2e_GetCaretSlop());
-  }
-  SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);
-  SendMessage(hwnd, SCI_SETXCARETPOLICY, CARET_SLOP | CARET_EVEN, 50);
-  SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_EVEN, 0);
-}
-
-
-//=============================================================================
-//
 //  EditFixPositions()
 //
 void EditFixPositions(HWND hwnd)
@@ -5129,15 +5106,9 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
             // [2e]: disable search for invalid regex values
             if (bEnable && (IsDlgButtonChecked(hwnd, IDC_FINDREGEXP) == BST_CHECKED))
             {
-              char szFind[TEXT_BUFFER_LENGTH], szReplace[TEXT_BUFFER_LENGTH];
+              char szFind[TEXT_BUFFER_LENGTH];
               GetDlgItemTextA2W(uCPEdit, hwnd, IDC_FINDTEXT, szFind, COUNTOF(szFind));
-              // [2e]: insert empty groups to make any back-references (\1..\9) valid to pass regexp check #145
-              #define FAKE_REGEXP_GROUPS "()()()()()()()()()"
-              strcpy(szReplace, FAKE_REGEXP_GROUPS);
-              LPSTR szReplaceTail = szReplace + COUNTOF(FAKE_REGEXP_GROUPS) - 1;
-              const int szReplaceTailSize = COUNTOF(szReplace) - COUNTOF(FAKE_REGEXP_GROUPS) - 1;
-              GetDlgItemTextA2W(uCPEdit, hwnd, IDC_REPLACETEXT, szReplaceTail, szReplaceTailSize);
-              bEnable = (n2e_isValidRegex(szFind) != 0) && (n2e_isValidRegex(szReplace) != 0);
+              bEnable = (n2e_isValidRegex(szFind) != 0);
             }
             // [/2e]
 
@@ -5872,326 +5843,6 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
                  (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0),
                  (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0));
     if (!bSuppressNotFound)
-      InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-  }
-
-  LocalFree(pszReplace2);
-  return TRUE;
-
-}
-
-
-//=============================================================================
-//
-//  EditReplaceAll()
-//
-BOOL EditReplaceAll(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
-{
-
-  struct TextToFind ttf;
-  int iPos;
-  int iCount = 0;
-  int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  char szFind2[TEXT_BUFFER_LENGTH];
-  char *pszReplace2;
-  BOOL bRegexStartOfLine;
-  BOOL bRegexStartOrEndOfLine;
-
-  if (!lstrlenA(lpefr->szFind))
-    return FALSE;
-
-  // [2e]: Boost regex and Cyrillic #162
-  if (!n2e_IsFindReplaceAvailable(lpefr))
-    return FALSE;
-
-  // Show wait cursor...
-  BeginWaitCursor();
-
-  lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
-  if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-
-  if (lstrlenA(szFind2) == 0)
-  {
-    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-    return FALSE;
-  }
-
-  // [2e]: Extremely slow Replace when changing line count #363
-  SciCall_SetSkipUIUpdate(1);
-
-  bRegexStartOfLine =
-    (lpefr->fuFlags & SCFIND_REGEXP &&
-    (szFind2[0] == '^'));
-  bRegexStartOrEndOfLine =
-    (lpefr->fuFlags & SCFIND_REGEXP &&
-    (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
-
-  if (lstrcmpA(lpefr->szReplace, "^c") == 0)
-  {
-    iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
-  }
-  else
-  {
-    pszReplace2 = StrDupA(lpefr->szReplace);
-    if (lpefr->bTransformBS)
-      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
-                           (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-  }
-
-  if (!pszReplace2)
-    pszReplace2 = StrDupA("");
-
-  ZeroMemory(&ttf, sizeof(ttf));
-
-  ttf.chrg.cpMin = 0;
-  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-  ttf.lpstrText = szFind2;
-
-  // [2e]: Recursive Regexp Replace on $ #307
-  int skipLinesCounter = 0;
-  if ((lpefr->fuFlags & SCFIND_REGEXP) && strstr(pszReplace2, "\\n"))
-  {
-    const int iFind2Length = lstrlenA(szFind2);
-    const int isRegexEOL = (szFind2[iFind2Length - 1] == '$') && ((iFind2Length < 2) || (szFind2[iFind2Length - 2] != '\\'));
-    skipLinesCounter = isRegexEOL ? 1 : 0;
-    char *psz = pszReplace2;
-    while (psz = strstr(psz, "\\n"))
-    {
-      skipLinesCounter++;
-      psz++;
-    }
-  }
-  // [/2e]
-
-  // [2e]: Find/Replace - Skip comments mode #303
-  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1)
-  {
-    int iReplacedLen;
-
-    if (iCount == 0 && bRegexStartOrEndOfLine)
-    {
-      if (0 == SendMessage(hwnd, SCI_GETLINEENDPOSITION, 0, 0))
-      {
-        iPos = 0;
-        ttf.chrgText.cpMin = 0;
-        ttf.chrgText.cpMax = 0;
-      }
-    }
-
-    if (++iCount == 1)
-    {
-      SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-    }
-    SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
-    SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
-
-    const int iOriginalLineCount = SciCall_GetLineCount();
-    iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
-    const int iNewLineCount = SciCall_GetLineCount();
-
-    ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-    ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-    if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-      break;
-
-    if (ttf.chrgText.cpMin == ttf.chrgText.cpMax &&
-        !(bRegexStartOrEndOfLine && iReplacedLen > 0))
-      ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONAFTER, ttf.chrg.cpMin, 0);
-
-    if (bRegexStartOfLine)
-    {
-      ttf.chrg.cpMin = SciCall_PositionFromLine(SciCall_LineFromPosition(ttf.chrg.cpMin) + 1);
-      SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrg.cpMin, 0);
-    }
-
-    // [2e]: Recursive Regexp Replace on $ #307
-    if (skipLinesCounter > 0)
-    {
-      ttf.chrg.cpMin = SciCall_PositionFromLine(
-                          SciCall_LineFromPosition(SendMessage(hwnd, SCI_GETTARGETEND, 0, 0))
-                          + skipLinesCounter - (iNewLineCount - iOriginalLineCount));
-    }
-    // [/2e]
-  }
-
-  if (iCount)
-    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-
-  // [2e]: Extremely slow Replace when changing line count #363
-  SciCall_SetSkipUIUpdate(0);
-
-  // [2e]: Gutter not updated on Replace #206
-  VIEW_COMMAND(UpdateLineNumberWidth);
-  // Remove wait cursor
-  EndWaitCursor();
-
-  if (bShowInfo)
-  {
-    if (iCount > 0)
-      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
-    else
-      InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-  }
-
-  LocalFree(pszReplace2);
-  return TRUE;
-
-}
-
-
-//=============================================================================
-//
-//  EditReplaceAllInSelection()
-//
-BOOL EditReplaceAllInSelection(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo)
-{
-
-  struct TextToFind ttf;
-  int iPos;
-  int iCount = 0;
-  int iReplaceMsg = (lpefr->fuFlags & SCFIND_REGEXP) ? SCI_REPLACETARGETRE : SCI_REPLACETARGET;
-  BOOL fCancel = FALSE;
-  char szFind2[TEXT_BUFFER_LENGTH];
-  char *pszReplace2;
-  BOOL bRegexStartOfLine;
-  BOOL bRegexStartOrEndOfLine;
-
-  if (n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
-  {
-    return FALSE;
-  }
-
-  if (!lstrlenA(lpefr->szFind))
-    return FALSE;
-
-  // [2e]: ICU build: missing regexp warnings #232
-  if (!n2e_IsFindReplaceAvailable(lpefr))
-    return FALSE;
-
-  // Show wait cursor...
-  BeginWaitCursor();
-
-  lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
-  if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-  if (lstrlenA(szFind2) == 0)
-  {
-    InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
-    return FALSE;
-  }
-
-  bRegexStartOfLine =
-    (szFind2[0] == '^');
-  bRegexStartOrEndOfLine =
-    (lpefr->fuFlags & SCFIND_REGEXP &&
-    (!lstrcmpA(szFind2, "$") || !lstrcmpA(szFind2, "^") || !lstrcmpA(szFind2, "^$")));
-
-  if (lstrcmpA(lpefr->szReplace, "^c") == 0)
-  {
-    iReplaceMsg = SCI_REPLACETARGET;
-    pszReplace2 = EditGetClipboardText(hwnd);
-  }
-  else
-  {
-    pszReplace2 = StrDupA(lpefr->szReplace);
-    if (lpefr->bTransformBS)
-      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
-                           (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
-  }
-
-  if (!pszReplace2)
-    pszReplace2 = StrDupA("");
-
-  ZeroMemory(&ttf, sizeof(ttf));
-
-  ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0);
-  ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-  ttf.lpstrText = szFind2;
-
-  // [2e]: Find/Replace - Skip comments mode #303
-  while ((iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf)) != -1 && !fCancel)
-  {
-    if (ttf.chrgText.cpMin >= SendMessage(hwnd, SCI_GETSELECTIONSTART, 0, 0) &&
-        ttf.chrgText.cpMax <= SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0))
-    {
-      int iReplacedLen;
-
-      if (ttf.chrg.cpMin == 0 && iCount == 0 && bRegexStartOrEndOfLine)
-      {
-        if (0 == SendMessage(hwnd, SCI_GETLINEENDPOSITION, 0, 0))
-        {
-          iPos = 0;
-          ttf.chrgText.cpMin = 0;
-          ttf.chrgText.cpMax = 0;
-        }
-      }
-
-      if (++iCount == 1)
-        SendMessage(hwnd, SCI_BEGINUNDOACTION, 0, 0);
-
-      SendMessage(hwnd, SCI_SETTARGETSTART, ttf.chrgText.cpMin, 0);
-      SendMessage(hwnd, SCI_SETTARGETEND, ttf.chrgText.cpMax, 0);
-      iReplacedLen = (int)SendMessage(hwnd, iReplaceMsg, (WPARAM)-1, (LPARAM)pszReplace2);
-
-      ttf.chrg.cpMin = ttf.chrgText.cpMin + iReplacedLen;
-      ttf.chrg.cpMax = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
-
-      if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-        fCancel = TRUE;
-
-      if (ttf.chrgText.cpMin == ttf.chrgText.cpMax &&
-          !(bRegexStartOrEndOfLine && iReplacedLen > 0))
-        ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONAFTER, ttf.chrg.cpMin, 0);
-      if (bRegexStartOfLine)
-      {
-        int iLine = (int)SendMessage(hwnd, SCI_LINEFROMPOSITION, (WPARAM)ttf.chrg.cpMin, 0);
-        int ilPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
-        if (ilPos == ttf.chrg.cpMin)
-          ttf.chrg.cpMin = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine + 1, 0);
-        if (ttf.chrg.cpMin == ttf.chrg.cpMax)
-          break;
-      }
-    }
-
-    else
-      // gone across selection, cancel
-      fCancel = TRUE;
-  }
-
-  if (iCount)
-  {
-    if (SendMessage(hwnd, SCI_GETSELECTIONEND, 0, 0) <
-        SendMessage(hwnd, SCI_GETTARGETEND, 0, 0))
-    {
-
-      int iAnchorPos = (int)SendMessage(hwnd, SCI_GETANCHOR, 0, 0);
-      int iCurrentPos = (int)SendMessage(hwnd, SCI_GETCURRENTPOS, 0, 0);
-
-      if (iAnchorPos > iCurrentPos)
-        iAnchorPos = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
-      else
-        iCurrentPos = (int)SendMessage(hwnd, SCI_GETTARGETEND, 0, 0);
-
-      EditSelectEx(hwnd, iAnchorPos, iCurrentPos);
-    }
-
-    SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-  }
-
-  // [2e]: Gutter not updated on Replace #206
-  VIEW_COMMAND(UpdateLineNumberWidth);
-  // Remove wait cursor
-  EndWaitCursor();
-
-  if (bShowInfo)
-  {
-    if (iCount > 0)
-      InfoBox(0, L"MsgReplaceCount", IDS_REPLCOUNT, iCount);
-    else
       InfoBox(0, L"MsgNotFound", IDS_NOTFOUND);
   }
 

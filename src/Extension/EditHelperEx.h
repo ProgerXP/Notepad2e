@@ -43,3 +43,5 @@ extern "C" {
 #ifdef __cplusplus
 }//end extern "C"
 #endif
+
+#include "../Shared/SharedEditHelper.h"

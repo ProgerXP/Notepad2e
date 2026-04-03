@@ -1,4 +1,5 @@
 #include "EditHelper.h"
+#include "BoostRegexSearch.h"
 #include <cassert>
 #include <commctrl.h>
 #include "CommonUtils.h"
@@ -142,16 +143,6 @@ void n2e_StripHTMLTags(const HWND hwnd)
     SendMessage(hwnd, SCI_SETSEL, selbeg, selend);
   }
   SendMessage(hwnd, SCI_ENDUNDOACTION, 0, 0);
-}
-
-BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd)
-{
-  if (n2e_IsRectangularSelection())
-  {
-    MsgBox(MBWARN, IDS_SELRECT);
-    return TRUE;
-  }
-  return FALSE;
 }
 
 extern BOOL bAutoIndent;
@@ -302,111 +293,6 @@ void n2e_JumpToOffset(const HWND hwnd, const int iNewPos)
 {
   n2e_AdjustOffset(iNewPos);
   EditSelectEx(hwnd, iNewPos, iNewPos);
-}
-
-BOOL n2e_IsCommentStyle(PEDITSTYLE pStyle)
-{
-  return pStyle && (pStyle->i64Style != -1) && (StrStrI(pStyle->pszName, L"comment") != NULL);
-}
-
-PEDITSTYLE n2e_GetStyleById(const int iStyle)
-{
-  PEDITSTYLE pStyle = pLexCurrent->Styles;
-  int i = 0;
-  while (pStyle && (pStyle->i64Style != -1))
-  {
-    if (((iStyle == 0) && pStyle->i64Style == iStyle)
-      || (MULTI_STYLE_STYLE1(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE2(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE3(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE4(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE5(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE6(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE7(pStyle->i64Style) == iStyle)
-      || (MULTI_STYLE_STYLE8(pStyle->i64Style) == iStyle))
-      break;
-
-    pStyle = &pLexCurrent->Styles[++i];
-  }
-  return pStyle;
-}
-
-BOOL n2e_IsCommentStyleById(const int iStyle)
-{
-  return n2e_IsCommentStyle(n2e_GetStyleById(iStyle));
-}
-
-BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
-{
-  return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
-}
-
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
-{
-  const int iTestPos = pED->m_tr.m_iSelStart + pED->m_tb.m_iPos + iPos;
-  const HWND _hwnd = hwnd ? hwnd : hwndEdit;
-  const DWORD dwStyle = (int)SendMessage(_hwnd, SCI_GETSTYLEAT, iTestPos, 0);
-  const PEDITSTYLE pStyle = n2e_GetStyleById(dwStyle);
-  return (pStyle && (pStyle->i64Style != -1)
-            && (StrStrI(pStyle->pszName, L"comment") != NULL)
-            && n2e_IsSingleLineCommentStyle(pLexCurrent->iLexer, dwStyle));
-    //|| (SciCall_GetLength() == iTestPos);
-}
-
-BOOL n2e_CommentStyleIsDefined(const HWND hwnd)
-{
-  PEDITSTYLE pStyle = pLexCurrent->Styles;
-  int i = 0;
-  while (pStyle && (pStyle->i64Style != -1))
-  {
-    if (n2e_IsCommentStyle(pStyle))
-      return TRUE;
-
-    pStyle = &pLexCurrent->Styles[++i];
-  }
-  return FALSE;
-}
-
-int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFind* pttf)
-{
-  // [2e]: Always save Find strings to MRU #440
-  MRU_AddA(mruFind, pttf->lpstrText);
-
-  int iPos = -1;
-  BOOL bContinueSearch = TRUE;
-  while (bContinueSearch)
-  {
-    iPos = (int)SendMessage(hwnd, SCI_FINDTEXT, lpefr->fuFlags, (LPARAM)pttf);
-    bContinueSearch = (iPos >= 0);
-
-    if (bContinueSearch)
-    {
-      switch (lpefr->iSearchInComments)
-      {
-      case SIC_ALWAYS:
-        bContinueSearch = FALSE;
-        break;
-      case SIC_ONLY:
-        bContinueSearch = !n2e_IsCommentStyleAtPos(hwnd, iPos);
-        break;
-      case SIC_NEVER:
-        bContinueSearch = n2e_IsCommentStyleAtPos(hwnd, iPos);
-        break;
-      }
-    }
-    if (bContinueSearch)
-    {
-      if (pttf->chrg.cpMin <= pttf->chrg.cpMax)
-      {
-        pttf->chrg.cpMin = iPos + 1;
-      }
-      else
-      {
-        pttf->chrg.cpMin = iPos;
-      }
-    }
-  }
-  return iPos;
 }
 
 int FindTextTest(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct TextToFind* pttf, const int cpMin, const int cpMax)
@@ -1431,29 +1317,6 @@ BOOL n2e_CopyEvaluatedExpressionToClipboard()
   }
   iEvaluateMathExpression = iEvaluateMathExpressionOrigin;
   return FALSE;
-}
-
-BOOL n2e_IsFindReplaceAvailable(LPCEDITFINDREPLACE lpefr)
-{
-#ifndef ICU_BUILD
-  return TRUE;
-#else
-  if (((lpefr->fuFlags & SCFIND_REGEXP) == 0) || n2e_IsUnicodeEncodingMode() || n2e_IsUTF8EncodingMode())
-    return TRUE;
-
-  if (InfoBox(MBYESNO, L"MsgICURegexWarning", IDS_WARN_ICU_REGEX) != IDYES)
-    return FALSE;
-
-  SendMessage(hwndMain, WM_COMMAND, MAKELONG(IDM_ENCODING_UTF8, 1), 0);
-
-  const BOOL res = n2e_IsUnicodeEncodingMode() || (iEncoding == CPI_UTF8);
-  if (res)
-  {
-    const UINT uCPEdit = (UINT)SendMessage(lpefr->hwnd, SCI_GETCODEPAGE, 0, 0);
-    GetDlgItemTextA2W(uCPEdit, hDlgFindReplace, IDC_FINDTEXT, lpefr->szFind, COUNTOF(lpefr->szFind));
-  }
-  return res;
-#endif
 }
 
 LPCSTR n2e_FormatLineText(LPSTR buf, const int iLineStart, const int iLineIndex, const int iDocumentLineIndex,

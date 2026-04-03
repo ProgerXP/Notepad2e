@@ -6,6 +6,8 @@
 
 #ifdef N2E_TESTING
 
+HANDLE g_hScintilla = NULL;
+HWND g_hwndActiveEdit = NULL;
 int iEncoding = CPI_DEFAULT;
 int iLongLinesLimit = 80;
 int iEOLMode = SC_EOL_CRLF;
@@ -88,14 +90,6 @@ NP2ENCODING mEncoding[] = {
   { NCP_8BIT | NCP_RECODE, 54936, "gb18030,gb18030,", 61072, L"" },
 };
 
-HANDLE g_hScintilla = NULL;
-
-LRESULT WINAPI Scintilla_DirectFunction(HANDLE hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-  assert(0);
-  return 0;
-}
-
 void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, const long nMaxPos)
 {
 }
@@ -108,15 +102,10 @@ void n2e_IncProgressBarPosInStatusBar(const long nOffset)
 {
 }
 
-BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED)
+HWND n2e_GetActiveEdit()
 {
-  return (iLexer != SCLEX_NULL)
-    && TextBuffer_IsTextAtPos(&pED->m_tb, n2e_GetSingleLineCommentPrefix(iLexer), iPos - n2e_GetSingleLineCommentPrefixLength(iLexer))
-    && (!n2e_SingleLineCommentPrefixIsWord(iLexer)
-      || TextBuffer_IsAnyFollowingCharAtLine(&pED->m_tb, lpstrWhiteSpacesAndEOLs, iPos));
+  return g_hwndActiveEdit;
 }
-
-void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos) {}
 
 WCHAR szIniFile[MAX_PATH];
 

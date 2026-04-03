@@ -64,6 +64,14 @@ public:
 		return *this;
 	}
 
+	// [2e]: Recursive Regexp Replace on $ #307 (required for boost::regex_replace)
+	AnsiDocumentIterator& operator ++ (int v)
+	{
+		PLATFORM_ASSERT(v == 0);
+		return ++(*this);
+	}
+	// [/2e]
+
 	AnsiDocumentIterator& operator -- ()
 	{
 		m_pos--;

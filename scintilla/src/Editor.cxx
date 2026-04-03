@@ -4278,6 +4278,37 @@ Sci::Position Editor::FindText(
 }
 
 /**
+ * Replace text in the document, in the given range.
+ * @return The number of the replacements.
+ */
+Sci::Position Editor::RegexReplaceText(
+	uptr_t wParam,		///< Search modes : @c SCFIND_MATCHCASE, @c SCFIND_WHOLEWORD,
+	///< @c SCFIND_WORDSTART, @c SCFIND_REGEXP or @c SCFIND_POSIX.
+	sptr_t lParam) {	///< @c Sci_TextToFind structure: The text to search for in the given range.
+
+	Sci_RegexReplace* rr = static_cast<Sci_RegexReplace*>(PtrFromSPtr(lParam));
+	if (!pdoc->HasCaseFolder())
+		pdoc->SetCaseFolder(CaseFolderForEncoding());
+	try {
+		pdoc->RegexReplaceText(
+			this,
+			static_cast<Sci::Position>(rr->chrg.cpMin),
+			static_cast<Sci::Position>(rr->chrg.cpMax),
+			rr->lpstrRegex,
+			rr->lpstrRegexReplace,
+			rr->filterFunc,
+			rr->filterFuncParam,
+			static_cast<int>(wParam),
+			&rr->count);
+		return rr->count;
+	}
+	catch (RegexError&) {
+		errorStatus = SC_STATUS_WARN_REGEX;
+		return -1;
+	}
+}
+
+/**
  * Relocatable search support : Searches relative to current selection
  * point and sets the selection to the found text range with
  * each search.
@@ -6342,6 +6373,9 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 
 	case SCI_FINDTEXT:
 		return FindText(wParam, lParam);
+
+	case SCI_REGEXREPLACETEXT:
+		return RegexReplaceText(wParam, lParam);
 
 	case SCI_GETTEXTRANGE: {
 			if (lParam == 0)

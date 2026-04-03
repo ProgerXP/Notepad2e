@@ -105,7 +105,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <OutDir>$(SolutionDir)bin\$(Platform)\$(Configuration)\</OutDir>
-    <IntDir>$(SolutionDir)bin\obj\$(Platform)\$(Configuration)\</IntDir>
+    <IntDir>$(SolutionDir)bin\obj\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
@@ -120,13 +120,14 @@
     </PreBuildEvent>
     <ClCompile>
       <AdditionalIncludeDirectories>scintilla\include;scintilla\src;scintilla\lexlib;scintilla\win32;$(ProjectDir)src;$(ProjectDir)src\Extension;$(ProjectDir)scintilla\lua\src;$(OutDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;STATIC_BUILD;SCI_LEXER;SCI_OWNREGEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;SCI_STATIC;SCI_LEXER;SCI_OWNREGEX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DataExecutionPrevention>true</DataExecutionPrevention>
       <RandomizedBaseAddress>true</RandomizedBaseAddress>
       <BufferSecurityCheck>true</BufferSecurityCheck>
       <MinimalRebuild>false</MinimalRebuild>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>comctl32.lib;shlwapi.lib;imm32.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -291,6 +292,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="scintilla\boostregex\BoostRegExReplace.cxx" />
     <ClCompile Include="scintilla\boostregex\BoostRegExSearch.cxx" />
     <ClCompile Include="scintilla\boostregex\UTF8DocumentIterator.cxx" />
     <ClCompile Include="scintilla\lexers\LexA68k.cxx" />
@@ -472,6 +474,7 @@
     <ClCompile Include="src\Helpers.c" />
     <ClCompile Include="src\Notepad2.c" />
     <ClCompile Include="src\Print.cpp" />
+    <ClCompile Include="src\Shared\SharedEditHelper.c" />
     <ClCompile Include="src\Styles.c" />
     <ClCompile Include="scintilla\lexers\LexAsm.cxx" />
     <ClCompile Include="scintilla\lexers\LexCPP.cxx" />
@@ -610,6 +613,7 @@
     <ClInclude Include="src\Extension\ViewHelper.h" />
     <ClInclude Include="src\Helpers.h" />
     <ClInclude Include="src\Notepad2.h" />
+    <ClInclude Include="src\Shared\SharedEditHelper.h" />
     <ClInclude Include="src\Styles.h" />
     <ClInclude Include="src\resource.h" />
     <ClInclude Include="src\version.h" />

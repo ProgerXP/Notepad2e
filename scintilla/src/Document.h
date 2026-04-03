@@ -102,6 +102,20 @@ public:
 /// Factory function for RegexSearchBase
 extern RegexSearchBase *CreateRegexSearch(CharClassify *charClassTable);
 
+/**
+ * Interface class for regular expression searching
+ */
+class RegexReplaceBase {
+public:
+	virtual ~RegexReplaceBase() {}
+
+	virtual void ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& minPos, const Sci::Position& maxPos, const char* s,
+		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counter) = 0;
+};
+
+/// Factory function for RegexSearchBase
+extern RegexReplaceBase* CreateRegexReplace(CharClassify* charClassTable);
+
 struct StyledText {
 	size_t length;
 	const char *text;
@@ -254,6 +268,7 @@ private:
 
 	bool matchesValid;
 	std::unique_ptr<RegexSearchBase> regex;
+	std::unique_ptr<RegexReplaceBase> regexReplace;
 	std::unique_ptr<LexInterface> pli;
 
 public:
@@ -441,6 +456,8 @@ public:
 	bool HasCaseFolder() const noexcept;
 	void SetCaseFolder(CaseFolder *pcf_) noexcept;
 	Sci::Position FindText(Sci::Position minPos, Sci::Position maxPos, const char *search, int flags, Sci::Position *length);
+	void RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
+		const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, Sci::Position* counter);
 	const char *SubstituteByPosition(const char *text, Sci::Position *length);
 	int LineCharacterIndex() const noexcept;
 	void AllocateLineCharacterIndex(int lineCharacterIndex);

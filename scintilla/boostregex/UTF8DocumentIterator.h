@@ -16,7 +16,7 @@
 #include <ILoader.h>
 #include "CaseFolder.h"
 #include <Scintilla.h>
-#include "../scintilla/lexlib/CharacterCategory.h"
+#include "../lexlib/CharacterCategory.h"
 #include <Document.h>
 
 void ReadCharacterFromUTF8(Scintilla::Document* _doc, const Sci::Position _pos, const Sci::Position _end,
@@ -112,6 +112,12 @@ public:
 					readCharacter();		
 				}
                 return *this;
+        }
+
+        UTF8DocumentIterator& operator ++ (int v)
+        {
+					PLATFORM_ASSERT(v == 0);
+					return ++(*this);
         }
 
         UTF8DocumentIterator& operator -- ()

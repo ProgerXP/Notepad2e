@@ -16,6 +16,7 @@
 ******************************************************************************/
 
 #include "Scintilla.h"
+#include "../../scintilla/win32/ScintillaWin.h"
 #include "Extension/ViewHelper.h"
 //=============================================================================
 //
@@ -38,7 +39,7 @@ __forceinline HANDLE GetScintillaHandle(HWND hwnd)
 //  SciCall()
 //
 //
-LRESULT WINAPI Scintilla_DirectFunction(HANDLE, UINT, WPARAM, LPARAM);
+
 #define SciCallEx(hwnd, m, w, l) Scintilla_DirectFunction(GetScintillaHandle(hwnd), m, w, l)
 #define SciCall(m, w, l) SciCallEx(hwndEdit, m, w, l)
 
@@ -100,6 +101,7 @@ __forceinline LRESULT SciCallEx_##fn(const HWND hwnd, type1 var1, type2 var2) { 
 //
 //
 DeclareSciCallR0(GetCodePage, GETCODEPAGE, int);
+DeclareSciCallV1(SetCodePage, SETCODEPAGE, int, codepage);
 DeclareSciCallR0(GetLineCount, GETLINECOUNT, int);
 DeclareSciCallR0(GetLinesOnScreen, LINESONSCREEN, int);
 DeclareSciCallR0(GetLength, GETLENGTH, int);
@@ -108,6 +110,10 @@ DeclareSciCallR0(GetSelStart, GETSELECTIONSTART, int);
 DeclareSciCallR0(GetSelEnd, GETSELECTIONEND, int);
 DeclareSciCallV2(SetSel, SETSEL, int, anchorPos, int, currentPos);
 DeclareSciCallV2(ReplaceSel, REPLACESEL, int, unused, const char*, text);
+DeclareSciCallV2(ReplaceTarget, REPLACETARGET, int, length, const char*, text);
+DeclareSciCallV2(ReplaceTargetRegEx, REPLACETARGETRE, int, length, const char*, text);
+DeclareSciCallV1(SetTargetStart, SETTARGETSTART, int, start);
+DeclareSciCallV1(SetTargetEnd, SETTARGETEND, int, end);
 DeclareSciCallR1(GetCharAt, GETCHARAT, char, int, position);
 DeclareSciCallR0(CharLeftExtEnd, CHARLEFTEXTEND, int);
 DeclareSciCallR0(CharRightExtEnd, CHARRIGHTEXTEND, int);
@@ -127,6 +133,7 @@ DeclareSciCallV1(PositionAfter, POSITIONAFTER, int, position);
 DeclareSciCallV1(PositionBefore, POSITIONBEFORE, int, position);
 DeclareSciCallV2(DeleteRange, DELETERANGE, int, start, int, lengthDelete);
 DeclareSciCallV2(FindText, FINDTEXT, int, searchFlags, struct Sci_TextToFind *, ft);
+DeclareSciCallV2(RegexReplaceText, REGEXREPLACETEXT, int, searchFlags, struct Sci_RegexReplace*, rr);
 DeclareSciCallV2(GetStyledText, GETSTYLEDTEXT, int, unused, struct Sci_TextToFind *, ft);
 DeclareSciCallV2(AddText, ADDTEXT, int, length, const char*, text);
 DeclareSciCallR2(GetText, GETTEXT, int, int, length, char*, text);

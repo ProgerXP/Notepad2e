@@ -96,6 +96,14 @@ public:
 		return *this;
 	}
 
+	// [2e]: Recursive Regexp Replace on $ #307 (required for boost::regex_replace)
+	UTF32DocumentIterator& operator ++ (int v)
+	{
+		PLATFORM_ASSERT(v == 0);
+		return ++(*this);
+	}
+	// [/2e]
+
 	UTF32DocumentIterator& operator -- ()
 	{
 		if (m_utf16Length == 2 && m_characterIndex == 1)

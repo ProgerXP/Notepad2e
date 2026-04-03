@@ -3652,7 +3652,15 @@ int ResourcesRelease(bool fromDllMain) {
 
 }
 
-// This function is externally visible so it can be called from container when building statically.
+// These functions are externally visible so it can be called from container when building statically.
+#ifndef SCI_DLL_EXPORT
+extern "C"
+LRESULT Scintilla_DirectFunction(HANDLE hwnd, UINT iMessage, WPARAM wParam, LPARAM lParam) {
+	ScintillaWin *sci = (ScintillaWin*)hwnd;
+	return Scintilla::DirectFunction(sci, iMessage, wParam, lParam);
+}
+#endif
+
 int Scintilla_ReleaseResources() {
 	return Scintilla::ResourcesRelease(false);
 }

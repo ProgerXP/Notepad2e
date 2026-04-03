@@ -14,7 +14,6 @@ extern int iLongLinesLimit;
 
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, enum ESaveCopyMode);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
-void EditSelectEx(HWND, int, int);
 
 #ifndef N2E_TESTING
 
@@ -24,10 +23,15 @@ extern NP2ENCODING mEncoding[];
 extern HANDLE g_hScintilla;
 extern PEDITLEXER pLexCurrent;
 
-#else // ifndef N2E_TESTING
+#else // ifdef N2E_TESTING
 
 #include <wtypes.h>
 
+#ifdef __cplusplus
+extern "C" {
+  extern HWND g_hwndActiveEdit;
+}
+#endif
 extern PEDITLEXER pLexCurrent;
 
 #define NCP_DEFAULT            1
@@ -66,6 +70,28 @@ void n2e_ShowProgressBarInStatusBar(LPCWSTR pProgressText, const long nCurPos, c
 void n2e_HideProgressBarInStatusBar();
 void n2e_IncProgressBarPosInStatusBar(const long nOffset);
 
+#ifdef __cplusplus
+extern "C"
+#endif
+HWND n2e_GetActiveEdit();
+
 extern WCHAR szIniFile[MAX_PATH];
+
+typedef struct _editfindreplace
+{
+  char szFind[TEXT_BUFFER_LENGTH];
+  char szReplace[TEXT_BUFFER_LENGTH];
+  char szFindUTF8[TEXT_BUFFER_LENGTH];
+  char szReplaceUTF8[TEXT_BUFFER_LENGTH];
+  UINT fuFlags;
+  BOOL bTransformBS;
+  BOOL bObsolete /* was bFindUp */;
+  BOOL bFindClose;
+  BOOL bReplaceClose;
+  BOOL bNoFindWrap;
+  ESearchInComments iSearchInComments;
+  HWND hwnd;
+
+} EDITFINDREPLACE, *LPEDITFINDREPLACE, *LPCEDITFINDREPLACE;
 
 #endif
