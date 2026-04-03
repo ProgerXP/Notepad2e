@@ -271,7 +271,7 @@ BOOL n2e_IsCommentStyleById(const int iStyle)
   return n2e_IsCommentStyle(n2e_GetStyleById(iStyle));
 }
 
-BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const int iPos)
+BOOL n2e_IsCommentStyleAtPos(const HWND hwnd, const Sci_Position iPos)
 {
   return n2e_IsCommentStyle(n2e_GetStyleById((int)SendMessage(hwnd, SCI_GETSTYLEAT, iPos, 0)));
 }
@@ -378,7 +378,7 @@ int n2e_FindTextImpl(const HWND hwnd, LPCEDITFINDREPLACE lpefr, struct TextToFin
   return iPos;
 }
 
-int n2e_regexReplaceFilter(const void* ptr, const int pos, const int mode)
+int n2e_regexReplaceFilter(const void* ptr, const Sci_Position pos, const int mode)
 {
   // #TODO: code cleanup
   const ESearchInComments sic = (ESearchInComments)mode;

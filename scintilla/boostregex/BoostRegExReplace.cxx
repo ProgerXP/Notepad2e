@@ -1,9 +1,6 @@
-#include <stdlib.h>
-#include <iterator> 
-#include <iostream>
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+
 #include <memory>
-#include <stdexcept>
-#include <tuple>
 #include <vector>
 #include "scintilla.h"
 #include "Platform.h"
@@ -42,7 +39,6 @@
 #include "UTF32DocumentIterator.h"
 #else
 #include <boost/regex.hpp>
-#include <boost/function.hpp>
 #include "UTF8DocumentIterator.h"
 #include "AnsiDocumentIterator.h"
 #endif
@@ -252,10 +248,6 @@ void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool rege
 #endif
 	}
 
-	catch (regex_error& ex)
-	{
-	}
-
 	catch (...)
 	{
 	}
@@ -278,12 +270,6 @@ public:
 	CDocumentOutIterator(Container* _container, const Sci::Position& _pos)
 		: m_container(_container), m_pos(_pos){}
 
-	CDocumentOutIterator& operator=(const CDocumentOutIterator& _right)
-	{
-		m_container = _right.m_container;
-		m_pos = _right.m_pos;
-		return *this;
-	}
 	CDocumentOutIterator& operator*()
 	{
 		return *this;
@@ -298,8 +284,9 @@ public:
 		m_pos++;
 		return *this;
 	}
-	CDocumentOutIterator& operator=(CharT c)
+	CDocumentOutIterator& operator=(CharT)
 	{
+		PLATFORM_ASSERT(0);
 		return *this;
 	}
 	void save(const Sci::Position& posFrom, const Sci::Position& posTo, const String& to) const
@@ -361,7 +348,7 @@ struct CRegexCustomFormatter
 	
 	CDocumentOutIterator<Container, CharT, String> operator()(const Match& m, CDocumentOutIterator<Container, CharT, String> it) const
 	{
-		const int pos = m[0].first.pos();
+		const auto pos = m[0].first.pos();
 		if (!m_filterFunc(m_editor, pos, m_filterFuncParam))
 			return it;
 
@@ -417,7 +404,7 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 		const auto targetEnd = offset + posTo;
 		replace._editor->WndProc(SCI_SETTARGETSTART, targetStart, 0);
 		replace._editor->WndProc(SCI_SETTARGETEND, targetEnd, 0);
-		replace._editor->WndProc(SCI_REPLACETARGET, -1, (sptr_t)stringTo.c_str());
+		replace._editor->WndProc(SCI_REPLACETARGET, (uptr_t)-1, (sptr_t)stringTo.c_str());
 		offset += stringTo.length() - (posTo - posFrom);
 	}
 	doc->EndUndoAction();

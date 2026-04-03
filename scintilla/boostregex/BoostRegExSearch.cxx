@@ -7,6 +7,8 @@
  * (c) 2013 Francois-R.Boyer@PolyMtl.ca - Empty match modes and best match backward search.
  * 
  */
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+
 #include <stdlib.h>
 #include <iterator> 
 #include <memory>

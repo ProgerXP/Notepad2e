@@ -1199,7 +1199,7 @@ struct Sci_TextToFind {
 	struct Sci_CharacterRange chrgText;
 };
 
-typedef int (*TRegexReplaceFilterFunc)(const void* hwnd, const int pos, const int mode);
+typedef int (*TRegexReplaceFilterFunc)(const void* hwnd, const Sci_Position pos, const int mode);
 
 struct Sci_RegexReplace {
 	struct Sci_CharacterRange chrg;

@@ -1,4 +1,5 @@
 #include "EditHelperEx.h"
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
 #include <boost/regex.hpp>
 #include "../scintilla/src/UniConversion.h"
 #include "Scintilla.h"
