@@ -60,6 +60,7 @@
 #define DEFAULT_WHEEL_SCROLL_INTERVAL_MS  50
 #define DEFAULT_CLOCK_UPDATE_INTERVAL_MS  10000
 #define DEFAULT_MAX_SEARCH_DISTANCE_KB  96
+#define DEFAULT_MAX_SEARCH_WORD_LENGTH_KB 1
 #define BYTES_IN_KB  1024
 
 HANDLE g_hScintilla = NULL;
@@ -83,6 +84,7 @@ ELanguageIndicatorMode iShowLanguageInTitle = LIT_SHOW_NON_US;
 UINT iShellMenuType = CMF_EXPLORE;
 BOOL bHighlightLineIfWindowInactive = FALSE;
 long iMaxSearchDistance = DEFAULT_MAX_SEARCH_DISTANCE_KB * BYTES_IN_KB;
+long iMaxSearchWordLength = DEFAULT_MAX_SEARCH_WORD_LENGTH_KB * BYTES_IN_KB;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
 EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
 BOOL bTreatQuotesAsBraces = FALSE;

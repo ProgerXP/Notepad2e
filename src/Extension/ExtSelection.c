@@ -303,6 +303,7 @@ int n2e_HighlightWord(LPCSTR word)
   {
     const int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     const int wlen = strlen(word);
+    const BOOL bBreakWordSelection = (wlen > iMaxSearchWordLength);
     ttf.lpstrText = (LPSTR)word;
     int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
 
@@ -340,7 +341,7 @@ int n2e_HighlightWord(LPCSTR word)
 
       if (hwnd == hwndEdit)
       {
-        if (!bEditSelectionInit || !n2e_IsSelectionEditModeOn())
+        if (!bBreakWordSelection && (!bEditSelectionInit || !n2e_IsSelectionEditModeOn()))
         {
           int cpMin = ttf.chrg.cpMin;
           int cpMax = ttf.chrg.cpMax;
@@ -387,7 +388,7 @@ int n2e_HighlightWord(LPCSTR word)
           bEditSelectionInit = FALSE;
         }
       }
-      while (1)
+      while (!bBreakWordSelection)
       {
         res = SciCall_FindText(search_opt, &ttf);
         if (-1 != res)

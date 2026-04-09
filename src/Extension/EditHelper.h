@@ -11,6 +11,7 @@
 
 
 extern long iMaxSearchDistance;
+extern long iMaxSearchWordLength;
 extern BOOL bUsePrefixInOpenDialog;
 extern EHighlightCurrentSelectionMode iHighlightSelection;
 extern BOOL bEditSelectionScope;
