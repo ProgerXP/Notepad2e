@@ -153,6 +153,7 @@ namespace Notepad2eTests
     TEST_METHOD(ReplaceAllUnicode)
     {
       const CRegExTestData data[] = {
+        CRegExTestData(UCS2toCP(L"a a", CP_UTF8), "a", UCS2toCP(L"ффф", CP_UTF8), UCS2toCP(L"ффф ффф", CP_UTF8)),
         CRegExTestData(UCS2toCP(L"¡", CP_UTF8), "(^.+$)", "\\1\n\\1\n", UCS2toCP(L"¡\n¡\n", CP_UTF8)),
         CRegExTestData(UCS2toCP(L"¡ ¢", CP_UTF8), "(^.+$)", "\\1\n\\1\n", UCS2toCP(L"¡ ¢\n¡ ¢\n", CP_UTF8)),
         CRegExTestData(UCS2toCP(L"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ", CP_UTF8),

@@ -343,7 +343,7 @@ struct CRegexCustomFormatter
 	CRegexCustomFormatter(Editor* editor, Document* document, const Regex& regex, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement)
 		: m_editor(editor), m_document(document), m_regex(regex), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
 	{
-		m_replacement = String(replacement.begin(), replacement.end());
+		m_replacement = (const CharT*)CharTPtr(replacement.c_str());
 	}
 	
 	CDocumentOutIterator<Container, CharT, String> operator()(const Match& m, CDocumentOutIterator<Container, CharT, String> it) const
