@@ -114,16 +114,6 @@ void CALW_InitPass(RecodingAlgorithm* pRA)
   CALW_InitPassImpl(hcalwdata, pRA);
 }
 
-BOOL CALW_CanUseHWNDForReading(const RecodingAlgorithm* pRA)
-{
-  return CALW_CanUseHWNDForReadingImpl(hcalwdata, pRA);
-}
-
-BOOL CALW_CanUseHWNDForWriting(const RecodingAlgorithm* pRA)
-{
-  return CALW_CanUseHWNDForWritingImpl(hcalwdata, pRA);
-}
-
 static StringSource ss = { 0 };
 static RecodingAlgorithm ra = { 0 };
 

@@ -668,15 +668,6 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
       pTR->m_iSelEnd = StringSource_GetLength(pSS);
     }
   };
-  if (pRA->recodingType == ERT_CALW)
-  {
-    while ((pTR->m_iSelStart < pTR->m_iSelEnd) && strchr("\r\n", StringSource_GetCharAt(pSS, pRA, pTR->m_iSelEnd - 1)))
-    {
-      if (!pSS->hwnd)
-        break;
-      --pTR->m_iSelEnd;
-    }
-  }
   pTR->m_iSelEndOriginal = pTR->m_iSelEnd;
   pTR->m_iPositionCurrent = pTR->m_iSelStart;
   pTR->m_iExpectedProcessedChars = 0;
@@ -705,21 +696,6 @@ BOOL RecodingAlgorithm_ShouldBreak(const RecodingAlgorithm* pRA)
 BOOL RecodingAlgorithm_ShouldBreakEncoding(const RecodingAlgorithm* pRA)
 {
   return RecodingAlgorithm_ShouldBreak(pRA) && (pRA->iPassIndex >= pRA->iPassCount - 1);
-}
-
-BOOL RecodingAlgorithm_IsRestrictedForHWNDUse(const RecodingAlgorithm* pRA)
-{
-  return (pRA->recodingType == ERT_CALW);
-}
-
-BOOL RecodingAlgorithm_CanUseHWNDForReading(const RecodingAlgorithm* pRA)
-{
-  return !RecodingAlgorithm_IsRestrictedForHWNDUse(pRA) || CALW_CanUseHWNDForReading(pRA);
-}
-
-BOOL RecodingAlgorithm_CanUseHWNDForWriting(const RecodingAlgorithm* pRA)
-{
-  return !RecodingAlgorithm_IsRestrictedForHWNDUse(pRA) || CALW_CanUseHWNDForWriting(pRA);
 }
 
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt, const BOOL isEncoding,
@@ -877,21 +853,16 @@ long StringSource_GetLength(const StringSource* pSS)
 
 char StringSource_GetCharAt(const StringSource* pSS, const RecodingAlgorithm* pRA, const int iPos)
 {
-  return (pSS->hwnd && RecodingAlgorithm_CanUseHWNDForReading(pRA))
+  return pSS->hwnd
     ? SciCall_GetCharAt(iPos)
     : pSS->text[iPos];
 }
 
 long StringSource_IsDataPortionAvailable(const StringSource* pSS, const RecodingAlgorithm* pRA, EncodingData* pED)
 {
-  if (pSS->hwnd && RecodingAlgorithm_CanUseHWNDForReading(pRA))
-  {
-    return pED->m_tr.m_iPositionCurrent < pED->m_tr.m_iSelEnd;
-  }
-  else
-  {
-    return pSS->iProcessedChars < pSS->iTextLength;
-  }
+  return pSS->hwnd
+    ? pED->m_tr.m_iPositionCurrent < pED->m_tr.m_iSelEnd
+    : pSS->iProcessedChars < pSS->iTextLength;
 }
 
 BOOL StringSource_GetText(StringSource* pSS, const RecodingAlgorithm* pRA, LPSTR pText, const long iStart, const long iEnd)
@@ -904,7 +875,7 @@ BOOL StringSource_GetText(StringSource* pSS, const RecodingAlgorithm* pRA, LPSTR
     tr.chrg.cpMin = iStart;
     tr.chrg.cpMax = iEnd;
     tr.lpstrText = pText;
-    if (pSS->hwnd && RecodingAlgorithm_CanUseHWNDForReading(pRA))
+    if (pSS->hwnd)
     {
       return SciCall_GetTextRange(0, &tr) > 0;
     }
@@ -980,7 +951,7 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
 
     if (i != 0)
     {
-      if (!pSS->hwnd || !RecodingAlgorithm_CanUseHWNDForReading(pRA))
+      if (!pSS->hwnd)
       {
         memcpy_s(pSS->text, pSS->iResultLength, pSS->result, pSS->iResultLength);
         pSS->text[pSS->iResultLength] = 0;
@@ -1157,48 +1128,30 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
     pED->m_tbRes.m_ptr[pED->m_tbRes.m_iPos] = 0;
     if (pSS->hwnd)
     {
-      if (!RecodingAlgorithm_CanUseHWNDForWriting(pRA))
+      const auto originLength = SciCall_GetLength();
+      int delta = 0;
+      if ((pED->m_tbRes.m_iPos != pED->m_tb.m_iPos)
+        || (strncmp(pED->m_tbRes.m_ptr, pED->m_tb.m_ptr, pED->m_tb.m_iPos) != 0)
+        || pRA->iResultEnd)
       {
-        const int length = pED->m_tbRes.m_iPos;
-        memcpy_s(pSS->result,
-          MAX_TEST_STRING_LENGTH,
-          pED->m_tbRes.m_ptr, length);
-        pSS->iResultLength += length;
-        pRA->iResultStart = pED->m_tr.m_iSelStart;
-        pRA->iResultEndBackup = pED->m_tr.m_iSelEnd;
-      }
-      else
-      {
-        if ((pED->m_tbRes.m_iPos != pED->m_tb.m_iPos)
-          || (strncmp(pED->m_tbRes.m_ptr, pED->m_tb.m_ptr, pED->m_tb.m_iPos) != 0)
-          || pRA->iResultEnd)
+        if (pRA->iResultEnd)
         {
-          if (pRA->iResultEnd)
-          {
-            SciCall_SetSel(pRA->iResultStart, pRA->iResultEnd);
-            pRA->iResultSelEnd = pRA->iResultStart + pED->m_tbRes.m_iPos;
-          }
-          else if (RecodingAlgorithm_IsRestrictedForHWNDUse(pRA))
-          {
-            SciCall_SetSel(pED->m_tr.m_iSelStart, pED->m_tr.m_iSelEndOriginal);
-          }
-          else
-          {
-            SciCall_SetSel(pED->m_tr.m_iPositionStart, pED->m_tr.m_iPositionCurrent);
-          }          
-          SciCall_ReplaceSel(0, "");
-          SciCall_AddText(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
+          SciCall_SetSel(pRA->iResultStart, pRA->iResultEnd);
+          pRA->iResultSelEnd = pRA->iResultStart + pED->m_tbRes.m_iPos;
         }
         else
         {
-          const int iPos = pED->m_tr.m_iPositionStart + pED->m_tbRes.m_iPos;
-          SciCall_SetSel(iPos, iPos);
+          SciCall_SetTargetStart(pED->m_tr.m_iPositionStart);
+          assert(pED->m_tr.m_iPositionCurrent <= originLength);
+          SciCall_SetTargetEnd(pED->m_tr.m_iPositionCurrent);
         }
-        pSS->iResultLength += pED->m_tbRes.m_iPos;
-        pED->m_tr.m_iSelEnd += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
-        pED->m_tr.m_iPositionCurrent = SciCall_GetCurrentPos();
-        iCursorOffset = 0;
+        SciCall_ReplaceTarget(pED->m_tbRes.m_iPos, pED->m_tbRes.m_ptr);
+        delta = (pED->m_tr.m_iPositionCurrent - pED->m_tr.m_iPositionStart) - pED->m_tbRes.m_iPos;
       }
+      pSS->iResultLength += pED->m_tbRes.m_iPos;
+      pED->m_tr.m_iSelEnd -= delta;
+      pED->m_tr.m_iPositionStart = pED->m_tr.m_iPositionCurrent = pED->m_tr.m_iPositionStart + pED->m_tbRes.m_iPos;
+      iCursorOffset = 0;
     }
     else
     {

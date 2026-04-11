@@ -1033,6 +1033,23 @@ namespace Notepad2eTests
                               "# XXXXXXX XXXXXX\n"
                               "# 1. XX yyy zzz",
               false, 0, { 50, SCLEX_CONF, SC_EOL_LF }),
+
+          CTestCaseData(false, "// [/2e]\r\n"
+                               "\r\n"
+                               "//======",
+              CPI_DEFAULT,
+                              "// [/2e]\r\n"
+                               "\r\n"
+                               "//======",
+              false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "int v1;\r\n"
+                               "int v2; // comment\r\n"
+                               "int v3;",
+              CPI_DEFAULT,
+                               "int v1; int v2; // comment int v3;",
+              false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+                
 #endif
 
 #ifdef ENABLE_COMPOSITE_TESTS
@@ -1259,6 +1276,28 @@ namespace Notepad2eTests
                                "//     var bar = 123;\n"
                                "//   }",
               false, 0, { 21, SCLEX_CPP, SC_EOL_LF }),
+
+          CTestCaseData(false, "  // test\r\n"
+                               "      // comment\r\n"
+                               "BOOL func(){}\r\n"
+                               "// aa",
+                CPI_DEFAULT,
+                               "  // test comment\r\n"
+                               "BOOL func(){}\r\n"
+                               "// aa",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
+          CTestCaseData(false, "  // test\r\n"
+                               "      // comment\r\n"
+                               "BOOL func(){}\r\n"
+                               "\r\n"
+                               "// aa",
+                CPI_DEFAULT,
+                               "  // test comment\r\n"
+                               "BOOL func(){}\r\n"
+                               "\r\n"
+                               "// aa",
+                false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 #endif
 
 #ifdef ENABLE_NEW_TEST
