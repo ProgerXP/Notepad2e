@@ -1757,15 +1757,12 @@ void EditTitleCase(HWND hwnd)
 
         LPWSTR pszMappedW = LocalAlloc(LPTR, LocalSize(pszTextW));
 
-        if (LCMapString(
-                        LOCALE_SYSTEM_DEFAULT, LCMAP_LINGUISTIC_CASING |/*LCMAP_TITLECASE*/0x00000300,
-                        pszTextW, cchTextW, pszMappedW, (int)LocalSize(pszMappedW) / sizeof(WCHAR)))
-        {
-          StrCpyN(pszTextW, pszMappedW, (int)GlobalSize(pszTextW) / sizeof(WCHAR));
-          bChanged = TRUE;
-        }
-        else
-          bChanged = FALSE;
+        // [2e]: Title case not always converting the case #192
+        bChanged = LCMapString(LOCALE_SYSTEM_DEFAULT, LCMAP_LINGUISTIC_CASING | LCMAP_LOWERCASE,
+                     pszTextW, cchTextW, pszMappedW, (int)LocalSize(pszMappedW) / sizeof(WCHAR))
+                && LCMapString(LOCALE_SYSTEM_DEFAULT, 0x00000300/*=LCMAP_TITLECASE*/,
+                     pszMappedW, (int)LocalSize(pszMappedW) / sizeof(WCHAR), pszTextW, LocalSize(pszTextW) / sizeof(WCHAR));
+        // [/2e]
 
         LocalFree(pszMappedW);
       }
