@@ -796,7 +796,9 @@ int GetDpiFont()
 ...
 
 int SurfaceGDI::LogPixelsY() {
-    return GetDpiY();
+	return ::GetDeviceCaps(hdc, TECHNOLOGY) != DT_RASDISPLAY
+		? ::GetDeviceCaps(hdc, LOGPIXELSY)
+		: GetDpiY();
 }
 
 int SurfaceGDI::DeviceHeightFont(int points) {
