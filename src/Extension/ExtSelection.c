@@ -303,7 +303,7 @@ int n2e_HighlightWord(LPCSTR word)
   {
     const int search_opt = bEditSelectionWholeWordMode ? SCFIND_WHOLEWORD : SCFIND_MATCHCASE;
     const int wlen = strlen(word);
-    const BOOL bBreakWordSelection = (wlen > iMaxSearchWordLength);
+    const BOOL bBreakWordSelection = (search_opt == SCFIND_WHOLEWORD) && (wlen > iMaxSearchWordLength);
     ttf.lpstrText = (LPSTR)word;
     int curr_indi = N2E_SELECT_INDICATOR_SINGLE;
 
