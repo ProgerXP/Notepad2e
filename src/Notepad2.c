@@ -2145,6 +2145,8 @@ void MsgInitMenu(HWND hwnd, WPARAM wParam, LPARAM lParam)
   EnableCmd(hmenu, IDM_EDIT_COPYALL, i3);
   // [2e]: "Copy Add (Ctrl+E)" not working when clipboard is empty
   EnableCmd(hmenu, IDM_EDIT_COPYADD, i3);
+  // [2e]: Disable Edit > Select All on empty buffer #490
+  EnableCmd(hmenu, IDM_EDIT_SELECTALL, i3);
   EnableCmd(hmenu, IDM_EDIT_PASTE, i2);
   EnableCmd(hmenu, IDM_EDIT_SWAP, i || i2);
   EnableCmd(hmenu, IDM_EDIT_CLEAR, i);
