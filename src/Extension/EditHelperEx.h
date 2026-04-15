@@ -20,6 +20,7 @@ extern "C" {
     char* original;
   } SE_DATA, *LPSE_DATA;
 
+  void n2e_UpdateCaretWidth(const HWND hwnd, const WPARAM wParam, const LPARAM lParam);
   int n2e_GetEditSelectionCount();
   void n2e_ClearEditSelections();
   void n2e_AddEditSelection(LPSE_DATA pData);

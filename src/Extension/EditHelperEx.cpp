@@ -235,6 +235,11 @@ extern "C"
     n2e_ReplaceSubstring(buf, from, to);
   }
 
+  void n2e_UpdateCaretWidth(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
+  {
+    SendMessage(hwnd, SCI_SETCARETWIDTH, wParam, lParam);
+  }
+
   std::vector<SE_DATA> vectorEditSelections;
 
   int n2e_GetEditSelectionCount()

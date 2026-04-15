@@ -263,6 +263,7 @@ int       iEncoding;
 int       iOriginalEncoding;
 int       iEOLMode;
 
+BOOL      bDefaultCaretWidth = FALSE; // [2e]: Use system's CaretWidth by default #483
 int       iDefaultCodePage;
 int       iDefaultCharSet;
 
@@ -1068,6 +1069,17 @@ LRESULT CALLBACK MainWndProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
       MsgThemeChanged(hwnd, wParam, lParam);
       break;
 
+
+    // [2e]: Use system's CaretWidth by default #483
+    case WM_SETTINGCHANGE:
+      if (wParam == SPI_SETCARETWIDTH)
+      {
+        int iCaretWidth = 0;
+        if (bDefaultCaretWidth && SystemParametersInfo(SPI_GETCARETWIDTH, 0, &iCaretWidth, 0))
+          n2e_ApplyViewCommandWithParams(n2e_UpdateCaretWidth, iCaretWidth, 0);
+      }
+      break;
+    // [/2e]
 
     // [2e]: Language indication #86
     case WM_INPUTLANGCHANGE:

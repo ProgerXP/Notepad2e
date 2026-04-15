@@ -7605,7 +7605,7 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 		return vs.caretStyle;
 
 	case SCI_SETCARETWIDTH:
-		vs.caretWidth = Sci::clamp(static_cast<int>(wParam), 0, 3);
+		vs.caretWidth = Sci::clamp(static_cast<int>(wParam), 1, 20); // [2e]: Use system's CaretWidth by default #483
 		InvalidateStyleRedraw();
 		break;
 

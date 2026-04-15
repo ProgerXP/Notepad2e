@@ -2780,3 +2780,20 @@ void ScintillaWin::GetIntelliMouseParameters() noexcept {
 /**Horizontal scrolling with touchpad doesn't work on Win10 22H2 and Win11 #482**
 
 ---
+
+**Use system's CaretWidth by default #483**
+
+Modify `SCI_SETCARETWIDTH`-handler in `Editor::WndProc`:
+
+[scintilla/src/Editor.cxx]
+```
+	case SCI_SETCARETWIDTH:
+		vs.caretWidth = Sci::clamp(static_cast<int>(wParam), 1, 20);
+		InvalidateStyleRedraw();
+		break;
+```
+[/scintilla/src/Editor.cxx]
+
+/**Use system's CaretWidth by default #483**
+
+---

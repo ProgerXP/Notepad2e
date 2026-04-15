@@ -48,6 +48,7 @@ int iDefaultLexer;
 BOOL bAutoSelect;
 int cxStyleSelectDlg;
 int cyStyleSelectDlg;
+extern BOOL bDefaultCaretWidth;
 extern int  iDefaultCodePage;
 extern int  iDefaultCharSet;
 extern BOOL bHighlightCurrentLine;
@@ -549,9 +550,15 @@ void _Style_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
     iValue = 1;
     if (Style_StrGetSize(lexDefault.Styles[DLO_CARET_COLOR + iIdx].szValue, &iValue))
     {
-      iValue = max(min(iValue, 3), 1);
+      bDefaultCaretWidth = FALSE;
+      iValue = max(min(iValue, 20), 1);
       wsprintf(wch, L"size:%i", iValue);
       lstrcat(wchCaretStyle, wch);
+    }
+    else
+    {
+      bDefaultCaretWidth = TRUE;
+      SystemParametersInfo(SPI_GETCARETWIDTH, 0, &iValue, 0);
     }
     SendMessage(hwnd, SCI_SETCARETSTYLE, CARETSTYLE_LINE, 0);
     SendMessage(hwnd, SCI_SETCARETWIDTH, iValue, 0);
