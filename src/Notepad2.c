@@ -2989,21 +2989,12 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_UNDO:
-      // [2e]: Edit highlighted word #18
-      if (n2e_IsSelectionEditModeOn())
-      {
-        n2e_SelectionEditStop(hwndEdit, SES_REJECT);
-      }
-      // [/2e]
-      else
-      {
-        SendMessage(hwndEdit, SCI_UNDO, 0, 0);
-      }
+      n2e_BreakEditMode_SendMessage(SCI_UNDO);
       break;
 
 
     case IDM_EDIT_REDO:
-      SendMessage(hwndEdit, SCI_REDO, 0, 0);
+      n2e_BreakEditMode_SendMessage(SCI_REDO);
       break;
 
 
@@ -3012,7 +3003,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       // [2e]: Go To Last Change - do not Redo if no Undo #306
       if (SendMessage(hwndEdit, SCI_CANUNDO, 0, 0))
       {
-        SendMessage(hwndEdit, SCI_UNDO, 0, 0);
+        n2e_BreakEditMode_SendMessage(SCI_UNDO);
         SendMessage(hwndEdit, SCI_REDO, 0, 0);
         EditSelectEx(hwndEdit, SciCall_GetAnchor(), SciCall_GetCurrentPos());
       }
@@ -3059,6 +3050,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SWAP:
+      n2e_ApplyEditMode_SendMessage(0);
       if (SendMessage(hwndEdit, SCI_GETSELECTIONEND, 0, 0) -
           SendMessage(hwndEdit, SCI_GETSELECTIONSTART, 0, 0) == 0)
       {
@@ -3110,11 +3102,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_SELECTALL:
       // [2e]: Implicit commit of Edit Mode on Shift+Tab and Ctrl+A #403
-      if (n2e_IsSelectionEditModeOn())
-      {
-        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
-      }
-      SendMessage(hwndEdit, SCI_SELECTALL, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_SELECTALL);
       break;
 
 
@@ -3227,22 +3215,26 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_MOVELINEUP:
+      n2e_ApplyEditMode_SendMessage(0);
       EditMoveUp(hwndEdit);
       break;
 
 
     case IDM_EDIT_MOVELINEDOWN:
+      n2e_ApplyEditMode_SendMessage(0);
       EditMoveDown(hwndEdit);
       break;
 
 
     // [2e]: Start new line operations
     case IDM_EDIT_NEWLINEABOVE:
+      n2e_ApplyEditMode_SendMessage(0);
       n2e_EditInsertNewLine(hwndEdit, TRUE);
       break;
 
 
     case IDM_EDIT_NEWLINEBELOW:
+      n2e_ApplyEditMode_SendMessage(0);
       n2e_EditInsertNewLine(hwndEdit, FALSE);
       break;
     // [/2e]
@@ -3250,38 +3242,37 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_DUPLICATELINE:
       // [2e]: Edit highlighted word #18
-      n2e_SelectionEditStop(hwndEdit, SES_APPLY);
-      SendMessage(hwndEdit, SCI_LINEDUPLICATE, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_LINEDUPLICATE);
       break;
 
 
     case IDM_EDIT_CUTLINE:
       if (flagPasteBoard)
         bLastCopyFromMe = TRUE;
-      SendMessage(hwndEdit, SCI_LINECUT, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_LINECUT);
       break;
 
 
     case IDM_EDIT_COPYLINE:
       if (flagPasteBoard)
         bLastCopyFromMe = TRUE;
-      SendMessage(hwndEdit, SCI_LINECOPY, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_LINECOPY);
       UpdateToolbar();
       break;
 
 
     case IDM_EDIT_DELETELINE:
-      SendMessage(hwndEdit, SCI_LINEDELETE, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_LINEDELETE);
       break;
 
 
     case IDM_EDIT_DELETELINELEFT:
-      SendMessage(hwndEdit, SCI_DELLINELEFT, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_DELLINELEFT);
       break;
 
 
     case IDM_EDIT_DELETELINERIGHT:
-      SendMessage(hwndEdit, SCI_DELLINERIGHT, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_DELLINERIGHT);
       break;
 
 
@@ -3306,12 +3297,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_UNINDENT:
       // [2e]: Implicit commit of Edit Mode on Shift+Tab and Ctrl+A #403
-      if (n2e_IsSelectionEditModeOn())
-      {
-        n2e_SelectionEditStop(hwndEdit, SES_APPLY);
-      }
-      // [2e]: Unindent and tabs #128
-      SendMessage(hwndEdit, SCI_BACKTAB, 0, 0);
+      n2e_ApplyEditMode_SendMessage(SCI_BACKTAB);
       break;
 
 
@@ -3326,6 +3312,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SELECTIONDUPLICATE:
+      n2e_ApplyEditMode_SendMessage(0);
       SendMessage(hwndEdit, SCI_BEGINUNDOACTION, 0, 0);
       SendMessage(hwndEdit, SCI_SELECTIONDUPLICATE, 0, 0);
       SendMessage(hwndEdit, SCI_ENDUNDOACTION, 0, 0);
@@ -3333,6 +3320,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_PADWITHSPACES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditPadWithSpaces(hwndEdit, FALSE, FALSE);
       EndWaitCursor();
@@ -3340,6 +3328,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_STRIP1STCHAR:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditStripFirstCharacter(hwndEdit);
       EndWaitCursor();
@@ -3347,6 +3336,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_STRIPLASTCHAR:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditStripLastCharacter(hwndEdit);
       EndWaitCursor();
@@ -3354,6 +3344,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_TRIMLINES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditStripTrailingBlanks(hwndEdit, FALSE);
       EndWaitCursor();
@@ -3361,6 +3352,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_COMPRESSWS:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditCompressSpaces(hwndEdit);
       EndWaitCursor();
@@ -3368,6 +3360,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_MERGEBLANKLINES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditRemoveBlankLines(hwndEdit, TRUE);
       EndWaitCursor();
@@ -3375,6 +3368,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_REMOVEBLANKLINES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditRemoveBlankLines(hwndEdit, FALSE);
       EndWaitCursor();
@@ -3436,6 +3430,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_SPLITLINES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       // [2e]: Change Ctrl+I to perform comment-aware line wrapping #320
       if (bExtendedSplitLines)
@@ -3453,6 +3448,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_JOINLINES:
     case IDM_EDIT_JOINLINES_SKIP_SPACES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       SciCall_BeginUndoAction();
       // [2e]: Join Lines/Paragraphs - ignore trailing break #135
@@ -3469,6 +3465,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_EDIT_JOINLINESEX:
     case IDM_EDIT_JOINLINESEX_SKIP_SPACES:
+      n2e_ApplyEditMode_SendMessage(0);
       BeginWaitCursor();
       EditJoinLinesEx(hwndEdit, (wCommandID == IDM_EDIT_JOINLINESEX_SKIP_SPACES));
       EndWaitCursor();

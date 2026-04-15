@@ -1542,3 +1542,17 @@ void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem)
   ListView_SetItemState(hwndListView, iSelItem, LVIS_SELECTED | LVIS_FOCUSED, LVIS_SELECTED | LVIS_FOCUSED);
   ListView_EnsureVisible(hwndListView, iSelItem, FALSE);
 }
+
+void n2e_BreakEditMode_SendMessage(const UINT msg)
+{
+  n2e_SelectionEditStop(hwndEdit, SES_REJECT);
+  if (msg)
+    SendMessage(hwndEdit, msg, 0, 0);
+}
+
+void n2e_ApplyEditMode_SendMessage(const UINT msg)
+{
+  n2e_SelectionEditStop(hwndEdit, SES_APPLY);
+  if (msg)
+    SendMessage(hwndEdit, msg, 0, 0);
+}
