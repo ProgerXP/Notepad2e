@@ -4120,30 +4120,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     case IDM_VIEW_TABSETTINGS:
       if (TabSettingsDlg(hwnd, IDD_TABSETTINGS, NULL))
-      {
-        SendMessage(hwndEdit, SCI_SETUSETABS, !bTabsAsSpaces, 0);
-        SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
-        SendMessage(hwndEdit, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
-        iTabWidth = max(min(iTabWidth, 256), 1);
-        iIndentWidth = max(min(iIndentWidth, 256), 0);
-        SendMessage(hwndEdit, SCI_SETTABWIDTH, iTabWidth, 0);
-        SendMessage(hwndEdit, SCI_SETINDENT, iIndentWidth, 0);
-        bTabsAsSpacesG = bTabsAsSpaces;
-        bTabIndentsG = bTabIndents;
-        iTabWidthG = iTabWidth;
-        iIndentWidthG = iIndentWidth;
-        if (SendMessage(hwndEdit, SCI_GETWRAPINDENTMODE, 0, 0) == SC_WRAPINDENT_FIXED)
-        {
-          int i = 0;
-          switch (iWordWrapIndent) {
-            case 1: i = 1; break;
-            case 2: i = 2; break;
-            case 3: i = (iIndentWidth) ? 1 * iIndentWidth : 1 * iTabWidth; break;
-            case 4: i = (iIndentWidth) ? 2 * iIndentWidth : 2 * iTabWidth; break;
-          }
-          SendMessage(hwndEdit, SCI_SETWRAPSTARTINDENT, i, 0);
-        }
-      }
+        VIEW_COMMAND(UpdateTabSettings);  // [2e]: Split views not updated when Tab width changes #494
       break;
 
 
@@ -7399,6 +7376,35 @@ void UpdateLineNumberWidth(HWND hwnd)
   else
     SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, 0);
 }
+
+
+// [2e]: Split views not updated when Tab width changes #494
+void UpdateTabSettings(HWND hwnd)
+{
+  SendMessage(hwnd, SCI_SETUSETABS, !bTabsAsSpaces, 0);
+  SendMessage(hwnd, SCI_SETTABINDENTS, bTabIndents, 0);
+  SendMessage(hwnd, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
+  iTabWidth = max(min(iTabWidth, 256), 1);
+  iIndentWidth = max(min(iIndentWidth, 256), 0);
+  SendMessage(hwnd, SCI_SETTABWIDTH, iTabWidth, 0);
+  SendMessage(hwnd, SCI_SETINDENT, iIndentWidth, 0);
+  bTabsAsSpacesG = bTabsAsSpaces;
+  bTabIndentsG = bTabIndents;
+  iTabWidthG = iTabWidth;
+  iIndentWidthG = iIndentWidth;
+  if (SendMessage(hwnd, SCI_GETWRAPINDENTMODE, 0, 0) == SC_WRAPINDENT_FIXED)
+  {
+    int i = 0;
+    switch (iWordWrapIndent) {
+    case 1: i = 1; break;
+    case 2: i = 2; break;
+    case 3: i = (iIndentWidth) ? 1 * iIndentWidth : 1 * iTabWidth; break;
+    case 4: i = (iIndentWidth) ? 2 * iIndentWidth : 2 * iTabWidth; break;
+    }
+    SendMessage(hwnd, SCI_SETWRAPSTARTINDENT, i, 0);
+  }
+}
+// [/2e]
 
 
 void SetWordWrap(HWND hwnd)
