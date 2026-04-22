@@ -410,6 +410,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
           }
         }
       }
+      n2e_Free(tr.lpstrText);
     }
   }
   else

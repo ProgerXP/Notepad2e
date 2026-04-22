@@ -158,6 +158,7 @@ void n2e_EditInit(const HWND hwnd)
                         L"EditSelectionUnder", 1);
   
   n2e_proc_action = n2e_SelectionKeyAction;
+  n2e_Free(trEditSelection.lpstrText);
   trEditSelection.lpstrText = 0;
 }
 

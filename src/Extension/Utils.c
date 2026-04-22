@@ -1389,6 +1389,7 @@ BOOL n2e_IsWordChar(const WCHAR ch)
 
 LPSTR n2e_GetTextRange(const int iStart, const int iEnd)
 {
+  // #IMPORTANT: n2e_Free() is required on call result to prevent memory leaks
   struct Sci_TextRange tr = { 
     .chrg = {
       .cpMin = iStart,
