@@ -5016,19 +5016,18 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
             SciCall_SetSel(iAnchor, iCursor);
           }
           cchSelection = iSelectionEnd - iSelectionStart;
-
-          // [2e]: Save Find Text (Alt+F3) to refresh match indication #484
-          struct TextToFind ttf;
-          ZeroMemory(&ttf, sizeof(ttf));
-          ttf.chrg.cpMin = iSelectionStart;
-          ttf.chrg.cpMax = SciCall_GetLength();
-          ttf.lpstrText = n2e_GetTextRange(iSelectionStart, iSelectionEnd);
-          lstrcpyA(efrData.szFind, ttf.lpstrText);
-          lstrcpyA(efrData.szFindUTF8, ttf.lpstrText);
-          n2e_UpdateIndicatedLines(hwndEdit, &efrData, &ttf, n2e_FindTextImpl(hwndEdit, &efrData, &ttf));
-          n2e_Free(ttf.lpstrText);
-          // [/2e]
         }
+        // [2e]: Save Find Text (Alt+F3) to refresh match indication #484
+        struct TextToFind ttf;
+        ZeroMemory(&ttf, sizeof(ttf));
+        ttf.chrg.cpMin = iSelectionStart;
+        ttf.chrg.cpMax = SciCall_GetLength();
+        ttf.lpstrText = n2e_GetTextRange(iSelectionStart, iSelectionEnd);
+        lstrcpyA(efrData.szFind, ttf.lpstrText);
+        lstrcpyA(efrData.szFindUTF8, ttf.lpstrText);
+        n2e_UpdateIndicatedLines(hwndEdit, &efrData, &ttf, n2e_FindTextImpl(hwndEdit, &efrData, &ttf));
+        n2e_Free(ttf.lpstrText);
+        // [/2e]
         if (cchSelection > 0 && cchSelection <= 500)
         {
           char  mszSelection[512];
