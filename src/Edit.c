@@ -5000,6 +5000,7 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
         if (bSwitchedFindReplace)
         {
           bSwitchedFindReplace = FALSE;
+          efrSave.hwnd = lpefr->hwnd;
           CopyMemory(lpefr, &efrSave, sizeof(EDITFINDREPLACE));
         }
 
