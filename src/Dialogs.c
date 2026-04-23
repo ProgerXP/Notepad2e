@@ -2538,6 +2538,9 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
 // [2e]: View > St&arting Line Number... #342
 INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
 {
+  const int iLimitTextLength = 7;
+  const int iMinValue = -999999;
+  const int iMaxValue = 9999999;
   switch (umsg)
   {
     DPI_CHANGED_HANDLER();
@@ -2547,9 +2550,24 @@ INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, 
 
     case WM_INITDIALOG: {
         DPI_INIT();
-        SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, 7, 0);
+        SendDlgItemMessage(hwnd, IDC_LINENUM, EM_LIMITTEXT, iLimitTextLength, 0);
         SetDlgItemInt(hwnd, IDC_LINENUM, iStartingLineNumber, TRUE);
-        n2e_EnforceSignedIntegerEdit(GetDlgItem(hwnd, 100));
+        n2e_EnforceSignedIntegerEdit(GetDlgItem(hwnd, IDC_LINENUM));
+        // [2e]: Improve Starting Line Number dialog #461
+        SendDlgItemMessage(hwnd, IDC_SPIN1, UDM_SETBUDDY, (WPARAM)GetDlgItem(hwnd, IDC_LINENUM), 0);
+        SendDlgItemMessage(hwnd, IDC_SPIN1, UDM_SETRANGE32, iMinValue, iMaxValue);
+        SendDlgItemMessage(hwnd, IDC_SPIN1, UDM_SETPOS32, 0, (LPARAM)iStartingLineNumber);
+        const auto linkIds[] = { IDC_LINENUM0, IDC_LINENUM1, IDC_LINENUMDECREASE, IDC_LINENUMINCREASE };
+        for (int i=0;i<COUNTOF(linkIds); i++)
+        {
+          const DWORD dwId = linkIds[i];
+          CHAR szResourceLinkText[MAX_PATH - 10];
+          GetDlgItemTextA(hwnd, dwId, szResourceLinkText, COUNTOF(szResourceLinkText));
+          CHAR linkText[MAX_PATH] = "<a>X</a>";
+          n2e_ReplaceSubstring(linkText, "X", szResourceLinkText);
+          SetDlgItemTextA(hwnd, dwId, linkText);
+        }
+        // [/2e]
         CenterDlgInParent(hwnd);
       }
       return TRUE;
@@ -2570,7 +2588,7 @@ INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, 
             }
             else
             {
-              PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, 100)), 1);
+              PostMessage(hwnd, WM_NEXTDLGCTL, (WPARAM)(GetDlgItem(hwnd, IDC_LINENUM)), 1);
             }
           }
           break;
@@ -2580,6 +2598,42 @@ INT_PTR CALLBACK StartingLineNumberDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, 
           break;
       }
       return TRUE;
+
+    // [2e]: Improve Starting Line Number dialog #461
+    case WM_NOTIFY: {
+      LPNMHDR pnmhdr = (LPNMHDR)lParam;
+      switch (pnmhdr->code)
+      {
+      case NM_CLICK:
+      case NM_RETURN:
+        iStartingLineNumber = GetDlgItemInt(hwnd, IDC_LINENUM, NULL, TRUE);
+        switch (pnmhdr->idFrom)
+        {
+        case IDC_LINENUM0:
+          iStartingLineNumber = 0;
+          EndDialog(hwnd, IDOK);
+          break;
+        case IDC_LINENUM1:
+          iStartingLineNumber = 1;
+          EndDialog(hwnd, IDOK);
+          break;
+        case IDC_LINENUMDECREASE:
+          if (iStartingLineNumber - 1 < iMinValue)
+            MessageBeep(0);
+          else
+            SetDlgItemInt(hwnd, IDC_LINENUM, iStartingLineNumber - 1, TRUE);
+          break;
+        case IDC_LINENUMINCREASE:
+          if (iStartingLineNumber + 1 > iMaxValue)
+            MessageBeep(0);
+          else
+            SetDlgItemInt(hwnd, IDC_LINENUM, iStartingLineNumber + 1, TRUE);
+          break;
+        }
+        break;
+      }
+    }
+    break;
   }
   return FALSE;
 }

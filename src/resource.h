@@ -12,6 +12,7 @@
 #define ID_FILE_OPENPREVIOUS            6
 #define IDC_SEARCHCOMMENTS              6
 #define IDC_OUTLINELIST                 6
+#define IDC_SPIN1                       7
 #define ID_EDIT_UNDO_REDO               8
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
 #define ID_FILE_INVOKESHELLMENU         10
@@ -183,9 +184,13 @@
 #define IDC_BUTTON2                     129
 #define IDD_STARTINGLINENUMBER          130
 #define IDACC_FIND                      200
+#define IDC_LINENUM0                    200
 #define IDACC_REPLACE                   201
+#define IDC_LINENUM1                    201
 #define IDACC_SAVEPOS                   202
+#define IDC_LINENUMDECREASE             202
 #define IDACC_RESETPOS                  203
+#define IDC_LINENUMINCREASE             203
 #define IDACC_FINDNEXT                  204
 #define IDACC_FINDPREV                  205
 #define IDACC_REPLACENEXT               206
@@ -550,7 +555,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         63
-#define _APS_NEXT_CONTROL_VALUE         7
+#define _APS_NEXT_CONTROL_VALUE         8
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
 #endif
