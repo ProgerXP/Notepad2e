@@ -472,6 +472,7 @@ protected:	// ScintillaBase subclass needs access to much of Editor
 	void NewLine();
 	SelectionPosition PositionUpOrDown(SelectionPosition spStart, int direction, int lastX);
 	void CursorUpOrDown(int direction, Selection::selTypes selt);
+	void AltCursorUpOrDown(int direction, bool extendSelection);
 	void ParaUpOrDown(int direction, Selection::selTypes selt);
 	Range RangeDisplayLine(Sci::Line lineVisible);
 	Sci::Position StartEndDisplayLine(Sci::Position pos, bool start);

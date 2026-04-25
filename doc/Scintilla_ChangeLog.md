@@ -2797,3 +2797,128 @@ Modify `SCI_SETCARETWIDTH`-handler in `Editor::WndProc`:
 /**Use system's CaretWidth by default #483**
 
 ---
+
+**Alt+Up/Down to navigate lines skipping sublines #430**
+
+Add new messages:
+
+[scintilla/include/Scintilla.h]
+```
+#define SCI_ALTLINEUP 9016
+#define SCI_ALTLINEDOWN 9017
+#define SCI_ALTLINEUPEXTEND 9018
+#define SCI_ALTLINEDOWNEXTEND 9019
+```
+[/scintilla/include/Scintilla.h]
+
+Add new `AltCursorUpOrDown`-method declaration:
+
+[scintilla/src/Editor.h]
+```
+    void CursorUpOrDown(int direction, Selection::selTypes selt);
+    void AltCursorUpOrDown(int direction, bool extendSelection);
+```
+[/scintilla/src/Editor.h]
+
+Update Editor.cpp module:
+
+[scintilla/src/Editor.cxx]
+```
+void Editor::NotifyMacroRecord(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
+...
+	case SCI_LINEDOWN:
+	case SCI_ALTLINEDOWN:
+	case SCI_LINEDOWNEXTEND:
+	case SCI_ALTLINEDOWNEXTEND:
+...
+	case SCI_LINEUP:
+	case SCI_ALTLINEUP:
+	case SCI_LINEUPEXTEND:
+	case SCI_ALTLINEUPEXTEND:
+
+...
+
+void Editor::AltCursorUpOrDown(int direction, bool extendSelection) {
+	const int pos = sel.IsRectangular() ? sel.Rectangular().caret.Position() : sel.MainCaret();
+	const int line = pdoc->LineFromPosition(pos);
+	const int lineOffset = pos - pdoc->LineStart(line);
+	const int newLine = line + direction;
+	if ((newLine >= 0) && (newLine < pdoc->LinesTotal()))
+	{
+		const auto newCaretPos = std::min(pdoc->LineStart(newLine) + lineOffset, pdoc->LineEnd(newLine));
+		if (extendSelection)
+		{
+			SelectionPosition caretToUse = sel.Range(sel.Main()).anchor;
+			caretToUse = (direction > 0) ? sel.Limits().end : sel.Limits().start;
+			InvalidateWholeSelection();
+			if (!additionalSelectionTyping || (sel.IsRectangular()))
+				sel.DropAdditionalRanges();
+			sel.selType = Selection::selStream;
+			for (size_t r = 0; r < sel.Count(); r++) {
+				const SelectionPosition posNew = SelectionPosition(newCaretPos);
+				sel.Range(r) = SelectionRange(posNew, sel.Range(r).anchor);
+			}
+			sel.RemoveDuplicates();
+			MovedCaret(sel.RangeMain().caret, caretToUse, true);
+		}
+		else
+			SetEmptySelection(newCaretPos);
+		EnsureCaretVisible();
+	}
+}
+
+...
+
+int Editor::KeyCommand(unsigned int iMessage) {
+...
+	case SCI_LINEDOWN:
+		CursorUpOrDown(1, Selection::noSel);
+		break;
+	case SCI_ALTLINEDOWN:
+	case SCI_ALTLINEDOWNEXTEND:
+		AltCursorUpOrDown(1, iMessage == SCI_ALTLINEDOWNEXTEND);
+		break;
+...
+	case SCI_LINEUP:
+		CursorUpOrDown(-1, Selection::noSel);
+		break;
+	case SCI_ALTLINEUP:
+	case SCI_ALTLINEUPEXTEND:
+		AltCursorUpOrDown(-1, iMessage == SCI_ALTLINEUPEXTEND);
+		break;
+
+...
+
+sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
+...
+	case SCI_LINEDOWN:
+	case SCI_ALTLINEDOWN:
+	case SCI_LINEDOWNEXTEND:
+	case SCI_ALTLINEDOWNEXTEND:
+...
+	case SCI_LINEUP:
+	case SCI_ALTLINEUP:
+	case SCI_LINEUPEXTEND:
+	case SCI_ALTLINEUPEXTEND:
+
+```
+[/scintilla/src/Editor.cxx]
+
+Update ``KeyMap::MapDefault[]``:
+
+[scintilla/src/KeyMap.cxx]
+```
+    {SCK_DOWN,		SCI_NORM,	SCI_LINEDOWN},
+    {SCK_DOWN, 		SCI_ALT, 	SCI_ALTLINEDOWN},
+    {SCK_DOWN,		SCI_SHIFT,	SCI_LINEDOWNEXTEND},
+    {SCK_DOWN,		SCI_ASHIFT,	SCI_ALTLINEDOWNEXTEND},
+    {SCK_UP,		SCI_NORM,	SCI_LINEUP},
+    {SCK_UP, 		SCI_ALT, 	SCI_ALTLINEUP},
+    {SCK_UP,		SCI_SHIFT,	SCI_LINEUPEXTEND},
+    {SCK_UP,		SCI_ASHIFT,	SCI_ALTLINEUPEXTEND},
+```
+[/scintilla/src/KeyMap.cxx]
+
+/**Alt+Up/Down to navigate lines skipping sublines #430**
+
+---

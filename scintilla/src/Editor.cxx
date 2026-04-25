@@ -2854,11 +2854,15 @@ void Editor::NotifyMacroRecord(unsigned int iMessage, uptr_t wParam, sptr_t lPar
 	case SCI_SEARCHNEXT:
 	case SCI_SEARCHPREV:
 	case SCI_LINEDOWN:
+	case SCI_ALTLINEDOWN:
 	case SCI_LINEDOWNEXTEND:
+	case SCI_ALTLINEDOWNEXTEND:
 	case SCI_PARADOWN:
 	case SCI_PARADOWNEXTEND:
 	case SCI_LINEUP:
+	case SCI_ALTLINEUP:
 	case SCI_LINEUPEXTEND:
+	case SCI_ALTLINEUPEXTEND:
 	case SCI_PARAUP:
 	case SCI_PARAUPEXTEND:
 	case SCI_CHARLEFT:
@@ -3305,6 +3309,35 @@ void Editor::CursorUpOrDown(int direction, Selection::selTypes selt) {
 		}
 		sel.RemoveDuplicates();
 		MovedCaret(sel.RangeMain().caret, caretToUse, true);
+	}
+}
+
+void Editor::AltCursorUpOrDown(int direction, bool extendSelection) {
+	const int pos = sel.IsRectangular() ? sel.Rectangular().caret.Position() : sel.MainCaret();
+	const int line = pdoc->LineFromPosition(pos);
+	const int lineOffset = pos - pdoc->LineStart(line);
+	const int newLine = line + direction;
+	if ((newLine >= 0) && (newLine < pdoc->LinesTotal()))
+	{
+		const auto newCaretPos = std::min(pdoc->LineStart(newLine) + lineOffset, pdoc->LineEnd(newLine));
+		if (extendSelection)
+		{
+			SelectionPosition caretToUse = sel.Range(sel.Main()).anchor;
+			caretToUse = (direction > 0) ? sel.Limits().end : sel.Limits().start;
+			InvalidateWholeSelection();
+			if (!additionalSelectionTyping || (sel.IsRectangular()))
+				sel.DropAdditionalRanges();
+			sel.selType = Selection::selStream;
+			for (size_t r = 0; r < sel.Count(); r++) {
+				const SelectionPosition posNew = SelectionPosition(newCaretPos);
+				sel.Range(r) = SelectionRange(posNew, sel.Range(r).anchor);
+			}
+			sel.RemoveDuplicates();
+			MovedCaret(sel.RangeMain().caret, caretToUse, true);
+		}
+		else
+			SetEmptySelection(newCaretPos);
+		EnsureCaretVisible();
 	}
 }
 
@@ -3847,6 +3880,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 	case SCI_LINEDOWN:
 		CursorUpOrDown(1, Selection::noSel);
 		break;
+	// [2e]: Alt+Up/Down to navigate lines skipping sublines #430
+	case SCI_ALTLINEDOWN:
+	case SCI_ALTLINEDOWNEXTEND:
+		AltCursorUpOrDown(1, iMessage == SCI_ALTLINEDOWNEXTEND);
+		break;
 	case SCI_LINEDOWNEXTEND:
 		CursorUpOrDown(1, Selection::selStream);
 		break;
@@ -3865,6 +3903,11 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_LINEUP:
 		CursorUpOrDown(-1, Selection::noSel);
+		break;
+	// [2e]: Alt+Up/Down to navigate lines skipping sublines #430
+	case SCI_ALTLINEUP:
+	case SCI_ALTLINEUPEXTEND:
+		AltCursorUpOrDown(-1, iMessage == SCI_ALTLINEUPEXTEND);
 		break;
 	case SCI_LINEUPEXTEND:
 		CursorUpOrDown(-1, Selection::selStream);
@@ -7742,11 +7785,15 @@ sptr_t Editor::WndProc(unsigned int iMessage, uptr_t wParam, sptr_t lParam) {
 		return pdoc->decorations->End(static_cast<int>(wParam), lParam);
 
 	case SCI_LINEDOWN:
+	case SCI_ALTLINEDOWN:
 	case SCI_LINEDOWNEXTEND:
+	case SCI_ALTLINEDOWNEXTEND:
 	case SCI_PARADOWN:
 	case SCI_PARADOWNEXTEND:
 	case SCI_LINEUP:
+	case SCI_ALTLINEUP:
 	case SCI_LINEUPEXTEND:
+	case SCI_ALTLINEUPEXTEND:
 	case SCI_PARAUP:
 	case SCI_PARAUPEXTEND:
 	case SCI_CHARLEFT:
