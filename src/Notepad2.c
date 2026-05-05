@@ -3214,6 +3214,24 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
       break;
 
 
+    // [2e]: Ctrl+Alt+Space to select line without final line break #495
+    case IDM_EDIT_ALTSELECTLINE: {
+        const int iSelStartOrigin = SciCall_GetSelStart();
+        const int iSelEndOrigin = SciCall_GetSelEnd();
+        const int iLineIndexSelEndOrigin = SciCall_LineFromPosition(iSelEndOrigin);
+        const int iSelStart = SciCall_PositionFromLine(SciCall_LineFromPosition(iSelStartOrigin));
+        int iSelEnd = SciCall_LineEndPosition(iLineIndexSelEndOrigin);
+        if ((iSelStart == iSelStartOrigin) && (iSelEnd == iSelEndOrigin))
+          iSelEnd = (SciCall_PositionFromLine(SciCall_LineFromPosition(iSelEnd)) == SciCall_LineEndPosition(SciCall_LineFromPosition(iSelEnd)))
+            ? SciCall_PositionFromLine(SciCall_LineFromPosition(iSelEnd) + 1)
+            : SciCall_LineEndPosition(iLineIndexSelEndOrigin + 1);
+        SciCall_SetSel(iSelStart, iSelEnd);
+        SciCall_ChooseCaretX();
+      }
+      break;
+    // [/2e]
+
+
     case IDM_EDIT_MOVELINEUP:
       n2e_ApplyEditMode_SendMessage(0);
       EditMoveUp(hwndEdit);
