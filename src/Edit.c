@@ -5048,9 +5048,17 @@ INT_PTR CALLBACK EditFindReplaceDlgProcW(HWND hwnd, UINT umsg, WPARAM wParam, LP
           WCHAR wchFind[TEXT_BUFFER_LENGTH];
           if (GetDlgItemTextW(hwnd, IDC_FINDTEXT, wchFind, COUNTOF(wchFind)))
           {
-            const int iSel = ComboBox_FindStringExact(hwndFindText, 0, wchFind);
-            if (iSel >= 0)
-              ComboBox_SetCurSel(hwndFindText, iSel);
+            // [2e]: Find / Replace dropdowns use initial value of a wrong case if present in MRU #496
+            const int iCount = ComboBox_GetCount(hwndFindText);
+            for (int i = 0; i < iCount; i++)
+            {
+              if (ComboBox_GetLBText(hwndFindText, i, tch) && (wcscmp(wchFind, tch) == 0))
+              {
+                ComboBox_SetCurSel(hwndFindText, i);
+                break;
+              }
+            }
+            // [/2e]
           }
         }
         // [/2e]
