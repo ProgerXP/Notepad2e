@@ -13,5 +13,6 @@ namespace SciTests
 
 HWND hwnd();
 void runTest(const std::function<void()>& funcTest);
+void setLexer(const int lexerId);
 
 } // namespace SciTests

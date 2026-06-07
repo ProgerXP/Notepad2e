@@ -172,3 +172,13 @@ TData CTestCaseData::GetAdditionalData() const
 {
   return tupleAdditionalData;
 }
+
+const CSciSelection CTestCaseData::GetSelection() const
+{
+  return sciSelection;
+}
+
+const CSciSelection CTestCaseData::GetExpectedResultSelection() const
+{
+  return sciSelectionResult;
+}

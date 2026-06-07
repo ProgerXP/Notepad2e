@@ -112,11 +112,16 @@ DeclareSciCallV2(SetSel, SETSEL, int, anchorPos, int, currentPos);
 DeclareSciCallV2(ReplaceSel, REPLACESEL, int, unused, const char*, text);
 DeclareSciCallV2(ReplaceTarget, REPLACETARGET, int, length, const char*, text);
 DeclareSciCallV2(ReplaceTargetRegEx, REPLACETARGETRE, int, length, const char*, text);
+DeclareSciCallR0(GetTargetStart, GETTARGETSTART, int);
+DeclareSciCallR0(GetTargetEnd, GETTARGETEND, int);
 DeclareSciCallV1(SetTargetStart, SETTARGETSTART, int, start);
 DeclareSciCallV1(SetTargetEnd, SETTARGETEND, int, end);
 DeclareSciCallR1(GetCharAt, GETCHARAT, char, int, position);
+DeclareSciCallR0(CharRight, CHARRIGHT, int);
 DeclareSciCallR0(CharLeftExtEnd, CHARLEFTEXTEND, int);
 DeclareSciCallR0(CharRightExtEnd, CHARRIGHTEXTEND, int);
+DeclareSciCallR0(AltWordLeft2, ALTWORDLEFT2, int);
+DeclareSciCallR0(AltWordRight2, ALTWORDRIGHT2, int);
 DeclareSciCallR0(GetSelections, GETSELECTIONS, int);
 DeclareSciCallR1(GetSelectionNStart, GETSELECTIONNSTART, Sci_Position, int, position);
 DeclareSciCallR1(GetSelectionNEnd, GETSELECTIONNEND, Sci_Position, int, position);
@@ -144,9 +149,12 @@ DeclareSciCallR2(GetWordEndPos, WORDENDPOSITION, int, int, pos, BOOL, onlyWordCh
 DeclareSciCallR2(PointXFromPosition, POINTXFROMPOSITION, int, int, unused, int, position);
 DeclareSciCallR2(PointYFromPosition, POINTYFROMPOSITION, int, int, unused, int, position);
 DeclareSciCallR0(GetFirstVisibleLine, GETFIRSTVISIBLELINE, int);
+DeclareSciCallV1(SetFirstVisibleLine, SETFIRSTVISIBLELINE, int, line);
 DeclareSciCallR1(DocLineFromVisible, DOCLINEFROMVISIBLE, int, int, displayLine);
 DeclareSciCallV2(BraceMatch, BRACEMATCH, int, pos, BOOL, treatQuoteAsBraces);
 
+DeclareSciCallR0(GetXOffset, GETXOFFSET, int);
+DeclareSciCallV1(SetXOffset, SETXOFFSET, int, offset);
 DeclareSciCallV0(ChooseCaretX, CHOOSECARETX);
 
 DeclareSciCallV0(SetSavePoint, SETSAVEPOINT);

@@ -1,5 +1,8 @@
 #include "Lexers.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 KEYWORDLIST KeyWords_NULL = {
     "", "", "", "", "", "", "", "", ""
@@ -1815,3 +1818,44 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
 };
 
 PEDITLEXER pLexCurrent = &lexDefault;
+
+#ifdef N2E_TESTING
+BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
+{
+  int i;
+  int iIdx;
+  int iStyleBits;
+  WCHAR wchCaretStyle[64] = L"";
+
+  if (!pLexNew)
+    return FALSE;
+
+  // Lexer
+  SendMessage(hwnd, SCI_SETLEXER, pLexNew->iLexer, 0);
+
+  iStyleBits = (int)SendMessage(hwnd, SCI_GETSTYLEBITSNEEDED, 0, 0);
+  SendMessage(hwnd, SCI_SETSTYLEBITS, (WPARAM)iStyleBits, 0);
+
+  // Add KeyWord Lists
+  for (i = 0; i < 9; i++)
+    SendMessage(hwnd, SCI_SETKEYWORDS, i, (LPARAM)pLexNew->pKeyWords->pszKeyWords[i]);
+
+  // Clear
+  SendMessage(hwnd, SCI_CLEARDOCUMENTSTYLE, 0, 0);
+
+  // Default Values are always set
+  SendMessage(hwnd, SCI_STYLERESETDEFAULT, 0, 0);
+  SendMessage(hwnd, SCI_STYLECLEARALL, 0, 0);
+
+  // Save current lexer
+  pLexCurrent = pLexNew;
+
+  SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
+  
+  return TRUE;
+}
+#endif N2E_TESTING
+
+#ifdef __cplusplus
+} // extern "C"
+#endif

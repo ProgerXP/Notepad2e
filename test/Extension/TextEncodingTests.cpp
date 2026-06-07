@@ -11,10 +11,12 @@
 #include "../src/Extension/CommentAwareLineWrapping.h"
 #include "../scintilla/include/SciLexer.h"
 #include "CppUnitTest.h"
+#include "SciTests.h"
 #include "TextEncodingTestCaseData.h"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+typedef LPCSTR (TSciWorkingProc)(const HWND hwnd, const int iLineSizeLimit, int*);
 typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, const int, const int, const int, int*);
 
 #define MIN_BUFFER_SIZE 8
@@ -81,7 +83,7 @@ std::wstring GetStringDiff(const std::string& expected, const std::string& actua
   return ss.str();
 }
 
-static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTestCaseData* pData, const int count, const bool testBufferSize)
+static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const bool isEncoding, const CTestCaseData* pData, const int count, const bool testBufferSize)
 {
   srand(GetTickCount());
   bool continueTesting = true;
@@ -114,18 +116,46 @@ static void DoRecodingTest(TWorkingProc proc, const bool isEncoding, const CTest
 
         int resultLength = 0;
         const auto srcData = info.GetSourceText();
-        LPCSTR result = proc((LPCSTR)srcData.data(),
-                                srcData.size(),
-                                info.GetEncoding(),
-                                std::get<0>(info.GetAdditionalData()),
-                                std::get<1>(info.GetAdditionalData()),
-                                std::get<2>(info.GetAdditionalData()),
-                                bufferSize,
-                                &resultLength);
+        const auto selection = info.GetSelection();
+        LPCSTR result = NULL;
+        if (sciProc && selection.isSet())
+        {
+          SciCall_SetTargetStart(0);
+          SciCall_SetTargetEnd(SciCall_GetLength());
+          SciCall_ReplaceTarget(srcData.size(), (const char*)srcData.data());
+          SciTests::setLexer(std::get<1>(info.GetAdditionalData()));
+          SciCall_SetSel(selection.selStart(), selection.selEnd());
+          result = sciProc(g_hwndActiveEdit, std::get<0>(info.GetAdditionalData()), &resultLength);
+        }
+        else
+        {
+          result = proc((LPCSTR)srcData.data(),
+                                  srcData.size(),
+                                  info.GetEncoding(),
+                                  std::get<0>(info.GetAdditionalData()),
+                                  std::get<1>(info.GetAdditionalData()),
+                                  std::get<2>(info.GetAdditionalData()),
+                                  bufferSize,
+                                  &resultLength);
+        }
         if (info.GetExpectedResultText() != VectorFromString(result, resultLength))
         {
           const auto msg = ss.str() + GetStringDiff(StringFromVector(info.GetExpectedResultText()), result);
           Assert::Fail(msg.c_str());
+        }
+        const auto expectedSelection = info.GetExpectedResultSelection();
+        if (expectedSelection.isSet())
+        {
+          if (expectedSelection.selStart() != SciCall_GetSelStart())
+          {
+            const auto msg = ss.str() + std::wstring(L"incorrect SelStart: ") + std::to_wstring(SciCall_GetSelStart());
+            Assert::Fail(msg.c_str());
+          }
+          if (expectedSelection.selEnd() != SciCall_GetSelEnd())
+          {
+            const auto msg = ss.str() + std::wstring(L"incorrect SelEnd: ") + std::to_wstring(SciCall_GetSelEnd());
+            Assert::Fail(msg.c_str());
+          }
         }
       }
       else if (!isEncoding)
@@ -175,8 +205,8 @@ namespace Notepad2eTests
           CTestCaseData(false, UCS2toCP(L"test string", CP_WINDOWS_1250), CPI_DEFAULT, "7465737420737472696E67"),
           CTestCaseData(false, UCS2toCP(L"ハローワールド", CP_SHIFT_JIS), CPI_DEFAULT, "836E838D815B838F815B838B8368")
       };
-      DoRecodingTest(EncodeStringToHex, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeHexToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToHex, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeHexToString, false, &data[0], _countof(data), false);
     }
 
     TEST_METHOD(TestHex_FileSamples)
@@ -190,8 +220,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Hex_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Hex_1250.txt"),
       };
-      DoRecodingTest(EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
-      DoRecodingTest(DecodeHexToString, false, &data[0], _countof(data), true);
+      DoRecodingTest(NULL, EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
+      DoRecodingTest(NULL, DecodeHexToString, false, &data[0], _countof(data), true);
     }
   };
 
@@ -212,8 +242,8 @@ namespace Notepad2eTests
                       CPI_DEFAULT,
                       "QmFzZTY0IGlzIGEgZ2VuZXJpYyB0ZXJtIGZvciBhIG51bWJlciBvZiBzaW1pbGFyIGVuY29kaW5nIHNjaGVtZXMgdGhhdCBlbmNvZGUgYmluYXJ5IGRhdGEgYnkgdHJlYXRpbmcgaXQgbnVtZXJpY2FsbHkgYW5kIHRyYW5zbGF0aW5nIGl0IGludG8gYSBiYXNlIDY0IHJlcHJlc2VudGF0aW9uLiBUaGUgQmFzZTY0IHRlcm0gb3JpZ2luYXRlcyBmcm9tIGEgc3BlY2lmaWMgTUlNRSBjb250ZW50IHRyYW5zZmVyIGVuY29kaW5nLg==")
       };
-      DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
     }
 
     TEST_METHOD(TestBase64_FileSamples)
@@ -225,8 +255,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Base64_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Base64_1250.txt"),
       };
-      DoRecodingTest(EncodeStringToBase64, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeBase64ToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -242,8 +272,8 @@ namespace Notepad2eTests
         CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing space test  =0D=0Awith new    line    test   =20"),
         CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t=00e=00s=00t=00s=00=00=00t=00r=00i=00n=00g=00"),
       };
-      DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeQPToString, false, &data[0], _countof(data), false);
     }
 
     TEST_METHOD(TestQP_FileSamples)
@@ -255,8 +285,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_QP_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_QP_1250.txt"),
       };
-      DoRecodingTest(EncodeStringToQP, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeQPToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeQPToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -272,8 +302,8 @@ namespace Notepad2eTests
         CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing%20space%20test%20%20%0D%0Awith%20new%20%20%20%20line%20%20%20%20test%20%20%20%20"),
         CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t%00e%00s%00t%00s%00%00%00t%00r%00i%00n%00g%00")
       };
-      DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeURLToString, false, &data[0], _countof(data), false);
     }
 
     TEST_METHOD(TestURL_FileSamples)
@@ -285,8 +315,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_URL_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_URL_1250.txt"),
       };
-      DoRecodingTest(EncodeStringToURL, true, &data[0], _countof(data), false);
-      DoRecodingTest(DecodeURLToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, DecodeURLToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -297,6 +327,8 @@ namespace Notepad2eTests
 #define ENABLE_LONG_TESTS
 #define ENABLE_SHORT_TESTS
 #define ENABLE_COMPOSITE_TESTS
+#define ENABLE_SINGLE_LINE_TESTS
+#define ENABLE_RANGE_TESTS
 #endif
 
 //  #define ENABLE_SHORT_TESTS
@@ -453,6 +485,76 @@ namespace Notepad2eTests
                              "  // incididunt ut labore et dolore magna aliqua.\r\n"
                              "  // Ut enim ad minim veniam,",
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
+
+        CTestCaseData(false,  "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n",
+                CPI_DEFAULT,
+
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "    xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n",
+                false, 0, { 65, SCLEX_NULL, SC_EOL_LF }),
+
+        CTestCaseData(false,  "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n"
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx).\n",
+                CPI_DEFAULT,
+
+                              "  # xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx\n"
+                              "  # xxxxxx xxxxx, xxx xxx xxxxxx xx xxxxx (xxx xxxxxx). xxx xxxx\n"
+                              "  # xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx\n"
+                              "  # xxxxx, xxx xxx xxxxxx xx xxxxx (xxx xxxxxx). xxx xxxx xxxxxx\n"
+                              "  # xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx\n"
+                              "  # xxx xxxxxx xx xxxxx (xxx xxxxxx). xxx xxxx xxxxxx xxxxxxxx\n"
+                              "  # xxx xxxxxxx. xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx xxx xxxxxx\n"
+                              "  # xx xxxxx (xxx xxxxxx). xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx.\n"
+                              "  # xxxx xxxxxxx xx xxx xxxxxx xxxxx, xxx xxx xxxxxx xx xxxxx\n"
+                              "  # (xxx xxxxxx). xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx\n"
+                              "  # xxxxxxx xx xxx xxxxxx xxxxx, xxx xxx xxxxxx xx xxxxx (xxx\n"
+                              "  # xxxxxx). xxx xxxx xxxxxx xxxxxxxx xxx xxxxxxx. xxxx xxxxxxx\n"
+                              "  # xx xxx xxxxxx xxxxx, xxx xxx xxxxxx xx xxxxx (xxx xxxxxx).\n",
+                false, 0, { 65, SCLEX_BASH, SC_EOL_LF }),
 #endif
 
 #ifdef ENABLE_SHORT_TESTS
@@ -1300,6 +1402,60 @@ namespace Notepad2eTests
                 false, 0, { 50, SCLEX_CPP, SC_EOL_CRLF }),
 #endif
 
+#ifdef ENABLE_SINGLE_LINE_TESTS
+                CTestCaseData(false, "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
+                  CPI_DEFAULT,
+                                     "aaa aaa aaa aaa aaa aaa aaa\r\n"
+                                     "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
+                  false, 0, { 30, SCLEX_BASH, SC_EOL_CRLF }, { 0, 0 }, { 29, 29 }),
+
+                CTestCaseData(false, "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo",
+                  CPI_DEFAULT,
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 7, 7 }, { 14, 14 }),
+
+                CTestCaseData(false, "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n",
+                  CPI_DEFAULT,
+                                     "# foo\r\n"
+                                     "# foo foo\r\n",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 7, 7 }, { 16, 16 }),
+
+                CTestCaseData(false, "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo",
+                  CPI_DEFAULT,
+                                     "# foo foo foo foo foo foo foo\r\n"
+                                     "# foo",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 0, 0 }, { 31, 31 }),
+#endif 
+
+#ifdef ENABLE_RANGE_TESTS
+                CTestCaseData(false, "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
+                  CPI_DEFAULT,
+                                     "aaa aaa aaa aaa aaa aaa aaa\r\n"
+                                     "aaa aaa aaa aaa aaa aaa aaa\r\n"
+                                     "aaa aaa aaa aaa",
+                  false, 0, { 30, SCLEX_BASH, SC_EOL_CRLF }, { 0, 72 }, { 0, 73 }),
+                CTestCaseData(false, "# foo\r\n"
+                                     "# foo\r\n"
+                                     "# foo",
+                  CPI_DEFAULT,
+                                     "# foo foo\r\n"
+                                     "# foo",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 0, 14 }),
+#endif 
+
 #ifdef ENABLE_NEW_TEST
           CTestCaseData(false, "# XXXXXXX XXXXXX\n"
                               "# 1. XX\n"
@@ -1311,7 +1467,24 @@ namespace Notepad2eTests
               false, 0, { 50, SCLEX_CONF, SC_EOL_LF }),
 #endif 
       };
-      DoRecodingTest(EncodeStringWithCALW, true, &data[0], _countof(data), false);
+      SciTests::runTest([&] {
+          DoRecodingTest(Sci_EncodeStringWithCALW, EncodeStringWithCALW, true, &data[0], _countof(data), false);
+      });
+    }
+
+    static LPCSTR Sci_EncodeStringWithCALW(const HWND hwnd, const int iLineSizeLimit, int* length)
+    {
+      EncodeStrWithCALW(hwnd, iLineSizeLimit);
+
+      static char buffer[65536];
+      Sci_TextRange tr = {};
+      tr.chrg.cpMin = 0;
+      tr.chrg.cpMax = SciCall_GetLength();
+      tr.lpstrText = buffer;
+      buffer[tr.chrg.cpMax] = 0;
+      SciCall_GetTextRange(0, &tr);
+      *length = tr.chrg.cpMax;
+      return buffer;
     }
   };
 }

@@ -21,6 +21,16 @@ void CALW_InitPassImpl(HCALWData h, RecodingAlgorithm* pRA)
   h->InitPass(pRA);
 }
 
+BOOL CALW_CanUseHWNDForReadingImpl(HCALWData h, const RecodingAlgorithm* pRA)
+{
+  return (pRA->iPassIndex == 0);
+}
+
+BOOL CALW_CanUseHWNDForWritingImpl(HCALWData h, const RecodingAlgorithm* pRA)
+{
+  return (pRA->iPassIndex == pRA->iPassCount - 1);
+}
+
 BOOL CALW_Run(HCALWData h, RecodingAlgorithm* pRA, EncodingData* pED, long* piCharsProcessed)
 {
   switch (pRA->iPassIndex)

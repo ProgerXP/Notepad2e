@@ -130,7 +130,6 @@ int  CreateIniFileEx(LPCWSTR);
 void EditInit(HWND);
 void UpdateStatusbar();
 void UpdateToolbar();
-void UpdateLineNumberWidth(HWND);
 void UpdateTabSettings(HWND);
 void OnDropCompleted(HWND);
 void SetWordWrap(HWND);

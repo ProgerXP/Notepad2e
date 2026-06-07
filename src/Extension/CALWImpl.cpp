@@ -784,7 +784,9 @@ extern "C" {
   {
     auto res = m_cp->FindOffset(pED->m_tb.m_iPos) + offset;
     if (res == -1)
-      res = pRA->iResultEndBackup;
+      res = pED->m_tr.m_originalSelection
+            ? pED->m_tr.m_iSelEndOriginal
+            : pED->m_tr.m_iSelStart + pED->m_tr.m_iPositionCurrent - pED->m_tr.m_iSelOffset;
     pRA->iResultEnd = res;
   }
 

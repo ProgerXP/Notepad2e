@@ -7370,42 +7370,6 @@ void UpdateStatusbar()
 }
 
 
-//=============================================================================
-//
-//  UpdateLineNumberWidth()
-//
-//
-void UpdateLineNumberWidth(HWND hwnd)
-{
-  char tchFirstLineIndex[32], tchLastLineIndex[32];
-  int  iLineMarginWidthNow;
-  int  iLineMarginWidthFit;
-
-  if (bShowLineNumbers)
-  {
-    // [2e]: View > St&arting Line Number... #342
-    wsprintfA(tchFirstLineIndex, "_%i_", n2e_GetVisibleLineNumber(0));
-    wsprintfA(tchLastLineIndex, "_%i_", n2e_GetVisibleLineNumber(SendMessage(hwnd, SCI_GETLINECOUNT, 0, 0) - 1));
-
-    iLineMarginWidthNow = (int)SendMessage(hwnd, SCI_GETMARGINWIDTHN, 0, 0);
-
-    // View > St&arting Line Number... #342
-    iLineMarginWidthFit = max(
-        SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchFirstLineIndex),
-        SendMessage(hwnd, SCI_TEXTWIDTH, STYLE_LINENUMBER, (LPARAM)tchLastLineIndex)
-      );
-
-    if (iLineMarginWidthNow != iLineMarginWidthFit)
-    {
-      SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, iLineMarginWidthFit);
-    }
-  }
-
-  else
-    SendMessage(hwnd, SCI_SETMARGINWIDTHN, 0, 0);
-}
-
-
 // [2e]: Split views not updated when Tab width changes #494
 void UpdateTabSettings(HWND hwnd)
 {

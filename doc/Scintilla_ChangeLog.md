@@ -2922,3 +2922,19 @@ Update ``KeyMap::MapDefault[]``:
 /**Alt+Up/Down to navigate lines skipping sublines #430**
 
 ---
+
+**Change Ctrl+I to perform comment - aware line wrapping #320**
+
+Modify `Editor::ReplaceTarget`:
+
+[scintilla/src/Editor.cxx]
+```
+	// [2e]: Change Ctrl+I to perform comment - aware line wrapping #320
+	SetScrollBars();
+	return length;
+```
+[/scintilla/src/Editor.cxx]
+
+/**Change Ctrl+I to perform comment - aware line wrapping #320**
+
+---

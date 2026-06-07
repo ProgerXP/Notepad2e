@@ -3,6 +3,10 @@
 #include "SciLexer.h"
 #include "Scintilla.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MULTI_STYLE(a,b,c,d) ((a)|(b<<8)|(c<<16)|(d<<24)|(ULONG64)0)
 #define MULTI_STYLE2(a,b,c,d,e,f,g,h) ((a)|(b<<8)|(c<<16)|(d<<24)|((ULONG64)e<<32)|((ULONG64)f<<40)|((ULONG64)g<<48)|((ULONG64)h<<56))
 #define MULTI_STYLE_STYLEX(s,x) ((s >> x) & 0xFF)
@@ -111,3 +115,11 @@ extern EDITLEXER lexMAK;
 extern EDITLEXER lexXML;
 extern PEDITLEXER pLexArray[NUMLEXERS];
 extern PEDITLEXER pLexCurrent;
+
+#ifdef N2E_TESTING
+BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew);
+#endif
+
+#ifdef __cplusplus
+} // extern "C"
+#endif

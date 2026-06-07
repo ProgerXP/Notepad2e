@@ -5873,6 +5873,9 @@ Sci::Position Editor::ReplaceTarget(bool replacePatterns, const char *text, Sci:
 	// Insert the new text
 	const Sci::Position lengthInserted = pdoc->InsertString(targetRange.start.Position(), text, length);
 	targetRange.end.SetPosition(targetRange.start.Position() + lengthInserted);
+
+	// [2e]: Change Ctrl+I to perform comment - aware line wrapping #320
+	SetScrollBars();
 	return length;
 }
 

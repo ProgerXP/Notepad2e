@@ -32,6 +32,21 @@ static std::string StringFromVector(std::vector<unsigned char> v)
 
 typedef std::tuple<int, int, int> TData;
 
+class CSciSelection
+{
+private:
+  const bool m_initialized = false;
+  const std::pair<int, int> m_selectionRange;
+public:
+  CSciSelection(const int selStart, const int selEnd) : m_selectionRange(selStart, selEnd), m_initialized(true) {}
+  CSciSelection(const int cursorPosition) : m_selectionRange(cursorPosition, cursorPosition), m_initialized(true) {}
+  CSciSelection() : m_initialized(false) {}
+  CSciSelection(const CSciSelection& _right) : m_initialized(_right.m_initialized), m_selectionRange(_right.m_selectionRange) {}
+  bool isSet() const { return m_initialized; }
+  int selStart() const { return m_selectionRange.first; }
+  int selEnd() const { return m_selectionRange.second; }
+};
+
 class CTestCaseData
 {
 private:
@@ -43,11 +58,18 @@ private:
                                   // sufficient buffer size for decoder is required
   int iDecodeOnlyMinBufferSize;
   TData tupleAdditionalData;
+  CSciSelection sciSelection;
+  CSciSelection sciSelectionResult;
+
 public:
-  CTestCaseData(const bool file, const std::string& src, const int encoding, const std::string& res, 
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {})
-    : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
+  CTestCaseData(const bool file, const std::string& src, const int encoding, const std::string& res,
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {},
+                const CSciSelection& selection = {}, const CSciSelection& selectionResult = {})
+    : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly)
+    , iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize)
+    , tupleAdditionalData(additionalData)
+    , sciSelection(selection)
+    , sciSelectionResult(selectionResult)
   {
     vectorSource = VectorFromString(src.c_str());
     vectorExpectedResult = VectorFromString(res.c_str());
@@ -79,4 +101,6 @@ public:
   std::vector<unsigned char> GetExpectedResultText() const;
   std::wstring GetEncodingName() const;
   TData GetAdditionalData() const;
+  const CSciSelection GetSelection() const;
+  const CSciSelection GetExpectedResultSelection() const;
 };

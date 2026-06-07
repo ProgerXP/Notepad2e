@@ -36,6 +36,7 @@
 #include "Extension/SciCall.h"
 #include "Extension/SplitterWnd.h"
 #include "Extension/Utils.h"
+#include "Shared/SharedEditHelper.h"
 
 
 COLORREF crCustom[16];

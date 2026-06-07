@@ -35,6 +35,8 @@ struct TTextRange
   long m_iSelStart;
   long m_iSelEnd;
   long m_iSelEndOriginal;
+  long m_iSelOffset;
+  BOOL m_originalSelection;
   long m_iPositionStart;
   long m_iPositionCurrent;
   long m_iExpectedProcessedChars;
@@ -147,6 +149,9 @@ typedef enum _ERecodingType
 
 BOOL RecodingAlgorithm_ShouldBreak(const RecodingAlgorithm* pRA);
 BOOL RecodingAlgorithm_ShouldBreakEncoding(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_IsRestrictedForHWNDUse(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_CanUseHWNDForReading(const RecodingAlgorithm* pRA);
+BOOL RecodingAlgorithm_CanUseHWNDForWriting(const RecodingAlgorithm* pRA);
 BOOL RecodingAlgorithm_Init(RecodingAlgorithm* pRA, const ERecodingType rt,
   const BOOL isEncoding, const int iAdditionalData1, const int iAdditionalData2, const int iAdditionalData3);
 BOOL RecodingAlgorithm_Release(RecodingAlgorithm* pRA);

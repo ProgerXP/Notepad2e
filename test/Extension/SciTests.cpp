@@ -1,4 +1,5 @@
 ﻿#include "stdafx.h"
+#include <assert.h>
 #include <Windows.h>
 #include "SciTests.h"
 #include "BoostRegexSearch.h"
@@ -47,6 +48,20 @@ void runTest(const std::function<void()>& funcTest)
   setupScintillaInstance();
   funcTest();
   releaseScintillaInstance();
+}
+
+void setLexer(const int lexerId)
+{
+  for (auto i = 0; i < NUMLEXERS; ++i)
+  {
+    if (pLexArray[i]->iLexer == lexerId)
+    {
+      pLexCurrent = pLexArray[i];
+      break;
+    }
+  }
+  assert(pLexCurrent);
+  Lexer_SetLexer(g_hwndActiveEdit, pLexCurrent);
 }
 
 TEST_CLASS(SampleTests)

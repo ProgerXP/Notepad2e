@@ -57,10 +57,6 @@ void n2e_SplitLines(const HWND hwnd, const int iLineSizeLimit, const BOOL bColum
     SciCall_SetSel(0, SciCall_GetLength());
   }
   EncodeStrWithCALW(hwnd, iLineSizeLimit);
-  if (bAdjustSelection)
-  {
-    SciCall_SetSel(0, SciCall_GetLength());
-  }
 }
 
 BOOL n2e_JoinLines_InitSelection(const BOOL noSpaceDelimiter)

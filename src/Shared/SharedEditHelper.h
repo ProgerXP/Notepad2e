@@ -8,6 +8,7 @@
 #define C_PREFIX
 #endif
 
+C_PREFIX void UpdateLineNumberWidth(HWND hwnd);
 C_PREFIX void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos);
 C_PREFIX BOOL n2e_IsRectangularSelection();
 C_PREFIX BOOL n2e_ShowPromptIfSelectionModeIsRectangle(const HWND hwnd);
