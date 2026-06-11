@@ -167,6 +167,7 @@ BOOL      bTabsAsSpacesG;
 BOOL      bTabIndents;
 BOOL      bTabIndentsG;
 BOOL      bBackspaceUnindents;
+BOOL      bBackspaceUnindentsG;
 int       iTabWidth;
 int       iTabWidthG;
 int       iIndentWidth;

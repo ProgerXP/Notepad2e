@@ -182,6 +182,8 @@ BOOL IsUTF7(const char*, int);
 #define FV_LONGLINESLIMIT 32
 #define FV_ENCODING       64
 #define FV_MODE          128
+#define FV_BACKSPACEUNINDENTS 256
+#define FV_2NDSCHEME     512
 
 typedef struct _filevars
 {
@@ -190,6 +192,8 @@ typedef struct _filevars
   int iIndentWidth;
   BOOL bTabsAsSpaces;
   BOOL bTabIndents;
+  BOOL bBackspaceUnindents;
+  BOOL b2ndDefaultScheme;
   BOOL fWordWrap;
   int iLongLinesLimit;
   char tchEncoding[32];

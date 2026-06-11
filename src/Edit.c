@@ -6799,6 +6799,18 @@ BOOL FileVars_Init(char *lpData, DWORD cbData, LPFILEVARS lpfv)
         lpfv->mask |= FV_TABINDENTS;
       }
 
+      if (FileVars_ParseInt(tch, "c-backspace-unindent", &i))
+      {
+        lpfv->bBackspaceUnindents = (i) ? TRUE : FALSE;
+        lpfv->mask |= FV_BACKSPACEUNINDENTS;
+      }
+
+      if (FileVars_ParseInt(tch, "2nd-default-scheme", &i))
+      {
+        lpfv->b2ndDefaultScheme = (i) ? TRUE : FALSE;
+        lpfv->mask |= FV_2NDSCHEME;
+      }
+
       if (FileVars_ParseInt(tch, "truncate-lines", &i))
       {
         lpfv->fWordWrap = (i) ? FALSE : TRUE;
@@ -6866,6 +6878,18 @@ BOOL FileVars_Init(char *lpData, DWORD cbData, LPFILEVARS lpfv)
           lpfv->mask |= FV_TABINDENTS;
         }
 
+        if (FileVars_ParseInt(tch, "c-backspace-unindent", &i))
+        {
+          lpfv->bBackspaceUnindents = (i) ? TRUE : FALSE;
+          lpfv->mask |= FV_BACKSPACEUNINDENTS;
+        }
+
+        if (FileVars_ParseInt(tch, "2nd-default-scheme", &i))
+        {
+          lpfv->b2ndDefaultScheme = (i) ? TRUE : FALSE;
+          lpfv->mask |= FV_2NDSCHEME;
+        }
+
         if (FileVars_ParseInt(tch, "truncate-lines", &i))
         {
           lpfv->fWordWrap = (i) ? FALSE : TRUE;
@@ -6917,6 +6941,10 @@ extern BOOL bTabsAsSpaces;
 extern BOOL bTabsAsSpacesG;
 extern BOOL bTabIndents;
 extern BOOL bTabIndentsG;
+extern BOOL bBackspaceUnindents;
+extern BOOL bBackspaceUnindentsG;
+extern BOOL bUse2ndDefaultStyle;
+extern BOOL bUse2ndDefaultStyleG;
 extern int fWordWrap;
 extern int fWordWrapG;
 extern int iWordWrapMode;
@@ -6952,6 +6980,18 @@ BOOL FileVars_Apply(HWND hwnd, LPFILEVARS lpfv)
   else
     bTabIndents = bTabIndentsG;
   SendMessage(hwndEdit, SCI_SETTABINDENTS, bTabIndents, 0);
+
+  if (lpfv->mask & FV_BACKSPACEUNINDENTS)
+    bBackspaceUnindents = lpfv->bBackspaceUnindents;
+  else
+    bBackspaceUnindents = bBackspaceUnindentsG;
+  SendMessage(hwnd, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
+
+  if (lpfv->mask & FV_2NDSCHEME)
+    bUse2ndDefaultStyle = lpfv->b2ndDefaultScheme;
+  else
+    bUse2ndDefaultStyle = bUse2ndDefaultStyleG;
+  SendMessage(hwnd, SCI_SETBACKSPACEUNINDENTS, bBackspaceUnindents, 0);
 
   if (lpfv->mask & FV_WORDWRAP)
     fWordWrap = lpfv->fWordWrap;

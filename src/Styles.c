@@ -40,7 +40,8 @@
 
 
 COLORREF crCustom[16];
-BOOL bUse2ndDefaultStyle;
+BOOL bUse2ndDefaultStyle = FALSE;
+BOOL bUse2ndDefaultStyleG = FALSE;
 BOOL fStylesModified = FALSE;
 BOOL fWarnedNoIniFile = FALSE;
 BOOL fIsConsolasAvailable = FALSE;
