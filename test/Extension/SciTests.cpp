@@ -50,7 +50,7 @@ void runTest(const std::function<void()>& funcTest)
   releaseScintillaInstance();
 }
 
-void setLexer(const int lexerId)
+void setLexer(const int lexerId, const int eolMode)
 {
   for (auto i = 0; i < NUMLEXERS; ++i)
   {
@@ -61,7 +61,7 @@ void setLexer(const int lexerId)
     }
   }
   assert(pLexCurrent);
-  Lexer_SetLexer(g_hwndActiveEdit, pLexCurrent);
+  Lexer_SetLexer(g_hwndActiveEdit, pLexCurrent, eolMode);
 }
 
 TEST_CLASS(SampleTests)

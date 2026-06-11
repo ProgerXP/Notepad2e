@@ -1,4 +1,5 @@
 #include "Lexers.h"
+#include "Externals.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -1820,10 +1821,9 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
 PEDITLEXER pLexCurrent = &lexDefault;
 
 #ifdef N2E_TESTING
-BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
+BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew, const int eolMode)
 {
   int i;
-  int iIdx;
   int iStyleBits;
   WCHAR wchCaretStyle[64] = L"";
 
@@ -1851,11 +1851,14 @@ BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew)
   pLexCurrent = pLexNew;
 
   SendMessage(hwnd, SCI_COLOURISE, 0, (LPARAM)-1);
+
+  iEOLMode = eolMode;
+  SendMessage(hwnd, SCI_SETEOLMODE, eolMode, 0);
   
   return TRUE;
 }
 #endif N2E_TESTING
-
+ 
 #ifdef __cplusplus
 } // extern "C"
 #endif

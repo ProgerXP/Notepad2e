@@ -664,6 +664,8 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
     pTR->m_originalSelection = pTR->m_iSelEnd == StringSource_GetSelectionEnd(pSS);
     if (!pTR->m_originalSelection)
     {
+      if (pTR->m_iSelEnd >= pTR->m_iSelStart + DEFAULT_RECODING_BUFFER_SIZE)
+      {
         // #NOTE: move selection to previous word end on the left to prevent trailing spaces in buffer
         const auto xOffset = SciCall_GetXOffset();
         const auto yOffset = SciCall_GetFirstVisibleLine();
@@ -673,6 +675,7 @@ BOOL TextRange_Init(const StringSource* pSS, const RecodingAlgorithm* pRA, struc
         SciCall_SetSel(pTR->m_iSelStart, pTR->m_iSelEnd);
         SciCall_SetXOffset(xOffset);
         SciCall_SetFirstVisibleLine(yOffset);
+      }
     }
     else if (pTR->m_hwnd && (SciCall_PositionFromLine(SciCall_LineFromPosition(pTR->m_iSelEnd)) == pTR->m_iSelEnd))
     {
@@ -1047,8 +1050,8 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
       const int initialLineIndex = SciCall_LineFromPosition(iSelStart);
       const int lineIndex = SciCall_LineFromPosition(pRA->iResultSelEnd);
       const int pos = (lineIndex != initialLineIndex)
-                        ? SciCall_PositionFromLine(lineIndex)
-                        : pRA->iResultSelEnd;
+                        ? SciCall_PositionFromLine(max(lineIndex, initialLineIndex))
+                        : SciCall_PositionFromLine(lineIndex + 1);
       EditSelectEx(pSS->hwnd, pos, pos);
     }
     else

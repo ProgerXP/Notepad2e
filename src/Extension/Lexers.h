@@ -117,7 +117,7 @@ extern PEDITLEXER pLexArray[NUMLEXERS];
 extern PEDITLEXER pLexCurrent;
 
 #ifdef N2E_TESTING
-BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew);
+BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew, const int eolMode);
 #endif
 
 #ifdef __cplusplus

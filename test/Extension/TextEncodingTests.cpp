@@ -123,7 +123,7 @@ static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const boo
           SciCall_SetTargetStart(0);
           SciCall_SetTargetEnd(SciCall_GetLength());
           SciCall_ReplaceTarget(srcData.size(), (const char*)srcData.data());
-          SciTests::setLexer(std::get<1>(info.GetAdditionalData()));
+          SciTests::setLexer(std::get<1>(info.GetAdditionalData()), std::get<2>(info.GetAdditionalData()));
           SciCall_SetSel(selection.selStart(), selection.selEnd());
           result = sciProc(g_hwndActiveEdit, std::get<0>(info.GetAdditionalData()), &resultLength);
         }
@@ -1403,7 +1403,24 @@ namespace Notepad2eTests
 #endif
 
 #ifdef ENABLE_SINGLE_LINE_TESTS
-                CTestCaseData(false, "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
+                CTestCaseData(false, "a\n"
+                                     "a\n"
+                                     "a\n"
+                                     "\n"
+                                     "a\n",
+                  CPI_DEFAULT,
+                                     "a a a\n"
+                                     "\n"
+                                     "a\n",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_LF }, { 0, 0 }, { 7, 7 }),
+                CTestCaseData(false, "a\n"
+                                     "a\n"
+                                     "a\n"
+                                     "a\n",
+                  CPI_DEFAULT,
+                                     "a a a a\n",
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_LF }, { 0, 0 }, { 8, 8 }),
+              CTestCaseData(false, "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
                   CPI_DEFAULT,
                                      "aaa aaa aaa aaa aaa aaa aaa\r\n"
                                      "aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa aaa",
@@ -1416,7 +1433,7 @@ namespace Notepad2eTests
                                      "# foo\r\n"
                                      "# foo\r\n"
                                      "# foo",
-                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 7, 7 }, { 14, 14 }),
+                  false, 0, { 50, SCLEX_NULL, SC_EOL_CRLF }, { 7, 7 }, { 14, 14 }),
 
                 CTestCaseData(false, "# foo\r\n"
                                      "# foo\r\n"
@@ -1424,7 +1441,7 @@ namespace Notepad2eTests
                   CPI_DEFAULT,
                                      "# foo\r\n"
                                      "# foo foo\r\n",
-                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 7, 7 }, { 16, 16 }),
+                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 7, 7 }, { 18, 18 }),
 
                 CTestCaseData(false, "# foo\r\n"
                                      "# foo\r\n"
@@ -1437,7 +1454,7 @@ namespace Notepad2eTests
                   CPI_DEFAULT,
                                      "# foo foo foo foo foo foo foo\r\n"
                                      "# foo",
-                  false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 0, 0 }, { 31, 31 }),
+                  false, 0, { 30, SCLEX_BASH, SC_EOL_CRLF }, { 0, 0 }, { 31, 31 }),
 #endif 
 
 #ifdef ENABLE_RANGE_TESTS
