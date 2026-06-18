@@ -1056,7 +1056,7 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
     }
     else
     {
-      EditSelectEx(pSS->hwnd, SciCall_GetTargetStart(), SciCall_GetTargetEnd());
+      EditSelectEx(pSS->hwnd, iSelStart, iSelEnd);
     }
     UpdateLineNumberWidth(pSS->hwnd);
     UpdateWindow(pSS->hwnd);
@@ -1218,8 +1218,10 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
           SciCall_SetTargetEnd(iPos);
         }
         pSS->iResultLength += pED->m_tbRes.m_iPos;
-        pED->m_tr.m_iSelEnd += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
-        pED->m_tr.m_iSelOffset += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
+        const auto offset = pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
+        pED->m_tr.m_iSelEnd += offset;
+        pED->m_tr.m_iSelOffset += offset;
+        pED->m_tr.m_iPositionCurrent += offset;
         iCursorOffset = 0;
       }
     }

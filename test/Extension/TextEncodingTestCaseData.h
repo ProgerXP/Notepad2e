@@ -83,9 +83,12 @@ public:
     vectorExpectedResult = VectorFromString(res.c_str());
   }
   CTestCaseData(const bool file, const std::wstring src, const int encoding, const std::string res,
-                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {})
-    : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly),
-    iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
+                const bool decodeOnly = false, const int decodeOnlyMinBufferSize = 0, const TData additionalData = {},
+                const CSciSelection& selection = {}, const CSciSelection& selectionResult = {})
+    : isFile(file), iEncoding(encoding), isDecodeOnly(decodeOnly)
+    , iDecodeOnlyMinBufferSize(decodeOnlyMinBufferSize), tupleAdditionalData(additionalData)
+    , sciSelection(selection)
+    , sciSelectionResult(selectionResult)
   {
     vectorSource = VectorFromString(UCS2toUTF8(src).c_str());
     vectorExpectedResult = VectorFromString(res.c_str());

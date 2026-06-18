@@ -13,6 +13,6 @@ namespace SciTests
 
 HWND hwnd();
 void runTest(const std::function<void()>& funcTest);
-void setLexer(const int lexerId, const int eolMode);
+void setLexer(const int encoding, const int lexerId, const int eolMode);
 
 } // namespace SciTests

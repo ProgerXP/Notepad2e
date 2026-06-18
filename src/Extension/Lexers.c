@@ -1821,7 +1821,7 @@ PEDITLEXER pLexArray[NUMLEXERS] = {
 PEDITLEXER pLexCurrent = &lexDefault;
 
 #ifdef N2E_TESTING
-BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew, const int eolMode)
+BOOL Lexer_SetLexer(HWND hwnd, const int encoding, PEDITLEXER pLexNew, const int eolMode)
 {
   int i;
   int iStyleBits;
@@ -1829,6 +1829,8 @@ BOOL Lexer_SetLexer(HWND hwnd, PEDITLEXER pLexNew, const int eolMode)
 
   if (!pLexNew)
     return FALSE;
+
+  iEncoding = encoding;
 
   // Lexer
   SendMessage(hwnd, SCI_SETLEXER, pLexNew->iLexer, 0);

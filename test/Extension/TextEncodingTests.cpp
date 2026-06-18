@@ -16,12 +16,17 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-typedef LPCSTR (TSciWorkingProc)(const HWND hwnd, const int iLineSizeLimit, int*);
+typedef void (TWndWorkingProc1)(const HWND hwnd);
+typedef void (TWndWorkingProc2)(const HWND hwnd, const int);
+typedef LPCSTR (TSciWorkingProc)(const HWND hwnd, const int iLineSizeLimit, int*, TWndWorkingProc1 funcRecode1, TWndWorkingProc2 funcRecode2);
 typedef LPCSTR (TWorkingProc)(LPCSTR, const int, const int, const int, const int, const int, const int, int*);
 
 #define MIN_BUFFER_SIZE 8
 #define MAX_BUFFER_SIZE 65536
 #define BUFFER_TEST_COUNT 3
+
+#define DEFAULT_SELECTION_START { 0, 0 }
+#define DEFAULT_PARAMS  false, 0, { 80, SCLEX_NULL, SC_EOL_CRLF }, DEFAULT_SELECTION_START
 
 std::wstring GetCharWString(const char ch)
 {
@@ -83,7 +88,7 @@ std::wstring GetStringDiff(const std::string& expected, const std::string& actua
   return ss.str();
 }
 
-static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const bool isEncoding, const CTestCaseData* pData, const int count, const bool testBufferSize)
+static void DoRecodingTest(TSciWorkingProc sciProc, TWndWorkingProc1 wndProc1, TWndWorkingProc2 wndProc2, TWorkingProc proc, const bool isEncoding, const CTestCaseData* pData, const int count, const bool testBufferSize)
 {
   srand(GetTickCount());
   bool continueTesting = true;
@@ -123,9 +128,9 @@ static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const boo
           SciCall_SetTargetStart(0);
           SciCall_SetTargetEnd(SciCall_GetLength());
           SciCall_ReplaceTarget(srcData.size(), (const char*)srcData.data());
-          SciTests::setLexer(std::get<1>(info.GetAdditionalData()), std::get<2>(info.GetAdditionalData()));
+          SciTests::setLexer(info.GetEncoding(), std::get<1>(info.GetAdditionalData()), std::get<2>(info.GetAdditionalData()));
           SciCall_SetSel(selection.selStart(), selection.selEnd());
-          result = sciProc(g_hwndActiveEdit, std::get<0>(info.GetAdditionalData()), &resultLength);
+          result = sciProc(g_hwndActiveEdit, std::get<0>(info.GetAdditionalData()), &resultLength, wndProc1, wndProc2);
         }
         else
         {
@@ -164,14 +169,29 @@ static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const boo
 
         int resultLength = 0;
         const auto srcData = info.GetExpectedResultText();
-        LPCSTR result = proc((LPCSTR)srcData.data(),
-                             srcData.size(),
-                             info.GetEncoding(),
-                             std::get<0>(info.GetAdditionalData()),
-                             std::get<1>(info.GetAdditionalData()),
-                             std::get<2>(info.GetAdditionalData()),
-                             bufferSize,
-                             &resultLength);
+        const auto selection = info.GetSelection();
+        LPCSTR result = NULL;
+        if (sciProc && selection.isSet())
+        {
+          SciCall_SetTargetStart(0);
+          SciCall_SetTargetEnd(SciCall_GetLength());
+          SciCall_ReplaceTarget(srcData.size(), (const char*)srcData.data());
+          SciTests::setLexer(info.GetEncoding(), std::get<1>(info.GetAdditionalData()), std::get<2>(info.GetAdditionalData()));
+          SciCall_SetSel(selection.selStart(), selection.selEnd());
+          result = sciProc(g_hwndActiveEdit, std::get<0>(info.GetAdditionalData()), &resultLength, wndProc1, wndProc2);
+        }
+        else
+        {
+          result = proc((LPCSTR)srcData.data(),
+            srcData.size(),
+            info.GetEncoding(),
+            std::get<0>(info.GetAdditionalData()),
+            std::get<1>(info.GetAdditionalData()),
+            std::get<2>(info.GetAdditionalData()),
+            bufferSize,
+            &resultLength);
+        }
+
         if (info.GetSourceText() != VectorFromString(result, resultLength))
         {
           const auto msg = ss.str() + GetStringDiff(StringFromVector(info.GetSourceText()), result);
@@ -191,13 +211,31 @@ static void DoRecodingTest(TSciWorkingProc sciProc, TWorkingProc proc, const boo
 
 namespace Notepad2eTests
 {
+  static LPCSTR Sci_RecodeString(const HWND hwnd, const int iLineSizeLimit, int* length, TWndWorkingProc1 funcRecode1, TWndWorkingProc2 funcRecode2)
+  {
+    if (funcRecode1)
+      funcRecode1(hwnd);
+    else if (funcRecode2)
+      funcRecode2(hwnd, iLineSizeLimit);
+
+    static char buffer[65536];
+    Sci_TextRange tr = {};
+    tr.chrg.cpMin = 0;
+    tr.chrg.cpMax = SciCall_GetLength();
+    tr.lpstrText = buffer;
+    buffer[tr.chrg.cpMax] = 0;
+    SciCall_GetTextRange(0, &tr);
+    *length = tr.chrg.cpMax;
+    return buffer;
+  }
+
   TEST_CLASS(CStringToHex)
   {
   public:
     TEST_METHOD(TestHex_StringSamples)
     {
       const CTestCaseData data[] = {
-          CTestCaseData(false, "test", CPI_DEFAULT, "74657374"),
+          CTestCaseData(false, "test", CPI_DEFAULT, "74657374", DEFAULT_PARAMS, {0, 8}),
           CTestCaseData(false, "test", CPI_UNICODE, "0074006500730074"),
           CTestCaseData(false, L"тестовая строка", CPI_UTF8, "D182 D0B  5D181D1\r\n82D0BED  0B2D 0B0  D18F20\rD1\n   81D \r182D1  80D0BED    0BAD 0 B 0", true/*test decode only*/, MIN_BUFFER_SIZE*10),
           CTestCaseData(false, L"тестовая строка", CPI_UTF8, "D182D0B5D181D182D0BED0B2D0B0D18F20D181D182D180D0BED0BAD0B0"),
@@ -205,8 +243,12 @@ namespace Notepad2eTests
           CTestCaseData(false, UCS2toCP(L"test string", CP_WINDOWS_1250), CPI_DEFAULT, "7465737420737472696E67"),
           CTestCaseData(false, UCS2toCP(L"ハローワールド", CP_SHIFT_JIS), CPI_DEFAULT, "836E838D815B838F815B838B8368")
       };
-      DoRecodingTest(NULL, EncodeStringToHex, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeHexToString, false, &data[0], _countof(data), false);
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, EncodeStrToHex, NULL, EncodeStringToHex, true, &data[0], _countof(data), false);
+      });
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, DecodeHexToStr, NULL, DecodeHexToString, false, &data[0], _countof(data), false);
+      });
     }
 
     TEST_METHOD(TestHex_FileSamples)
@@ -220,8 +262,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Hex_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Hex_1250.txt"),
       };
-      DoRecodingTest(NULL, EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
-      DoRecodingTest(NULL, DecodeHexToString, false, &data[0], _countof(data), true);
+      DoRecodingTest(NULL, NULL, NULL, EncodeStringToHex, true, &data[0], _countof(data), true/*heavy testing, use random buffer size*/);
+      DoRecodingTest(NULL, NULL, NULL, DecodeHexToString, false, &data[0], _countof(data), true);
     }
   };
 
@@ -231,19 +273,23 @@ namespace Notepad2eTests
     TEST_METHOD(TestBase64_StringSamples)
     {
       const CTestCaseData data[] = {
-        CTestCaseData(false, "test", CPI_DEFAULT, "dGVzdA=="),
+        CTestCaseData(false, "test", CPI_DEFAULT, "dGVzdA==", DEFAULT_PARAMS, {0, 8}),
         CTestCaseData(false, "test", CPI_UTF8, "dGVzdA=="),
         CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "dABlAHMAdABzAAAAdAByAGkAbgBnAA=="),
-        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0YLQtdGB0YLQvtCy0LDRjyDRgdGC0YDQvtC60LA="),
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0YLQtdGB0YLQvtCy0LDRjyDRgdGC0YDQvtC60LA=", DEFAULT_PARAMS, {0, 40}),
         CTestCaseData(false, L"тестовая строка", CPI_UTF8, "0   Y     L    Q\r\n  t   d    GB 0   YL   Q   \rvtC\n\ny0L\tDRj   yDRgdGC0YDQvtC60LA=", true/*decodeOnly*/),
-        CTestCaseData(false, L"тестовая строка кириллица-1251", CPI_WINDOWS_1251, "8uXx8u7i4P8g8fLw7urgIOro8Ojr6+j24C0xMjUx"),
+        CTestCaseData(false, L"тестовая строка кириллица-1251", CPI_WINDOWS_1251, "8uXx8u7i4P8g8fLw7urgIOro8Ojr6+j24C0xMjUx", DEFAULT_PARAMS, {0, 40}),
         CTestCaseData(false, L"тестовая строка кириллица-KOI8-R", CPI_WINDOWS_KOI8_R, "1MXT1M/XwdEg09TSz8vBIMvJ0snMzMnDwS1LT0k4LVI="),
         CTestCaseData(false, "Base64 is a generic term for a number of similar encoding schemes that encode binary data by treating it numerically and translating it into a base 64 representation. The Base64 term originates from a specific MIME content transfer encoding.",
                       CPI_DEFAULT,
-                      "QmFzZTY0IGlzIGEgZ2VuZXJpYyB0ZXJtIGZvciBhIG51bWJlciBvZiBzaW1pbGFyIGVuY29kaW5nIHNjaGVtZXMgdGhhdCBlbmNvZGUgYmluYXJ5IGRhdGEgYnkgdHJlYXRpbmcgaXQgbnVtZXJpY2FsbHkgYW5kIHRyYW5zbGF0aW5nIGl0IGludG8gYSBiYXNlIDY0IHJlcHJlc2VudGF0aW9uLiBUaGUgQmFzZTY0IHRlcm0gb3JpZ2luYXRlcyBmcm9tIGEgc3BlY2lmaWMgTUlNRSBjb250ZW50IHRyYW5zZmVyIGVuY29kaW5nLg==")
+                      "QmFzZTY0IGlzIGEgZ2VuZXJpYyB0ZXJtIGZvciBhIG51bWJlciBvZiBzaW1pbGFyIGVuY29kaW5nIHNjaGVtZXMgdGhhdCBlbmNvZGUgYmluYXJ5IGRhdGEgYnkgdHJlYXRpbmcgaXQgbnVtZXJpY2FsbHkgYW5kIHRyYW5zbGF0aW5nIGl0IGludG8gYSBiYXNlIDY0IHJlcHJlc2VudGF0aW9uLiBUaGUgQmFzZTY0IHRlcm0gb3JpZ2luYXRlcyBmcm9tIGEgc3BlY2lmaWMgTUlNRSBjb250ZW50IHRyYW5zZmVyIGVuY29kaW5nLg==", DEFAULT_PARAMS, {0, 324})
       };
-      DoRecodingTest(NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, EncodeStrToBase64, NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
+      });
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, DecodeBase64ToStr, NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
+      });
     }
 
     TEST_METHOD(TestBase64_FileSamples)
@@ -255,8 +301,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_Base64_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_Base64_1250.txt"),
       };
-      DoRecodingTest(NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, EncodeStringToBase64, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, DecodeBase64ToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -266,14 +312,19 @@ namespace Notepad2eTests
     TEST_METHOD(TestQP_StringSamples)
     {
       const CTestCaseData data[] = {
-        CTestCaseData(false, "test string", CPI_DEFAULT, "test string"),
+        CTestCaseData(false, ":=D0", CPI_DEFAULT, ":=3DD0", DEFAULT_PARAMS, {0, 6}),
+        CTestCaseData(false, "test string", CPI_DEFAULT, "test string", DEFAULT_PARAMS, {0, 11}),
         CTestCaseData(false, L"тестовая строка", CPI_UTF8, "=D1=82=D0=B5=D1=81=D1=82=D0=BE=D0=B2=D0=B0=D1=8F =D1=81=D1=82=D1=80=D0=BE=\r\n"
-                                                           "=D0=BA=D0=B0"),
+                                                           "=D0=BA=D0=B0", DEFAULT_PARAMS, { 0, 88 }),
         CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing space test  =0D=0Awith new    line    test   =20"),
         CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t=00e=00s=00t=00s=00=00=00t=00r=00i=00n=00g=00"),
       };
-      DoRecodingTest(NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeQPToString, false, &data[0], _countof(data), false);
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, EncodeStrToQP, NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
+      });
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, DecodeQPToStr, NULL, DecodeQPToString, false, &data[0], _countof(data), false);
+      });
     }
 
     TEST_METHOD(TestQP_FileSamples)
@@ -285,8 +336,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_QP_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_QP_1250.txt"),
       };
-      DoRecodingTest(NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeQPToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, EncodeStringToQP, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, DecodeQPToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -296,14 +347,18 @@ namespace Notepad2eTests
     TEST_METHOD(TestURL_StringSamples)
     {
       const CTestCaseData data[] = {
-        CTestCaseData(false, "http://site.com/?foo=bar", CPI_DEFAULT, "http%3A%2F%2Fsite.com%2F%3Ffoo%3Dbar"),
-        CTestCaseData(false, "test string", CPI_DEFAULT, "test%20string"),
-        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%BE%D0%BA%D0%B0"),
+        CTestCaseData(false, "http://site.com/?foo=bar", CPI_DEFAULT, "http%3A%2F%2Fsite.com%2F%3Ffoo%3Dbar", DEFAULT_PARAMS, {0, 36}),
+        CTestCaseData(false, "test string", CPI_DEFAULT, "test%20string", DEFAULT_PARAMS, {0, 13}),
+        CTestCaseData(false, L"тестовая строка", CPI_UTF8, "%D1%82%D0%B5%D1%81%D1%82%D0%BE%D0%B2%D0%B0%D1%8F%20%D1%81%D1%82%D1%80%D0%BE%D0%BA%D0%B0", DEFAULT_PARAMS, { 0, 87 }),
         CTestCaseData(false, "trailing space test  \r\nwith new    line    test    ", CPI_DEFAULT, "trailing%20space%20test%20%20%0D%0Awith%20new%20%20%20%20line%20%20%20%20test%20%20%20%20"),
         CTestCaseData(false, VectorFromString("t\0e\0s\0t\0s\0\0\0t\0r\0i\0n\0g\0", 22), CPI_DEFAULT, "t%00e%00s%00t%00s%00%00%00t%00r%00i%00n%00g%00")
       };
-      DoRecodingTest(NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeURLToString, false, &data[0], _countof(data), false);
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, EncodeStrToURL, NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
+      });
+      SciTests::runTest([&] {
+        DoRecodingTest(Sci_RecodeString, DecodeURLToStr, NULL, DecodeURLToString, false, &data[0], _countof(data), false);
+      });
     }
 
     TEST_METHOD(TestURL_FileSamples)
@@ -315,8 +370,8 @@ namespace Notepad2eTests
         CTestCaseData(true, "TestFile1__src_1251.txt", CPI_DEFAULT, "TestFile1_URL_1251.txt"),
         CTestCaseData(true, "TestFile1__src_1250.txt", CPI_DEFAULT, "TestFile1_URL_1250.txt"),
       };
-      DoRecodingTest(NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
-      DoRecodingTest(NULL, DecodeURLToString, false, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, EncodeStringToURL, true, &data[0], _countof(data), false);
+      DoRecodingTest(NULL, NULL, NULL, DecodeURLToString, false, &data[0], _countof(data), false);
     }
   };
 
@@ -1485,23 +1540,8 @@ namespace Notepad2eTests
 #endif 
       };
       SciTests::runTest([&] {
-          DoRecodingTest(Sci_EncodeStringWithCALW, EncodeStringWithCALW, true, &data[0], _countof(data), false);
+          DoRecodingTest(Sci_RecodeString, NULL, EncodeStrWithCALW, EncodeStringWithCALW, true, &data[0], _countof(data), false);
       });
-    }
-
-    static LPCSTR Sci_EncodeStringWithCALW(const HWND hwnd, const int iLineSizeLimit, int* length)
-    {
-      EncodeStrWithCALW(hwnd, iLineSizeLimit);
-
-      static char buffer[65536];
-      Sci_TextRange tr = {};
-      tr.chrg.cpMin = 0;
-      tr.chrg.cpMax = SciCall_GetLength();
-      tr.lpstrText = buffer;
-      buffer[tr.chrg.cpMax] = 0;
-      SciCall_GetTextRange(0, &tr);
-      *length = tr.chrg.cpMax;
-      return buffer;
     }
   };
 }
