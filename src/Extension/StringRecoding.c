@@ -1220,7 +1220,6 @@ BOOL Recode_ProcessDataPortion(RecodingAlgorithm* pRA, StringSource* pSS, Encodi
         pSS->iResultLength += pED->m_tbRes.m_iPos;
         pED->m_tr.m_iSelEnd += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
         pED->m_tr.m_iSelOffset += pED->m_tbRes.m_iPos - pED->m_tb.m_iPos;
-        pED->m_tr.m_iPositionCurrent = SciCall_GetCurrentPos();
         iCursorOffset = 0;
       }
     }
