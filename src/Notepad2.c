@@ -702,7 +702,7 @@ HWND InitInstance(HINSTANCE hInstance, LPSTR pszCmdLine, int nCmdShow)
 #ifdef LPEG_LEXER
     if (!bLPegEnabled)
     {
-      InfoBox(MBWARN, L"MsgLPegNotSet", IDS_ERR_LPEG_NOT_CONFIGURED);
+      InfoBox(MBINFO, L"MsgLPegNotSet", IDS_ERR_LPEG_NOT_CONFIGURED);
     }
 #endif
   }
