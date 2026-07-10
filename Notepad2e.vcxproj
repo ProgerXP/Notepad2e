@@ -659,7 +659,6 @@
     <ClInclude Include="scintilla\src\UniConversion.h" />
     <ClInclude Include="scintilla\src\ViewStyle.h" />
     <ClInclude Include="scintilla\src\XPM.h" />
-    <ClInclude Include="tinyexpr\tinyexpr.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="res\About.rtf" />
