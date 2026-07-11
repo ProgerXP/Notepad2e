@@ -203,6 +203,7 @@ int n2e_GetCurrentEvalMenuID();
 int n2e_GetSaveBeforeRunningToolsMenuID();
 
 extern int iScrollYCaretPolicy;
+extern BOOL bOverscrollYCaret;
 extern int iSaveBeforeRunningTools;
 extern HWND hwndStatus;
 extern HWND hwndStatusProgressBar;

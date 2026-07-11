@@ -78,7 +78,7 @@ void EditSelectEx(HWND hwnd, int iAnchorPos, int iCurrentPos)
   if (!(n2e_IsSelectionEditModeOn() && n2e_IsPageWiseSelectionEditMode()))
   {
     // [2e]: ScrollYCaretPolicy ini-option
-    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN, n2e_GetCaretSlop());
+    SendMessage(hwnd, SCI_SETYCARETPOLICY, CARET_SLOP | CARET_STRICT | CARET_EVEN  | (bOverscrollYCaret ? CARET_JUMPS : 0), n2e_GetCaretSlop());
   }
 #endif
   SendMessage(hwnd, SCI_SETSEL, iAnchorPos, iCurrentPos);

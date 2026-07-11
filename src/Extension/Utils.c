@@ -38,6 +38,7 @@
 #define INI_SETTING_OPEN_DIALOG_BY_PREFIX L"OpenDialogByPrefix"
 #define INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE L"HighlightLineIfWindowInactive"
 #define INI_SETTING_SCROLL_Y_CARET_POLICY L"ScrollYCaretPolicy"
+#define INI_SETTING_OVERSCROLL_Y_CARET L"OverscrollYCaret"
 #define INI_SETTING_FIND_WORD_MATCH_CASE L"FindWordMatchCase"
 #define INI_SETTING_FIND_WRAP_AROUND L"FindWordWrapAround"
 #define INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK L"MoveCaretOnRightClick"
@@ -87,6 +88,7 @@ BOOL bHighlightLineIfWindowInactive = FALSE;
 long iMaxSearchDistance = DEFAULT_MAX_SEARCH_DISTANCE_KB * BYTES_IN_KB;
 long iMaxSearchWordLength = DEFAULT_MAX_SEARCH_WORD_LENGTH_KB * BYTES_IN_KB;
 EScrollYCaretPolicy iScrollYCaretPolicy = SCP_LEGACY;
+BOOL bOverscrollYCaret = TRUE;
 EFindSelectToMatchingBraceMode iFindSelectToMatchingBraceMode = FSM_LEGACY;
 BOOL bTreatQuotesAsBraces = FALSE;
 BOOL bFindWordMatchCase = FALSE;
@@ -562,6 +564,7 @@ void n2e_LoadINI()
   iUsePrefixInOpenDialog = IniGetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, iUsePrefixInOpenDialog);
   bHighlightLineIfWindowInactive = IniGetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   iScrollYCaretPolicy = IniGetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  bOverscrollYCaret = IniGetInt(N2E_INI_SECTION, INI_SETTING_OVERSCROLL_Y_CARET, bOverscrollYCaret);
   bFindWordMatchCase = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
   bFindWordWrapAround = IniGetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, bFindWordWrapAround);
   bMoveCaretOnRightClick = IniGetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
@@ -663,6 +666,7 @@ void n2e_SaveINI()
   IniSetInt(N2E_INI_SECTION, INI_SETTING_OPEN_DIALOG_BY_PREFIX, iUsePrefixInOpenDialog);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_HIGHLIGHT_LINE_IF_WINDOW_INACTIVE, bHighlightLineIfWindowInactive);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_SCROLL_Y_CARET_POLICY, iScrollYCaretPolicy);
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_OVERSCROLL_Y_CARET, bOverscrollYCaret);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WORD_MATCH_CASE, bFindWordMatchCase);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_FIND_WRAP_AROUND, bFindWordWrapAround);
   IniSetInt(N2E_INI_SECTION, INI_SETTING_MOVE_CARET_ON_RIGHT_CLICK, bMoveCaretOnRightClick);
