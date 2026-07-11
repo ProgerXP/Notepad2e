@@ -109,7 +109,7 @@ class RegexReplaceBase {
 public:
 	virtual ~RegexReplaceBase() {}
 
-	virtual void ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& minPos, const Sci::Position& maxPos, const char* s,
+	virtual void ReplaceText(void* editor, Document* doc, const bool regexp, const int regexMatchFlags, const Sci::Position& minPos, const Sci::Position& maxPos, const char* s,
 		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counter) = 0;
 };
 
@@ -457,7 +457,7 @@ public:
 	void SetCaseFolder(CaseFolder *pcf_) noexcept;
 	Sci::Position FindText(Sci::Position minPos, Sci::Position maxPos, const char *search, int flags, Sci::Position *length);
 	void RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
-		const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, Sci::Position* counter);
+		const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, const int regexMatchFlags, Sci::Position* counter);
 	const char *SubstituteByPosition(const char *text, Sci::Position *length);
 	int LineCharacterIndex() const noexcept;
 	void AllocateLineCharacterIndex(int lineCharacterIndex);

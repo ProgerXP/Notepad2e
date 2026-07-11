@@ -55,7 +55,8 @@ public:
 	
 	virtual ~BoostRegexReplace(){}
 	
-	void ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regex,
+	void ReplaceText(void* editor, Document* doc, const bool regexp, const int regexMatchFlags,
+		const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regex,
 		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* countRet) override;
 
 private:
@@ -179,7 +180,8 @@ namespace Scintilla
 }
 #endif
 
-void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regexString,
+void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool regexp, const int regexMatchFlags,
+	const Sci::Position& startPosition, const Sci::Position& endPosition, const char *regexString,
 	const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* countRet)
 {
 	try {
@@ -210,24 +212,18 @@ void BoostRegexReplace::ReplaceText(void* editor, Document* doc, const bool rege
 
 		std::string _regexString = regexString;
 		std::string _regexReplaceString = regexReplaceString;
-		if (regexp)
-		{
-			boost::replace_all(_regexReplaceString, "\\r", "\r");
-			boost::replace_all(_regexReplaceString, "\\n", "\n");
-			boost::replace_all(_regexReplaceString, "\\r\\n", "\r\n");
-		}
-		else
+		if (!regexp)
 		{
 			if (word)
 				_regexString = "\\<" + _regexString + "\\>";
 			else if (wordStart)
 				_regexString = "\\<" + _regexString;
-			else
-				_regexString = "\\Q" + _regexString + "\\E";
+ 			else
+ 				_regexString = "\\Q" + _regexString + "\\E";
 		}
 		replace._regexString = _regexString.data();
 		replace._regexReplaceString = _regexReplaceString.data();
-		replace._boostRegexFlags = regex_constants::format_all | (regexp
+		replace._boostRegexFlags = ((boost::regex_constants::match_flags)regexMatchFlags) | (regexp
 			? regex_constants::match_not_dot_newline
 			: regex_constants::format_literal);
 
@@ -336,12 +332,13 @@ struct CRegexCustomFormatter
 	Editor* m_editor = nullptr;
 	Document* m_document = nullptr;
 	const Regex& m_regex;
+	const regex_constants::match_flag_type& m_boostRegexFlags;
 	TRegexReplaceFilterFunc m_filterFunc;
 	int m_filterFuncParam = 0;
 	String m_replacement;
 
-	CRegexCustomFormatter(Editor* editor, Document* document, const Regex& regex, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement)
-		: m_editor(editor), m_document(document), m_regex(regex), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
+	CRegexCustomFormatter(Editor* editor, Document* document, const Regex& regex, const regex_constants::match_flag_type& boostRegexFlags, const TRegexReplaceFilterFunc& filterFunc, const int filterFuncParam, const std::string& replacement)
+		: m_editor(editor), m_document(document), m_regex(regex), m_boostRegexFlags(boostRegexFlags), m_filterFunc(filterFunc), m_filterFuncParam(filterFuncParam)
 	{
 		m_replacement = (const CharT*)CharTPtr(replacement.c_str());
 	}
@@ -365,7 +362,7 @@ struct CRegexCustomFormatter
 			delete[] BoostRegexReplace::stringToCharPtr(matchStr, &originLength);
 		}
 
-		const String res = m.format(m_replacement, boost::format_all, m_regex);
+		const String res = m.format(m_replacement, m_boostRegexFlags, m_regex);
 		it.save(pos, pos + originLength, res);
 		return it;
 	}
@@ -380,7 +377,7 @@ Sci::Position BoostRegexReplace::EncodingDependent<CharT, CharacterIterator>::Re
 
 	CReplacementData<CharT, String> outputData;
 	CRegexCustomFormatter<CharT, CharTPtr, Regex, MatchResults, String, CReplacementData<CharT, String>>
-		formatter(replace._editor, replace._document, _regex, replace._filterFunc, replace._filterParam, replace._regexReplaceString);
+		formatter(replace._editor, replace._document, _regex, replace._boostRegexFlags, replace._filterFunc, replace._filterParam, replace._regexReplaceString);
 
 	auto doc = replace._document;
 

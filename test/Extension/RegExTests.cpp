@@ -42,13 +42,15 @@ public:
     selectionFrom(selFrom), selectionTo(selTo), expectedSelectionFrom(expectedSelFrom), expectedSelectionTo(expectedSelTo){}
 };
 
-void generalTest(const CRegExTestData* dataset, const int datasetCount,
+void generalTest(const CRegExTestData* dataset, const int datasetCount, const bool regexReplace, const bool transformBackslashes,
   const std::function<void(LPCEDITFINDREPLACE, const CRegExTestData&, const int, char* buffer)>& funcTestDataItem)
 {
+  assert(!regexReplace || (regexReplace && !transformBackslashes));
   SciTests::runTest([&] {
     char buffer[MAX_PATH * 100];
     EDITFINDREPLACE efr = { 0 };
-    efr.fuFlags = SCFIND_REGEXP;
+    efr.fuFlags = regexReplace ? SCFIND_REGEXP : SCFIND_NONE;
+    efr.bTransformBS = transformBackslashes;
     for (auto i = 0; i < datasetCount; i++)
     {
       const auto data = dataset[i];
@@ -59,6 +61,18 @@ void generalTest(const CRegExTestData* dataset, const int datasetCount,
       funcTestDataItem(&efr, data, i, buffer);
     }
   });
+}
+
+void regexReplaceTest(const CRegExTestData* dataset, const int datasetCount,
+  const std::function<void(LPCEDITFINDREPLACE, const CRegExTestData&, const int, char* buffer)>& funcTestDataItem)
+{
+  generalTest(dataset, datasetCount, true, false, funcTestDataItem);
+}
+
+void plainReplaceTest(const CRegExTestData* dataset, const int datasetCount, const bool transformBackslashes,
+  const std::function<void(LPCEDITFINDREPLACE, const CRegExTestData&, const int, char* buffer)>& funcTestDataItem)
+{
+  generalTest(dataset, datasetCount, false, transformBackslashes, funcTestDataItem);
 }
 
 class CRegexCustomFormatter
@@ -76,10 +90,44 @@ public:
 
 namespace Notepad2eTests
 {
-  TEST_CLASS(CRegEx)
+  TEST_CLASS(TextReplaceRegEx)
   {
   public:
 
+    TEST_METHOD(Basic)
+    {
+      const CRegExTestData data[] = {
+        CRegExTestData("a", "a", "\\", "\\"),
+        CRegExTestData("aaa", "a", "\\n", "\n\n\n"),
+        CRegExTestData("aaa", "a", "\\\\n", "\\n\\n\\n"),
+        CRegExTestData("aba", "(a|b)", "\\1", "aba"),
+        CRegExTestData("aca", "(a|b)", "\\2", "c"),
+        CRegExTestData("aca", "(a|b)", "\\\\2", "\\2c\\2"),
+        CRegExTestData("acaa", "(a|b)", "$1+", "a+ca+a+"),
+        CRegExTestData("acaa", "(a|b)", "\\$1+", "$1+c$1+$1+"),
+        CRegExTestData("\\\\\\", "\\\\", "a", "aaa"),
+        CRegExTestData("\\\\a\\b", "((\\\\)\\w)", "$2", "\\\\\\"),
+        CRegExTestData("aba", "(ab)a", "$1$0", "ababa"),
+        CRegExTestData("aba", "(ab)a", "$1$&", "ababa"),
+        CRegExTestData("a\r\nb", "(a\r\nb)", "$1\\n", "a\r\nb\n"),
+        CRegExTestData("a\r\nb", "(a\r\nb)", "$1\\\\n", "a\r\nb\\n"),
+        CRegExTestData("a", "a", "(a)", "(a)"),
+      };
+
+      for (const auto& codePage : { CP_ACP, CP_UTF8, CPI_UNICODE })
+      {
+        regexReplaceTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+          SciCall_DeleteRange(0, SciCall_GetLength());
+          SciCall_SetCodePage(codePage);
+          SciCall_ReplaceSel(0, data.source.c_str());
+          EditReplaceAll(SciTests::hwnd(), lpefr, FALSE);
+          if (SciCall_GetText(SciCall_GetLength() + 1, buffer))
+            Assert::IsTrue(data.result == std::string(buffer), formatErrorText(c_errorResult, index).c_str());
+          else
+            Assert::Fail(L"Failed to retrieve text");
+          });
+      }
+    }
     TEST_METHOD(BoostRegexReplace)
     {
       const CRegExTestData data[] = {
@@ -137,7 +185,7 @@ namespace Notepad2eTests
 
       for (const auto& codePage : { CP_ACP, CP_UTF8, CPI_UNICODE })
       {
-        generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+        regexReplaceTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
           SciCall_DeleteRange(0, SciCall_GetLength());
           SciCall_SetCodePage(codePage);
           SciCall_ReplaceSel(0, data.source.c_str());
@@ -162,7 +210,7 @@ namespace Notepad2eTests
                                 L"ƀ Ɓ Ƃ ƃ Ƅ ƅ Ɔ Ƈ ƈ Ɖ Ɗ Ƌ ƌ ƍ Ǝ Ə Ɛ Ƒ ƒ Ɠ Ɣ ƕ Ɩ Ɨ Ƙ ƙ ƚ ƛ Ɯ Ɲ ƞ Ɵ Ơ ơ Ƣ ƣ Ƥ ƥ Ʀ Ƨ ƨ Ʃ ƪ ƫ\n", CP_UTF8)),
       };
 
-      generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+      regexReplaceTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
         SciCall_DeleteRange(0, SciCall_GetLength());
         SciCall_SetCodePage(CP_UTF8);
         SciCall_ReplaceSel(0, data.source.c_str());
@@ -182,7 +230,7 @@ namespace Notepad2eTests
         CRegExTestData("cbc\nxbc", "c|$", "z", "cbzz\nxbc", 1, 6, 1, 7),
       };
 
-      generalTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+      regexReplaceTest(&data[0], _countof(data), [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
         SciCall_SetSel(0, SciCall_GetLength());
         SciCall_ReplaceSel(0, data.source.c_str());
         SciCall_SetSel(data.selectionFrom, data.selectionTo);
@@ -195,6 +243,67 @@ namespace Notepad2eTests
         else
           Assert::Fail(L"Failed to retrieve text");
       });
+    }
+  };
+
+  TEST_CLASS(TextReplacePlain)
+  {
+  public:
+    TEST_METHOD(Basic)
+    {
+      const CRegExTestData data[] = {
+        CRegExTestData("a", "a", "\\", "\\"),
+        CRegExTestData("\\\\\\", "\\", "a", "aaa"),
+        CRegExTestData("///", "/", "\\/", "\\/\\/\\/"),
+        CRegExTestData("///", "/", "\\n", "\\n\\n\\n"),
+        CRegExTestData("aaa", "a", "\\n", "\\n\\n\\n"),
+        CRegExTestData("aaa", "a", "\\", "\\\\\\"),
+        CRegExTestData("aaa", "a", "\\$", "\\$\\$\\$"),
+        CRegExTestData("abc", "a", "$0", "$0bc"),
+        CRegExTestData("abc", "a", "$&", "$&bc"),
+        CRegExTestData("a", "a", "(a)", "(a)"),
+      };
+
+      for (const auto& codePage : { CP_ACP, CP_UTF8, CPI_UNICODE })
+      {
+        plainReplaceTest(&data[0], _countof(data), false, [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+          SciCall_DeleteRange(0, SciCall_GetLength());
+          SciCall_SetCodePage(codePage);
+          SciCall_ReplaceSel(0, data.source.c_str());
+          EditReplaceAll(SciTests::hwnd(), lpefr, FALSE);
+          if (SciCall_GetText(SciCall_GetLength() + 1, buffer))
+            Assert::IsTrue(data.result == std::string(buffer), formatErrorText(c_errorResult, index).c_str());
+          else
+            Assert::Fail(L"Failed to retrieve text");
+          });
+      }
+    }
+
+    TEST_METHOD(TransformBackslashes)
+    {
+      const CRegExTestData data[] = {
+        CRegExTestData("a", "a", "\\", "\\"),
+        CRegExTestData("///", "/", "\\n", "\n\n\n"),
+        CRegExTestData("aaa", "a", "\\n", "\n\n\n"),
+        CRegExTestData("aaa", "a", "\\\\n", "\\n\\n\\n"),
+        CRegExTestData("abc", "a", "$0", "$0bc"),
+        CRegExTestData("abc", "a", "$&", "$&bc"),
+        CRegExTestData("a", "a", "(a)", "(a)"),
+      };
+
+      for (const auto& codePage : { CP_ACP, CP_UTF8, CPI_UNICODE })
+      {
+        plainReplaceTest(&data[0], _countof(data), true, [&](LPCEDITFINDREPLACE lpefr, const CRegExTestData& data, const int index, char* buffer) {
+          SciCall_DeleteRange(0, SciCall_GetLength());
+          SciCall_SetCodePage(codePage);
+          SciCall_ReplaceSel(0, data.source.c_str());
+          EditReplaceAll(SciTests::hwnd(), lpefr, FALSE);
+          if (SciCall_GetText(SciCall_GetLength() + 1, buffer))
+            Assert::IsTrue(data.result == std::string(buffer), formatErrorText(c_errorResult, index).c_str());
+          else
+            Assert::Fail(L"Failed to retrieve text");
+          });
+      }
     }
   };
 

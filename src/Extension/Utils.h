@@ -3,6 +3,7 @@
 #include <wtypes.h>
 #include <Richedit.h>
 
+#define DEFAULT_REGEX_MATCH_FLAGS 0 // #NOTE: matches boost::regex_constants::match_flags::format_perl
 #define TEXT_BUFFER_LENGTH  MAX_PATH * 20
 
 typedef enum

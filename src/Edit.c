@@ -5552,8 +5552,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, SciCall_GetCodePage());
 
   if (lstrlenA(szFind2) == 0)
   {
@@ -5638,8 +5637,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, SciCall_GetCodePage());
 
   if (lstrlenA(szFind2) == 0)
   {
@@ -5727,8 +5725,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-                         (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, SciCall_GetCodePage());
 
   if (lstrlenA(szFind2) == 0)
   {
@@ -5745,8 +5742,7 @@ BOOL EditReplace(HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL bUseFindNext)
   {
     pszReplace2 = StrDupA(lpefr->szReplace);
     if (lpefr->bTransformBS)
-      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
-                           (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+      TransformBackslashes(pszReplace2, SciCall_GetCodePage());
   }
 
   if (!pszReplace2)

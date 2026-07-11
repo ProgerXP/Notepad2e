@@ -4342,6 +4342,7 @@ Sci::Position Editor::RegexReplaceText(
 			rr->filterFunc,
 			rr->filterFuncParam,
 			static_cast<int>(wParam),
+			rr->regexMatchFlags,
 			&rr->count);
 		return rr->count;
 	}

@@ -209,6 +209,7 @@ BOOL      bTransparentMode;
 BOOL      bTransparentModeAvailable;
 BOOL      bShowToolbar;
 BOOL      bShowStatusbar;
+int       iRegexMatchFlags = DEFAULT_REGEX_MATCH_FLAGS;
 
 typedef struct _wi
 {

@@ -25,6 +25,8 @@ extern void BeginWaitCursor();
 extern void EndWaitCursor();
 #endif
 
+extern int iRegexMatchFlags;
+
 // [2e]: original code moved from Edit.c
 //
 //=============================================================================
@@ -153,7 +155,7 @@ unsigned int UnSlash(char *s, UINT cpEdit)
       {
         BOOL bShort = (*s == 'x');
         char ch[8];
-        char *pch = ch;
+        char* pch = ch;
         WCHAR val[2] = L"";
         int hex;
         val[0] = 0;
@@ -200,6 +202,11 @@ unsigned int UnSlash(char *s, UINT cpEdit)
         else
           o--;
       }
+      else if (*s == 0)
+      {
+        o++;
+        break;
+      }
       else
         *o = *s;
     }
@@ -215,39 +222,9 @@ unsigned int UnSlash(char *s, UINT cpEdit)
   return (unsigned int)(o - sStart);
 }
 
-/**
- * Convert C style \0oo into their indicated characters.
- * This is used to get control characters into the regular expresion engine.
- */
-unsigned int UnSlashLowOctal(char *s)
+void TransformBackslashes(char *pszInput, UINT cpEdit)
 {
-  char *sStart = s;
-  char *o = s;
-  while (*s)
-  {
-    if ((s[0] == '\\') && (s[1] == '0') && IsOctalDigit(s[2]) && IsOctalDigit(s[3]))
-    {
-      *o = (char)(8 * (s[2] - '0') + (s[3] - '0'));
-      s += 3;
-    }
-    else
-    {
-      *o = *s;
-    }
-    o++;
-    if (*s)
-      s++;
-  }
-  *o = '\0';
-  return (unsigned int)(o - sStart);
-}
-
-void TransformBackslashes(char *pszInput, BOOL bRegEx, UINT cpEdit)
-{
-  if (bRegEx)
-    UnSlashLowOctal(pszInput);
-  else
-    UnSlash(pszInput, cpEdit);
+  UnSlash(pszInput, cpEdit);
 }
 // [/2e]: original code moved from Helpers.c
 
@@ -455,8 +432,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
 
   lstrcpynA(szFind2, lpefr->szFind, COUNTOF(szFind2));
   if (lpefr->bTransformBS)
-    TransformBackslashes(szFind2, (lpefr->fuFlags & SCFIND_REGEXP),
-    (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, SciCall_GetCodePage());
 
   if (lstrlenA(szFind2) == 0)
   {
@@ -479,8 +455,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   {
     pszReplace2 = StrDupA(lpefr->szReplace);
     if (lpefr->bTransformBS)
-      TransformBackslashes(pszReplace2, (lpefr->fuFlags & SCFIND_REGEXP),
-      (UINT)SendMessage(hwnd, SCI_GETCODEPAGE, 0, 0));
+      TransformBackslashes(pszReplace2, SciCall_GetCodePage());
   }
 
   if (!pszReplace2)
@@ -494,6 +469,7 @@ BOOL n2e_EditReplaceAllImpl(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL bShowInfo,
   rr.lpstrRegexReplace = pszReplace2;
   rr.filterFunc = n2e_regexReplaceFilter;
   rr.filterFuncParam = lpefr->iSearchInComments;
+  rr.regexMatchFlags = iRegexMatchFlags;
   SciCall_RegexReplaceText(lpefr->fuFlags, &rr);
 
   if (rr.count)

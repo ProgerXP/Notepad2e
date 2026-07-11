@@ -2938,3 +2938,101 @@ Modify `Editor::ReplaceTarget`:
 /**Change Ctrl+I to perform comment - aware line wrapping #320**
 
 ---
+
+**Replace with Transform backslashes loses escaped backslash before newline
+ #497**
+
+Add `regexMatchFlags` to `Sci_RegexReplace`:
+
+[scintilla/include/Scintilla.h]
+```
+struct Sci_RegexReplace {
+	struct Sci_CharacterRange chrg;
+	const char* lpstrRegex;
+	const char* lpstrRegexReplace;
+	TRegexReplaceFilterFunc filterFunc;
+	int filterFuncParam;
+	int regexMatchFlags;
+	Sci_Position count;
+};
+```
+[/scintilla/include/Scintilla.h]
+
+Modify `RegexReplaceBase::ReplaceText` declaration:
+
+[scintilla/include/Document.h]
+```
+class RegexReplaceBase {
+public:
+	virtual ~RegexReplaceBase() {}
+
+	virtual void ReplaceText(void* editor, Document* doc, const bool regexp, const int regexMatchFlags, const Sci::Position& minPos, const Sci::Position& maxPos, const char* s,
+		const char* regexReplaceString, const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const bool caseSensitive, const bool word, const bool wordStart, Sci::Position* counter) = 0;
+};
+
+...
+
+class Document : PerLine, public IDocumentWithLineEnd, public ILoader {
+
+...
+	void RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
+		const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, const int regexMatchFlags, Sci::Position* counter);
+```
+[/scintilla/include/Document.h]
+
+Modify `Document::ReplaceText` implementation:
+
+[scintilla/include/Document.cxx]
+```
+void Document::RegexReplaceText(void* editor, Sci::Position minPos, Sci::Position maxPos, const char* search, const char* replace,
+	const TRegexReplaceFilterFunc& filterFunc, const int filterParam, const int flags, const int regexMatchFlags, Sci::Position* counter) {
+	const bool caseSensitive = (flags & SCFIND_MATCHCASE) != 0;
+	const bool word = (flags & SCFIND_WHOLEWORD) != 0;
+	const bool wordStart = (flags & SCFIND_WORDSTART) != 0;
+	const bool regExp = (flags & SCFIND_REGEXP) != 0;
+
+	if (!regexReplace)
+		regexReplace = std::unique_ptr<RegexReplaceBase>(CreateRegexReplace(&charClass));
+	regexReplace->ReplaceText(editor, this, regExp, regexMatchFlags, minPos, maxPos, search, replace, filterFunc, filterParam, caseSensitive, word, wordStart, counter);
+}
+```
+[/scintilla/include/Document.cxx]
+
+Modify `Editor::RegexReplaceText`:
+
+[scintilla/src/Editor.cxx]
+```
+Sci::Position Editor::RegexReplaceText(
+	uptr_t wParam,		///< Search modes : @c SCFIND_MATCHCASE, @c SCFIND_WHOLEWORD,
+	///< @c SCFIND_WORDSTART, @c SCFIND_REGEXP or @c SCFIND_POSIX.
+	sptr_t lParam) {	///< @c Sci_TextToFind structure: The text to search for in the given range.
+
+	Sci_RegexReplace* rr = static_cast<Sci_RegexReplace*>(PtrFromSPtr(lParam));
+	if (!pdoc->HasCaseFolder())
+		pdoc->SetCaseFolder(CaseFolderForEncoding());
+	try {
+		pdoc->RegexReplaceText(
+			this,
+			static_cast<Sci::Position>(rr->chrg.cpMin),
+			static_cast<Sci::Position>(rr->chrg.cpMax),
+			rr->lpstrRegex,
+			rr->lpstrRegexReplace,
+			rr->filterFunc,
+			rr->filterFuncParam,
+			static_cast<int>(wParam),
+			rr->regexMatchFlags,
+			&rr->count);
+		return rr->count;
+	}
+	catch (RegexError&) {
+		errorStatus = SC_STATUS_WARN_REGEX;
+		return -1;
+	}
+}
+```
+[/scintilla/src/Editor.cxx]
+
+/**Replace with Transform backslashes loses escaped backslash before newline
+ #497**
+
+---

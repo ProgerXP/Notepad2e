@@ -51,6 +51,7 @@
 #define INI_SETTING_SPLIT_LINES L"SplitLines"
 #define INI_SETTING_STARTING_LINE_NUMBER L"StartingLineNumber"
 #define INI_SETTING_DRAFTS_PATH L"DraftsPath"
+#define INI_SETTING_BOOST_REGEX_MODE L"BoostRegexMode"
 
 #ifdef LPEG_LEXER
 #define INI_SETTING_LPEG_PATH L"LPegPath"
@@ -574,6 +575,7 @@ void n2e_LoadINI()
   bExtendedSplitLines = IniGetInt(N2E_INI_SECTION, INI_SETTING_SPLIT_LINES, bExtendedSplitLines);
   iStartingLineNumber = IniGetInt(N2E_INI_SECTION, INI_SETTING_STARTING_LINE_NUMBER, iStartingLineNumber);
   IniGetString(N2E_INI_SECTION, INI_SETTING_DRAFTS_PATH, L"", wchDraftsPath, COUNTOF(wchDraftsPath));
+  iRegexMatchFlags = IniGetInt(N2E_INI_SECTION, INI_SETTING_BOOST_REGEX_MODE, DEFAULT_REGEX_MATCH_FLAGS);
   if (lstrlen(wchDraftsPath))
   {
     ExpandEnvironmentStringsImpl(wchDraftsPath, COUNTOF(wchDraftsPath));
@@ -676,6 +678,7 @@ void n2e_SaveINI()
 #ifdef LPEG_LEXER
   IniSetString(N2E_INI_SECTION, INI_SETTING_LPEG_PATH, wchLPegHomeOrigin);
 #endif
+  IniSetInt(N2E_INI_SECTION, INI_SETTING_BOOST_REGEX_MODE, iRegexMatchFlags);
 }
 
 void n2e_Release()
@@ -1238,8 +1241,7 @@ BOOL n2e_Grep(void* _lpf, const BOOL grep)
   ZeroMemory(&ttf, sizeof(ttf));
   if (lpf->bTransformBS)
   {
-    TransformBackslashes(szFind2, (lpf->fuFlags & SCFIND_REGEXP),
-      (UINT)SendMessage(lpf->hwnd, SCI_GETCODEPAGE, 0, 0));
+    TransformBackslashes(szFind2, SciCall_GetCodePage());
   }
   if (lstrlenA(szFind2) == 0)
   {

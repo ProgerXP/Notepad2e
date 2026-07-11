@@ -232,7 +232,7 @@ HWND    CreateThemedDialogParam(HINSTANCE, LPCTSTR, HWND, DLGPROC, LPARAM);
 
 
 //==== UnSlash Functions ======================================================
-void TransformBackslashes(char *, BOOL, UINT);
+void TransformBackslashes(char *, UINT);
 
 
 //==== MinimizeToTray Functions - see comments in Helpers.c ===================

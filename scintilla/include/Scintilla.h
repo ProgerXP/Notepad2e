@@ -1211,6 +1211,7 @@ struct Sci_RegexReplace {
 	const char* lpstrRegexReplace;
 	TRegexReplaceFilterFunc filterFunc;
 	int filterFuncParam;
+	int regexMatchFlags;
 	Sci_Position count;
 };
 

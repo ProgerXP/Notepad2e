@@ -11,6 +11,7 @@ extern int iEncoding;
 extern int iEOLMode;
 extern DWORD dwLastIOError;
 extern int iLongLinesLimit;
+extern int iRegexMatchFlags;
 
 BOOL FileIO(BOOL, LPCWSTR, BOOL, int*, int*, BOOL*, BOOL*, BOOL*, enum ESaveCopyMode);
 BOOL n2e_IsSingleLineCommentStyleAtPos(const HWND hwnd, const int iLexer, const int iPos, EncodingData* pED);
