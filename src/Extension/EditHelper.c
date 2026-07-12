@@ -305,12 +305,19 @@ BOOL n2e_CheckTextExists(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct
   return (FindTextTest(hwnd, lpefr, pttf, iPos, -1) >= 0);
 }
 
+int n2e_FoundTextLength(const struct TextToFind* pttf)
+{
+  return pttf->chrgText.cpMin >= 0
+    ? pttf->chrgText.cpMax - pttf->chrgText.cpMin
+    : 0;
+}
+
 void n2e_SetIndicatedLinesCommandHandler(const HWND hwnd, const WPARAM wParam, const LPARAM lParam)
 {
   SciCallEx_SetIndicatedLines(hwnd, wParam, lParam);
 }
 
-void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, int iPos)
+void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const struct Sci_TextToFind* pttf, const int iPos, const int iTextLength)
 {
   if (iPos < 0)
   {
@@ -318,11 +325,11 @@ void n2e_UpdateIndicatedLines(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const s
     return;
   }
   const int prevPosition = FindTextTest(hwnd, lpefr, pttf, iPos - 1, max(0, iPos - iMaxSearchDistance));
-  const int nextPosition = FindTextTest(hwnd, lpefr, pttf, iPos + 1, iPos + iMaxSearchDistance);
+  const int nextPosition = FindTextTest(hwnd, lpefr, pttf, iPos + iTextLength, iPos + iTextLength + iMaxSearchDistance);
   const int firstLine = SciCallEx_LineFromPosition(hwnd, ((prevPosition >= 0) && (prevPosition != iPos)) ? prevPosition : iPos);
   const int lastLine = SciCallEx_LineFromPosition(hwnd, ((nextPosition >= 0) && (nextPosition != iPos)) ? nextPosition : iPos);
 
-  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, MAKEWPARAM(firstLine, prevPosition <= 0), MAKELPARAM(lastLine, nextPosition == -1));
+  n2e_ApplyViewCommandWithParams(n2e_SetIndicatedLinesCommandHandler, MAKEWPARAM(firstLine, prevPosition == -1), MAKELPARAM(lastLine, nextPosition == -1));
 }
 
 void n2e_ResetIndicatedLines()
@@ -443,7 +450,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
     res = n2e_FindTextImpl(hwnd, &efr, &ttf);
 
     const BOOL bTextFound = (res >= 0);
-    n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res);
+    n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res, n2e_FoundTextLength(&ttf));
 
     if ((-1 == res) && (bFindWordWrapAround != 0))
     {
@@ -458,7 +465,7 @@ void n2e_FindNextWord(const HWND hwnd, LPCEDITFINDREPLACE lpefr, const BOOL next
         ttf.chrg.cpMax = tr.chrg.cpMax;
       }
       res = n2e_FindTextImpl(hwnd, &efr, &ttf);
-      n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res);
+      n2e_UpdateIndicatedLines(hwnd, &efr, &ttf, res, n2e_FoundTextLength(&ttf));
     }
     if (res >= 0)
     {

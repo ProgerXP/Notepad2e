@@ -5573,7 +5573,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
+  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos, n2e_FoundTextLength(&ttf));
 
   if (!bTextFound && ttf.chrg.cpMin > 0 && !lpefr->bNoFindWrap && !fExtendSelection)
   {
@@ -5582,7 +5582,7 @@ BOOL EditFindNext(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       ttf.chrg.cpMin = 0;
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
-      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
+      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos, n2e_FoundTextLength(&ttf));
     }
     else
     {
@@ -5658,7 +5658,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
   iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
 
   const BOOL bTextFound = (iPos >= 0);
-  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
+  n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos, n2e_FoundTextLength(&ttf));
   iLength = (int)SendMessage(hwnd, SCI_GETLENGTH, 0, 0);
   if (!bTextFound && ttf.chrg.cpMin < iLength && !lpefr->bNoFindWrap && !fExtendSelection)
   {
@@ -5668,7 +5668,7 @@ BOOL EditFindPrev(HWND hwnd, LPCEDITFINDREPLACE lpefr, BOOL fExtendSelection)
       // [2e]: Find/Replace - Skip comments mode #303
       iPos = n2e_FindTextImpl(hwnd, lpefr, &ttf);
       // [2e]: Match indicator
-      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos);
+      n2e_UpdateIndicatedLines(hwnd, lpefr, &ttf, iPos, n2e_FoundTextLength(&ttf));
     }
     else
     {

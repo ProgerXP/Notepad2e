@@ -424,7 +424,7 @@ int n2e_HighlightWord(LPCSTR word)
           }
           if (!bEditSelectionInit || (hwnd == hwndEdit))
           {
-            SendMessage(hwnd, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, ttf.chrgText.cpMax - ttf.chrgText.cpMin);
+            SendMessage(hwnd, SCI_INDICATORFILLRANGE, ttf.chrgText.cpMin, n2e_FoundTextLength(&ttf));
             cnt++;
           }
           ttf.chrg.cpMin = ttf.chrgText.cpMax;

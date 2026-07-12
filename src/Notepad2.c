@@ -5045,7 +5045,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
         ttf.lpstrText = n2e_GetTextRange(iSelectionStart, iSelectionEnd);
         lstrcpyA(efrData.szFind, ttf.lpstrText);
         lstrcpyA(efrData.szFindUTF8, ttf.lpstrText);
-        n2e_UpdateIndicatedLines(hwndEdit, &efrData, &ttf, n2e_FindTextImpl(hwndEdit, &efrData, &ttf));
+        n2e_UpdateIndicatedLines(hwndEdit, &efrData, &ttf, n2e_FindTextImpl(hwndEdit, &efrData, &ttf), n2e_FoundTextLength(&ttf));
         n2e_Free(ttf.lpstrText);
         // [/2e]
         if (cchSelection > 0 && cchSelection <= 500)
