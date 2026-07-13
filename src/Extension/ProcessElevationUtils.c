@@ -42,6 +42,11 @@ BOOL n2e_IsElevatedMode()
   return IsWindowsVistaOrGreater() && n2e_IsElevatedModeEnabled();
 }
 
+BOOL n2e_IsElevatedModeAllowed()
+{
+  return IsWindowsVistaOrGreater() && !n2e_IsElevatedModeEnabled() && !fIsElevated;
+}
+
 void CloseProcessHandle(HANDLE* pHandle)
 {
   if (*pHandle)
@@ -54,9 +59,11 @@ void CloseProcessHandle(HANDLE* pHandle)
 BOOL n2e_SwitchElevation()
 {
   bElevationEnabled = !n2e_IsElevatedModeEnabled();
-  return bElevationEnabled
-          ? n2e_RunChildProcess()
-          : n2e_FinalizeIPC();
+  if (bElevationEnabled)
+    bElevationEnabled = n2e_RunChildProcess();
+  else
+    n2e_FinalizeIPC();
+  return bElevationEnabled;
 }
 
 void lstrcatdword(LPWSTR lpstr, const DWORD value)
@@ -204,6 +211,7 @@ DWORD n2e_GetChildProcessQuitCode()
   DWORD dwCode = 0;
   if (hChildProcess && GetExitCodeProcess(hChildProcess, &dwCode))
   {
+    bElevationEnabled = FALSE;
     return dwCode;
   }
   return 0;

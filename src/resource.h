@@ -497,6 +497,7 @@
 #define IDT_VIEW_SELECTEX               40730
 #define SC_SAVEPOS                      40800
 #define SC_RESETPOS                     40801
+#define IDS_ERR_SAVEFILE_RETRY_ELEVATED 49999
 #define IDS_ERR_LOADFILE                50000
 #define IDS_ERR_SAVEFILE                50001
 #define IDS_ERR_BROWSE                  50002

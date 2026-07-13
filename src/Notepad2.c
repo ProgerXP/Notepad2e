@@ -2753,7 +2753,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
     // [2e]: Process elevation #166
     case IDM_FILE_ELEVATE:
-      n2e_SwitchElevation();
+      return n2e_SwitchElevation() ? 0 : 1;
       break;
     // [/2e]
 
@@ -7746,11 +7746,12 @@ BOOL _FileLoad(BOOL bDontSave, BOOL bNew, BOOL bReload, BOOL bNoEncDetect, LPCWS
 //  FileSave()
 //
 //
-BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode saveCopyMode, BOOL bDeleteOld)
+TSaveResult FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode saveCopyMode, BOOL bDeleteOld)
 {
   WCHAR tchFile[MAX_PATH];
   BOOL fSuccess = FALSE;
   BOOL bCancelDataLoss = FALSE;
+  const BOOL bElevatedMode = n2e_IsElevatedMode();
 
   BOOL bIsEmptyNewFile = FALSE;
   if (lstrlen(szCurFile) == 0)
@@ -7769,7 +7770,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
   }
 
   if (!bSaveAlways && (!n2e_IsDocumentModified() || bIsEmptyNewFile) && !bSaveAs)
-    return TRUE;
+    return (TSaveResult){ SR_SUCCESS };
 
   if (bAsk)
   {
@@ -7783,9 +7784,9 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
     switch (MsgBox(MBYESNOCANCEL, IDS_ASK_SAVE, tch))
     {
       case IDCANCEL:
-        return FALSE;
+        return (TSaveResult) { SR_FAILURE };
       case IDNO:
-        return TRUE;
+        return (TSaveResult) { SR_SUCCESS };
     }
   }
 
@@ -7801,7 +7802,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
       if (MsgBox(MBYESNOWARN, IDS_READONLY_SAVE, szCurFile) == IDYES)
         bSaveAs = TRUE;
       else
-        return FALSE;
+        return (TSaveResult) { SR_FAILURE };
     }
   }
 
@@ -7821,7 +7822,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
       if (lstrlen(wchDraftFileName))
         lstrcpy(tchFile, wchDraftFileName);
       else
-        return FALSE;
+        return (TSaveResult) { SR_FAILURE };
     }
     else
       lstrcpy(tchFile, szCurFile);
@@ -7837,7 +7838,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
           GetString(IDS_ERR_SAVEAS_RENAME_DETAILS, tchDescription, COUNTOF(tchDescription) - 1);
         }
         MsgBox(MBWARN, IDS_ERR_SAVEAS, tchDescription);
-        return FALSE;
+        return (TSaveResult) { SR_FAILURE };
       }
       // [/2e]
       else if (fSuccess = FileIO(FALSE, tchFile, FALSE, &iEncoding, &iEOLMode, NULL, NULL, &bCancelDataLoss, saveCopyMode)
@@ -7874,7 +7875,7 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
       }
     }
     else
-      return FALSE;
+      return (TSaveResult) { SR_FAILURE };
   }
 
   else
@@ -7910,27 +7911,51 @@ BOOL FileSaveImpl(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode 
   else if (!bCancelDataLoss)
   {
     n2e_UpdateWindowTitle(hwndMain);
-    MsgBox(MBWARN, IDS_ERR_SAVEFILE, tchFile);
+    if (!bElevatedMode && n2e_IsElevatedModeAllowed() && (dwLastIOError == ERROR_ACCESS_DENIED))
+    {
+      if (IDYES == MsgBox(MBYESNOWARN_WITH_ALERT, IDS_ERR_SAVEFILE_RETRY_ELEVATED, tchFile, GetErrorMessageText(dwLastIOError)))
+      {
+        TSaveResult res = (TSaveResult){ SR_RETRY_ELEVATED };
+        lstrcpy(res.tchFile, tchFile);
+        return res;
+      }
+      else
+        return (TSaveResult) { SR_FAILURE };
+    }
+    else
+      MsgBox(MBWARN, IDS_ERR_SAVEFILE, tchFile);
   }
 
-  return (fSuccess);
+  return (TSaveResult) { fSuccess ? SR_SUCCESS : SR_FAILURE };
 }
 
 
 BOOL FileSave(BOOL bSaveAlways, BOOL bAsk, BOOL bSaveAs, enum ESaveCopyMode saveCopyMode, BOOL bDeleteOld)
 {
   // [2e]: Save on deactivate #164
-  BOOL res = FALSE;
   bFileSaveInProgress = TRUE;
-  res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, saveCopyMode, bDeleteOld);
+  TSaveResult res = FileSaveImpl(bSaveAlways, bAsk, bSaveAs, saveCopyMode, bDeleteOld);
   bFileSaveInProgress = FALSE;
+  // [2e]: Suggest elevation if saving fails with Access Denied #479
+  if (res.code == SR_RETRY_ELEVATED)
+  {
+    if (SendMessage(hwndMain, WM_COMMAND, MAKEWPARAM(IDM_FILE_ELEVATE, 0), 0) == 0)
+    {
+      WCHAR szCurFileBackup[MAX_PATH];
+      lstrcpy(szCurFileBackup, szCurFile);
+      lstrcpy(szCurFile, res.tchFile);
+      res = FileSaveImpl(bSaveAlways, FALSE, FALSE, saveCopyMode, bDeleteOld);
+      if (res.code != SR_SUCCESS)
+        lstrcpy(szCurFile, szCurFileBackup);
+    }
+  }
   // [2e]: Autosaving directory for unsaved windows #480
-  if (res && (saveCopyMode != SCM_DRAFT))
+  if (res.code == SR_SUCCESS && (saveCopyMode != SCM_DRAFT))
   {
     n2e_CleanupDraftFile();
   }
   // [/2e]
-  return res;
+  return res.code == SR_SUCCESS;
 }
 
 //=============================================================================

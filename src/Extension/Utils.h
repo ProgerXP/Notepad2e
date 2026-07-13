@@ -137,6 +137,19 @@ typedef enum
   SCM_DRAFT = 2
 } ESaveCopyMode;
 
+typedef enum
+{
+  SR_FAILURE = 0,
+  SR_SUCCESS = 1,
+  SR_RETRY_ELEVATED = 2
+} ESaveResultCode;
+
+typedef struct TSaveResult
+{
+  enum ESaveResultCode code;
+  WCHAR tchFile[MAX_PATH];
+} TSaveResult;
+
 #define N2E_INI_SECTION L"Notepad2e"
 
 #define WM_N2E_RELOAD_SETTINGS (WM_USER + 0xFF)

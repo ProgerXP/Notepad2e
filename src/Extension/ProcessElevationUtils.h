@@ -2,8 +2,11 @@
 
 #define IPCID_PARAM L"IPCID="
 
+extern BOOL fIsElevated;
+
 BOOL n2e_IsIPCIDParam(LPCWSTR lpParam);
 BOOL n2e_IsElevatedMode();
+BOOL n2e_IsElevatedModeAllowed();
 BOOL n2e_SwitchElevation();
 
 BOOL n2e_InitializeIPC(const DWORD dwID, const BOOL bIsParentMode);

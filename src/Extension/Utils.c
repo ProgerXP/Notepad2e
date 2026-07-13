@@ -115,7 +115,6 @@ extern WCHAR szTitleExcerpt[128];
 extern int iPathNameFormat;
 extern WCHAR szCurFile[MAX_PATH + 40];
 extern UINT uidsAppTitle;
-extern BOOL fIsElevated;
 extern BOOL bModified;
 extern BOOL bAutoSaved;
 extern int iEncoding;

@@ -25,7 +25,9 @@
 #define MBYESNOWARN    3
 #define MBYESNOCANCEL  4
 #define MBOKCANCEL     8
+#define MBYESNOWARN_WITH_ALERT 16
 
+LPCWSTR GetErrorMessageText(const DWORD dwError);
 int  MsgBox(int, UINT, ...);
 void DisplayCmdLineHelp();
 BOOL GetDirectory(HWND, int, LPWSTR, LPCWSTR, BOOL);

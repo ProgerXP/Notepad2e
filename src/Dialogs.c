@@ -55,6 +55,23 @@ extern BOOL bFixLineEndings;
 extern BOOL bAutoStripBlanks;
 extern WCHAR szCurFile[MAX_PATH + 40];
 
+LPCWSTR GetErrorMessageText(const DWORD dwError)
+{
+  static WCHAR wchErrorMessage[MAX_PATH];
+  LPVOID lpMsgBuf;
+  FormatMessage(
+    FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+    NULL,
+    dwLastIOError,
+    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+    (LPTSTR)&lpMsgBuf,
+    0,
+    NULL);
+  StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
+  lstrcpyn(wchErrorMessage, lpMsgBuf, MAX_PATH);
+  LocalFree(lpMsgBuf);
+  return wchErrorMessage;
+}
 
 //=============================================================================
 //
@@ -76,20 +93,10 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       uIdMsg == IDS_CREATEINI_FAIL || uIdMsg == IDS_WRITEINI_FAIL ||
       uIdMsg == IDS_EXPORT_FAIL || uIdMsg == IDS_ERR_FAILED_CREATE)
   {
-    LPVOID lpMsgBuf;
+    LPVOID lpMsgBuf = GetErrorMessageText(dwLastIOError);
     WCHAR wcht;
-    FormatMessage(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      NULL,
-      dwLastIOError,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      (LPTSTR)&lpMsgBuf,
-      0,
-      NULL);
-    StrTrim(lpMsgBuf, L" \a\b\f\n\r\t\v");
     StrCatBuff(szText, L"\n", COUNTOF(szText));
     StrCatBuff(szText, lpMsgBuf, COUNTOF(szText));
-    LocalFree(lpMsgBuf);
     wcht = *CharPrev(szText, StrEnd(szText));
     if (IsCharAlphaNumeric(wcht) || wcht == '"' || wcht == '\'')
       StrCatBuff(szText, L".", COUNTOF(szText));
@@ -114,6 +121,9 @@ int MsgBox(int iType, UINT uIdMsg, ...)
       break;
     case MBYESNOWARN:
       iIcon = MB_YESNO;
+      break;
+    case MBYESNOWARN_WITH_ALERT:
+      iIcon = MB_ICONEXCLAMATION | MB_YESNO;
       break;
     case MBOKCANCEL:
       iIcon = MB_OKCANCEL;
