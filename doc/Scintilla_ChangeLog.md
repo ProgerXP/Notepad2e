@@ -3036,3 +3036,25 @@ Sci::Position Editor::RegexReplaceText(
  #497**
 
 ---
+
+**Do not move caret on Ctrl+Up/Down #428**
+
+Remove `MoveCaretInsideView(false)`-calls from `Editor::KeyCommand(unsigned int iMessage)`:
+
+[scintilla/src/Editor.cxx]
+```
+    case SCI_LINESCROLLDOWN:
+        ScrollTo(topLine + 1);
+        break;
+
+...
+
+    case SCI_LINESCROLLUP:
+        ScrollTo(topLine - 1);
+        break;
+```
+[/scintilla/src/Editor.cxx]
+
+/**Do not move caret on Ctrl+Up/Down #428**
+
+---

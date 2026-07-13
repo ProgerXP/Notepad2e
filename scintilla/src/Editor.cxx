@@ -3899,7 +3899,6 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_LINESCROLLDOWN:
 		ScrollTo(topLine + 1);
-		MoveCaretInsideView(false);
 		break;
 	case SCI_LINEUP:
 		CursorUpOrDown(-1, Selection::noSel);
@@ -3923,7 +3922,6 @@ int Editor::KeyCommand(unsigned int iMessage) {
 		break;
 	case SCI_LINESCROLLUP:
 		ScrollTo(topLine - 1);
-		MoveCaretInsideView(false);
 		break;
 
 	case SCI_CHARLEFT:
