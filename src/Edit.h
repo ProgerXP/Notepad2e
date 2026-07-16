@@ -95,7 +95,7 @@ void  EditSpacesToTabs(HWND, int, BOOL);
 
 void  EditMoveUp(HWND);
 void  EditMoveDown(HWND);
-void  EditModifyLines(HWND, LPCWSTR, LPCWSTR);
+void  EditModifyLines(HWND, LPCWSTR);
 void  EditAlignText(HWND, int);
 void  EditEncloseSelection(HWND, LPCWSTR, LPCWSTR);
 void  EditToggleLineComments(HWND, LPCWSTR, BOOL);
@@ -118,7 +118,7 @@ BOOL  EditFindNext(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditFindPrev(HWND, LPCEDITFINDREPLACE, BOOL);
 BOOL  EditReplace(HWND, LPCEDITFINDREPLACE, const BOOL);
 HWND  EditLinenumDlg(HWND, LPCEDITFINDREPLACE);
-BOOL  EditModifyLinesDlg(HWND, LPWSTR, LPWSTR);
+BOOL  EditModifyLinesDlg(HWND, LPWSTR, LPWSTR, BOOL*, LPWSTR);
 BOOL  EditEncloseSelectionDlg(HWND, LPWSTR, LPWSTR);
 BOOL  EditInsertTagDlg(HWND, LPWSTR, LPWSTR);
 BOOL  EditSortDlg(HWND, int*);

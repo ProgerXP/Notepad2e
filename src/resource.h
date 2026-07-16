@@ -14,9 +14,13 @@
 #define IDC_OUTLINELIST                 6
 #define IDC_SPIN1                       7
 #define ID_EDIT_UNDO_REDO               8
+#define IDC_CHECK1                      8
 #define ID_SETTINGS_REPLACESETTINGSINALLINSTANCES 9
+#define IDC_STATIC1                     9
 #define ID_FILE_INVOKESHELLMENU         10
+#define IDC_STATIC2                     10
 #define ID_SETTINGS_RELOADFROMDISK      11
+#define IDC_STATIC3                     11
 #define ID_SETTINGS_MOVE_CARET_ON_RCLICK 12
 #define ID_EDIT_EDITSELECTION           13
 #define ID_EDIT_EDITSELECTION_LINE      14
@@ -557,7 +561,7 @@
 #define _APS_NO_MFC                     1
 #define _APS_NEXT_RESOURCE_VALUE        3
 #define _APS_NEXT_COMMAND_VALUE         63
-#define _APS_NEXT_CONTROL_VALUE         8
+#define _APS_NEXT_CONTROL_VALUE         13
 #define _APS_NEXT_SYMED_VALUE           0
 #endif
 #endif

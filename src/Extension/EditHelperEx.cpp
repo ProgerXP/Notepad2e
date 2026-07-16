@@ -354,5 +354,22 @@ extern "C"
     return std::count_if(s.cbegin(), s.cend(), [](const char c) { return !isspace(c); });
   }
 
+  int n2e_CountEOLs(LPCSTR text, const int iEOLMode)
+  {
+    const std::string s(text);
+    const std::string strEOL = (iEOLMode == SC_EOL_CRLF)
+      ? "\r\n"
+      : (iEOLMode == SC_EOL_CR)
+      ? "\r"
+      : "\n";
+    size_t count = 0;
+    size_t pos = s.find(strEOL, 0);
+    while (pos != std::string::npos)
+    {
+      count++;
+      pos = s.find(strEOL, pos + strEOL.length());
+    }
+    return count;
+  }
 
 }

@@ -305,6 +305,8 @@ WCHAR wchAppendSelection[TEXT_BUFFER_LENGTH] = L"";
 
 WCHAR wchPrefixLines[TEXT_BUFFER_LENGTH] = L"";
 WCHAR wchAppendLines[TEXT_BUFFER_LENGTH] = L"";
+BOOL bUseLineFormat = FALSE;
+WCHAR wchLineFormat[TEXT_BUFFER_LENGTH] = L"";
 
 int   iSortOptions = 0;
 int   iAlignMode = 0;
@@ -3396,10 +3398,19 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
 
 
     case IDM_EDIT_MODIFYLINES:
-      if (EditModifyLinesDlg(hwnd, wchPrefixLines, wchAppendLines))
+      if (EditModifyLinesDlg(hwnd, wchPrefixLines, wchAppendLines, &bUseLineFormat, wchLineFormat))
       {
         BeginWaitCursor();
-        EditModifyLines(hwndEdit, wchPrefixLines, wchAppendLines);
+        WCHAR wchActiveLineFormat[TEXT_BUFFER_LENGTH] = { 0 };
+        if (bUseLineFormat)
+          lstrcpy(wchActiveLineFormat, wchLineFormat);
+        else
+        {
+          lstrcpy(wchActiveLineFormat, wchPrefixLines);
+          lstrcat(wchActiveLineFormat, L"$(W)");
+          lstrcat(wchActiveLineFormat, wchAppendLines);
+        }
+        EditModifyLines(hwndEdit, wchActiveLineFormat);
         EndWaitCursor();
       }
       break;

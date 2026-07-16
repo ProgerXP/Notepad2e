@@ -2852,10 +2852,11 @@ void EditMoveDown(HWND hwnd)
 //
 //  EditModifyLines()
 //
-void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
+void EditModifyLines(HWND hwnd, LPCWSTR pwszLineFormat)
 {
-  char  mszPrefix1[TEXT_BUFFER_LENGTH] = "";
-  char  mszAppend1[TEXT_BUFFER_LENGTH] = "";
+  // [2e]: Modify Lines - Replace lines mode #493
+  char  mszLineFormat[TEXT_BUFFER_LENGTH] = "";
+  int   iEOLCounter = 0;
   int   mbcp;
 
   int iSelStart = SciCall_GetSelStart();
@@ -2873,10 +2874,13 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
   else
     mbcp = CP_ACP;
 
-  if (lstrlen(pwszPrefix))
-    WideCharToMultiByte(mbcp, 0, pwszPrefix, -1, mszPrefix1, COUNTOF(mszPrefix1), NULL, NULL);
-  if (lstrlen(pwszAppend))
-    WideCharToMultiByte(mbcp, 0, pwszAppend, -1, mszAppend1, COUNTOF(mszAppend1), NULL, NULL);
+  if (lstrlen(pwszLineFormat))
+  {
+    WideCharToMultiByte(mbcp, 0, pwszLineFormat, -1, mszLineFormat, COUNTOF(mszLineFormat), NULL, NULL);
+    iEOLCounter = n2e_CountEOLs(mszLineFormat, iEOLMode);
+  }
+  else
+    return;
 
   if (!n2e_ShowPromptIfSelectionModeIsRectangle(hwnd))
   {
@@ -2920,48 +2924,25 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
 
     for (iLine = iLineStart; iLine <= iLineEnd; iLine++)
     {
-      int iPos;
-
       // [2e]: Add $(W) variable to Modify Lines #462
       LPSTR text = n2e_GetTextRange(SciCall_PositionFromLine(iLine), SciCall_LineEndPosition(iLine));
 
-      if (lstrlen(pwszPrefix))
-      {
-        char mszInsert[TEXT_BUFFER_LENGTH];
-        lstrcpyA(mszInsert, mszPrefix1);
+      char mszInsert[TEXT_BUFFER_LENGTH];
+      lstrcpyA(mszInsert, mszLineFormat);
 
-        // [2e]: Alt+M - replace all substitutions #271
-        // [2e]: View > St&arting Line Number... #342
-        n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
-          chPrefixAbsFormat, chPrefixAbsZeroFormat,
-          chPrefixRelFormat, chPrefixRelZeroFormat,
-          chPrefixRel0Format, chPrefixRel0ZeroFormat,
-          text);
+      // [2e]: Alt+M - replace all substitutions #271
+      // [2e]: View > St&arting Line Number... #342
+      n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
+        chPrefixAbsFormat, chPrefixAbsZeroFormat,
+        chPrefixRelFormat, chPrefixRelZeroFormat,
+        chPrefixRel0Format, chPrefixRel0ZeroFormat,
+        text);
 
-        iPos = (int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0);
-        SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
-        SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
-        SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
-      }
-
-      if (lstrlen(pwszAppend))
-      {
-        char mszInsert[TEXT_BUFFER_LENGTH];
-        lstrcpyA(mszInsert, mszAppend1);
-
-        // [2e]: Alt+M - replace all substitutions #271
-        // [2e]: View > St&arting Line Number... #342
-        n2e_FormatLineText(mszInsert, iLineStart, iLine, n2e_GetVisibleLineNumber(iLine),
-          chPrefixAbsFormat, chPrefixAbsZeroFormat,
-          chPrefixRelFormat, chPrefixRelZeroFormat,
-          chPrefixRel0Format, chPrefixRel0ZeroFormat,
-          text);
-
-        iPos = (int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0);
-        SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)iPos, 0);
-        SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)iPos, 0);
-        SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
-      }
+      SendMessage(hwnd, SCI_SETTARGETSTART, (WPARAM)(int)SendMessage(hwnd, SCI_POSITIONFROMLINE, (WPARAM)iLine, 0), 0);
+      SendMessage(hwnd, SCI_SETTARGETEND, (WPARAM)(int)SendMessage(hwnd, SCI_GETLINEENDPOSITION, (WPARAM)iLine, 0), 0);
+      SendMessage(hwnd, SCI_REPLACETARGET, (WPARAM)lstrlenA(mszInsert), (LPARAM)mszInsert);
+      iLine += iEOLCounter;
+      iLineEnd += iEOLCounter;
 
       n2e_Free(text);
     }
@@ -2983,7 +2964,6 @@ void EditModifyLines(HWND hwnd, LPCWSTR pwszPrefix, LPCWSTR pwszAppend)
       }
       SendMessage(hwnd, SCI_SETSEL, (WPARAM)iAnchorPos, (LPARAM)iCurPos);
     }
-
   }
 }
 
@@ -6075,6 +6055,8 @@ typedef struct _modlinesdata
 {
   LPWSTR pwsz1;
   LPWSTR pwsz2;
+  BOOL* pbUseLineFormat;
+  LPWSTR pwszLineFormat;
 } MODLINESDATA, *PMODLINESDATA;
 
 
@@ -6118,10 +6100,15 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
         SendDlgItemMessage(hwnd, 100, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
         SetDlgItemTextW(hwnd, 101, pdata->pwsz2);
         SendDlgItemMessage(hwnd, 101, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
+        SetDlgItemTextW(hwnd, 102, pdata->pwszLineFormat);
+        SendDlgItemMessage(hwnd, 102, EM_LIMITTEXT, TEXT_BUFFER_LENGTH - 1, 0);
+        Button_SetCheck(GetDlgItem(hwnd, IDC_CHECK1), *pdata->pbUseLineFormat);
+        SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_CHECK1, 0), 0);
 
         // [2e]: Remove line breaks from Alt+M #173
         n2e_EnableClipboardFiltering(hwnd, 100);
         n2e_EnableClipboardFiltering(hwnd, 101);
+        n2e_EnableClipboardFiltering(hwnd, 102);
         // [/2e]
 
         DPI_INIT();
@@ -6132,9 +6119,24 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
     case WM_COMMAND:
       switch (LOWORD(wParam))
       {
+        case IDC_CHECK1: {
+            const BOOL isLineEditMode = Button_GetCheck(GetDlgItem(hwnd, IDC_CHECK1));
+            ShowWindow(GetDlgItem(hwnd, IDC_STATIC1), !isLineEditMode);
+            ShowWindow(GetDlgItem(hwnd, 100), !isLineEditMode);
+            ShowWindow(GetDlgItem(hwnd, IDC_STATIC2), !isLineEditMode);
+            ShowWindow(GetDlgItem(hwnd, 101), !isLineEditMode);
+            ShowWindow(GetDlgItem(hwnd, IDC_STATIC3), isLineEditMode);
+            ShowWindow(GetDlgItem(hwnd, 102), isLineEditMode);
+            const int iSelectedEditId = isLineEditMode ? 102 : 100;
+            SendDlgItemMessage(hwnd, iSelectedEditId, EM_SETSEL, 0, Edit_GetTextLength(GetDlgItem(hwnd, iSelectedEditId)));
+            SetFocus(GetDlgItem(hwnd, iSelectedEditId));
+          }
+          break;
         case IDOK: {
             GetDlgItemTextW(hwnd, 100, pdata->pwsz1, TEXT_BUFFER_LENGTH);
             GetDlgItemTextW(hwnd, 101, pdata->pwsz2, TEXT_BUFFER_LENGTH);
+            GetDlgItemTextW(hwnd, 102, pdata->pwszLineFormat, TEXT_BUFFER_LENGTH);
+            *pdata->pbUseLineFormat = Button_GetCheck(GetDlgItem(hwnd, IDC_CHECK1));
             EndDialog(hwnd, IDOK);
           }
           break;
@@ -6143,7 +6145,7 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
           break;
       }
       // [2e]: Modify Lines - use Syslink #289
-      if (((LOWORD(wParam) == 100) || (LOWORD(wParam) == 101))
+      if (((LOWORD(wParam) == 100) || (LOWORD(wParam) == 101) || (LOWORD(wParam) == 102))
         && ((HIWORD(wParam) == EN_SETFOCUS) || (HIWORD(wParam) == EN_KILLFOCUS)))
       {
         dwFocusID = LOWORD(wParam);
@@ -6181,11 +6183,11 @@ INT_PTR CALLBACK EditModifyLinesDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPA
 //
 //  EditModifyLinesDlg()
 //
-BOOL EditModifyLinesDlg(HWND hwnd, LPWSTR pwsz1, LPWSTR pwsz2)
+BOOL EditModifyLinesDlg(HWND hwnd, LPWSTR pwsz1, LPWSTR pwsz2, BOOL* pbUseLineFormat, LPWSTR pwszLineFormat)
 {
 
   INT_PTR iResult;
-  MODLINESDATA data = { pwsz1, pwsz2 };
+  MODLINESDATA data = { pwsz1, pwsz2, pbUseLineFormat, pwszLineFormat };
 
   iResult = ThemedDialogBoxParam(
     g_hInstance,

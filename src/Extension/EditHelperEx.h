@@ -40,6 +40,7 @@ extern "C" {
   LPSTR n2e_LoadRTFResource(const UINT uiResID, int* pLength);
   DWORD CALLBACK n2e_EditStreamCallBack(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG *pcb);
   int n2e_CountNonWhitespaces(LPCSTR text);
+  int n2e_CountEOLs(LPCSTR text, const int iEOLMode);
 
 #ifdef __cplusplus
 }//end extern "C"
