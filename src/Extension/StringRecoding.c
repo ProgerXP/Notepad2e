@@ -1033,7 +1033,7 @@ void Recode_Run(RecodingAlgorithm* pRA, StringSource* pSS, const int bufferSize)
       break;
     }
   }
-  ed.m_tr.m_iSelEnd = ed.m_tr.m_iPositionCurrent;
+  ed.m_tr.m_iSelEnd = ed.m_tr.m_iSelEndOriginal + ed.m_tr.m_iSelOffset;
 
   const int iSelStart = ed.m_tr.m_iSelStart;
   const int iSelEnd = ed.m_tr.m_iSelEnd;

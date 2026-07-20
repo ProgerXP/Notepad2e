@@ -1526,6 +1526,10 @@ namespace Notepad2eTests
                                      "# foo foo\r\n"
                                      "# foo",
                   false, 0, { 50, SCLEX_BASH, SC_EOL_CRLF }, { 0, 14 }),
+                CTestCaseData(false, "a\r\na\r\na",
+                  CPI_DEFAULT,
+                                     "a\r\na a",
+                  false, 0, { 30, SCLEX_NULL, SC_EOL_CRLF }, { 3, 7 }, { 3, 6 }),
 #endif 
 
 #ifdef ENABLE_NEW_TEST
