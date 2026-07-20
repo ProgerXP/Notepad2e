@@ -96,3 +96,5 @@ int n2e_GetPreviousFoldLevels(const HWND hwndListView, int iLineFrom);
 void n2e_SelectListViewItem(const HWND hwndListView, const int iSelItem);
 void n2e_BreakEditMode_SendMessage(const UINT msg);
 void n2e_ApplyEditMode_SendMessage(const UINT msg);
+HWND n2e_GetActiveToolHWND();
+HWND n2e_GetActiveTopLevelHWND();

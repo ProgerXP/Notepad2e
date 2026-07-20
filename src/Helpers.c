@@ -501,11 +501,10 @@ void SetWindowTransparentMode(HWND hwnd, BOOL bTransparentMode)
 //
 //  CenterDlgInParent()
 //
-void CenterDlgInParent(HWND hDlg)
+void CenterDlgInParentImpl(HWND hDlg, HWND hParent)
 {
 
   RECT rcDlg;
-  HWND hParent;
   RECT rcParent;
   MONITORINFO mi;
   HMONITOR hMonitor;
@@ -513,8 +512,6 @@ void CenterDlgInParent(HWND hDlg)
   int xMin, yMin, xMax, yMax, x, y;
 
   GetWindowRect(hDlg, &rcDlg);
-
-  hParent = GetParent(hDlg);
   GetWindowRect(hParent, &rcParent);
 
   hMonitor = MonitorFromRect(&rcParent, MONITOR_DEFAULTTONEAREST);
@@ -539,6 +536,11 @@ void CenterDlgInParent(HWND hDlg)
 
   SetWindowPos(hDlg, NULL, max(xMin, min(xMax, x)), max(yMin, min(yMax, y)), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 
+}
+
+void CenterDlgInParent(HWND hDlg)
+{
+  CenterDlgInParentImpl(hDlg, GetParent(hDlg));
 }
 
 

@@ -1560,3 +1560,24 @@ void n2e_ApplyEditMode_SendMessage(const UINT msg)
   if (msg)
     SendMessage(hwndEdit, msg, 0, 0);
 }
+
+HWND n2e_GetActiveToolHWND()
+{
+  return IsWindow(hDlgFindReplace)
+    ? hDlgFindReplace
+    : IsWindow(hDlgGotoLine)
+      ? hDlgGotoLine
+      : NULL;
+}
+
+HWND n2e_GetActiveTopLevelHWND()
+{
+  HWND hwnd = GetActiveWindow();
+  while (hwnd)
+  {
+    if ((GetWindowLongPtr(hwnd, GWL_STYLE) & WS_CHILD) == 0)
+      break;
+    hwnd = GetAncestor(hwnd, GA_PARENT);
+  }
+  return (hwnd && (GetAncestor(hwnd, GA_ROOTOWNER) == hwndMain)) ? hwnd : NULL;
+}

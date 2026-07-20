@@ -93,6 +93,7 @@ BOOL SetWindowTitle(HWND, UINT, BOOL, BOOL, UINT, LPCWSTR, enum EPathNameFormat,
 void SetWindowTransparentMode(HWND, BOOL);
 
 
+void CenterDlgInParentImpl(HWND, HWND);
 void CenterDlgInParent(HWND);
 void GetDlgPos(HWND, LPINT, LPINT);
 void SetDlgPos(HWND, int, int);

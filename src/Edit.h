@@ -219,4 +219,5 @@ typedef struct _tagsdata
 
 extern HWND hwndMain;
 extern HWND hDlgFindReplace;
+extern HWND hDlgGotoLine;
 extern int iEncoding;

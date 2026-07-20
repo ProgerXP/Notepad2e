@@ -2355,6 +2355,9 @@ typedef struct _infobox
   BOOL   bDisableCheckBox;  // [2e]: InfoBox improvements #386
   BOOL   bIsMsgFindWrap1;   // [2e]: InfoBox improvements #386
   BOOL   bIsMsgFindWrap2;   // [2e]: InfoBox improvements #386
+  HWND   hwndParent;
+  HWND   hwndTool;
+  HWND   hwndActive;
 } INFOBOX, *LPINFOBOX;
 
 INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lParam)
@@ -2430,9 +2433,20 @@ INT_PTR CALLBACK InfoBoxDlgProc(HWND hwnd, UINT umsg, WPARAM wParam, LPARAM lPar
       lpib->bIsMsgFindWrap2 = (lstrcmp(lpib->lpstrSetting, L"MsgFindWrap2") == 0);
       // [/2e]
       DPI_INIT();
-      CenterDlgInParent(hwnd);
+      CenterDlgInParentImpl(hwnd, lpib->hwndParent);
+      if (lpib->hwndTool)
+        EnableWindow(lpib->hwndTool, FALSE);
       return TRUE;
 
+    case WM_DESTROY:
+      {
+        lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
+        if (lpib->hwndTool)
+          EnableWindow(lpib->hwndTool, TRUE);
+        if (lpib->hwndActive)
+          SetActiveWindow(lpib->hwndActive);
+      }
+      break;
     case WM_COMMAND:
       lpib = (LPINFOBOX)GetWindowLongPtr(hwnd, DWLP_USER);
       switch (LOWORD(wParam))
@@ -2535,12 +2549,30 @@ INT_PTR InfoBox(int iType, LPCWSTR lpstrSetting, int uidMessage, ...)
   else
     hwnd = hwndMain;
 
+  ib.hwndParent = hwnd;
+  ib.hwndTool = n2e_GetActiveToolHWND();
+  ib.hwndActive = n2e_GetActiveTopLevelHWND();
   MessageBeep(MB_ICONEXCLAMATION);
+
+  HWND hwndLastActiveModalPopup = GetLastActivePopup(hwndMain);
+  while (hwndLastActiveModalPopup)
+  {
+    if ((hwndLastActiveModalPopup != ib.hwndTool) && (GetWindowLongPtr(hwndLastActiveModalPopup, GWL_STYLE) & DS_MODALFRAME))
+      break;
+    else
+      hwndLastActiveModalPopup = GetNextWindow(hwndLastActiveModalPopup, GW_HWNDNEXT);
+
+    if (GetAncestor(hwndLastActiveModalPopup, GA_ROOTOWNER) != hwndMain)
+    {
+      hwndLastActiveModalPopup = NULL;
+      break;
+    }
+  }
 
   return ThemedDialogBoxParam(
     g_hInstance,
     MAKEINTRESOURCE(IDD_INFOBOX),
-    hwnd,
+    hwndLastActiveModalPopup ? hwndLastActiveModalPopup : hwndMain,
     InfoBoxDlgProc,
     (LPARAM)&ib);
 }
