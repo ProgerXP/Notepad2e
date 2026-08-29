@@ -3892,7 +3892,7 @@ LRESULT MsgCommand(HWND hwnd, WPARAM wParam, LPARAM lParam)
               iBrace2 = SciCall_PositionBefore(iBrace2);
               iPos = SciCall_PositionAfter(iPos);
             }
-            else if (iSelEnd == SciCall_GetSelStart())
+            else if (iBraceAtPos)
             {
               iBrace2 = SciCall_PositionAfter(iBrace2);
               iPos = SciCall_PositionBefore(iPos);
