@@ -1033,7 +1033,7 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     LTEXT           "&Prefix text to lines:",IDC_STATIC1,7,7,62,8
     EDITTEXT        100,7,18,130,14,ES_AUTOHSCROLL
-    LTEXT           "&Line format (Ctrl for new line):", IDC_STATIC3, 7, 7, 130, 8, NOT WS_VISIBLE
+    LTEXT           "&Line format (Ctrl+Enter for new line):", IDC_STATIC3, 7, 7, 130, 8, NOT WS_VISIBLE
     LTEXT           "&Append text to lines:",IDC_STATIC2,7,37,68,8
     EDITTEXT        102,7,18,130,44,ES_MULTILINE | ES_AUTOVSCROLL | WS_VSCROLL | NOT WS_VISIBLE
     EDITTEXT        101,7,48,130,14,ES_AUTOHSCROLL
