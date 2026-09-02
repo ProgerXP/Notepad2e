@@ -106,6 +106,7 @@ void Style_Load()
   LoadIniSection(L"Styles", pIniSection, cchIniSection);
   // 2nd default
   bUse2ndDefaultStyle = (IniSectionGetInt(pIniSection, L"Use2ndDefaultStyle", 0)) ? 1 : 0;
+  bUse2ndDefaultStyleG = bUse2ndDefaultStyle;
 
   // default scheme
   iDefaultLexer = IniSectionGetInt(pIniSection, L"DefaultScheme", 0);
@@ -1074,6 +1075,7 @@ void Style_SetLexerFromID(HWND hwnd, int id)
 void Style_ToggleUse2ndDefault(HWND hwnd)
 {
   bUse2ndDefaultStyle = (bUse2ndDefaultStyle) ? 0 : 1;
+  bUse2ndDefaultStyleG = bUse2ndDefaultStyle;
   Style_SetLexer(hwnd, pLexCurrent);
 }
 
