@@ -4204,7 +4204,7 @@ void EditJoinLinesEx(HWND hwnd, BOOL noSpaceDelimiter)
   if (pszText == NULL)
     return;
 
-  pszJoin = LocalAlloc(LPTR, LocalSize(pszText) * 2);
+  pszJoin = LocalAlloc(LPTR, LocalSize(pszText));
   if (pszJoin == NULL)
   {
     LocalFree(pszText);
