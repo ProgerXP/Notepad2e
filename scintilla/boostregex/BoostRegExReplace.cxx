@@ -350,7 +350,7 @@ struct CRegexCustomFormatter
 			return it;
 
 		Sci::Position originLength = m.length();
-		if constexpr (!std::is_same_v<CharT, char>)
+		if constexpr (std::is_same_v<CharT, wchar_t>)
 		{
 			String matchStr;
 			auto _m = m[0].first;

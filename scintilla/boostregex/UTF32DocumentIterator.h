@@ -64,9 +64,9 @@ public:
 		return !(*this == other);
 	}
 
-	wchar_t operator * () const
+	UChar32 operator * () const
 	{
-		return m_character[m_characterIndex];
+		return *(UChar32*)(&m_character);
 	}
 
 	UTF32DocumentIterator& operator = (int other)
